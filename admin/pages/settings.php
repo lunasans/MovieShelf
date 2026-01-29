@@ -1,216 +1,62 @@
 <?php
 /**
- * DVD Profiler Liste - Admin Settings
- * 
- * @package    dvdprofiler.liste
- * @author     René Neuhaus
- * @version    1.4.8
+ * Settings Page für Admin-Panel (AJAX Version)
+ * CSS muss separat geladen werden!
  */
 
-// Sicherheitscheck
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit;
-}
-
-// Versionsinformationen laden
-require_once dirname(__DIR__, 2) . '/includes/version.php';
-
-// CSRF-Token generieren
+// CSRF-Token
 $csrfToken = generateCSRFToken();
 
-// Variablen initialisieren
-$error = '';
-$success = '';
-
-
-// POST-Handler mit CSRF-Schutz
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // CSRF-Token prüfen
-    $submittedToken = $_POST['csrf_token'] ?? '';
-    if (!validateCSRFToken($submittedToken)) {
-        $error = '❌ Ungültiger CSRF-Token. Bitte versuchen Sie es erneut.';
-    } else {
-        // Einstellungen speichern (POST mit csrf_token = Settings-Form)
-        if (isset($_POST['site_title']) || isset($_POST['environment']) || isset($_POST['tmdb_api_key'])) {
-            $allowedSettings = [
-                'site_title' => ['maxlength' => 255, 'required' => true],
-                'site_description' => ['maxlength' => 500],
-                'base_url' => ['filter' => FILTER_VALIDATE_URL],
-                'environment' => ['maxlength' => 20],
-                'theme' => ['maxlength' => 50],
-                'items_per_page' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 5, 'max_range' => 100]],
-                'latest_films_count' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 5, 'max_range' => 50]],
-                'enable_2fa' => ['filter' => FILTER_VALIDATE_BOOLEAN],
-                'login_attempts_max' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'max_range' => 10]],
-                'login_lockout_time' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 60, 'max_range' => 3600]],
-                'session_timeout' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 300, 'max_range' => 86400]],
-                'backup_retention_days' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'max_range' => 365]],
-                // TMDb Integration
-                'tmdb_api_key' => ['maxlength' => 255],
-                'tmdb_show_ratings_on_cards' => ['filter' => FILTER_VALIDATE_BOOLEAN],
-                'tmdb_show_ratings_details' => ['filter' => FILTER_VALIDATE_BOOLEAN],
-                'tmdb_cache_hours' => ['filter' => FILTER_VALIDATE_INT, 'options' => ['min_range' => 1, 'max_range' => 168]],
-                'tmdb_show_similar_movies' => ['filter' => FILTER_VALIDATE_BOOLEAN],
-                'tmdb_auto_download_covers' => ['filter' => FILTER_VALIDATE_BOOLEAN]
-            ];
-            
-            $savedCount = 0;
-            foreach ($allowedSettings as $key => $validation) {
-                // Special handling für Checkboxen
-                $isCheckbox = isset($validation['filter']) && $validation['filter'] === FILTER_VALIDATE_BOOLEAN;
-                
-                if (isset($_POST[$key])) {
-                    $value = trim($_POST[$key]);
-                    
-                    // Validierung anwenden
-                    if (isset($validation['filter'])) {
-                        $options = $validation['options'] ?? null;
-                        if (!filter_var($value, $validation['filter'], $options)) {
-                            $error = "❌ Ungültiger Wert für {$key}.";
-                            break;
-                        }
-                    }
-                    
-                    if (isset($validation['maxlength']) && strlen($value) > $validation['maxlength']) {
-                        $error = "❌ {$key} ist zu lang (max. {$validation['maxlength']} Zeichen).";
-                        break;
-                    }
-                    
-                    if (isset($validation['required']) && empty($value)) {
-                        $error = "❌ {$key} ist erforderlich.";
-                        break;
-                    }
-                    
-                    if (setSetting($key, $value)) {
-                        $savedCount++;
-                    }
-                } elseif ($isCheckbox) {
-                    // Checkbox nicht gecheckt = speichere "0"
-                    if (setSetting($key, '0')) {
-                        $savedCount++;
-                    }
-                }
-            }
-            
-            if (!$error) {
-                $success = "✅ {$savedCount} Einstellung(en) erfolgreich gespeichert.";
-                // KEIN Redirect bei AJAX! Success-Message wird im Response angezeigt
-            }
-        }
-        
-        // Cache leeren
-        if (isset($_POST['clear_cache'])) {
-            $cacheDir = dirname(__DIR__, 2) . '/cache/';
-            
-            if (is_dir($cacheDir)) {
-                $files = glob($cacheDir . '*');
-                $deleted = 0;
-                foreach ($files as $file) {
-                    if (is_file($file) && unlink($file)) {
-                        $deleted++;
-                    }
-                }
-                $success = "✅ {$deleted} Cache-Dateien gelöscht.";
-            } else {
-                $error = '❌ Cache-Verzeichnis nicht gefunden.';
-            }
-        }
-    }
-}
-
-// Backup-Dateien sicher auflisten
-$backupDir = dirname(__DIR__, 2) . '/admin/backups/';
-$backups = [];
-if (is_dir($backupDir)) {
-    $files = glob($backupDir . 'backup_*.zip');
-    foreach ($files as $file) {
-        $basename = basename($file);
-        if (preg_match('/^backup_\d{8}_\d{6}\.zip$/', $basename)) {
-            $backups[] = [
-                'name' => $basename,
-                'size' => filesize($file),
-                'date' => filemtime($file)
-            ];
-        }
-    }
-    // Nach Datum sortieren (neueste zuerst)
-    usort($backups, fn($a, $b) => $b['date'] - $a['date']);
-}
-
-// Build-Info und Features
-$buildInfo = getDVDProfilerBuildInfo();
-$systemRequirements = checkDVDProfilerSystemRequirements();
-
-// URL-Validierung für saved Parameter
-$showSaved = isset($_GET['saved']) && $_GET['saved'] === '1';
+// System-Anforderungen prüfen
+$systemRequirements = [
+    'php' => version_compare(PHP_VERSION, '8.0.0', '>='),
+    'php_recommended' => version_compare(PHP_VERSION, '8.0.0', '>='),
+    'extensions' => [
+        'PDO' => extension_loaded('pdo'),
+        'pdo_mysql' => extension_loaded('pdo_mysql'),
+        'mbstring' => extension_loaded('mbstring'),
+        'gd' => extension_loaded('gd'),
+        'curl' => extension_loaded('curl'),
+        'json' => extension_loaded('json'),
+        'zip' => extension_loaded('zip')
+    ]
+];
 ?>
 
-<div class="settings-container">
-    <div class="settings-header mb-4">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="settings-title">
-                    <i class="bi bi-gear"></i>
-                    Systemeinstellungen
-                </h1>
-                <p class="settings-subtitle">
-                    Konfiguration und Verwaltung von DVD Profiler Liste v<?= DVDPROFILER_VERSION ?> "<?= DVDPROFILER_CODENAME ?>"
-                </p>
-            </div>
-            <div class="col-md-4 text-md-end">
-                <!-- Platz für Quick Actions -->
-            </div>
-        </div>
-    </div>
+<!-- Save Status Notifications -->
+<div id="saveStatus" class="save-status"></div>
 
-    <?php if ($showSaved && !$error): ?>
-        <div class="alert alert-success">
-            <i class="bi bi-check-circle"></i>
-            Einstellungen erfolgreich gespeichert!
-        </div>
-    <?php endif; ?>
-    
-    <?php if ($error): ?>
-        <div class="alert alert-danger">
-            <i class="bi bi-exclamation-triangle"></i>
-            <?= htmlspecialchars($error) ?>
-        </div>
-    <?php endif; ?>
-    
-    <?php if ($success): ?>
-        <div class="alert alert-success">
-            <i class="bi bi-check-circle"></i>
-            <?= htmlspecialchars($success) ?>
-        </div>
-    <?php endif; ?>
+<!-- Settings Tabs -->
+<div class="settings-tabs">
+    <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                <i class="bi bi-gear"></i> Allgemein
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                <i class="bi bi-shield-check"></i> Sicherheit
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tmdb-tab" data-bs-toggle="tab" data-bs-target="#tmdb" type="button" role="tab">
+                <i class="bi bi-star-fill"></i> TMDb
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
+                <i class="bi bi-cpu"></i> System
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="signature-tab" data-bs-toggle="tab" data-bs-target="#signature" type="button" role="tab">
+                <i class="bi bi-image"></i> Signatur-Banner
+            </button>
+        </li>
+    </ul>
 
-    <!-- Settings Tabs -->
-    <div class="settings-tabs">
-        <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
-                    <i class="bi bi-gear"></i> Allgemein
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
-                    <i class="bi bi-shield-check"></i> Sicherheit
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tmdb-tab" data-bs-toggle="tab" data-bs-target="#tmdb" type="button" role="tab">
-                    <i class="bi bi-star-fill"></i> TMDb
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
-                    <i class="bi bi-cpu"></i> System
-                </button>
-            </li>
-        </ul>
-
-        <div class="tab-content mt-4" id="settingsTabContent">
+    <div class="tab-content mt-4" id="settingsTabContent">
             <!-- Tab: Allgemein -->
             <div class="tab-pane fade show active" id="general" role="tabpanel">
                 <div class="card">
@@ -221,8 +67,9 @@ $showSaved = isset($_GET['saved']) && $_GET['saved'] === '1';
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form method="post">
+                        <form class="settings-form" data-section="general">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                            <input type="hidden" name="section" value="general">
                             
                             <div class="row">
                                 <div class="col-md-6">
@@ -310,15 +157,14 @@ $showSaved = isset($_GET['saved']) && $_GET['saved'] === '1';
                                 </div>
                             </div>
                             
-                            <button type="submit" name="save_settings" class="btn btn-primary">
+                            <button type="submit" class="btn-save" class="btn btn-primary">
                                 <i class="bi bi-save"></i>
-                                Einstellungen speichern
+                                Speichern
                             </button>
                         </form>
                     </div>
                 </div>
             </div>
-
             <!-- Tab: Sicherheit -->
             <div class="tab-pane fade" id="security" role="tabpanel">
                 <div class="card">
@@ -329,8 +175,9 @@ $showSaved = isset($_GET['saved']) && $_GET['saved'] === '1';
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form method="post">
+                        <form class="settings-form" data-section="security">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                            <input type="hidden" name="section" value="security">
                             
                             <div class="row">
                                 <div class="col-md-6">
@@ -370,15 +217,14 @@ $showSaved = isset($_GET['saved']) && $_GET['saved'] === '1';
                                 </div>
                             </div>
                             
-                            <button type="submit" name="save_settings" class="btn btn-primary">
+                            <button type="submit" class="btn-save" class="btn btn-primary">
                                 <i class="bi bi-save"></i>
-                                Sicherheitseinstellungen speichern
+                                Speichern
                             </button>
                         </form>
                     </div>
                 </div>
             </div>
-
             <!-- Tab: TMDb Integration -->
             <div class="tab-pane fade" id="tmdb" role="tabpanel">
                 <div class="card">
@@ -389,8 +235,9 @@ $showSaved = isset($_GET['saved']) && $_GET['saved'] === '1';
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form method="post">
+                        <form class="settings-form" data-section="tmdb">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                            <input type="hidden" name="section" value="tmdb">
                             
                             <div class="mb-4">
                                 <label for="tmdb_api_key" class="form-label">
@@ -546,9 +393,9 @@ $showSaved = isset($_GET['saved']) && $_GET['saved'] === '1';
                             </div>
                             <?php endif; ?>
                             
-                            <button type="submit" name="save_settings" class="btn btn-primary">
+                            <button type="submit" class="btn-save" class="btn btn-primary">
                                 <i class="bi bi-save"></i>
-                                TMDb-Einstellungen speichern
+                                TMDb-Speichern
                             </button>
                             
                             <script>
@@ -570,7 +417,7 @@ $showSaved = isset($_GET['saved']) && $_GET['saved'] === '1';
                                 
                                 function loadBatch(offset = 0) {
                                     const formData = new FormData();
-                                    formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? '' ?>');
+                                    formData.append('csrf_token', '<?= $csrfToken ?>');
                                     formData.append('offset', offset);
                                     
                                     fetch('../actions/tmdb-bulk-load.php', {
@@ -805,354 +652,338 @@ $showSaved = isset($_GET['saved']) && $_GET['saved'] === '1';
                 </div>
             </div>
         </div>
+
+            <!-- Tab: Signatur-Banner -->
+            <div class="tab-pane fade" id="signature" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-image"></i>
+                            Signatur-Banner Einstellungen
+                        </h5>
+                        <small class="text-muted">
+                            Erstelle dynamische Banner für Forum-Signaturen mit deinen neuesten Filmen
+                        </small>
+                    </div>
+                    <div class="card-body">
+                        <form class="settings-form" data-section="signature">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
+                            <input type="hidden" name="section" value="signature">
+                            
+                            <!-- Banner aktivieren -->
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Was sind Signatur-Banner?</strong><br>
+                                Dynamische Bilder (600×100px) die deine neuesten Filme zeigen. Perfekt für Forum-Signaturen!
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="bi bi-toggle-on"></i> Banner aktivieren
+                                        </label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" name="signature_enabled" id="signature_enabled" 
+                                                   class="form-check-input" role="switch"
+                                                   <?= getSetting('signature_enabled', '1') == '1' ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="signature_enabled">
+                                                Banner-Generator aktivieren
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Schaltet signature.php ein/aus</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="signature_film_count" class="form-label">
+                                            <i class="bi bi-collection"></i> Anzahl Filme
+                                        </label>
+                                        <select name="signature_film_count" id="signature_film_count" class="form-select">
+                                            <option value="5" <?= getSetting('signature_film_count', '10') == '5' ? 'selected' : '' ?>>5 Filme</option>
+                                            <option value="10" <?= getSetting('signature_film_count', '10') == '10' ? 'selected' : '' ?>>10 Filme (Standard)</option>
+                                            <option value="15" <?= getSetting('signature_film_count', '10') == '15' ? 'selected' : '' ?>>15 Filme</option>
+                                            <option value="20" <?= getSetting('signature_film_count', '10') == '20' ? 'selected' : '' ?>>20 Filme</option>
+                                        </select>
+                                        <small class="text-muted">Wie viele Filme im Banner anzeigen</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <!-- Film-Quelle -->
+                            <h6 class="mb-3">
+                                <i class="bi bi-funnel"></i> Film-Auswahl
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="signature_film_source" class="form-label">Welche Filme anzeigen?</label>
+                                        <select name="signature_film_source" id="signature_film_source" class="form-select">
+                                            <option value="newest" <?= getSetting('signature_film_source', 'newest') == 'newest' ? 'selected' : '' ?>>
+                                                📅 Neueste (zuletzt hinzugefügt)
+                                            </option>
+                                            <option value="newest_release" <?= getSetting('signature_film_source', 'newest') == 'newest_release' ? 'selected' : '' ?>>
+                                                🎬 Neueste Veröffentlichungen (Jahr)
+                                            </option>
+                                            <option value="best_rated" <?= getSetting('signature_film_source', 'newest') == 'best_rated' ? 'selected' : '' ?>>
+                                                ⭐ Bestbewertete (TMDb Rating)
+                                            </option>
+                                            <option value="random" <?= getSetting('signature_film_source', 'newest') == 'random' ? 'selected' : '' ?>>
+                                                🎲 Zufällig
+                                            </option>
+                                        </select>
+                                        <small class="text-muted">Kriterium für Film-Auswahl</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="signature_cache_time" class="form-label">
+                                            <i class="bi bi-clock-history"></i> Cache-Zeit
+                                        </label>
+                                        <select name="signature_cache_time" id="signature_cache_time" class="form-select">
+                                            <option value="1800" <?= getSetting('signature_cache_time', '3600') == '1800' ? 'selected' : '' ?>>30 Minuten</option>
+                                            <option value="3600" <?= getSetting('signature_cache_time', '3600') == '3600' ? 'selected' : '' ?>>1 Stunde (Standard)</option>
+                                            <option value="7200" <?= getSetting('signature_cache_time', '3600') == '7200' ? 'selected' : '' ?>>2 Stunden</option>
+                                            <option value="14400" <?= getSetting('signature_cache_time', '3600') == '14400' ? 'selected' : '' ?>>4 Stunden</option>
+                                            <option value="86400" <?= getSetting('signature_cache_time', '3600') == '86400' ? 'selected' : '' ?>>24 Stunden</option>
+                                        </select>
+                                        <small class="text-muted">Wie lange Banner gecacht werden</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <!-- Design-Optionen -->
+                            <h6 class="mb-3">
+                                <i class="bi bi-palette"></i> Design & Aussehen
+                            </h6>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Banner-Typ Varianten</label>
+                                        <div class="form-check">
+                                            <input type="checkbox" name="signature_enable_type1" id="signature_enable_type1" 
+                                                   class="form-check-input"
+                                                   <?= getSetting('signature_enable_type1', '1') == '1' ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="signature_enable_type1">
+                                                Typ 1: Cover Grid
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="checkbox" name="signature_enable_type2" id="signature_enable_type2" 
+                                                   class="form-check-input"
+                                                   <?= getSetting('signature_enable_type2', '1') == '1' ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="signature_enable_type2">
+                                                Typ 2: Cover + Stats
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="checkbox" name="signature_enable_type3" id="signature_enable_type3" 
+                                                   class="form-check-input"
+                                                   <?= getSetting('signature_enable_type3', '1') == '1' ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="signature_enable_type3">
+                                                Typ 3: Compact Liste
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Welche Varianten verfügbar sind</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Anzeige-Optionen</label>
+                                        <div class="form-check">
+                                            <input type="checkbox" name="signature_show_title" id="signature_show_title" 
+                                                   class="form-check-input"
+                                                   <?= getSetting('signature_show_title', '1') == '1' ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="signature_show_title">
+                                                Film-Titel anzeigen
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="checkbox" name="signature_show_year" id="signature_show_year" 
+                                                   class="form-check-input"
+                                                   <?= getSetting('signature_show_year', '1') == '1' ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="signature_show_year">
+                                                Erscheinungsjahr anzeigen
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input type="checkbox" name="signature_show_rating" id="signature_show_rating" 
+                                                   class="form-check-input"
+                                                   <?= getSetting('signature_show_rating', '0') == '1' ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="signature_show_rating">
+                                                TMDb-Rating anzeigen
+                                            </label>
+                                        </div>
+                                        <small class="text-muted">Was im Banner gezeigt wird</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="signature_quality" class="form-label">Bildqualität</label>
+                                        <select name="signature_quality" id="signature_quality" class="form-select">
+                                            <option value="6" <?= getSetting('signature_quality', '9') == '6' ? 'selected' : '' ?>>Niedrig (schnell, klein)</option>
+                                            <option value="9" <?= getSetting('signature_quality', '9') == '9' ? 'selected' : '' ?>>Hoch (Standard)</option>
+                                        </select>
+                                        <small class="text-muted">PNG-Kompression (0-9)</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <!-- Vorschau & URLs -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="mb-3">
+                                        <i class="bi bi-link-45deg"></i> Banner-URLs & Vorschau
+                                    </h6>
+                                    
+                                    <div class="alert alert-info">
+                                        <strong>Banner-URL:</strong><br>
+                                        <code class="user-select-all"><?= htmlspecialchars(getSetting('base_url', 'https://deine-domain.de/')) ?>signature.php?type=1</code>
+                                        <button type="button" class="btn btn-sm btn-outline-primary float-end" onclick="navigator.clipboard.writeText('<?= htmlspecialchars(getSetting('base_url', '')) ?>signature.php?type=1')">
+                                            <i class="bi bi-clipboard"></i> Kopieren
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="text-center mt-3">
+                                        <a href="../signature.php?type=1" target="_blank" class="btn btn-primary">
+                                            <i class="bi bi-eye"></i> Vorschau anzeigen
+                                        </a>
+                                        <a href="?page=signature-preview" class="btn btn-secondary">
+                                            <i class="bi bi-grid-3x3"></i> Alle Varianten ansehen
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn-save" class="btn btn-primary">
+                                    <i class="bi bi-save"></i>
+                                    Signatur-Speichern
+                                </button>
+                                
+                                <button type="button" class="btn btn-warning" onclick="if(confirm('Cache wirklich leeren?')) { fetch('../signature.php?clear_cache=1'); alert('Cache geleert!'); }">
+                                    <i class="bi bi-trash"></i>
+                                    Cache leeren
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
     </div>
 </div>
 
-<style>
-/* Settings Page Styling */
-.settings-container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.settings-title {
-    font-size: 2rem;
-    margin-bottom: var(--space-sm, 8px);
-    color: var(--text-white, #ffffff);
-}
-
-.settings-subtitle {
-    color: var(--text-glass, rgba(255, 255, 255, 0.8));
-    margin-bottom: 0;
-    font-family: monospace;
-    font-size: 0.9rem;
-}
-
-.settings-tabs .nav-tabs {
-    border-bottom: 2px solid var(--glass-border, rgba(255, 255, 255, 0.2));
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: wrap !important;
-}
-
-.settings-tabs .nav-tabs .nav-item {
-    margin-bottom: 0 !important;
-}
-
-.settings-tabs .nav-link {
-    background: var(--glass-bg, rgba(255, 255, 255, 0.1));
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
-    color: var(--text-glass, rgba(255, 255, 255, 0.8));
-    margin-right: var(--space-sm, 8px);
-    border-radius: var(--radius-md, 12px) var(--radius-md, 12px) 0 0;
-    transition: all var(--transition-fast, 0.3s);
-    display: inline-block !important;
-}
-
-.settings-tabs .nav-link:hover {
-    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.15));
-    color: var(--text-white, #ffffff);
-}
-
-.settings-tabs .nav-link.active {
-    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
-    border-color: transparent;
-    color: var(--text-white, #ffffff);
-}
-
-.card {
-    background: var(--glass-bg, rgba(255, 255, 255, 0.1));
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
-    border-radius: var(--radius-lg, 16px);
-}
-
-.card-header {
-    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.15));
-    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.2));
-    border-radius: var(--radius-lg, 16px) var(--radius-lg, 16px) 0 0;
-}
-
-.system-info .info-row {
-    display: flex;
-    justify-content: space-between;
-    padding: var(--space-sm, 8px) 0;
-    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-    font-size: 0.9rem;
-}
-
-.system-info .info-row:last-child {
-    border-bottom: none;
-}
-
-.requirements-list .requirement-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm, 8px);
-    padding: var(--space-sm, 8px) 0;
-    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-}
-
-.requirements-list .requirement-item:last-child {
-    border-bottom: none;
-}
-
-.version-display {
-    text-align: center;
-    padding: var(--space-md, 16px);
-    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.1));
-    border-radius: var(--radius-md, 12px);
-}
-
-.version-badge {
-    display: inline-block;
-    padding: var(--space-sm, 8px) var(--space-md, 16px);
-    border-radius: var(--radius-md, 12px);
-    font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: var(--space-sm, 8px);
-}
-
-.version-badge.current {
-    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
-    color: var(--text-white, #ffffff);
-}
-
-.version-badge.available {
-    background: linear-gradient(135deg, #f39c12 0%, #e74c3c 100%);
-    color: var(--text-white, #ffffff);
-    animation: pulse 2s ease-in-out infinite;
-}
-
-.version-details {
-    font-size: 0.8rem;
-    color: var(--text-glass, rgba(255, 255, 255, 0.7));
-}
-
-.changelog-content {
-    background: var(--glass-bg, rgba(255, 255, 255, 0.1));
-    border-radius: var(--radius-sm, 6px);
-    padding: var(--space-md, 16px);
-    font-size: 0.9rem;
-    max-height: 200px;
-    overflow-y: auto;
-    white-space: pre-line;
-}
-
-/* Form Styling */
-.form-control,
-.form-select {
-    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.15));
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.3));
-    color: var(--text-white, #ffffff);
-}
-
-.form-control:focus,
-.form-select:focus {
-    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.2));
-    border-color: var(--accent-color, #3498db);
-    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
-    color: var(--text-white, #ffffff);
-}
-
-.form-label {
-    color: var(--text-white, #ffffff);
-    font-weight: 500;
-}
-
-.form-check-label {
-    color: var(--text-glass, rgba(255, 255, 255, 0.9));
-}
-
-/* Table Styling */
-.table {
-    color: var(--text-white, #ffffff);
-}
-
-.table th {
-    border-color: var(--glass-border, rgba(255, 255, 255, 0.2));
-    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.1));
-}
-
-.table td {
-    border-color: var(--glass-border, rgba(255, 255, 255, 0.1));
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .settings-title {
-        font-size: 1.5rem;
-    }
-    
-    .system-info .info-row {
-        flex-direction: column;
-        gap: var(--space-xs, 4px);
-    }
-    
-    .version-display {
-        margin-bottom: var(--space-md, 16px);
-    }
-}
-
-/* Animations */
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.7;
-    }
-}
-</style>
-
 <script>
-// IIFE für AJAX-Kompatibilität (sofortige Ausführung)
-(function() {
-    // Bootstrap Tabs manuell initialisieren
-    const triggerTabList = document.querySelectorAll('#settingsTabs button[data-bs-toggle="tab"]');
-    if (triggerTabList.length > 0 && typeof bootstrap !== 'undefined') {
-        triggerTabList.forEach(triggerEl => {
-            new bootstrap.Tab(triggerEl);
-        });
-        console.log('Bootstrap Tabs initialisiert:', triggerTabList.length);
-    }
+// AJAX Form Handler - Complete Version
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.settings-form');
     
-    // Form validation enhancement
-    const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         form.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            if (submitBtn && !submitBtn.disabled) {
-                submitBtn.disabled = true;
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Verarbeitung...';
-                
-                // Re-enable after timeout (fallback)
-                setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                }, 15000);
+            e.preventDefault();
+            
+            const submitBtn = form.querySelector('.btn-save');
+            if (!submitBtn) {
+                console.error('Kein Save-Button gefunden');
+                return;
             }
-        });
-    });
-    
-    // Auto-save indicator
-    const inputs = document.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('change', function() {
-            // Visual indicator that changes need to be saved
-            this.style.borderColor = '#f39c12';
-            setTimeout(() => {
-                this.style.borderColor = '';
-            }, 2000);
-        });
-    });
-    
-    console.log('DVD Profiler Liste Settings v<?= DVDPROFILER_VERSION ?> loaded');
-})();
-
-// Settings Form AJAX Handler
-// Füge dieses Script am Ende von admin/pages/settings.php ein
-
-(function() {
-    'use strict';
-    
-    // Warte bis DOM geladen ist
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAjaxForms);
-    } else {
-        initAjaxForms();
-    }
-    
-    function initAjaxForms() {
-        const forms = document.querySelectorAll('form[method="post"]');
-        
-        forms.forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
-                const submitBtn = this.querySelector('button[type="submit"]');
-                
-                // WICHTIG: Button-Name wird bei FormData nicht automatisch mitgeschickt
-                // Füge ihn manuell hinzu, damit PHP weiß dass es ein Settings-Save ist
-                if (submitBtn && submitBtn.name) {
-                    formData.append(submitBtn.name, '1');
-                }
-                
-                // Button disablen
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    const originalText = submitBtn.innerHTML;
-                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Wird gespeichert...';
-                    
-                    // AJAX Submit
-                    fetch('?page=settings', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.text())
-                    .then(html => {
-                        // Parse Response für Success/Error Messages
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        
-                        // Finde Alert-Messages
-                        const alerts = doc.querySelectorAll('.alert');
-                        
-                        // Zeige Success/Error
-                        if (alerts.length > 0) {
-                            // Entferne alte Alerts
-                            document.querySelectorAll('.alert').forEach(a => a.remove());
-                            
-                            // Füge neue Alerts ein (vor dem Form)
-                            alerts.forEach(alert => {
-                                form.parentNode.insertBefore(alert, form);
-                            });
-                            
-                            // Scroll to alert
-                            alerts[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            
-                            // Success: Reload nach 2 Sekunden
-                            const hasSuccess = Array.from(alerts).some(a => a.classList.contains('alert-success'));
-                            if (hasSuccess) {
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 2000);
-                            }
-                        } else {
-                            // Keine Alert gefunden - zeige generische Success
-                            const successDiv = document.createElement('div');
-                            successDiv.className = 'alert alert-success';
-                            successDiv.innerHTML = '✅ Einstellungen erfolgreich gespeichert!';
-                            form.parentNode.insertBefore(successDiv, form);
-                            
-                            setTimeout(() => {
-                                location.reload();
-                            }, 2000);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Save error:', error);
-                        
-                        // Zeige Error
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'alert alert-danger';
-                        errorDiv.innerHTML = '❌ Fehler beim Speichern. Bitte versuchen Sie es erneut.';
-                        form.parentNode.insertBefore(errorDiv, form);
-                    })
-                    .finally(() => {
-                        // Button wieder enablen
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = originalText;
-                        }
-                    });
+            
+            const originalText = submitBtn.innerHTML;
+            
+            // Button Status
+            submitBtn.classList.add('saving');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Speichere...';
+            
+            // FormData mit AJAX Flag
+            const formData = new FormData(form);
+            formData.append('ajax', '1');
+            
+            // Checkboxen: Nicht gecheckte müssen als "0" gesendet werden
+            form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                if (!checkbox.checked && checkbox.name && checkbox.name !== 'csrf_token') {
+                    formData.set(checkbox.name, '0');
+                } else if (checkbox.checked && checkbox.name) {
+                    formData.set(checkbox.name, '1');
                 }
             });
+            
+            // POST zum separaten Handler
+            fetch('actions/settings-ajax-handler.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                showNotification(data.message, data.success ? 'success' : 'danger');
+                
+                if (data.success) {
+                    // Success Feedback
+                    submitBtn.innerHTML = '<i class="bi bi-check"></i> Gespeichert!';
+                    submitBtn.classList.remove('btn-primary');
+                    submitBtn.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.classList.add('btn-primary');
+                        submitBtn.classList.remove('btn-success');
+                        submitBtn.classList.remove('saving');
+                        submitBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.classList.remove('saving');
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('AJAX Error:', error);
+                showNotification('❌ Fehler beim Speichern: ' + error.message, 'danger');
+                submitBtn.innerHTML = originalText;
+                submitBtn.classList.remove('saving');
+                submitBtn.disabled = false;
+            });
         });
+    });
+    
+    function showNotification(message, type) {
+        const statusDiv = document.getElementById('saveStatus');
+        if (!statusDiv) {
+            console.error('saveStatus div nicht gefunden');
+            return;
+        }
         
-        console.log('✅ AJAX Form Handler für Settings aktiviert');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} fade-in alert-dismissible`;
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        statusDiv.appendChild(alert);
+        
+        setTimeout(() => {
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        }, 4000);
     }
-})();
+    
+    console.log('✅ AJAX Settings System loaded - ' + forms.length + ' Forms found');
+});
 </script>

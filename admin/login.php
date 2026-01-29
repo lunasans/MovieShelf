@@ -167,6 +167,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($error)) {
                         $_SESSION['user_email'] = $user['email'];
                         $_SESSION['login_time'] = time();
                         $_SESSION['2fa_verified'] = true;
+                        // Update last_login
+                        $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+                        $updateStmt->execute([$userId]);
+                        
                         $_SESSION['initiated'] = true;
                         
                         // Temporäre Session-Daten löschen
@@ -231,6 +235,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($error)) {
                         $_SESSION['user_email'] = $user['email'];
                         $_SESSION['login_time'] = time();
                         $_SESSION['initiated'] = true;
+                        // Update last_login
+                        $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+                        $updateStmt->execute([$user['id']]);
+                        
                         
                         $success = "Login erfolgreich! Sie werden weitergeleitet...";
                         
@@ -290,6 +298,10 @@ function handleTwoFactorAuth($pdo, $userId, $twoFactorCode, &$error, &$success) 
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['initiated'] = true;
+        // Update last_login
+        $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+        $updateStmt->execute([$user['id']]);
+        
         
         // Temporäre Session-Daten löschen
         unset($_SESSION['temp_user_id']);
@@ -342,6 +354,10 @@ function handleEmailPasswordAuth($pdo, $email, $password, &$require2FA, &$userId
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['initiated'] = true;
+        // Update last_login
+        $updateStmt = $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
+        $updateStmt->execute([$user['id']]);
+        
         
         $success = "Login erfolgreich! Sie werden weitergeleitet...";
         

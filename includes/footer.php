@@ -46,12 +46,6 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
                     <span><?= number_format($stats['total_films']) ?> Filme</span>
                 </div>
                 
-                <?php if ($stats['total_boxsets'] > 0): ?>
-                <div class="stat-item" title="BoxSet Sammlungen">
-                    <i class="bi bi-collection-play"></i>
-                    <span><?= number_format($boxsetStats['total_boxsets']) ?> Sets</span>
-                </div>
-                <?php endif; ?>
                 
                 <div class="stat-item" title="Website Besucher gesamt">
                     <i class="bi bi-eye"></i>

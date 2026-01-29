@@ -146,11 +146,13 @@ $schema = [
     <!-- Preload critical resources -->
     <link rel="preload" href="css/style.css" as="style">
     <link rel="preload" href="css/theme.css" as="style">
+    <link rel="preload" href="css/film-view.css" rel="style">
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" as="style">
     
     <!-- CSS -->
     <link href="css/style.css" rel="stylesheet">
     <link href="css/theme.css" rel="stylesheet">
+    <link href="css/film-view.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="libs/fancybox/dist/fancybox/fancybox.css" rel="stylesheet">
     
@@ -168,7 +170,7 @@ $schema = [
     <?php
     // Header laden
     try {
-        include __DIR__ . '/partials/header.php'; 
+        include __DIR__ . '/includes/header.php'; 
     } catch (Exception $e) {
         error_log('Header include error: ' . $e->getMessage());
         echo '<header><h1>' . htmlspecialchars($siteTitle) . '</h1></header>';
@@ -181,16 +183,17 @@ $schema = [
         <section class="film-list-area" aria-label="Film-Liste">
             <?php 
             try {
-                include __DIR__ . '/partials/film-list.php'; 
+                // Lade immer film-list.php in der linken Seite
+                include __DIR__ . '/partials/film-list.php';
             } catch (Exception $e) {
-                error_log('Film-list include error: ' . $e->getMessage());
-                echo '<div class="error-message">Filme konnten nicht geladen werden.</div>';
+                error_log('Content include error: ' . $e->getMessage());
+                echo '<div class="error-message">Inhalt konnte nicht geladen werden.</div>';
             }
             ?>
         </section>
 
         <!-- Rechte Detailansicht -->
-        <aside class="detail-panel" id="detail-container" role="complementary" aria-label="Film-Details">
+        <aside class="detail-panel" id="detail-container" role="complementary" aria-label="Film-Details" style="padding-left: 24px;padding-right: 24px;">
             <div class="detail-placeholder">
                 <i class="bi bi-film"></i>
                 <p>Wählen Sie einen Film aus der Liste, um Details anzuzeigen.</p>

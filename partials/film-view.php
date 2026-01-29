@@ -7,14 +7,58 @@ if (!isset($dvd) || !is_array($dvd) || empty($dvd['id'])) {
     throw new InvalidArgumentException('Invalid DVD data provided to film-view.php');
 }
 
-
-
 // Cover-Pfade generieren
 $frontCover = findCoverImage($dvd['cover_id'] ?? '', 'f');
 $backCover = findCoverImage($dvd['cover_id'] ?? '', 'b');
 
 // Schauspieler laden
 $actors = getActorsByDvdId($pdo, (int)$dvd['id']);
+
+// Crew-Mitglieder laden (Regie, Drehbuch, etc.)
+$crew = null;
+if (getSetting('tmdb_api_key', '')) {
+    $crew = getFilmCrew($dvd['title'], $dvd['year'] ?? null);
+}
+
+// Staffeln & Episoden laden (für Serien)
+$seasons = [];
+$totalEpisodes = 0;
+try {
+    // Prüfen ob seasons Tabelle existiert
+    $tableCheck = $pdo->query("SHOW TABLES LIKE 'seasons'");
+    if ($tableCheck && $tableCheck->rowCount() > 0) {
+        // Staffeln laden
+        $seasonsStmt = $pdo->prepare("
+            SELECT id, season_number, name, overview, episode_count, air_date, poster_path
+            FROM seasons
+            WHERE series_id = ?
+            ORDER BY season_number ASC
+        ");
+        $seasonsStmt->execute([$dvd['id']]);
+        $seasonsData = $seasonsStmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        if (!empty($seasonsData)) {
+            // Für jede Staffel die Episoden laden
+            foreach ($seasonsData as $season) {
+                $episodesStmt = $pdo->prepare("
+                    SELECT id, episode_number, title, overview, air_date, runtime, still_path
+                    FROM episodes
+                    WHERE season_id = ?
+                    ORDER BY episode_number ASC
+                ");
+                $episodesStmt->execute([$season['id']]);
+                $episodes = $episodesStmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $season['episodes'] = $episodes;
+                $seasons[] = $season;
+                $totalEpisodes += count($episodes);
+            }
+        }
+    }
+} catch (PDOException $e) {
+    error_log("Seasons/Episodes query error: " . $e->getMessage());
+}
+
 
 // BoxSet-Kinder laden
 $boxChildren = [];
@@ -159,50 +203,484 @@ function generateStarRating(float $rating, int $maxStars = 5): string {
 }
 ?>
 
-<div class="detail-inline" itemscope itemtype="https://schema.org/Movie">
-    <!-- Film-Titel mit Schema.org Markup -->
-    <header class="film-header">
-        <h2 itemprop="name">
-            <?= htmlspecialchars($dvd['title']) ?>
-            <span class="film-year" itemprop="datePublished">(<?= htmlspecialchars((string)($dvd['year'] ?? '')) ?>)</span>
-        </h2>
-        
-        <!-- User-Status Badges -->
-        <?php if (isset($_SESSION['user_id'])): ?>
-            <div class="user-status-badges">
-                <?php if ($isOnWishlist): ?>
-                    <span class="badge badge-wishlist">
-                        <i class="bi bi-heart-fill"></i> Auf Wunschliste
-                    </span>
-                <?php endif; ?>
-                <?php if ($isWatched): ?>
-                    <span class="badge badge-watched">
-                        <i class="bi bi-check-circle-fill"></i> Gesehen
-                    </span>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if ($boxsetParent): ?>
-            <div class="boxset-breadcrumb">
-                <i class="bi bi-collection"></i>
-                Teil von: 
-                <a href="#" class="toggle-detail" data-id="<?= $boxsetParent['id'] ?>">
-                    <?= htmlspecialchars($boxsetParent['title']) ?> (<?= $boxsetParent['year'] ?>)
-                </a>
-            </div>
-        <?php endif; ?>
-    </header>
+<?php
+// Backcover als Backdrop verwenden
+$backdropUrl = $backCover ?? '';
+?>
 
-    <!-- Cover Gallery mit Lightbox -->
-    <section class="cover-gallery" aria-label="Film-Cover">
-        <div class="cover-pair">
+<style>
+/* Backdrop Hintergrund */
+.detail-inline {
+    position: relative;
+    overflow: hidden;
+}
+
+.backdrop-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    background-color: var(--bg-primary, #0f0f23);
+}
+
+/* Hero-Wrapper für Backdrop-Container */
+.hero-wrapper {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 3rem;
+    border-radius: 16px;
+}
+
+/* Titel auf Backdrop - Weiß mit starkem Shadow */
+.detail-inline .hero-wrapper .hero-section .hero-content .film-header h2,
+.hero-content .film-header h2,
+h2[itemprop="name"] {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9), 0 4px 8px rgba(0, 0, 0, 0.7);
+}
+
+.detail-inline .hero-wrapper .hero-section .hero-content .film-header .film-year,
+.hero-content .film-header .film-year,
+span[itemprop="datePublished"] {
+    font-weight: 400;
+    opacity: 0.9;
+    color: #ffffff !important;
+}
+
+/* Moderne Action-Buttons */
+.film-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.5rem 0;
+    margin-top: 2rem;
+}
+
+/* User-Status Badges (Gesehen) */
+.user-status-badges {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.badge-watched {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2) 0%, rgba(40, 167, 69, 0.1) 100%);
+    border: 2px solid rgba(40, 167, 69, 0.4);
+    border-radius: 20px;
+    color: #28a745;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.badge-watched i {
+    font-size: 1rem;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn i {
+    font-size: 1.1rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+/* Schließen Button */
+.action-close {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.action-close:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Als gesehen Button */
+.action-watched {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 2px solid rgba(40, 167, 69, 0.3);
+}
+
+.action-watched:hover {
+    background: rgba(40, 167, 69, 0.2);
+    border-color: #28a745;
+}
+
+.action-watched.active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.action-watched.active:hover {
+    background: #218838;
+}
+
+/* Teilen Button */
+.action-share {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+    border: 2px solid rgba(23, 162, 184, 0.3);
+}
+
+.action-share:hover {
+    background: rgba(23, 162, 184, 0.2);
+    border-color: #17a2b8;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .film-actions {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+.backdrop-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(2px);
+    transform: scale(1.1);
+}
+
+.backdrop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Default Theme - Dunkles Blau (#0f0f23) */
+:root .backdrop-overlay,
+[data-theme="default"] .backdrop-overlay {
+    background: linear-gradient(
+        to bottom,
+        rgba(15, 15, 35, 0.3) 0%,
+        rgba(15, 15, 35, 0.5) 20%,
+        rgba(15, 15, 35, 0.7) 40%,
+        rgba(15, 15, 35, 0.85) 60%,
+        rgba(15, 15, 35, 0.95) 80%,
+        rgba(15, 15, 35, 1) 100%
+    );
+}
+
+/* Dark Theme - Schwarz (#000000) */
+[data-theme="dark"] .backdrop-overlay {
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.3) 0%,
+        rgba(0, 0, 0, 0.5) 20%,
+        rgba(0, 0, 0, 0.7) 40%,
+        rgba(0, 0, 0, 0.85) 60%,
+        rgba(0, 0, 0, 0.95) 80%,
+        rgba(0, 0, 0, 1) 100%
+    );
+}
+
+/* Blue Theme - Dunkles Blau (#001f3f) */
+[data-theme="blue"] .backdrop-overlay {
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 31, 63, 0.3) 0%,
+        rgba(0, 31, 63, 0.5) 20%,
+        rgba(0, 31, 63, 0.7) 40%,
+        rgba(0, 31, 63, 0.85) 60%,
+        rgba(0, 31, 63, 0.95) 80%,
+        rgba(0, 31, 63, 1) 100%
+    );
+}
+
+/* Purple Theme - Dunkles Lila (#1a0a1f) */
+[data-theme="purple"] .backdrop-overlay {
+    background: linear-gradient(
+        to bottom,
+        rgba(26, 10, 31, 0.3) 0%,
+        rgba(26, 10, 31, 0.5) 20%,
+        rgba(26, 10, 31, 0.7) 40%,
+        rgba(26, 10, 31, 0.85) 60%,
+        rgba(26, 10, 31, 0.95) 80%,
+        rgba(26, 10, 31, 1) 100%
+    );
+}
+
+/* Green Theme - Dunkles Grün (#0a1f0a) */
+[data-theme="green"] .backdrop-overlay {
+    background: linear-gradient(
+        to bottom,
+        rgba(10, 31, 10, 0.3) 0%,
+        rgba(10, 31, 10, 0.5) 20%,
+        rgba(10, 31, 10, 0.7) 40%,
+        rgba(10, 31, 10, 0.85) 60%,
+        rgba(10, 31, 10, 0.95) 80%,
+        rgba(10, 31, 10, 1) 100%
+    );
+}
+
+/* Red Theme - Dunkles Rot (#1a0a0a) */
+[data-theme="red"] .backdrop-overlay {
+    background: linear-gradient(
+        to bottom,
+        rgba(26, 10, 10, 0.3) 0%,
+        rgba(26, 10, 10, 0.5) 20%,
+        rgba(26, 10, 10, 0.7) 40%,
+        rgba(26, 10, 10, 0.85) 60%,
+        rgba(26, 10, 10, 0.95) 80%,
+        rgba(26, 10, 10, 1) 100%
+    );
+}
+
+/* Content über Backdrop */
+.film-header,
+.cover-gallery,
+.film-info,
+.film-meta,
+.ratings-section,
+.film-description,
+.cast-section,
+.seasons-section,
+.boxset-children,
+.trailer-section,
+.actions-bar,
+.close-detail {
+    position: relative;
+    z-index: 1;
+}
+
+/* Hero Section - Horizontales Layout (TMDb-Style) */
+.hero-section {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 3rem;
+    padding: 3rem 2rem;
+    min-height: 500px;
+}
+
+/* WICHTIG: Alle Elemente in Hero transparent halten */
+.hero-section .film-header,
+.hero-section .meta-card,
+.hero-section .rating-card,
+.hero-section .ratings-section {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Ratings in Hero-Section - transparent und kompakt */
+.hero-section .ratings-container {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.hero-section .ratings-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+.hero-section .rating-card {
+    background: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.hero-section .rating-card.tmdb {
+    background: rgba(1, 180, 228, 0.1) !important;
+}
+
+.hero-section .rating-card.imdb {
+    background: rgba(245, 197, 24, 0.1) !important;
+}
+
+.hero-cover {
+    flex-shrink: 0;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.hero-cover img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.hero-cover .no-cover {
+    width: 100%;
+    height: 450px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--text-muted);
+}
+
+/* Crew-Info unter dem Cover */
+.crew-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.crew-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.crew-role {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted, rgba(228, 228, 231, 0.6));
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.crew-name {
+    font-size: 0.9rem;
+    color: var(--text-primary, #e4e4e7);
+    line-height: 1.4;
+}
+
+.hero-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.hero-meta-line {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-meta-line .fsk-badge {
+    display: inline-flex;
+    align-items: center;
+}
+
+.hero-meta-line .fsk-logo {
+    height: 20px;
+    width: auto;
+}
+
+.hero-overview {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.95);
+    max-width: 800px;
+}
+
+.hero-overview h3 {
+    color: var(--text-primary, #e4e4e7);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .hero-section {
+        flex-direction: column;
+        gap: 2rem;
+        padding: 2rem 1.5rem;
+    }
+    
+    .hero-cover {
+        width: 250px;
+        margin: 0 auto;
+    }
+    
+    .hero-content .film-header h2 {
+        font-size: 2rem;
+    }
+}
+
+/* Cover-Gallery transparent, damit Backdrop sichtbar bleibt */
+.cover-gallery {
+    background: transparent !important;
+}
+</style>
+
+<div class="detail-inline" itemscope itemtype="https://schema.org/Movie">
+    <!-- Hero Wrapper - für Backdrop-Begrenzung -->
+    <div class="hero-wrapper">
+        <!-- Backdrop Hintergrund -->
+        <?php if ($backdropUrl): ?>
+        <div class="backdrop-container">
+            <div class="backdrop-image" style="background-image: url('<?= htmlspecialchars($backdropUrl) ?>');"></div>
+            <div class="backdrop-overlay"></div>
+        </div>
+        <?php endif; ?>
+        
+        <!-- Hero Section - Cover + Film-Infos nebeneinander (TMDb-Style) -->
+        <section class="hero-section">
+        <!-- Cover links -->
+        <div class="hero-cover">
             <?php if ($frontCover): ?>
                 <a href="<?= htmlspecialchars($frontCover) ?>" 
                    data-fancybox="gallery" 
                    data-caption="<?= htmlspecialchars($dvd['title']) ?> - Frontcover">
-                    <img class="thumb" 
-                         src="<?= htmlspecialchars($frontCover) ?>" 
+                    <img src="<?= htmlspecialchars($frontCover) ?>" 
                          alt="<?= htmlspecialchars($dvd['title']) ?> Frontcover"
                          itemprop="image"
                          loading="lazy">
@@ -214,90 +692,125 @@ function generateStarRating(float $rating, int $maxStars = 5): string {
                 </div>
             <?php endif; ?>
             
-            <?php if ($backCover): ?>
-                <a href="<?= htmlspecialchars($backCover) ?>" 
-                   data-fancybox="gallery" 
-                   data-caption="<?= htmlspecialchars($dvd['title']) ?> - Backcover">
-                    <img class="thumb" 
-                         src="<?= htmlspecialchars($backCover) ?>" 
-                         alt="<?= htmlspecialchars($dvd['title']) ?> Backcover"
-                         loading="lazy">
-                </a>
+            <!-- Crew-Informationen (Regie, Drehbuch, etc.) -->
+            <?php if ($crew): ?>
+            <div class="crew-info">
+                <?php if (!empty($crew['director'])): ?>
+                <div class="crew-item">
+                    <span class="crew-role">Regie</span>
+                    <span class="crew-name"><?= htmlspecialchars($crew['director']) ?></span>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($crew['writers'])): ?>
+                <div class="crew-item">
+                    <span class="crew-role">Drehbuch</span>
+                    <span class="crew-name"><?= htmlspecialchars(implode(', ', $crew['writers'])) ?></span>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($crew['composer'])): ?>
+                <div class="crew-item">
+                    <span class="crew-role">Musik</span>
+                    <span class="crew-name"><?= htmlspecialchars($crew['composer']) ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+        </div>
+        
+        <!-- Film-Infos rechts -->
+        <div class="hero-content">
+            <!-- Film-Titel -->
+            <header class="film-header">
+                <h2 itemprop="name">
+                    <?= htmlspecialchars($dvd['title']) ?>
+                    <span class="film-year" itemprop="datePublished">(<?= htmlspecialchars((string)($dvd['year'] ?? '')) ?>)</span>
+                </h2>
+                
+                <!-- User-Status Badges (nur Gesehen) -->
+                <?php if (isset($_SESSION['user_id']) && $isWatched): ?>
+                    <div class="user-status-badges">
+                        <span class="badge badge-watched">
+                            <i class="bi bi-check-circle-fill"></i> Gesehen
+                        </span>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if ($boxsetParent): ?>
+                    <div class="boxset-breadcrumb">
+                        <i class="bi bi-collection"></i>
+                        Teil von: 
+                        <a href="#" class="toggle-detail" data-id="<?= $boxsetParent['id'] ?>">
+                            <?= htmlspecialchars($boxsetParent['title']) ?> (<?= $boxsetParent['year'] ?>)
+                        </a>
+                    </div>
+                <?php endif; ?>
+            </header>
+            
+            <!-- Meta-Infos in einer Zeile -->
+            <div class="hero-meta-line">
+                <?php if (isset($dvd['rating_age']) && $dvd['rating_age'] !== null && $dvd['rating_age'] !== ''): ?>
+                    <span class="fsk-badge">
+                        <?php
+                        $fskAge = (int)$dvd['rating_age'];
+                        $fskSvgPath = "assets/svg/fsk/fsk-{$fskAge}.svg";
+                        
+                        if (file_exists($fskSvgPath)): ?>
+                            <img src="<?= htmlspecialchars($fskSvgPath) ?>" 
+                                 alt="FSK <?= $fskAge ?>" 
+                                 class="fsk-logo"
+                                 title="Freigegeben ab <?= $fskAge ?> Jahren">
+                        <?php else: ?>
+                            <span class="fsk-text">FSK <?= $fskAge ?></span>
+                        <?php endif; ?>
+                    </span>
+                    <span>•</span>
+                <?php endif; ?>
+                
+                <?php if (!empty($dvd['genre'])): ?>
+                    <span itemprop="genre"><?= htmlspecialchars($dvd['genre']) ?></span>
+                    <span>•</span>
+                <?php endif; ?>
+                
+                <?php if (!empty($dvd['runtime'])): ?>
+                    <span itemprop="duration"><?= formatRuntime((int)$dvd['runtime']) ?></span>
+                <?php endif; ?>
+                
+                <?php if ($filmStats['created_at']): ?>
+                    <span>•</span>
+                    <span title="Hinzugefügt am">
+                        <i class="bi bi-calendar-plus"></i> <?= formatDate($filmStats['created_at']) ?>
+                    </span>
+                <?php endif; ?>
+            </div>
+            
+            <!-- TMDb Ratings -->
+            <?php 
+            if (getSetting('tmdb_show_ratings_details', '1') == '1') {
+                $film = $dvd;
+                include __DIR__ . '/rating-details.php';
+            }
+            ?>
+            
+            <!-- Handlung -->
+            <?php if (!empty($dvd['overview'])): ?>
+                <div class="hero-overview">
+                    <h3 style="margin-bottom: 0.75rem; font-size: 1.2rem;">Handlung</h3>
+                    <div itemprop="description">
+                        <?php
+                        if (function_exists('purifyHTML')) {
+                            echo purifyHTML($dvd['overview'], true);
+                        } else {
+                            echo nl2br(htmlspecialchars($dvd['overview'], ENT_QUOTES, 'UTF-8'));
+                        }
+                        ?>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
     </section>
-
-    <!-- Film-Informationen in Grid-Layout -->
-    <section class="film-info-grid">
-        <div class="film-info-item">
-            <span class="label">Genre</span>
-            <span class="value" itemprop="genre"><?= htmlspecialchars($dvd['genre'] ?? 'Unbekannt') ?></span>
-        </div>
-        
-        <?php if (!empty($dvd['runtime'])): ?>
-            <div class="film-info-item">
-                <span class="label">Laufzeit</span>
-                <span class="value" itemprop="duration"><?= formatRuntime((int)$dvd['runtime']) ?></span>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (!empty($dvd['rating_age'])): ?>
-            <div class="film-info-item">
-                <span class="label">Altersfreigabe</span>
-                <span class="value fsk-badge">
-                    <?php
-                    $fskAge = (int)$dvd['rating_age'];
-                    $fskSvgPath = "assets/svg/fsk/fsk-{$fskAge}.svg";
-                    
-                    if (file_exists($fskSvgPath)): ?>
-                        <img src="<?= htmlspecialchars($fskSvgPath) ?>" 
-                             alt="FSK <?= $fskAge ?>" 
-                             class="fsk-logo"
-                             title="Freigegeben ab <?= $fskAge ?> Jahren">
-                    <?php else: ?>
-                        <span class="fsk-text">FSK <?= $fskAge ?></span>
-                    <?php endif; ?>
-                </span>
-            </div>
-        <?php endif; ?>
-        
-        <?php if (!empty($dvd['collection_type'])): ?>
-            <div class="film-info-item">
-                <span class="label">Sammlung</span>
-                <span class="value"><?= htmlspecialchars($dvd['collection_type']) ?></span>
-            </div>
-        <?php endif; ?>
-        
-        <div class="film-info-item">
-            <span class="label">Aufrufe</span>
-            <span class="value"><?= number_format($filmStats['view_count']) ?></span>
-        </div>
-        
-        <?php if ($filmStats['created_at']): ?>
-            <div class="film-info-item">
-                <span class="label">Hinzugefügt</span>
-                <span class="value"><?= formatDate($filmStats['created_at']) ?></span>
-            </div>
-        <?php endif; ?>
-    </section>
-
-    <!-- Handlung -->
-    <?php if (!empty($dvd['overview'])): ?>
-        <section class="meta-card full-width">
-            <h3><i class="bi bi-card-text"></i> Handlung</h3>
-            <div class="overview-text" itemprop="description">
-                <?= nl2br(htmlspecialchars($dvd['overview'])) ?>
-            </div>
-        </section>
-    <?php endif; ?>
-
-    <!-- TMDb Ratings -->
-    <?php 
-    if (getSetting('tmdb_show_ratings_details', '1') == '1') {
-        $film = $dvd; // rating-details.php erwartet $film Variable
-        include __DIR__ . '/rating-details.php';
-    }
-    ?>
+    </div><!-- Ende hero-wrapper -->
 
     <!-- Schauspieler -->
     <?php if (!empty($actors)): ?>
@@ -318,6 +831,70 @@ function generateStarRating(float $rating, int $maxStars = 5): string {
                 </ul>
             </div>
         </section>
+    <?php endif; ?>
+
+    <!-- Staffeln & Episoden (für Serien) -->
+    <?php if (!empty($seasons)): ?>
+        <section class="meta-card">
+            <h3>
+                <i class="bi bi-collection-play"></i> 
+                Staffeln & Episoden
+                <span class="badge bg-primary ms-2"><?= count($seasons) ?> Staffel<?= count($seasons) > 1 ? 'n' : '' ?></span>
+                <span class="badge bg-secondary ms-1"><?= $totalEpisodes ?> Episoden</span>
+            </h3>
+            
+            <div class="seasons-accordion">
+                <?php foreach ($seasons as $sIndex => $season): ?>
+                <div class="season-section">
+                    <div class="season-header" data-season="<?= $season['season_number'] ?>">
+                        <div class="season-title">
+                            <i class="bi bi-caret-right-fill season-caret" data-caret="<?= $season['season_number'] ?>"></i>
+                            <strong>Staffel <?= $season['season_number'] ?></strong>
+                            <span class="text-muted ms-2">(<?= count($season['episodes']) ?> Episoden)</span>
+                        </div>
+                        <?php if (!empty($season['air_date'])): ?>
+                        <small class="text-muted"><?= date('Y', strtotime($season['air_date'])) ?></small>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="season-content" data-content="<?= $season['season_number'] ?>" style="display: <?= $sIndex === 0 ? 'block' : 'none' ?>">
+                        <?php if (!empty($season['overview'])): ?>
+                        <div class="season-overview">
+                            <p class="text-muted small"><?= htmlspecialchars($season['overview']) ?></p>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <div class="episodes-list">
+                            <?php foreach ($season['episodes'] as $episode): ?>
+                            <div class="episode-item">
+                                <div class="episode-header">
+                                    <span class="episode-badge">E<?= $episode['episode_number'] ?></span>
+                                    <strong class="episode-title"><?= htmlspecialchars($episode['title']) ?></strong>
+                                    <?php if (!empty($episode['runtime'])): ?>
+                                    <span class="episode-runtime text-muted"><?= $episode['runtime'] ?> Min.</span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if (!empty($episode['overview'])): ?>
+                                <div class="episode-overview">
+                                    <p class="text-muted small"><?= htmlspecialchars($episode['overview']) ?></p>
+                                </div>
+                                <?php endif; ?>
+                                <?php if (!empty($episode['air_date'])): ?>
+                                <div class="episode-meta">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar"></i> <?= date('d.m.Y', strtotime($episode['air_date'])) ?>
+                                    </small>
+                                </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        
     <?php endif; ?>
 
     <!-- BoxSet-Inhalte -->
@@ -405,6 +982,154 @@ function generateStarRating(float $rating, int $maxStars = 5): string {
     </div>
     <?php endif; ?>
 
+<script>
+// ===================================================================
+// ALTERSVERIFIZIERUNG - Event-Delegation auf Document-Level
+// Funktioniert auch bei AJAX-Loads
+// ===================================================================
+(function() {
+    console.log('🎬 Trailer Age-Verification Script geladen');
+    
+    // Event-Delegation auf document für trailer-box clicks
+    document.addEventListener('click', function(e) {
+        const trailerBox = e.target.closest('.trailer-box');
+        if (!trailerBox) return;
+        
+        // Prüfe ob es wirklich ein Trailer in film-view ist (nicht in trailers.php)
+        const isFilmView = trailerBox.closest('.meta-card') !== null;
+        if (!isFilmView) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const ratingAge = parseInt(trailerBox.dataset.ratingAge || 0);
+        const trailerUrl = trailerBox.dataset.src;
+        
+        console.log('🎬 Trailer geklickt - FSK:', ratingAge);
+        
+        // Cookie-Check
+        function hasAgeConfirmation() {
+            return document.cookie.includes('age_confirmed_18=true');
+        }
+        
+        if (ratingAge >= 18 && !hasAgeConfirmation()) {
+            console.log('🔞 Zeige Altersverifizierung');
+            const ageModal = document.getElementById('ageVerificationModal');
+            if (ageModal) {
+                ageModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // Speichere Trailer-Info für Bestätigung
+                window._pendingTrailerBox = trailerBox;
+                window._pendingTrailerUrl = trailerUrl;
+            } else {
+                console.error('❌ Age Modal nicht gefunden');
+            }
+        } else {
+            console.log('✅ Spiele Trailer direkt ab');
+            playTrailerNow(trailerBox, trailerUrl);
+        }
+    }, true); // useCapture = true, damit wir VOR anderen Handlern greifen
+    
+    // Age-Verification Buttons Setup
+    function setupAgeButtons() {
+        const ageConfirmBtn = document.getElementById('ageConfirmBtn');
+        const ageDenyBtn = document.getElementById('ageDenyBtn');
+        const ageModal = document.getElementById('ageVerificationModal');
+        
+        if (!ageModal) return;
+        
+        if (ageConfirmBtn && !ageConfirmBtn.dataset.listenerAdded) {
+            ageConfirmBtn.dataset.listenerAdded = 'true';
+            ageConfirmBtn.addEventListener('click', function() {
+                console.log('✅ Alter bestätigt');
+                
+                // Cookie setzen (30 Tage)
+                const expires = new Date();
+                expires.setDate(expires.getDate() + 30);
+                document.cookie = `age_confirmed_18=true; expires=${expires.toUTCString()}; path=/; SameSite=Strict`;
+                
+                ageModal.style.display = 'none';
+                document.body.style.overflow = '';
+                
+                // Trailer abspielen
+                if (window._pendingTrailerBox && window._pendingTrailerUrl) {
+                    playTrailerNow(window._pendingTrailerBox, window._pendingTrailerUrl);
+                    window._pendingTrailerBox = null;
+                    window._pendingTrailerUrl = null;
+                }
+            });
+        }
+        
+        if (ageDenyBtn && !ageDenyBtn.dataset.listenerAdded) {
+            ageDenyBtn.dataset.listenerAdded = 'true';
+            ageDenyBtn.addEventListener('click', function() {
+                console.log('❌ Alter abgelehnt');
+                ageModal.style.display = 'none';
+                document.body.style.overflow = '';
+                window._pendingTrailerBox = null;
+                window._pendingTrailerUrl = null;
+            });
+        }
+        
+        // ESC Key
+        if (!ageModal.dataset.escListenerAdded) {
+            ageModal.dataset.escListenerAdded = 'true';
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && ageModal.style.display === 'flex') {
+                    ageModal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            });
+            
+            // Click outside
+            ageModal.addEventListener('click', function(e) {
+                if (e.target === ageModal) {
+                    ageModal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            });
+        }
+    }
+    
+    // Trailer abspielen
+    function playTrailerNow(box, url) {
+        if (!url) return;
+        
+        const container = box.closest('.trailer-container');
+        if (!container) return;
+        
+        // Convert URL to embed
+        let embedUrl = url;
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
+            if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1`;
+        }
+        
+        // Iframe erstellen
+        const iframe = document.createElement('iframe');
+        iframe.src = embedUrl;
+        iframe.width = '100%';
+        iframe.style.aspectRatio = '16/9';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '8px';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        
+        box.style.display = 'none';
+        container.appendChild(iframe);
+        
+        console.log('▶️ Trailer wird abgespielt');
+    }
+    
+    // Setup sofort und bei DOM-ready
+    setupAgeButtons();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupAgeButtons);
+    }
+})();
+</script>
+
     <!-- User-Bewertung (falls eingeloggt) -->
     <section class="meta-card user-rating-card">
         <h3><i class="bi bi-star-fill"></i> Ihre Bewertung</h3>
@@ -448,27 +1173,6 @@ function generateStarRating(float $rating, int $maxStars = 5): string {
                             <i class="bi bi-check-circle"></i> Speichern
                         </button>
                     </div>
-                    
-                    <!-- Community Bewertung -->
-                    <?php if ($averageRating > 0): ?>
-                    <div class="rating-card community">
-                        <div class="rating-logo">
-                            <i class="bi bi-people-fill" style="font-size: 32px; color: #4caf50;"></i>
-                        </div>
-                        <div class="rating-score" style="color: #4caf50;">
-                            <?= $averageRating ?><span class="rating-max">/5</span>
-                        </div>
-                        <div class="stars-display">
-                            <?= generateStarRating($averageRating) ?>
-                        </div>
-                        <div class="rating-votes">
-                            <?= $ratingCount ?> Bewertung<?= $ratingCount !== 1 ? 'en' : '' ?>
-                        </div>
-                        <div class="rating-meta">
-                            Community-Durchschnitt
-                        </div>
-                    </div>
-                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="login-required">
@@ -490,290 +1194,30 @@ function generateStarRating(float $rating, int $maxStars = 5): string {
 
     <!-- Film-Aktionen -->
     <section class="film-actions">
-        <button class="close-detail-button btn btn-secondary" onclick="closeDetail()">
-            <i class="bi bi-x-lg"></i> Schließen
+        <button class="action-btn action-close" onclick="closeDetail()">
+            <i class="bi bi-x-lg"></i>
+            <span>Schließen</span>
         </button>
         
         <?php if (isset($_SESSION['user_id'])): ?>
-            <button class="btn btn-outline-primary add-to-wishlist <?= $isOnWishlist ? 'active' : '' ?>" 
-                    data-film-id="<?= $dvd['id'] ?>">
-                <i class="bi bi-heart<?= $isOnWishlist ? '-fill' : '' ?>"></i>
-                <?= $isOnWishlist ? 'Auf Wunschliste' : 'Zur Wunschliste' ?>
-            </button>
-            
-            <button class="btn btn-outline-secondary mark-as-watched <?= $isWatched ? 'active' : '' ?>" 
+            <button class="action-btn action-watched mark-as-watched <?= $isWatched ? 'active' : '' ?>" 
                     data-film-id="<?= $dvd['id'] ?>">
                 <i class="bi bi-check-circle<?= $isWatched ? '-fill' : '' ?>"></i>
-                <?= $isWatched ? 'Gesehen' : 'Als gesehen markieren' ?>
+                <span><?= $isWatched ? 'Gesehen' : 'Als gesehen markieren' ?></span>
             </button>
         <?php endif; ?>
         
-        <button class="btn btn-outline-info share-film" data-film-id="<?= $dvd['id'] ?>" data-film-title="<?= htmlspecialchars($dvd['title']) ?>">
-            <i class="bi bi-share"></i> Teilen
+        <button class="action-btn action-share share-film" 
+                data-film-id="<?= $dvd['id'] ?>" 
+                data-film-title="<?= htmlspecialchars($dvd['title']) ?>">
+            <i class="bi bi-share"></i>
+            <span>Teilen</span>
         </button>
     </section>
 </div>
 
 <!-- Enhanced JavaScript -->
 <script>
-(function() {
-    // Trailer-Funktionalität mit Age-Verification (sofort ausgeführt)
-    const trailerContainer = document.querySelector('.trailer-container');
-    const ageModal = document.getElementById('ageVerificationModal');
-    const ageConfirmBtn = document.getElementById('ageConfirmBtn');
-    const ageDenyBtn = document.getElementById('ageDenyBtn');
-    
-    if (trailerContainer) {
-        // Event Delegation - fängt Clicks auf Child-Elemente
-        trailerContainer.addEventListener('click', function(e) {
-            const trailerBox = e.target.closest('.trailer-box');
-            if (!trailerBox) return; // Nicht auf trailer-box geklickt
-            
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const ratingAge = parseInt(trailerBox.dataset.ratingAge || 0);
-            const trailerUrl = trailerBox.dataset.src;
-            
-            // Cookie-Check
-            function hasAgeConfirmation() {
-                return document.cookie.includes('age_confirmed_18=true');
-            }
-            
-            // Cookie setzen (30 Tage)
-            function setAgeConfirmation() {
-                const expires = new Date();
-                expires.setDate(expires.getDate() + 30);
-                document.cookie = `age_confirmed_18=true; expires=${expires.toUTCString()}; path=/; SameSite=Strict`;
-            }
-            
-            if (ratingAge >= 18 && !hasAgeConfirmation()) {
-                // Zeige Age-Verification
-                if (ageModal) {
-                    ageModal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                }
-            } else {
-                // Spiele Trailer ab
-                playTrailer(trailerBox, trailerUrl);
-            }
-            
-            function playTrailer(box, url) {
-                if (!url) return;
-                
-                const container = box.closest('.trailer-container');
-                const embedUrl = convertToEmbedUrl(url);
-                
-                const iframe = document.createElement('iframe');
-                iframe.src = embedUrl;
-                iframe.width = '100%';
-                iframe.style.aspectRatio = '16/9';
-                iframe.style.border = 'none';
-                iframe.style.borderRadius = '8px';
-                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-                iframe.allowFullscreen = true;
-                
-                box.style.display = 'none';
-                container.appendChild(iframe);
-            }
-            
-            function convertToEmbedUrl(url) {
-                // YouTube
-                if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                    const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
-                    if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-                }
-                // Vimeo
-                if (url.includes('vimeo.com')) {
-                    const videoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
-                    if (videoId) return `https://player.vimeo.com/video/${videoId}?autoplay=1`;
-                }
-                // Dailymotion
-                if (url.includes('dailymotion.com')) {
-                    const videoId = url.match(/dailymotion\.com\/video\/([^_]+)/)?.[1];
-                    if (videoId) return `https://www.dailymotion.com/embed/video/${videoId}?autoplay=1`;
-                }
-                return url;
-            }
-        });
-        
-        // Bestätigen
-        if (ageConfirmBtn) {
-            ageConfirmBtn.addEventListener('click', function() {
-                const expires = new Date();
-                expires.setDate(expires.getDate() + 30);
-                document.cookie = `age_confirmed_18=true; expires=${expires.toUTCString()}; path=/; SameSite=Strict`;
-                
-                if (ageModal) {
-                    ageModal.style.display = 'none';
-                    document.body.style.overflow = '';
-                }
-                
-                // Spiele Trailer ab
-                const trailerBox = document.querySelector('.trailer-box');
-                const trailerUrl = trailerBox?.dataset.src;
-                if (trailerBox && trailerUrl) {
-                    const container = trailerBox.closest('.trailer-container');
-                    const embedUrl = (function(url) {
-                        if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                            const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
-                            if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-                        }
-                        if (url.includes('vimeo.com')) {
-                            const videoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
-                            if (videoId) return `https://player.vimeo.com/video/${videoId}?autoplay=1`;
-                        }
-                        return url;
-                    })(trailerUrl);
-                    
-                    const iframe = document.createElement('iframe');
-                    iframe.src = embedUrl;
-                    iframe.width = '100%';
-                    iframe.style.aspectRatio = '16/9';
-                    iframe.style.border = 'none';
-                    iframe.style.borderRadius = '8px';
-                    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-                    iframe.allowFullscreen = true;
-                    
-                    trailerBox.style.display = 'none';
-                    container.appendChild(iframe);
-                }
-            });
-        }
-        
-        // Ablehnen
-        if (ageDenyBtn) {
-            ageDenyBtn.addEventListener('click', function() {
-                if (ageModal) {
-                    ageModal.style.display = 'none';
-                    document.body.style.overflow = '';
-                }
-            });
-        }
-        
-        // ESC-Taste
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && ageModal && ageModal.style.display === 'flex') {
-                ageModal.style.display = 'none';
-                document.body.style.overflow = '';
-            }
-        });
-        
-        // Click außerhalb
-        if (ageModal) {
-            ageModal.addEventListener('click', function(e) {
-                if (e.target === ageModal) {
-                    ageModal.style.display = 'none';
-                    document.body.style.overflow = '';
-                }
-            });
-        }
-    }
-    
-    // Rating-System mit Debug-Ausgaben
-    const ratingStars = document.querySelectorAll('.rating-star');
-    const saveRatingBtn = document.querySelector('.save-rating');
-    const ratingDisplay = document.querySelector('.rating-display');
-    const currentRating = parseFloat(document.querySelector('.star-rating-input')?.dataset.currentRating || 0);
-    let selectedRating = currentRating;
-    
-    console.log('Rating System Debug:', {
-        ratingStars: ratingStars.length,
-        saveRatingBtn: !!saveRatingBtn,
-        ratingDisplay: !!ratingDisplay,
-        currentRating: currentRating
-    });
-    
-    ratingStars.forEach((star, index) => {
-        star.addEventListener('mouseenter', function() {
-            console.log('Mouse enter star:', index + 1);
-            const rating = parseInt(this.dataset.rating);
-            highlightStars(rating);
-        });
-        
-        star.addEventListener('mouseleave', function() {
-            console.log('Mouse leave star');
-            highlightStars(selectedRating);
-        });
-        
-        star.addEventListener('click', function() {
-            selectedRating = parseInt(this.dataset.rating);
-            console.log('Star clicked, selected rating:', selectedRating);
-            highlightStars(selectedRating);
-            if (saveRatingBtn) {
-                saveRatingBtn.style.display = 'inline-block';
-                console.log('Save button shown');
-            }
-            if (ratingDisplay) {
-                ratingDisplay.textContent = selectedRating + '/5';
-            }
-        });
-    });
-    
-    function highlightStars(rating) {
-        ratingStars.forEach((star, index) => {
-            if (index < rating) {
-                star.classList.remove('bi-star');
-                star.classList.add('bi-star-fill');
-            } else {
-                star.classList.remove('bi-star-fill');
-                star.classList.add('bi-star');
-            }
-        });
-    }
-    
-    // Rating speichern
-    if (saveRatingBtn) {
-        saveRatingBtn.addEventListener('click', function() {
-            const filmId = document.querySelector('.star-rating-input').dataset.filmId;
-            saveUserRating(filmId, selectedRating);
-        });
-    }
-    
-    // Wishlist-Funktionalität
-    const wishlistBtn = document.querySelector('.add-to-wishlist');
-    if (wishlistBtn) {
-        wishlistBtn.addEventListener('click', function() {
-            const filmId = this.dataset.filmId;
-            toggleWishlist(filmId, this);
-        });
-    }
-    
-    // Als gesehen markieren
-    const watchedBtn = document.querySelector('.mark-as-watched');
-    if (watchedBtn) {
-        watchedBtn.addEventListener('click', function() {
-            const filmId = this.dataset.filmId;
-            toggleWatched(filmId, this);
-        });
-    }
-    
-    // Share-Funktionalität
-    const shareBtn = document.querySelector('.share-film');
-    if (shareBtn) {
-        shareBtn.addEventListener('click', function() {
-            const filmId = this.dataset.filmId;
-            const filmTitle = this.dataset.filmTitle;
-            shareFilm(filmId, filmTitle);
-        });
-    }
-    
-    // Lazy Loading für zusätzliche Bilder
-    const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.classList.add('fade-in');
-                }
-            });
-        });
-        
-        lazyImages.forEach(img => imageObserver.observe(img));
-    }
-})(); // IIFE - sofort ausgeführt
-
 // AJAX-Funktionen
 async function saveUserRating(filmId, rating) {
     try {
@@ -789,41 +1233,13 @@ async function saveUserRating(filmId, rating) {
             showNotification('Bewertung gespeichert!', 'success');
             document.querySelector('.save-rating').style.display = 'none';
             
-            // Seite nach kurzer Zeit neu laden um Community-Rating zu aktualisieren
+            // Seite neu laden um Bewertung anzuzeigen
             setTimeout(() => {
                 location.reload();
             }, 1500);
         }
     } catch (error) {
         showNotification('Fehler beim Speichern der Bewertung', 'error');
-    }
-}
-
-async function toggleWishlist(filmId, button) {
-    try {
-        const response = await fetch('api/toggle-wishlist.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ film_id: filmId })
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            const icon = button.querySelector('i');
-            if (result.added) {
-                button.innerHTML = '<i class="bi bi-heart-fill"></i> Auf Wunschliste';
-                button.classList.add('active');
-                showNotification('Zur Wunschliste hinzugefügt!', 'success');
-            } else {
-                button.innerHTML = '<i class="bi bi-heart"></i> Zur Wunschliste';
-                button.classList.remove('active');
-                showNotification('Von Wunschliste entfernt!', 'info');
-            }
-        }
-    } catch (error) {
-        showNotification('Fehler bei Wunschliste', 'error');
     }
 }
 
@@ -840,11 +1256,11 @@ async function toggleWatched(filmId, button) {
         if (response.ok) {
             const result = await response.json();
             if (result.watched) {
-                button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Gesehen';
+                button.innerHTML = '<i class="bi bi-check-circle-fill"></i><span>Gesehen</span>';
                 button.classList.add('active');
                 showNotification('Als gesehen markiert!', 'success');
             } else {
-                button.innerHTML = '<i class="bi bi-check-circle"></i> Als gesehen markieren';
+                button.innerHTML = '<i class="bi bi-check-circle"></i><span>Als gesehen markieren</span>';
                 button.classList.remove('active');
                 showNotification('Markierung entfernt!', 'info');
             }
@@ -936,798 +1352,3 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 </script>
-
-<style>
-/* Enhanced Film View Styles */
-.film-header {
-    margin-bottom: var(--space-xl);
-    text-align: center;
-}
-
-.film-year {
-    color: var(--text-glass);
-    opacity: 0.8;
-    font-weight: 400;
-}
-
-/* Cover Gallery - Nebeneinander */
-.cover-gallery {
-    margin: var(--space-lg, 1.5rem) 0;
-}
-
-.cover-pair {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-md, 1rem);
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.cover-pair a,
-.cover-pair .no-cover {
-    display: block;
-    border-radius: var(--radius-md, 8px);
-    overflow: hidden;
-    transition: transform 0.3s ease;
-}
-
-.cover-pair a:hover {
-    transform: scale(1.02);
-}
-
-.cover-pair img.thumb {
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: var(--radius-md, 8px);
-}
-
-.cover-pair .no-cover {
-    aspect-ratio: 2/3;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-tertiary, rgba(255, 255, 255, 0.05));
-    border: 2px dashed var(--border-color, rgba(255, 255, 255, 0.2));
-    color: var(--text-muted, rgba(228, 228, 231, 0.5));
-}
-
-.cover-pair .no-cover i {
-    font-size: 3rem;
-    margin-bottom: var(--space-sm, 0.5rem);
-}
-
-/* Responsive - Mobile untereinander */
-@media (max-width: 600px) {
-    .cover-pair {
-        grid-template-columns: 1fr;
-        max-width: 300px;
-    }
-}
-
-.user-status-badges {
-    display: flex;
-    gap: var(--space-sm);
-    justify-content: center;
-    margin-top: var(--space-md);
-}
-
-.badge {
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-lg);
-    font-size: 0.85rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-}
-
-.badge-wishlist {
-    background: linear-gradient(135deg, #e91e63, #ad1457);
-    color: white;
-}
-
-.badge-watched {
-    background: linear-gradient(135deg, #4caf50, #2e7d32);
-    color: white;
-}
-
-.boxset-breadcrumb {
-    margin-top: var(--space-sm);
-    font-size: 0.9rem;
-    color: var(--text-glass);
-}
-
-.boxset-breadcrumb a {
-    color: var(--text-white);
-    text-decoration: underline;
-}
-
-.film-rating {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-md);
-    margin-top: var(--space-md);
-}
-
-.community-rating, .user-rating {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.rating-label {
-    font-size: 0.9rem;
-    color: var(--text-glass);
-    font-weight: 500;
-}
-
-.stars {
-    display: flex;
-    gap: 2px;
-}
-
-.star-filled {
-    color: #ffd700;
-}
-
-.star-half {
-    color: #ffd700;
-}
-
-.star-empty {
-    color: rgba(255, 255, 255, 0.3);
-}
-
-.no-cover {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--glass-bg);
-    border: 2px dashed var(--glass-border);
-    border-radius: var(--radius-md);
-    height: 240px;
-    width: 160px;
-    color: var(--text-glass);
-    margin: 0 auto;
-}
-
-.no-cover i {
-    font-size: 3rem;
-    margin-bottom: var(--space-sm);
-    opacity: 0.5;
-}
-
-.meta-card.full-width {
-    grid-column: 1 / -1;
-}
-
-.meta-card h3 {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    color: var(--text-white);
-    font-size: 1.2rem;
-    margin-bottom: var(--space-lg);
-    border-bottom: 1px solid var(--glass-border);
-    padding-bottom: var(--space-sm);
-}
-
-.overview-text {
-    line-height: 1.7;
-    font-size: 1rem;
-}
-
-.actor-item {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: var(--space-sm);
-    padding: var(--space-sm);
-    background: var(--glass-bg);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--glass-border);
-    transition: all var(--transition-fast);
-}
-
-.actor-item:hover {
-    background: var(--glass-bg-strong);
-    transform: translateY(-1px);
-}
-
-.actor-name {
-    font-weight: 600;
-    color: var(--text-white);
-}
-
-.actor-role {
-    font-size: 0.9rem;
-    color: var(--text-glass);
-    opacity: 0.8;
-}
-
-.boxset-children-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: var(--space-md);
-}
-
-.boxset-child-item {
-    background: var(--glass-bg);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    border: 1px solid var(--glass-border);
-    transition: transform var(--transition-fast);
-}
-
-.boxset-child-item:hover {
-    transform: translateY(-4px);
-}
-
-.boxset-child-item a {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-}
-
-.child-cover {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-}
-
-.child-info {
-    padding: var(--space-sm);
-}
-
-.child-info h4 {
-    font-size: 0.9rem;
-    margin-bottom: var(--space-xs);
-    color: var(--text-white);
-}
-
-.child-info p {
-    font-size: 0.8rem;
-    color: var(--text-glass);
-    margin-bottom: 2px;
-}
-
-.trailer-container {
-    position: relative;
-}
-
-.trailer-box {
-    position: relative;
-    cursor: pointer;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    transition: transform var(--transition-fast);
-}
-
-.trailer-box:hover {
-    transform: scale(1.02);
-}
-
-.trailer-overlay {
-    position: absolute;
-    bottom: var(--space-md);
-    left: var(--space-md);
-    right: var(--space-md);
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(10px);
-    padding: var(--space-sm);
-    border-radius: var(--radius-sm);
-    text-align: center;
-    color: var(--text-white);
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-}
-
-.trailer-box:hover .trailer-overlay {
-    opacity: 1;
-}
-
-.play-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 60px;
-    height: 60px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    color: var(--color-primary);
-    transition: all var(--transition-fast);
-}
-
-.trailer-box:hover .play-icon {
-    background: rgba(255, 255, 255, 1);
-    transform: translate(-50%, -50%) scale(1.1);
-}
-
-.user-rating-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-}
-
-.rating-input {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-}
-
-.star-rating-input {
-    display: flex;
-    gap: 4px;
-}
-
-.rating-star {
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: rgba(255, 255, 255, 0.3);
-    transition: color var(--transition-fast);
-}
-
-.rating-star:hover,
-.rating-star.bi-star-fill {
-    color: #ffd700;
-}
-
-.rating-display {
-    font-weight: 600;
-    color: var(--text-white);
-    min-width: 120px;
-}
-
-.film-actions {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: var(--space-xl);
-    padding-top: var(--space-xl);
-    border-top: 1px solid var(--glass-border);
-}
-
-.btn.active {
-    background: var(--gradient-primary);
-    color: var(--text-white);
-    border-color: transparent;
-}
-
-/* Film-Info Grid Styles */
-.film-info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-md);
-    margin: var(--space-lg) 0;
-}
-
-.film-info-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
-    gap: var(--space-xs);
-    transition: all var(--transition-fast);
-}
-
-.film-info-item:hover {
-    background: var(--glass-bg-strong);
-    transform: translateY(-2px);
-}
-
-.film-info-item .label {
-    font-size: 0.9rem;
-    color: var(--text-glass);
-    opacity: 0.8;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.film-info-item .value {
-    font-size: 1rem;
-    color: var(--text-white);
-    font-weight: 600;
-}
-
-/* FSK-Logo Styles */
-.fsk-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.fsk-logo {
-    height: 24px;
-    width: auto;
-    max-width: 40px;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-}
-
-.fsk-text {
-    background: var(--gradient-primary);
-    color: var(--text-white);
-    padding: 2px 8px;
-    border-radius: var(--radius-sm);
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-@media (max-width: 768px) {
-    .film-rating {
-        gap: var(--space-sm);
-    }
-    
-    .community-rating, .user-rating {
-        flex-direction: column;
-        gap: var(--space-xs);
-    }
-    
-    .user-rating-section {
-        align-items: flex-start;
-    }
-    
-    .rating-input {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .film-actions {
-        flex-direction: column;
-    }
-    
-    .film-actions .btn {
-        width: 100%;
-    }
-    
-    .boxset-children-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: var(--space-sm);
-    }
-    
-    .film-info-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: var(--space-sm);
-    }
-    
-    .user-status-badges {
-        flex-direction: column;
-        align-items: center;
-    }
-}
-
-.fade-in {
-    animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.notification {
-    animation: slideInRight 0.3s ease-out;
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-/* Age Verification Modal Styles */
-.age-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(10px);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.age-modal-content {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border: 2px solid #f39c12;
-    border-radius: 16px;
-    max-width: 500px;
-    width: 90%;
-    padding: 2rem;
-    box-shadow: 0 10px 40px rgba(243, 156, 18, 0.3);
-    animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.age-modal-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.age-modal-header i {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
-    display: block;
-}
-
-.age-modal-header h3 {
-    color: #fff;
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-.age-modal-body {
-    text-align: center;
-    color: #bdc3c7;
-    margin-bottom: 1.5rem;
-}
-
-.age-warning {
-    background: rgba(243, 156, 18, 0.2);
-    border: 1px solid #f39c12;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    color: #f39c12;
-}
-
-.age-warning strong {
-    color: #fff;
-    font-size: 1.2rem;
-}
-
-.age-question {
-    font-size: 1.1rem;
-    margin-top: 1rem;
-    color: #fff;
-}
-
-.age-modal-actions {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.age-modal-actions .btn {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.age-confirm {
-    background: #27ae60;
-    color: white;
-}
-
-.age-confirm:hover {
-    background: #229954;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
-}
-
-.age-deny {
-    background: #e74c3c;
-    color: white;
-}
-
-.age-deny:hover {
-    background: #c0392b;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
-}
-
-.age-disclaimer {
-    text-align: center;
-    color: #7f8c8d;
-    font-size: 0.85rem;
-    margin: 0;
-}
-
-@media (max-width: 576px) {
-    .age-modal-content { padding: 1.5rem; }
-    .age-modal-actions { flex-direction: column; }
-    .age-modal-header i { font-size: 2.5rem; }
-}
-
-/* User Rating Card - TMDb Style */
-.user-rating-card {
-    margin: var(--space-lg, 1.5rem) 0;
-}
-
-.user-rating-card .rating-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-md, 1rem);
-}
-
-.user-rating-card .rating-card {
-    padding: var(--space-md, 1rem);
-    background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-    border-radius: var(--radius-md, 8px);
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.user-rating-card .rating-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.user-rating-card .rating-logo {
-    margin-bottom: var(--space-sm, 0.5rem);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 40px;
-}
-
-.user-rating-card .rating-score {
-    font-size: 2.5rem;
-    font-weight: 700;
-    line-height: 1;
-    margin: var(--space-sm, 0.5rem) 0;
-}
-
-.user-rating-card .rating-max {
-    font-size: 1.2rem;
-    opacity: 0.6;
-    font-weight: 400;
-}
-
-.user-rating-card .stars-display {
-    font-size: 1.2rem;
-    color: var(--accent-primary, #ffd700);
-    margin: var(--space-xs, 0.35rem) 0;
-}
-
-.user-rating-card .rating-votes {
-    font-size: 0.9rem;
-    color: var(--text-secondary, rgba(228, 228, 231, 0.8));
-    margin-top: var(--space-xs, 0.35rem);
-}
-
-.user-rating-card .rating-meta {
-    font-size: 0.85rem;
-    color: var(--text-muted, rgba(228, 228, 231, 0.6));
-    margin-top: var(--space-xs, 0.35rem);
-}
-
-/* Star Rating Input - Interaktiv */
-.star-rating-input {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-    margin: var(--space-md, 1rem) 0;
-}
-
-.star-rating-input .rating-star {
-    font-size: 1.8rem;
-    cursor: pointer;
-    color: var(--text-muted, rgba(228, 228, 231, 0.3));
-    transition: all 0.2s ease;
-}
-
-.star-rating-input .rating-star:hover,
-.star-rating-input .rating-star.hover {
-    color: var(--accent-primary, #ffd700);
-    transform: scale(1.1);
-}
-
-.star-rating-input .rating-star.bi-star-fill {
-    color: var(--accent-primary, #ffd700);
-}
-
-/* Save Button */
-.btn-rate {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs, 0.35rem);
-    padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
-    background: var(--accent-primary, #667eea);
-    color: white;
-    border: none;
-    border-radius: var(--radius-sm, 6px);
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: var(--space-sm, 0.5rem);
-}
-
-.btn-rate:hover {
-    background: var(--accent-hover, #764ba2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-/* Login Required */
-.login-required {
-    text-align: center;
-    padding: var(--space-xl, 2rem);
-}
-
-.login-required i {
-    font-size: 3rem;
-    color: var(--accent-primary, #667eea);
-    margin-bottom: var(--space-md, 1rem);
-}
-
-.login-required p {
-    margin: var(--space-md, 1rem) 0;
-    color: var(--text-secondary, rgba(228, 228, 231, 0.8));
-}
-
-.btn-login {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs, 0.35rem);
-    padding: var(--space-sm, 0.5rem) var(--space-lg, 1.5rem);
-    background: var(--accent-primary, #667eea);
-    color: white;
-    text-decoration: none;
-    border-radius: var(--radius-sm, 6px);
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-login:hover {
-    background: var(--accent-hover, #764ba2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-    .user-rating-card .rating-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .user-rating-card .rating-score {
-        font-size: 2rem;
-    }
-}
-
-</style>

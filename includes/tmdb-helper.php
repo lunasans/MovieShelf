@@ -122,6 +122,103 @@ class TMDbHelper {
      * @param string $coverId Cover-ID (z.B. "13geister")
      * @return bool Success
      */
+    
+    /**
+     * Suche Filme auf TMDb - gibt ALLE Ergebnisse zurück
+     * 
+     * @param string $title Film-Titel
+     * @param int $year Jahr (optional)
+     * @param int $limit Max. Anzahl Ergebnisse (Standard: 20)
+     * @return array|null Array mit Film-Ergebnissen
+     */
+    public function searchMovies($title, $year = null, $limit = 20) {
+        try {
+            $searchUrl = $this->baseUrl . '/search/movie';
+            $searchParams = [
+                'api_key' => $this->apiKey,
+                'query' => $title,
+                'language' => 'de-DE',
+                'page' => 1
+            ];
+            
+            if ($year) {
+                $searchParams['year'] = $year;
+            }
+            
+            $searchResult = $this->makeRequest($searchUrl, $searchParams);
+            
+            if (!$searchResult || empty($searchResult['results'])) {
+                return [];
+            }
+            
+            // Alle Ergebnisse formatieren
+            $movies = array_slice($searchResult['results'], 0, $limit);
+            
+            $formatted = array_map(function($movie) {
+                // Genre IDs zu Namen konvertieren
+                $genreNames = $this->getGenreNames($movie['genre_ids'] ?? []);
+                
+                return [
+                    'tmdb_id' => $movie['id'],
+                    'title' => $movie['title'] ?? 'Unbekannt',
+                    'original_title' => $movie['original_title'] ?? '',
+                    'year' => isset($movie['release_date']) ? substr($movie['release_date'], 0, 4) : null,
+                    'release_date' => $movie['release_date'] ?? null,
+                    'overview' => $movie['overview'] ?? '',
+                    'poster_path' => $movie['poster_path'] ?? null,
+                    'backdrop_path' => $movie['backdrop_path'] ?? null,
+                    'rating' => round($movie['vote_average'] ?? 0, 1),
+                    'votes' => $movie['vote_count'] ?? 0,
+                    'popularity' => round($movie['popularity'] ?? 0, 1),
+                    'genre' => implode(', ', $genreNames),
+                    'genre_ids' => $movie['genre_ids'] ?? []
+                ];
+            }, $movies);
+            
+            return $formatted;
+            
+        } catch (Exception $e) {
+            error_log('TMDb searchMovies error: ' . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Konvertiere Genre-IDs zu Namen
+     */
+    private function getGenreNames($genreIds) {
+        // TMDb Genre Map (häufigste Genres)
+        $genreMap = [
+            28 => 'Action',
+            12 => 'Abenteuer',
+            16 => 'Animation',
+            35 => 'Komödie',
+            80 => 'Krimi',
+            99 => 'Dokumentarfilm',
+            18 => 'Drama',
+            10751 => 'Familie',
+            14 => 'Fantasy',
+            36 => 'Historie',
+            27 => 'Horror',
+            10402 => 'Musik',
+            9648 => 'Mystery',
+            10749 => 'Liebesfilm',
+            878 => 'Science Fiction',
+            10770 => 'TV-Film',
+            53 => 'Thriller',
+            10752 => 'Kriegsfilm',
+            37 => 'Western'
+        ];
+        
+        $names = [];
+        foreach ($genreIds as $id) {
+            if (isset($genreMap[$id])) {
+                $names[] = $genreMap[$id];
+            }
+        }
+        
+        return array_slice($names, 0, 3); // Max 3 Genres
+    }
     public function downloadPoster($title, $year, $coverId) {
         $ratings = $this->getFilmRatings($title, $year);
         
@@ -347,6 +444,194 @@ class TMDbHelper {
     }
     
     /**
+     * Hole Film-Crew (Director, Writer, Composer, etc.)
+     * 
+     * @param string $title Film-Titel
+     * @param int $year Jahr (optional)
+     * @return array|null ['director' => 'Name', 'writers' => ['Name1', 'Name2'], 'composer' => 'Name', ...]
+     */
+    public function getFilmCrew($title, $year = null) {
+        // Cache-Key generieren
+        $cacheKey = md5('crew_' . $title . ($year ?? ''));
+        $cacheFile = $this->cacheDir . '/' . $cacheKey . '.json';
+        
+        // Cache-Dauer aus Settings (Standard: 24 Stunden)
+        $cacheHours = (int)getSetting('tmdb_cache_hours', '24');
+        $cacheSeconds = $cacheHours * 3600;
+        
+        // Cache prüfen
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheSeconds) {
+            $cached = file_get_contents($cacheFile);
+            return json_decode($cached, true);
+        }
+        
+        try {
+            // 1. Film suchen
+            $searchUrl = $this->baseUrl . '/search/movie';
+            $searchParams = [
+                'api_key' => $this->apiKey,
+                'query' => $title,
+                'language' => 'de-DE'
+            ];
+            
+            if ($year) {
+                $searchParams['year'] = $year;
+            }
+            
+            $searchResult = $this->makeRequest($searchUrl, $searchParams);
+            
+            if (!$searchResult || empty($searchResult['results'])) {
+                return null;
+            }
+            
+            $movieId = $searchResult['results'][0]['id'];
+            
+            // 2. Film-Details mit Credits holen
+            $detailsUrl = $this->baseUrl . '/movie/' . $movieId;
+            $detailsParams = [
+                'api_key' => $this->apiKey,
+                'append_to_response' => 'credits',
+                'language' => 'de-DE'
+            ];
+            
+            $details = $this->makeRequest($detailsUrl, $detailsParams);
+            
+            if (!$details || empty($details['credits']['crew'])) {
+                return null;
+            }
+            
+            $crew = $details['credits']['crew'];
+            
+            // 3. Crew-Mitglieder nach Job filtern
+            $crewData = [
+                'director' => null,
+                'writers' => [],
+                'composer' => null,
+                'cinematographer' => null,
+                'producer' => null
+            ];
+            
+            foreach ($crew as $member) {
+                $name = $member['name'] ?? '';
+                $job = $member['job'] ?? '';
+                
+                if ($job === 'Director' && !$crewData['director']) {
+                    $crewData['director'] = $name;
+                }
+                
+                if (in_array($job, ['Screenplay', 'Writer', 'Story'])) {
+                    if (!in_array($name, $crewData['writers'])) {
+                        $crewData['writers'][] = $name;
+                    }
+                }
+                
+                if ($job === 'Original Music Composer' && !$crewData['composer']) {
+                    $crewData['composer'] = $name;
+                }
+                
+                if ($job === 'Director of Photography' && !$crewData['cinematographer']) {
+                    $crewData['cinematographer'] = $name;
+                }
+                
+                if ($job === 'Producer' && !$crewData['producer']) {
+                    $crewData['producer'] = $name;
+                }
+            }
+            
+            // Limitiere Writers auf maximal 3
+            $crewData['writers'] = array_slice($crewData['writers'], 0, 3);
+            
+            // Cache speichern
+            file_put_contents($cacheFile, json_encode($crewData));
+            
+            return $crewData;
+            
+        } catch (Exception $e) {
+            error_log('TMDb Crew API Error: ' . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Hole komplette Film-Details von TMDb
+     * 
+     * @param int $tmdbId TMDb Movie ID
+     * @return array|null Film-Daten inkl. Videos, Credits, etc.
+     */
+    public function getMovieDetails($tmdbId) {
+        try {
+            // Hole Film-Details
+            $url = $this->baseUrl . '/movie/' . $tmdbId;
+            $params = [
+                'api_key' => $this->apiKey,
+                'language' => 'de-DE',
+                'append_to_response' => 'videos,credits,keywords,release_dates'
+            ];
+            
+            $data = $this->makeRequest($url, $params);
+            
+            if (!$data || !isset($data['id'])) {
+                return null;
+            }
+            
+            return $data;
+            
+        } catch (Exception $e) {
+            error_log('TMDb getMovieDetails error: ' . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Hole komplette TV Show Details von TMDb
+     * 
+     * @param int $tmdbId TMDb TV Show ID
+     * @return array|null TV Show Daten inkl. Seasons & Episodes
+     */
+    public function getTVShowDetails($tmdbId) {
+        try {
+            // Hole TV Show Details
+            $url = $this->baseUrl . '/tv/' . $tmdbId;
+            $params = [
+                'api_key' => $this->apiKey,
+                'language' => 'de-DE',
+                'append_to_response' => 'videos,credits,keywords,content_ratings'
+            ];
+            
+            $data = $this->makeRequest($url, $params);
+            
+            if (!$data || !isset($data['id'])) {
+                return null;
+            }
+            
+            // Hole alle Staffeln mit Episoden
+            $data['seasons_detailed'] = [];
+            if (!empty($data['seasons'])) {
+                foreach ($data['seasons'] as $season) {
+                    $seasonNumber = $season['season_number'];
+                    
+                    // Hole Staffel-Details inkl. Episoden
+                    $seasonUrl = $this->baseUrl . '/tv/' . $tmdbId . '/season/' . $seasonNumber;
+                    $seasonData = $this->makeRequest($seasonUrl, [
+                        'api_key' => $this->apiKey,
+                        'language' => 'de-DE'
+                    ]);
+                    
+                    if ($seasonData) {
+                        $data['seasons_detailed'][] = $seasonData;
+                    }
+                }
+            }
+            
+            return $data;
+            
+        } catch (Exception $e) {
+            error_log('TMDb getTVShowDetails error: ' . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * HTTP Request an TMDb API
      */
     private function makeRequest($url, $params = []) {
@@ -430,4 +715,66 @@ function getFilmRatings($title, $year = null) {
     }
     
     return $tmdb->getFilmRatings($title, $year);
+}
+
+/**
+ * Helper-Funktion: Hole Crew-Mitglieder für einen Film
+ */
+function getFilmCrew($title, $year = null) {
+    static $tmdb = null;
+    
+    // TMDb API Key aus Settings laden
+    $apiKey = getSetting('tmdb_api_key', '');
+    
+    if (empty($apiKey)) {
+        return null; // Kein API Key konfiguriert
+    }
+    
+    if ($tmdb === null) {
+        $tmdb = new TMDbHelper($apiKey);
+    }
+    
+    return $tmdb->getFilmCrew($title, $year);
+}
+
+/**
+ * Helper-Funktion: Hole komplette Film-Details von TMDb
+ */
+function getTMDbMovie($tmdbId) {
+    static $tmdb = null;
+    
+    // TMDb API Key aus Settings laden
+    $apiKey = getSetting('tmdb_api_key', '');
+    
+    if (empty($apiKey)) {
+        error_log('TMDb: No API key configured');
+        return null;
+    }
+    
+    if ($tmdb === null) {
+        $tmdb = new TMDbHelper($apiKey);
+    }
+    
+    return $tmdb->getMovieDetails($tmdbId);
+}
+
+/**
+ * Helper-Funktion: Hole komplette TV Show Details von TMDb
+ */
+function getTMDbTVShow($tmdbId) {
+    static $tmdb = null;
+    
+    // TMDb API Key aus Settings laden
+    $apiKey = getSetting('tmdb_api_key', '');
+    
+    if (empty($apiKey)) {
+        error_log('TMDb: No API key configured');
+        return null;
+    }
+    
+    if ($tmdb === null) {
+        $tmdb = new TMDbHelper($apiKey);
+    }
+    
+    return $tmdb->getTVShowDetails($tmdbId);
 }

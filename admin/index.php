@@ -4,6 +4,7 @@ declare(strict_types=1);
 // Bootstrap (startet bereits die Session)
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/version.php'; // Neue Versionsverwaltung laden
+require_once __DIR__ . '/../includes/session-security-check.php'; // Session-Sicherheitscheck
 
 // Zugriffsschutz
 if (!isset($_SESSION['user_id'])) {
@@ -12,7 +13,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Erlaubte Seiten - AKTUALISIERT: 'films' hinzugefügt
-$allowedPages = ['dashboard', 'users', 'settings', 'import', 'update', 'films'];
+$allowedPages = ['dashboard', 'users', 'settings', 'import', 'update', 'films', 'impressum', 'tmdb-import', 'statistics','signature-preview'];
 $page = $_GET['page'] ?? 'dashboard';
 $siteTitle = getSetting('site_title', 'DVD Profiler Liste');
 
@@ -52,6 +53,7 @@ $memoryStart = memory_get_usage(true);
     
     <!-- Custom Admin CSS (überschreibt Bootstrap) -->
     <link href="css/admin.css" rel="stylesheet">
+    <link href="css/settings.css" rel="stylesheet">
     
     <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
@@ -76,7 +78,11 @@ $memoryStart = memory_get_usage(true);
                                 'settings' => 'gear',
                                 'import' => 'upload',
                                 'update' => 'arrow-up-circle',
-                                'films' => 'film'
+                                'films' => 'film',
+                                'impressum' => 'info-circle',
+                                'tmdb-import' => 'cloud-download',
+                                'statistics' => 'bar-chart',
+                                'signature-preview' => 'eye'
                             ];
                             $icon = $pageIcons[$page] ?? 'file-earmark';
                             ?>
@@ -204,19 +210,6 @@ $memoryStart = memory_get_usage(true);
     <script>
         // Enhanced Admin JavaScript
         document.addEventListener('DOMContentLoaded', function() {
-            // Page Loader with enhanced timing
-            const loader = document.getElementById('pageLoader');
-            const systemStatus = document.getElementById('systemStatus');
-            
-            // Show system status after loader
-            setTimeout(() => {
-                loader.classList.add('hidden');
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                    systemStatus.style.display = 'block';
-                }, 300);
-            }, 800);
-
             // Active navigation highlighting
             const currentPage = new URLSearchParams(window.location.search).get('page') || 'dashboard';
             const navLinks = document.querySelectorAll('.nav-link');
@@ -233,7 +226,8 @@ $memoryStart = memory_get_usage(true);
             alerts.forEach(alert => {
                 if (!alert.classList.contains('alert-danger')) {
                     setTimeout(() => {
-                        alert.classList.add('fade-out');
+                        alert.style.transition = 'opacity 0.5s';
+                        alert.style.opacity = '0';
                         setTimeout(() => alert.remove(), 500);
                     }, 5000);
                 }
