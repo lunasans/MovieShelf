@@ -146,8 +146,6 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 1.4.8  
-**Letztes Update**: Dezember 2025  
+**Version**: 1.4.9  
+**Letztes Update**: Januar 2026  
 **Status**: Aktiv entwickelt
-
-*Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
