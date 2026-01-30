@@ -9,7 +9,7 @@
  */
 
 // Version Information
-define('DVDPROFILER_VERSION', '1.4.9');
+define('DVDPROFILER_VERSION', '1.5.0');
 define('DVDPROFILER_CODENAME', 'Cinephile');
 define('DVDPROFILER_BUILD_DATE', '2026.01.21');
 define('DVDPROFILER_RELEASE_DATE', '29. Januar 2026');

@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Erlaubte Seiten - AKTUALISIERT: 'films' hinzugefügt
-$allowedPages = ['dashboard', 'users', 'settings', 'import', 'update', 'films', 'impressum', 'tmdb-import', 'statistics','signature-preview'];
+$allowedPages = ['dashboard', 'users', 'settings', 'import', 'update', 'films', 'actors', 'actor-edit', 'impressum', 'tmdb-import', 'statistics','signature-preview'];
 $page = $_GET['page'] ?? 'dashboard';
 $siteTitle = getSetting('site_title', 'DVD Profiler Liste');
 
@@ -79,6 +79,8 @@ $memoryStart = memory_get_usage(true);
                                 'import' => 'upload',
                                 'update' => 'arrow-up-circle',
                                 'films' => 'film',
+                                'actors' => 'people-fill',
+                                'actor-edit' => 'pencil-square',
                                 'impressum' => 'info-circle',
                                 'tmdb-import' => 'cloud-download',
                                 'statistics' => 'bar-chart',
@@ -87,7 +89,15 @@ $memoryStart = memory_get_usage(true);
                             $icon = $pageIcons[$page] ?? 'file-earmark';
                             ?>
                             <i class="bi bi-<?= $icon ?>"></i>
-                            <?= ucfirst($page === 'films' ? 'Filme' : $page) ?>
+                            <?php
+                            $pageTitle = match($page) {
+                                'films' => 'Filme',
+                                'actors' => 'Schauspieler',
+                                'actor-edit' => 'Schauspieler bearbeiten',
+                                default => ucfirst($page)
+                            };
+                            echo $pageTitle;
+                            ?>
                         </h1>
                         <small class="text-muted">
                             Admin Center - Version <?= DVDPROFILER_VERSION ?> "<?= DVDPROFILER_CODENAME ?>"
