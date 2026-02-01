@@ -1,401 +1,165 @@
 <?php
 /**
- * DVD Profiler Liste - Actor Profile Functions
- * 
- * Helper-Funktionen für Schauspieler-Profile
+ * Actor-Fragment - lädt Actor-Profile via AJAX
+ * Analog zu film-fragment.php für konsistentes UX
  * 
  * @package    dvdprofiler.liste
  * @version    1.4.8
  * @author     René Neuhaus
  */
 
-/**
- * Lädt einen Schauspieler anhand der ID
- * 
- * @param PDO $pdo Datenbankverbindung
- * @param int $actorId Schauspieler-ID
- * @return array|null Actor-Daten oder null
- */
-function getActorById(PDO $pdo, int $actorId): ?array {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT * FROM actors 
-            WHERE id = ? 
-            LIMIT 1
-        ");
-        $stmt->execute([$actorId]);
-        $actor = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        return $actor ?: null;
-    } catch (PDOException $e) {
-        error_log("getActorById error: " . $e->getMessage());
-        return null;
-    }
-}
+// Sicherheitsheader setzen
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
 
-/**
- * Lädt einen Schauspieler anhand des Slugs
- * 
- * @param PDO $pdo Datenbankverbindung
- * @param string $slug URL-freundlicher Identifier
- * @return array|null Actor-Daten oder null
- */
-function getActorBySlug(PDO $pdo, string $slug): ?array {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT * FROM actors 
-            WHERE slug = ? 
-            LIMIT 1
-        ");
-        $stmt->execute([$slug]);
-        $actor = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        return $actor ?: null;
-    } catch (PDOException $e) {
-        error_log("getActorBySlug error: " . $e->getMessage());
-        return null;
-    }
-}
-
-/**
- * Generiert einen eindeutigen Slug für einen Schauspieler
- * 
- * @param PDO $pdo Datenbankverbindung
- * @param string $firstName Vorname
- * @param string $lastName Nachname
- * @param int|null $actorId Aktuelle Actor-ID (zum Ausschließen bei Updates)
- * @return string Generierter Slug
- */
-function generateActorSlug(PDO $pdo, string $firstName, string $lastName, ?int $actorId = null): string {
-    // Basis-Slug erstellen
-    $baseSlug = createSlugFromName($firstName, $lastName);
-    $slug = $baseSlug;
-    $counter = 1;
+try {
+    // Slug-Validierung am Anfang
+    $slug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
+    $actorId = isset($_GET['id']) ? filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT) : 0;
     
-    // Prüfen ob Slug bereits existiert
-    while (true) {
-        $stmt = $pdo->prepare("SELECT id FROM actors WHERE slug = ? AND id != ? LIMIT 1");
-        $stmt->execute([$slug, $actorId ?? 0]);
+    if (empty($slug) && !$actorId) {
+        http_response_code(400);
+        throw new InvalidArgumentException('Ungültige Anfrage: Weder Slug noch ID angegeben');
+    }
+    
+    // Slug-Validierung (nur erlaubte Zeichen)
+    if (!empty($slug) && !preg_match('/^[a-z0-9\-]+$/i', $slug)) {
+        http_response_code(400);
+        throw new InvalidArgumentException('Ungültiger Slug: ' . htmlspecialchars($slug));
+    }
+
+    // Memory-optimiertes Output Buffering
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    ob_start();
+
+    // Database connection
+    try {
+        require_once __DIR__ . '/includes/bootstrap.php';
         
-        if ($stmt->rowCount() === 0) {
-            break; // Slug ist verfügbar
+        if (!isset($pdo) || !($pdo instanceof PDO)) {
+            throw new Exception('Datenbankverbindung nicht verfügbar');
         }
         
-        // Slug existiert bereits, füge Counter hinzu
-        $slug = $baseSlug . '-' . $counter;
-        $counter++;
-    }
-    
-    return $slug;
-}
-
-/**
- * Erstellt einen URL-freundlichen Slug aus einem Namen
- * 
- * @param string $firstName Vorname
- * @param string $lastName Nachname
- * @return string Slug
- */
-function createSlugFromName(string $firstName, string $lastName): string {
-    $fullName = $firstName . ' ' . $lastName;
-    
-    // Umlaute und Sonderzeichen ersetzen
-    $replacements = [
-        'ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss',
-        'Ä' => 'Ae', 'Ö' => 'Oe', 'Ü' => 'Ue',
-        'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
-        'á' => 'a', 'à' => 'a', 'â' => 'a', 'ã' => 'a',
-        'í' => 'i', 'ì' => 'i', 'î' => 'i', 'ï' => 'i',
-        'ó' => 'o', 'ò' => 'o', 'ô' => 'o', 'õ' => 'o',
-        'ú' => 'u', 'ù' => 'u', 'û' => 'u',
-        'ñ' => 'n', 'ç' => 'c'
-    ];
-    
-    $slug = str_replace(array_keys($replacements), array_values($replacements), $fullName);
-    
-    // Nur alphanumerische Zeichen und Bindestriche
-    $slug = preg_replace('/[^a-zA-Z0-9\s-]/', '', $slug);
-    
-    // Mehrfache Leerzeichen zu einem reduzieren
-    $slug = preg_replace('/\s+/', '-', $slug);
-    
-    // Mehrfache Bindestriche zu einem reduzieren
-    $slug = preg_replace('/-+/', '-', $slug);
-    
-    // Bindestriche am Anfang/Ende entfernen
-    $slug = trim($slug, '-');
-    
-    // Kleinschreibung
-    $slug = strtolower($slug);
-    
-    return $slug;
-}
-
-/**
- * Lädt alle Schauspieler (für Admin-Liste)
- * 
- * @param PDO $pdo Datenbankverbindung
- * @param int $limit Anzahl der Ergebnisse
- * @param int $offset Offset für Pagination
- * @param string $search Suchbegriff (optional)
- * @return array Liste der Schauspieler
- */
-function getAllActors(PDO $pdo, int $limit = 50, int $offset = 0, string $search = ''): array {
-    try {
-        $sql = "SELECT 
-                    a.*, 
-                    COUNT(DISTINCT fa.film_id) as film_count
-                FROM actors a
-                LEFT JOIN film_actor fa ON a.id = fa.actor_id";
+        $pdo->query('SELECT 1');
         
-        $params = [];
-        
-        if (!empty($search)) {
-            $sql .= " WHERE CONCAT(a.first_name, ' ', a.last_name) LIKE ?";
-            $params[] = "%{$search}%";
-        }
-        
-        $sql .= " GROUP BY a.id
-                  ORDER BY a.last_name ASC, a.first_name ASC
-                  LIMIT ? OFFSET ?";
-        
-        $params[] = $limit;
-        $params[] = $offset;
-        
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        error_log("getAllActors error: " . $e->getMessage());
-        return [];
+        throw new Exception('Datenbankfehler: ' . $e->getMessage());
     }
-}
 
-/**
- * Zählt die Gesamtanzahl der Schauspieler
- * 
- * @param PDO $pdo Datenbankverbindung
- * @param string $search Suchbegriff (optional)
- * @return int Anzahl
- */
-function countActors(PDO $pdo, string $search = ''): int {
-    try {
-        $sql = "SELECT COUNT(*) FROM actors";
-        $params = [];
-        
-        if (!empty($search)) {
-            $sql .= " WHERE CONCAT(first_name, ' ', last_name) LIKE ?";
-            $params[] = "%{$search}%";
-        }
-        
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        
-        return (int)$stmt->fetchColumn();
-    } catch (PDOException $e) {
-        error_log("countActors error: " . $e->getMessage());
-        return 0;
+    // Functions.php laden (für findCoverImage etc.)
+    $functionsPath = __DIR__ . '/includes/functions.php';
+    if (file_exists($functionsPath)) {
+        require_once $functionsPath;
     }
-}
 
-/**
- * Speichert oder aktualisiert einen Schauspieler
- * 
- * @param PDO $pdo Datenbankverbindung
- * @param array $data Actor-Daten
- * @param int|null $actorId ID für Update, null für Insert
- * @return int|false Actor-ID oder false bei Fehler
- */
-function saveActor(PDO $pdo, array $data, ?int $actorId = null) {
+    // Actor-Functions laden
+    $actorFunctionsPath = __DIR__ . '/includes/actor-functions.php';
+    if (!file_exists($actorFunctionsPath)) {
+        throw new Exception('actor-functions.php nicht gefunden');
+    }
+    require_once $actorFunctionsPath;
+
+    // Actor-Daten laden
     try {
-        // Slug generieren falls nicht vorhanden
-        if (empty($data['slug'])) {
-            $data['slug'] = generateActorSlug(
-                $pdo, 
-                $data['first_name'], 
-                $data['last_name'], 
-                $actorId
-            );
-        }
-        
-        if ($actorId) {
-            // Update
-            $sql = "UPDATE actors SET 
-                    first_name = ?,
-                    last_name = ?,
-                    slug = ?,
-                    birth_date = ?,
-                    birth_place = ?,
-                    death_date = ?,
-                    nationality = ?,
-                    bio = ?,
-                    photo_path = ?,
-                    website = ?,
-                    imdb_id = ?,
-                    tmdb_id = ?,
-                    updated_at = CURRENT_TIMESTAMP
-                    WHERE id = ?";
+        if (!empty($slug)) {
+            $actor = getActorBySlug($pdo, $slug);
             
-            $params = [
-                $data['first_name'],
-                $data['last_name'],
-                $data['slug'],
-                $data['birth_date'] ?? null,
-                $data['birth_place'] ?? null,
-                $data['death_date'] ?? null,
-                $data['nationality'] ?? null,
-                $data['bio'] ?? null,
-                $data['photo_path'] ?? null,
-                $data['website'] ?? null,
-                $data['imdb_id'] ?? null,
-                $data['tmdb_id'] ?? null,
-                $actorId
-            ];
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
-            
-            return $actorId;
+            if (!$actor) {
+                http_response_code(404);
+                throw new Exception("Schauspieler mit Slug '$slug' nicht gefunden");
+            }
         } else {
-            // Insert
-            $sql = "INSERT INTO actors (
-                    first_name, last_name, slug, birth_date, birth_place, 
-                    death_date, nationality, bio, photo_path, website, 
-                    imdb_id, tmdb_id, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
+            $actor = getActorById($pdo, $actorId);
             
-            $params = [
-                $data['first_name'],
-                $data['last_name'],
-                $data['slug'],
-                $data['birth_date'] ?? null,
-                $data['birth_place'] ?? null,
-                $data['death_date'] ?? null,
-                $data['nationality'] ?? null,
-                $data['bio'] ?? null,
-                $data['photo_path'] ?? null,
-                $data['website'] ?? null,
-                $data['imdb_id'] ?? null,
-                $data['tmdb_id'] ?? null
-            ];
-            
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
-            
-            return (int)$pdo->lastInsertId();
+            if (!$actor) {
+                http_response_code(404);
+                throw new Exception("Schauspieler mit ID $actorId nicht gefunden");
+            }
         }
+        
+        $actorName = trim($actor['first_name'] . ' ' . $actor['last_name']);
+        error_log("Actor-Fragment: Actor geladen - ID: {$actor['id']}, Name: $actorName");
+        
     } catch (PDOException $e) {
-        error_log("saveActor error: " . $e->getMessage());
-        return false;
+        throw new Exception('Fehler beim Laden der Actor-Daten: ' . $e->getMessage());
     }
-}
 
-/**
- * Löscht einen Schauspieler
- * 
- * @param PDO $pdo Datenbankverbindung
- * @param int $actorId Schauspieler-ID
- * @return bool Erfolg
- */
-function deleteActor(PDO $pdo, int $actorId): bool {
+    // actor-profile.php laden
+    $actorProfilePath = __DIR__ . '/partials/actor-profile.php';
+    
+    if (!file_exists($actorProfilePath)) {
+        throw new Exception('partials/actor-profile.php nicht gefunden');
+    }
+    
+    if (!is_readable($actorProfilePath)) {
+        throw new Exception('actor-profile.php nicht lesbar');
+    }
+
+    // Output Buffer für actor-profile.php
+    ob_start();
+    
     try {
-        $pdo->beginTransaction();
+        include $actorProfilePath;
+        $actorProfileOutput = ob_get_clean();
         
-        // Erst Film-Verknüpfungen löschen
-        $stmt = $pdo->prepare("DELETE FROM film_actor WHERE actor_id = ?");
-        $stmt->execute([$actorId]);
+        if (empty($actorProfileOutput)) {
+            throw new Exception('actor-profile.php hat keinen Output produziert');
+        }
         
-        // Dann den Schauspieler
-        $stmt = $pdo->prepare("DELETE FROM actors WHERE id = ?");
-        $stmt->execute([$actorId]);
+        // XSS-Schutz
+        $safeActorId = htmlspecialchars($actor['id'], ENT_QUOTES, 'UTF-8');
+        $safeActorSlug = htmlspecialchars($actor['slug'], ENT_QUOTES, 'UTF-8');
         
-        $pdo->commit();
-        return true;
-    } catch (PDOException $e) {
-        $pdo->rollBack();
-        error_log("deleteActor error: " . $e->getMessage());
-        return false;
+        // Wrapper für AJAX-Content (analog zu film-detail-content)
+        echo '<div class="actor-detail-content fade-in" data-actor-id="' . $safeActorId . '" data-actor-slug="' . $safeActorSlug . '" data-loaded="' . time() . '">';
+        echo $actorProfileOutput;
+        echo '</div>';
+        
+    } catch (Throwable $e) {
+        ob_end_clean();
+        throw new Exception('Fehler beim Laden von actor-profile.php: ' . $e->getMessage());
     }
-}
 
-/**
- * Validiert Actor-Daten
- * 
- * @param array $data Zu validierende Daten
- * @return array Fehlermeldungen (leer wenn valide)
- */
-function validateActorData(array $data): array {
-    $errors = [];
-    
-    if (empty($data['first_name'])) {
-        $errors[] = 'Vorname ist erforderlich';
-    }
-    
-    if (empty($data['last_name'])) {
-        $errors[] = 'Nachname ist erforderlich';
-    }
-    
-    if (!empty($data['birth_date']) && !validateDate($data['birth_date'])) {
-        $errors[] = 'Ungültiges Geburtsdatum';
-    }
-    
-    if (!empty($data['death_date']) && !validateDate($data['death_date'])) {
-        $errors[] = 'Ungültiges Todesdatum';
-    }
-    
-    if (!empty($data['website']) && !filter_var($data['website'], FILTER_VALIDATE_URL)) {
-        $errors[] = 'Ungültige Website-URL';
-    }
-    
-    if (!empty($data['imdb_id']) && !preg_match('/^nm\d+$/', $data['imdb_id'])) {
-        $errors[] = 'Ungültige IMDb-ID (Format: nm1234567)';
-    }
-    
-    return $errors;
-}
+    error_log("Actor-Fragment: Erfolgreich geladen für Actor-ID: {$actor['id']}");
 
-/**
- * Validiert ein Datum
- * 
- * @param string $date Datum im Format YYYY-MM-DD
- * @return bool Gültig
- */
-function validateDate(string $date): bool {
-    $d = DateTime::createFromFormat('Y-m-d', $date);
-    return $d && $d->format('Y-m-d') === $date;
-}
-
-/**
- * Lädt alle Filme eines Schauspielers
- * 
- * @param PDO $pdo Datenbankverbindung
- * @param int $actorId Schauspieler-ID
- * @return array Liste der Filme
- */
-function getActorFilms(PDO $pdo, int $actorId): array {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT 
-                d.id,
-                d.title,
-                d.year,
-                d.genre,
-                d.cover_id,
-                d.rating_age,
-                fa.role,
-                fa.is_main_role,
-                fa.sort_order
-            FROM dvds d
-            INNER JOIN film_actor fa ON d.id = fa.film_id
-            WHERE fa.actor_id = ?
-            AND d.deleted = 0
-            ORDER BY d.year DESC, d.title ASC
-        ");
-        $stmt->execute([$actorId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("getActorFilms error: " . $e->getMessage());
-        return [];
+} catch (Throwable $e) {
+    while (ob_get_level()) {
+        ob_end_clean();
     }
+    
+    error_log("Actor-Fragment FATAL ERROR: " . $e->getMessage());
+    error_log("Actor-Fragment Error Type: " . get_class($e));
+    
+    if ($e instanceof InvalidArgumentException) {
+        http_response_code(400);
+    } elseif (strpos($e->getMessage(), 'nicht gefunden') !== false) {
+        http_response_code(404);
+    } else {
+        http_response_code(500);
+    }
+    
+    $errorClass = $e instanceof InvalidArgumentException ? 'client-error' : 'server-error';
+    $errorIcon = $e instanceof InvalidArgumentException ? 'bi-exclamation-circle' : 'bi-exclamation-triangle';
+    $safeErrorMsg = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
+    
+    echo '<div class="error-message ' . $errorClass . '" style="padding: 40px; text-align: center;">
+            <div class="error-icon" style="font-size: 4rem; margin-bottom: 20px; color: #f48771;">
+                <i class="' . $errorIcon . '"></i>
+            </div>
+            <div class="error-content">
+                <h3 style="color: #f48771; margin-bottom: 15px;">Schauspieler nicht gefunden</h3>
+                <p style="margin-bottom: 25px;">Das Schauspieler-Profil konnte nicht geladen werden.</p>
+                <div class="error-actions">
+                    <button onclick="window.location.reload()" class="btn btn-sm btn-primary" style="margin-right: 10px;">
+                        <i class="bi bi-arrow-clockwise"></i> Erneut versuchen
+                    </button>
+                    <a href="/" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-house"></i> Zur Startseite
+                    </a>
+                </div>
+            </div>
+          </div>';
 }
+?>

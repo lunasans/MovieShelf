@@ -42,7 +42,7 @@ $page = isset($_GET['page']) ? trim(filter_var($_GET['page'], FILTER_SANITIZE_ST
 $filmId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 // Erlaubte Seiten definieren für Sicherheit
-$allowedPages = ['home', 'impressum', 'datenschutz', 'kontakt', 'trailers', 'stats', 'actor'];
+$allowedPages = ['home', 'impressum', 'datenschutz', 'kontakt', 'trailers', 'stats', 'actor', 'actors'];
 if (!in_array($page, $allowedPages) && $page !== 'home') {
     $page = 'home';
 }

@@ -161,6 +161,9 @@ class DVDApp {
                 
                 // 📺 STAFFELN/EPISODEN INITIALISIEREN
                 this.initSeasons();
+                
+                // 🎭 ACTOR-LINKS NEU BINDEN (für Cast in film-view.php)
+                this.rebindActorLinks();
             }
         } catch (error) {
             console.error('❌ Fehler beim Laden des Films:', error);
@@ -618,10 +621,39 @@ class DVDApp {
     }
 
     async loadPage(page) {
+        // Spezialbehandlung für Actor-Profile
+        if (page === 'actor') {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('slug');
+            
+            if (slug) {
+                // Lade Actor-Profil via loadActorProfile
+                await this.loadActorProfile(slug);
+            } else {
+                // Kein Slug → Fehler
+                this.container.innerHTML = `
+                    <div class="error-message" style="padding: 40px; text-align: center;">
+                        <div class="error-icon" style="font-size: 4rem; margin-bottom: 20px; color: #f48771;">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+                        <h3 style="color: #f48771;">Kein Schauspieler angegeben</h3>
+                        <p>Bitte wählen Sie einen Schauspieler aus.</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+        
+        // Standard-Verhalten für andere Pages (inkl. actors)
         const response = await fetch(`partials/${page}.php`);
         const html = await response.text();
         
         this.container.innerHTML = html;
+        
+        // Event-Handler für Actor-Links neu binden (für actors-Seite)
+        if (page === 'actors') {
+            this.rebindActorLinks();
+        }
         
         if (page === 'stats') {
             await this.ensureChartJsLoaded();

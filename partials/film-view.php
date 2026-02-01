@@ -841,8 +841,9 @@ span[itemprop="datePublished"] {
                             $actorFullName = trim(($actor['first_name'] ?? '') . ' ' . ($actor['last_name'] ?? ''));
                             ?>
                             <?php if (!empty($actorSlug)): ?>
-                            <a href="index.php?page=actor&slug=<?= urlencode($actorSlug) ?>" 
+                            <a href="#" 
                                class="actor-name actor-link" 
+                               data-actor-slug="<?= htmlspecialchars($actorSlug) ?>"
                                itemprop="name"
                                title="Profil von <?= htmlspecialchars($actorFullName) ?> anzeigen">
                                 <?= htmlspecialchars($actorFullName) ?>
