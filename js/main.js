@@ -645,7 +645,14 @@ class DVDApp {
         }
         
         // Standard-Verhalten für andere Pages (inkl. actors)
-        const response = await fetch(`partials/${page}.php`);
+        // Query-Parameter durchreichen (außer 'page')
+        const params = new URLSearchParams(window.location.search);
+        params.delete('page'); // 'page' Parameter entfernen
+        
+        const queryString = params.toString();
+        const url = queryString ? `partials/${page}.php?${queryString}` : `partials/${page}.php`;
+        
+        const response = await fetch(url);
         const html = await response.text();
         
         this.container.innerHTML = html;

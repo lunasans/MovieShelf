@@ -1,13 +1,16 @@
 <?php
 /**
- * Actors Overview Page - Schauspielerübersicht
- * Einfache Seite wie trailers.php - KEIN Fragment!
- * 
- * @package    dvdprofiler.liste
- * @version    1.5.0
+ * Actors Overview Page - Vereinfachte Version
+ * Mit direktem JavaScript statt route-link
  */
 
-// $pdo ist bereits verfügbar von bootstrap.php
+// Bootstrap & PDO laden
+global $pdo;
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    if (file_exists(__DIR__ . '/../includes/bootstrap.php')) {
+        require_once __DIR__ . '/../includes/bootstrap.php';
+    }
+}
 
 // Actor-Functions laden
 if (!function_exists('getActorById')) {
@@ -17,73 +20,173 @@ if (!function_exists('getActorById')) {
 // Filter-Parameter
 $letter = isset($_GET['letter']) ? strtoupper(substr($_GET['letter'], 0, 1)) : '';
 
-// Alle Schauspieler laden
-$sql = "SELECT id, first_name, last_name, slug, birth_year, photo FROM actor WHERE 1=1";
+// ERST: Alle verfügbaren Buchstaben laden (für Navigation)
+$availableLetters = [];
+$letterStmt = $pdo->query("
+    SELECT DISTINCT 
+        UPPER(SUBSTRING(last_name, 1, 1)) as first_letter
+    FROM actors
+    WHERE last_name IS NOT NULL AND last_name != ''
+");
+while ($row = $letterStmt->fetch(PDO::FETCH_ASSOC)) {
+    $char = $row['first_letter'];
+    if (preg_match('/^[A-Z]$/', $char)) {
+        $availableLetters[$char] = true;
+    } else {
+        $availableLetters['#'] = true;
+    }
+}
+
+// DANN: Gefilterte Schauspieler laden (PAGINATION für Performance!)
+$page = max(1, (int)($_GET['p'] ?? 1));
+$perPage = 50;  // 50 Schauspieler pro Load
+$offset = ($page - 1) * $perPage;
+
+$sql = "SELECT id, first_name, last_name, slug, birth_year, photo_path FROM actors WHERE 1=1";
 $params = [];
 
 if (!empty($letter) && preg_match('/^[A-Z]$/', $letter)) {
-    $sql .= " AND (last_name LIKE :letter OR first_name LIKE :letter)";
-    $params[':letter'] = $letter . '%';
+    $sql .= " AND last_name LIKE :letter";
+    $params['letter'] = $letter . '%';
 }
 
-$sql .= " ORDER BY last_name ASC, first_name ASC";
+// Total Count für Infinite Scroll
+$countSql = str_replace("SELECT id, first_name, last_name, slug, birth_year, photo_path", "SELECT COUNT(*)", $sql);
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute($params);
+$totalActors = (int)$countStmt->fetchColumn();
+
+$sql .= " ORDER BY last_name ASC, first_name ASC LIMIT :limit OFFSET :offset";
+
+// DEBUG
+error_log("=== ACTORS PAGINATION DEBUG ===");
+error_log("Letter: " . ($letter ?: 'empty'));
+error_log("Page: $page, PerPage: $perPage, Offset: $offset");
+error_log("Total: $totalActors");
+error_log("================================");
 
 $stmt = $pdo->prepare($sql);
-$stmt->execute($params);
+foreach ($params as $key => $value) {
+    $stmt->bindValue($key, $value);
+}
+$stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
 $actors = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Gruppierung nach Buchstaben
+// Gruppierung (nur wenn kein Filter aktiv)
 $actorsByLetter = [];
-$availableLetters = [];
 
-foreach ($actors as $actor) {
-    $sortName = !empty($actor['last_name']) ? $actor['last_name'] : $actor['first_name'];
-    $firstLetter = strtoupper(mb_substr($sortName, 0, 1));
-    
-    if (!preg_match('/^[A-Z]$/', $firstLetter)) {
-        $firstLetter = '#';
+if (empty($letter)) {
+    // KEINE Filter: Gruppiere nach Nachname (A-Z)
+    foreach ($actors as $actor) {
+        if (!empty($actor['last_name'])) {
+            $firstLetter = strtoupper(mb_substr($actor['last_name'], 0, 1));
+            
+            if (!preg_match('/^[A-Z]$/', $firstLetter)) {
+                $firstLetter = '#';
+            }
+        } else {
+            // Kein Nachname → in "#"
+            $firstLetter = '#';
+        }
+        
+        $actorsByLetter[$firstLetter][] = [
+            'name' => trim($actor['first_name'] . ' ' . $actor['last_name']),
+            'slug' => $actor['slug'],
+            'birth_year' => $actor['birth_year'],
+            'photo_path' => $actor['photo_path']
+        ];
     }
     
-    $actorsByLetter[$firstLetter][] = [
-        'name' => trim($actor['first_name'] . ' ' . $actor['last_name']),
-        'slug' => $actor['slug'],
-        'birth_year' => $actor['birth_year'],
-        'photo' => $actor['photo']
-    ];
+    ksort($actorsByLetter);
+    if (isset($actorsByLetter['#'])) {
+        $temp = $actorsByLetter['#'];
+        unset($actorsByLetter['#']);
+        $actorsByLetter['#'] = $temp;
+    }
+} else {
+    // FILTER AKTIV: Keine Gruppierung, alle in eine "Gruppe"
+    $actorsByLetter[$letter] = [];
+    foreach ($actors as $actor) {
+        $actorsByLetter[$letter][] = [
+            'name' => trim($actor['first_name'] . ' ' . $actor['last_name']),
+            'slug' => $actor['slug'],
+            'birth_year' => $actor['birth_year'],
+            'photo_path' => $actor['photo_path']
+        ];
+    }
+}
+
+// AJAX-Request? Nur HTML-Fragment zurückgeben (für Infinite Scroll)
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    header('Content-Type: application/json');
     
-    $availableLetters[$firstLetter] = true;
+    $htmlCards = '';
+    foreach ($actorsByLetter as $currentLetter => $actorsInGroup) {
+        foreach ($actorsInGroup as $actor) {
+            $hasPhoto = !empty($actor['photo_path']);
+            $photoPath = $hasPhoto ? 'images/actors/' . basename($actor['photo_path']) : '';
+            
+            $htmlCards .= '<div class="actor-card">';
+            $htmlCards .= '<a href="#" class="actor-card-link actor-link" data-actor-slug="' . htmlspecialchars($actor['slug']) . '">';
+            $htmlCards .= '<div class="actor-photo">';
+            
+            if ($hasPhoto) {
+                $htmlCards .= '<img src="' . htmlspecialchars($photoPath) . '" alt="' . htmlspecialchars($actor['name']) . '" loading="lazy">';
+            } else {
+                $htmlCards .= '<div class="actor-photo-placeholder"><i class="bi bi-person-circle"></i></div>';
+            }
+            
+            $htmlCards .= '</div>';
+            $htmlCards .= '<div class="actor-info">';
+            $htmlCards .= '<h3 class="actor-name">' . htmlspecialchars($actor['name']) . '</h3>';
+            
+            if (!empty($actor['birth_year'])) {
+                $htmlCards .= '<p class="actor-birth-year"><i class="bi bi-calendar3"></i> ' . htmlspecialchars($actor['birth_year']) . '</p>';
+            }
+            
+            $htmlCards .= '</div>';
+            $htmlCards .= '<div class="actor-overlay"><i class="bi bi-arrow-right-circle"></i><span>Profil anzeigen</span></div>';
+            $htmlCards .= '</a>';
+            $htmlCards .= '</div>';
+        }
+    }
+    
+    echo json_encode([
+        'success' => true,
+        'html' => $htmlCards,
+        'page' => $page,
+        'hasMore' => ($offset + $perPage) < $totalActors,
+        'total' => $totalActors,
+        'loaded' => count($actors)
+    ]);
+    exit;
 }
 
-ksort($actorsByLetter);
-if (isset($actorsByLetter['#'])) {
-    $temp = $actorsByLetter['#'];
-    unset($actorsByLetter['#']);
-    $actorsByLetter['#'] = $temp;
-}
-
-$totalActors = count($actors);
+$displayedActors = count($actors);
 ?>
 
-<div class="actors-overview-container">
+<div class="actors-overview-container" data-total="<?= $totalActors ?>" data-per-page="<?= $perPage ?>" data-current-page="<?= $page ?>" data-letter="<?= htmlspecialchars($letter) ?>">
     <div class="overview-header">
         <h1 class="overview-title">
             <i class="bi bi-people-fill"></i> Schauspieler
         </h1>
         <div class="overview-stats">
             <span class="stat-badge">
-                <i class="bi bi-person-badge"></i> <?= $totalActors ?> Schauspieler
+                <i class="bi bi-person-badge"></i> <span id="displayedCount"><?= $displayedActors ?></span> / <?= $totalActors ?> Schauspieler
             </span>
             <?php if (!empty($letter)): ?>
             <span class="stat-badge filter-active">
                 <i class="bi bi-funnel-fill"></i> Buchstabe: <?= htmlspecialchars($letter) ?>
-                <a href="?page=actors" class="remove-filter">×</a>
+                <a href="index.php?page=actors" class="remove-filter">×</a>
             </span>
             <?php endif; ?>
         </div>
     </div>
 
     <div class="alphabet-nav">
-        <a href="?page=actors" class="letter-link<?= empty($letter) ? ' active' : '' ?>">Alle</a>
+        <a href="index.php?page=actors" class="letter-link<?= empty($letter) ? ' active' : '' ?>">Alle</a>
         <?php
         $alphabet = range('A', 'Z');
         $alphabet[] = '#';
@@ -91,7 +194,7 @@ $totalActors = count($actors);
             $hasActors = isset($availableLetters[$char]);
             $isActive = ($letter === $char);
         ?>
-        <a href="?page=actors&letter=<?= $char ?>" 
+        <a href="index.php?page=actors&letter=<?= $char ?>" 
            class="letter-link<?= $isActive ? ' active' : '' ?><?= !$hasActors ? ' disabled' : '' ?>">
             <?= $char ?>
         </a>
@@ -103,9 +206,6 @@ $totalActors = count($actors);
             <i class="bi bi-search" style="font-size: 4rem; opacity: 0.2;"></i>
             <h3>Keine Schauspieler gefunden</h3>
             <p><?= !empty($letter) ? "Keine Schauspieler mit Buchstabe \"$letter\"" : "Keine Schauspieler in der Datenbank" ?></p>
-            <?php if (!empty($letter)): ?>
-            <a href="?page=actors" class="btn btn-primary">Alle anzeigen</a>
-            <?php endif; ?>
         </div>
     <?php else: ?>
         <?php foreach ($actorsByLetter as $currentLetter => $actorsInGroup): ?>
@@ -121,8 +221,8 @@ $totalActors = count($actors);
                     <a href="#" class="actor-card-link actor-link" data-actor-slug="<?= htmlspecialchars($actor['slug']) ?>">
                         <div class="actor-photo">
                             <?php
-                            $photoPath = 'actors/' . $actor['photo'];
-                            if (!empty($actor['photo']) && file_exists($photoPath)):
+                            if (!empty($actor['photo_path'])):
+                                $photoPath = 'images/actors/' . basename($actor['photo_path']);
                             ?>
                                 <img src="<?= htmlspecialchars($photoPath) ?>" alt="<?= htmlspecialchars($actor['name']) ?>" loading="lazy">
                             <?php else: ?>
@@ -152,9 +252,24 @@ $totalActors = count($actors);
         </div>
         <?php endforeach; ?>
     <?php endif; ?>
+    
+    <!-- Infinite Scroll Loading Indicator -->
+    <div id="infiniteScrollLoader" style="display: none; text-align: center; padding: 40px;">
+        <div style="display: inline-block;">
+            <div style="width: 50px; height: 50px; border: 4px solid rgba(78, 201, 176, 0.2); border-top-color: #4EC9B0; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="margin-top: 15px; color: var(--text-muted, #999);">Lade weitere Schauspieler...</p>
+        </div>
+    </div>
+    
+    <!-- Infinite Scroll Trigger (unsichtbar) -->
+    <div id="infiniteScrollTrigger" style="height: 1px;"></div>
 </div>
 
 <style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+/* Alle Styles gleich wie vorher */
 .actors-overview-container {
     padding: 20px;
     max-width: 1400px;
@@ -211,6 +326,7 @@ $totalActors = count($actors);
     font-weight: bold;
     margin-left: 4px;
     text-decoration: none;
+    cursor: pointer;
 }
 
 .alphabet-nav {
@@ -235,6 +351,7 @@ $totalActors = count($actors);
     border-radius: 8px;
     font-weight: 500;
     transition: all 0.2s;
+    cursor: pointer;
 }
 
 .letter-link:hover:not(.disabled) {
@@ -402,3 +519,123 @@ $totalActors = count($actors);
     }
 }
 </style>
+
+<script>
+// ========================================
+// INFINITE SCROLL für Actors
+// ========================================
+(function() {
+    console.log('🔄 Infinite Scroll initialisiert');
+    
+    const container = document.querySelector('.actors-overview-container');
+    const trigger = document.getElementById('infiniteScrollTrigger');
+    const loader = document.getElementById('infiniteScrollLoader');
+    const displayedCount = document.getElementById('displayedCount');
+    
+    if (!container || !trigger) {
+        console.error('❌ Container oder Trigger nicht gefunden');
+        return;
+    }
+    
+    let currentPage = parseInt(container.dataset.currentPage) || 1;
+    const perPage = parseInt(container.dataset.perPage) || 50;
+    const total = parseInt(container.dataset.total) || 0;
+    const letter = container.dataset.letter || '';
+    
+    let isLoading = false;
+    let hasMore = (currentPage * perPage) < total;
+    
+    console.log(`📊 Initial: Page ${currentPage}, PerPage ${perPage}, Total ${total}, HasMore ${hasMore}`);
+    
+    // IntersectionObserver für Infinite Scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && hasMore && !isLoading) {
+                console.log('👀 Trigger sichtbar - lade mehr...');
+                loadMore();
+            }
+        });
+    }, {
+        rootMargin: '200px'  // Lade 200px bevor Trigger erreicht wird
+    });
+    
+    observer.observe(trigger);
+    
+    async function loadMore() {
+        if (isLoading || !hasMore) return;
+        
+        isLoading = true;
+        currentPage++;
+        
+        console.log(`⏳ Lade Seite ${currentPage}...`);
+        
+        // Zeige Loading
+        loader.style.display = 'block';
+        
+        try {
+            // Baue URL - DIREKT zu partials/actors.php!
+            let url = `partials/actors.php?ajax=1&p=${currentPage}`;
+            if (letter) {
+                url += `&letter=${encodeURIComponent(letter)}`;
+            }
+            
+            console.log('📡 Fetching:', url);
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log(`✅ Geladen: ${data.loaded} Schauspieler, HasMore: ${data.hasMore}`);
+                
+                // Finde die richtige actors-grid
+                let actorsGrid;
+                if (letter) {
+                    // Mit Filter: Eine Gruppe
+                    actorsGrid = document.querySelector('.letter-group .actors-grid');
+                } else {
+                    // Ohne Filter: Letzte Gruppe
+                    const letterGroups = document.querySelectorAll('.letter-group');
+                    if (letterGroups.length > 0) {
+                        actorsGrid = letterGroups[letterGroups.length - 1].querySelector('.actors-grid');
+                    }
+                }
+                
+                if (actorsGrid && data.html) {
+                    // Füge neue Cards hinzu
+                    actorsGrid.insertAdjacentHTML('beforeend', data.html);
+                    
+                    // Rebind Actor-Links (für Split-Screen)
+                    if (window.dvdApp && typeof window.dvdApp.rebindActorLinks === 'function') {
+                        window.dvdApp.rebindActorLinks();
+                    }
+                    
+                    // Update Counter
+                    const currentDisplayed = parseInt(displayedCount.textContent) || 0;
+                    displayedCount.textContent = currentDisplayed + data.loaded;
+                    
+                    hasMore = data.hasMore;
+                    
+                    if (!hasMore) {
+                        console.log('✋ Alle Schauspieler geladen');
+                        trigger.style.display = 'none';
+                    }
+                } else {
+                    console.error('❌ actors-grid nicht gefunden oder kein HTML');
+                    hasMore = false;
+                }
+            } else {
+                console.error('❌ Server-Fehler:', data);
+                hasMore = false;
+            }
+        } catch (error) {
+            console.error('❌ Fetch-Fehler:', error);
+            hasMore = false;
+        } finally {
+            loader.style.display = 'none';
+            isLoading = false;
+        }
+    }
+    
+    console.log('✅ Infinite Scroll bereit');
+})();
+</script>
