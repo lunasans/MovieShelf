@@ -146,6 +146,13 @@ if (!empty($actor['bio'])) {
         <div class="actor-header-info">
             <h1 class="actor-name" itemprop="name"><?= htmlspecialchars($fullName) ?></h1>
             
+            <!-- Wiki-Edit Button (nur für eingeloggte User) -->
+            <?php if (isset($_SESSION['user_id'])): ?>
+            <button class="btn-wiki-edit" onclick="openActorEditModal()" title="Schauspieler bearbeiten">
+                <i class="bi bi-pencil-square"></i> Bearbeiten
+            </button>
+            <?php endif; ?>
+            
             <div class="actor-meta">
                 <?php if (!empty($actor['birth_date'])): ?>
                 <div class="meta-item">
@@ -298,6 +305,102 @@ if (!empty($actor['bio'])) {
     </div>
     <?php endif; ?>
 </article>
+
+<!-- ============================================================================
+     WIKI-STYLE EDIT MODAL
+     ============================================================================ -->
+<?php if (isset($_SESSION['user_id'])): ?>
+<div id="actorEditModal" class="edit-modal" style="display: none;">
+    <div class="edit-modal-overlay" onclick="closeActorEditModal()"></div>
+    <div class="edit-modal-content">
+        <div class="edit-modal-header">
+            <h2><i class="bi bi-pencil-square"></i> Schauspieler bearbeiten</h2>
+            <button class="btn-close-modal" onclick="closeActorEditModal()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form id="actorEditForm" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
+            <input type="hidden" name="id" value="<?= $actor['id'] ?>">
+            <div class="edit-modal-body">
+                <div class="form-section">
+                    <h3><i class="bi bi-person"></i> Basis-Informationen</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit_first_name">Vorname *</label>
+                            <input type="text" id="edit_first_name" name="first_name" value="<?= htmlspecialchars($actor['first_name'] ?? '') ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_last_name">Nachname *</label>
+                            <input type="text" id="edit_last_name" name="last_name" value="<?= htmlspecialchars($actor['last_name'] ?? '') ?>" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit_birth_date">Geburtsdatum</label>
+                            <input type="date" id="edit_birth_date" name="birth_date" value="<?= $actor['birth_date'] ?? '' ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_birth_place">Geburtsort</label>
+                            <input type="text" id="edit_birth_place" name="birth_place" value="<?= htmlspecialchars($actor['birth_place'] ?? '') ?>">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit_death_date">Todesdatum</label>
+                            <input type="date" id="edit_death_date" name="death_date" value="<?= $actor['death_date'] ?? '' ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_nationality">Nationalität</label>
+                            <input type="text" id="edit_nationality" name="nationality" value="<?= htmlspecialchars($actor['nationality'] ?? '') ?>">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3><i class="bi bi-image"></i> Foto</h3>
+                    <?php if (!empty($actor['photo_path'])): ?>
+                    <div class="current-photo">
+                        <p><strong>Aktuelles Foto:</strong></p>
+                        <img src="images/actors/<?= basename($actor['photo_path']) ?>" alt="<?= htmlspecialchars($fullName) ?>" style="max-width: 200px; border-radius: 8px;">
+                    </div>
+                    <?php endif; ?>
+                    <div class="form-group">
+                        <label for="edit_photo">Neues Foto hochladen</label>
+                        <input type="file" id="edit_photo" name="photo" accept="image/*">
+                        <small>JPG, PNG, GIF, WebP - Max 5MB</small>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3><i class="bi bi-file-text"></i> Biografie</h3>
+                    <div class="form-group">
+                        <label for="edit_bio">Lebenslauf / Karriere</label>
+                        <textarea id="edit_bio" name="bio" rows="10"><?= htmlspecialchars($actor['bio'] ?? '') ?></textarea>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3><i class="bi bi-link-45deg"></i> Externe Links</h3>
+                    <div class="form-group">
+                        <label for="edit_website">Website</label>
+                        <input type="url" id="edit_website" name="website" value="<?= htmlspecialchars($actor['website'] ?? '') ?>" placeholder="https://...">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit_imdb_id">IMDb ID</label>
+                            <input type="text" id="edit_imdb_id" name="imdb_id" value="<?= htmlspecialchars($actor['imdb_id'] ?? '') ?>" placeholder="nm0000123">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_tmdb_id">TMDb ID</label>
+                            <input type="text" id="edit_tmdb_id" name="tmdb_id" value="<?= htmlspecialchars($actor['tmdb_id'] ?? '') ?>" placeholder="12345">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="edit-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeActorEditModal()"><i class="bi bi-x"></i> Abbrechen</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- Schema.org JSON-LD -->
 <script type="application/ld+json">
@@ -669,4 +772,319 @@ if (!empty($actor['bio'])) {
         gap: var(--space-md, 1rem);
     }
 }
+
+/* ============================================================================
+   WIKI-EDIT BUTTON & MODAL
+   ============================================================================ */
+
+.btn-wiki-edit {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--primary-color, #4EC9B0);
+    color: #1e1e1e;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(78, 201, 176, 0.3);
+    z-index: 100;
+}
+
+.btn-wiki-edit:hover {
+    background: #45b59f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(78, 201, 176, 0.4);
+}
+
+.actor-header-info {
+    position: relative;
+}
+
+.edit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: none;
+}
+
+.edit-modal.show {
+    display: block;
+}
+
+.edit-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.edit-modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--clr-bg, #1e1e1e);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.edit-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 2px solid rgba(78, 201, 176, 0.2);
+}
+
+.edit-modal-header h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary-color, #4EC9B0);
+}
+
+.btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-color, #e0e0e0);
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.3s;
+}
+
+.btn-close-modal:hover {
+    color: var(--primary-color, #4EC9B0);
+}
+
+.edit-modal-body {
+    padding: 30px;
+    max-height: calc(90vh - 180px);
+    overflow-y: auto;
+}
+
+.edit-modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 20px 30px;
+    border-top: 2px solid rgba(78, 201, 176, 0.2);
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    color: var(--primary-color, #4EC9B0);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-color, #e0e0e0);
+}
+
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group input[type="url"],
+.form-group textarea,
+.form-group input[type="file"] {
+    width: 100%;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: var(--text-color, #e0e0e0);
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color, #4EC9B0);
+    background: rgba(78, 201, 176, 0.05);
+}
+
+.form-group textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-muted, #999);
+    font-size: 12px;
+}
+
+.current-photo {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: var(--primary-color, #4EC9B0);
+    color: #1e1e1e;
+}
+
+.btn-primary:hover {
+    background: #45b59f;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color, #e0e0e0);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.edit-modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.edit-modal-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.edit-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(78, 201, 176, 0.3);
+    border-radius: 4px;
+}
+
+.edit-modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(78, 201, 176, 0.5);
+}
 </style>
+
+<script>
+// ============================================================================
+// WIKI-STYLE EDIT MODAL
+// ============================================================================
+
+function openActorEditModal() {
+    const modal = document.getElementById('actorEditModal');
+    if (modal) {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeActorEditModal() {
+    const modal = document.getElementById('actorEditModal');
+    if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+}
+
+// ESC-Key schließt Modal
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('actorEditModal');
+        if (modal && modal.classList.contains('show')) {
+            closeActorEditModal();
+        }
+    }
+});
+
+// Form Submit via AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('actorEditForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // Button disabled & Loading
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Speichere...';
+                
+                const response = await fetch('admin/api/actor-save.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Erfolg!
+                    alert('✅ Änderungen gespeichert! Die Seite wird neu geladen...');
+                    // Seite neu laden um Änderungen anzuzeigen
+                    window.location.reload();
+                } else {
+                    alert('❌ Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+                
+            } catch (error) {
+                console.error('Save error:', error);
+                alert('❌ Fehler beim Speichern: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+    }
+});
+</script>
