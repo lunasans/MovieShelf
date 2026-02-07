@@ -238,7 +238,7 @@ $backdropUrl = $backCover ?? '';
 /* Titel auf Backdrop - Weiß mit starkem Shadow */
 .detail-inline .hero-wrapper .hero-section .hero-content .film-header h2,
 .hero-content .film-header h2,
-h2[itemprop="name"] {
+{
     margin: 0;
     font-size: 2.5rem;
     font-weight: 700;
