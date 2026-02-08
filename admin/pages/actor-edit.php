@@ -883,7 +883,7 @@ filmSearchInput.addEventListener('input', function() {
 
 async function searchFilms(query) {
     try {
-        const response = await fetch(`api/search-films.php?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`actions/search-films.php?q=${encodeURIComponent(query)}`);
         const films = await response.json();
         
         if (films.length === 0) {
@@ -926,7 +926,7 @@ addFilmBtn.addEventListener('click', async function() {
     const role = roleInput.value.trim();
     
     try {
-        const response = await fetch('api/actor-films.php', {
+        const response = await fetch('actions/actor-films.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -963,7 +963,7 @@ document.addEventListener('click', async function(e) {
         }
         
         try {
-            const response = await fetch('api/actor-films.php', {
+            const response = await fetch('actions/actor-films.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1005,7 +1005,7 @@ document.addEventListener('click', async function(e) {
         if (newRole === null) return; // Abgebrochen
         
         try {
-            const response = await fetch('api/actor-films.php', {
+            const response = await fetch('actions/actor-films.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

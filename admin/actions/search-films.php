@@ -3,7 +3,7 @@
  * Film-Such-API für Autocomplete
  * Sucht Filme in der Datenbank
  * 
- * Speicherort: /admin/api/search-films.php
+ * Speicherort: /admin/actions/search-films.php
  */
 
 session_start();

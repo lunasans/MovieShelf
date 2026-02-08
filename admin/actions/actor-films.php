@@ -3,7 +3,7 @@
  * Actor-Film-Management API
  * Fügt Filme zur Filmographie hinzu/entfernt sie/bearbeitet Rollen
  * 
- * Speicherort: /admin/api/actor-films.php
+ * Speicherort: /admin/actions/actor-films.php
  * 
  * Actions:
  * - add: Film zur Filmographie hinzufügen
