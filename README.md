@@ -28,7 +28,7 @@ MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und 
 ## 🛠️ Technische Details
 
 ### Systemanforderungen
-- PHP 7.4+ 
+- PHP 8.0+
 - MySQL/MariaDB
 - Webserver (Apache/Nginx)
 - Modern Browser mit JavaScript-Unterstützung
