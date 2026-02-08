@@ -19,16 +19,29 @@ MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und 
 - **Responsive Design** für alle Bildschirmgrößen
 - **Listen- und Kachelansicht** mit nahtlosem Umschalten
 
-### 📊 Erweiterte Features
+### 🎭 Schauspieler-Profile (NEU in v1.5.0)
+- **Detaillierte Schauspieler-Profile** mit Biografien und Fotos
+- **Filmografie-Übersicht** für jeden Schauspieler
+- **Verknüpfung Film ↔ Schauspieler** mit Rolleninformationen
+- **Inline-Editing** für schnelle Aktualisierungen
+
+### � Benutzer-Features (NEU in v1.5.0)
+- **Persönliche Bewertungen** für Filme
+- **"Gesehen"-Status** zum Tracking
+- **Wunschliste** für zukünftige Filme
+- **Aktivitäts-Log** zur Nachverfolgung
+
+### �📊 Erweiterte Features
 - **Statistikseite** mit interaktiven Diagrammen (Chart.js)
-- **Admin-Panel** (ab Version 1.3.5) mit Update-Funktionen
+- **Admin-Panel** mit umfangreichen Verwaltungsfunktionen
 - **Besucherzähler** für Nutzungsstatistiken
+- **2FA-Authentifizierung** für erhöhte Sicherheit
 - **DSGVO-konformes Design** mit Impressum und Datenschutz
 
 ## 🛠️ Technische Details
 
 ### Systemanforderungen
-- PHP 7.4+ 
+- PHP 8.0+
 - MySQL/MariaDB
 - Webserver (Apache/Nginx)
 - Modern Browser mit JavaScript-Unterstützung
@@ -40,7 +53,8 @@ MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und 
   - Bootstrap Icons
   - Fancybox für Lightbox-Funktionen
   - Chart.js für Statistiken
-- **Datenbank**: MySQL/MariaDB
+- **Datenbank**: MySQL/MariaDB (15 Tabellen)
+- **APIs**: TMDb API für Film-Metadaten
 
 ## 📁 Projektstruktur
 
@@ -57,8 +71,16 @@ movieshelf/
 ├── partials/              # Template-Teile
 │   ├── header.php         # Header-Template
 │   ├── film-list.php      # Film-Listen-Template
+│   ├── actor-profile.php  # Schauspieler-Profile (NEU)
 │   ├── impressum.php      # Impressum
 │   └── datenschutz.php    # Datenschutzerklärung
+├── includes/              # Core-Funktionen
+│   ├── bootstrap.php      # System-Initialisierung
+│   ├── functions.php      # Helper-Funktionen
+│   └── version.php        # Versionsverwaltung
+├── install/               # Installationsskripte
+│   ├── index.php          # Installations-Wizard
+│   └── sqldump/           # Datenbank-Schema
 ├── index.php              # Hauptdatei
 └── README.md              # Diese Datei
 ```
@@ -67,8 +89,8 @@ movieshelf/
 
 ### 1. Repository klonen
 ```bash
-git clone https://github.com/lunasans/dvdprofiler.liste.git
-cd movieshelf
+git clone https://github.com/lunasans/MovieShelf.git  
+cd MovieShelf
 ```
 
 ### 2. Datenbank einrichten
@@ -76,12 +98,13 @@ cd movieshelf
 - Importieren Sie das mitgelieferte SQL-Schema
 - Konfigurieren Sie die Datenbankverbindung
 
-### 3. Konfiguration
-- Passen Sie die Konfigurationsdateien an Ihre Umgebung an
-- Setzen Sie die entsprechenden Dateiberechtigungen
-- Konfigurieren Sie Ihren Webserver
+### 3. Installation durchführen
+- Öffnen Sie `http://ihre-domain.de/install/` im Browser
+- Folgen Sie dem Installations-Wizard
+- Erstellen Sie einen Admin-Benutzer
+- Das System erstellt automatisch alle 15 Datenbank-Tabellen
 
-### 4. XML-Import
+### 4. XML-Import (Optional)
 - Exportieren Sie Ihre Sammlung aus DVD Profiler als collection.xml
 - Nutzen Sie die Import-Funktion im Admin-Panel
 
@@ -101,11 +124,13 @@ Das moderne Interface nutzt Glasmorphismus-Effekte für eine elegante und zeitge
 - Schnelle Navigation durch große Sammlungen
 
 ### Admin-Funktionen
-- Benutzer-Authentifizierung
-- Batch-Import von XML-Dateien
-- Datenbank-Wartungstools
-- Statistik-Dashboard
-- System-Updates
+- **Benutzer-Authentifizierung** mit 2FA-Unterstützung
+- **Schauspieler-Verwaltung** mit Profil-Editor
+- **Film-Verwaltung** mit TMDb-Import
+- **Batch-Import** von XML-Dateien
+- **Datenbank-Wartungstools**
+- **Statistik-Dashboard**
+- **GitHub-basierte System-Updates**
 
 ## 📊 Screenshots
 
@@ -119,8 +144,12 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 
 - **DSGVO-konform**: Vollständige Datenschutzerklärung und Impressum
 - **Keine externe Datenübertragung**: Alle Daten bleiben auf Ihrem Server
-- **Sichere Authentifizierung**: Verschlüsselte Login-Funktionen
+- **2FA-Authentifizierung**: Zwei-Faktor-Authentifizierung mit Backup-Codes
+- **Sichere Sessions**: IP-Subnet-Validierung und User-Agent-Checks
 - **Content Security Policy**: Schutz vor XSS-Angriffen
+- **CSRF-Protection**: Schutz vor Cross-Site-Request-Forgery
+- **Prepared Statements**: SQL-Injection-Schutz
+- **Password Hashing**: Bcrypt-Verschlüsselung
 
 ## 🤝 Mitwirken
 
@@ -142,10 +171,12 @@ GitHub: [@lunasans](https://github.com/lunasans)
 ## 🐛 Support & Feedback
 
 Bei Fragen, Problemen oder Verbesserungsvorschlägen:
-- Erstellen Sie ein [GitHub Issue](https://github.com/lunasans/dvdprofiler.liste/issues)
+- Erstellen Sie ein [GitHub Issue](https://github.com/lunasans/MovieShelf/issues)
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 1.4.9  
-**Letztes Update**: Januar 2026  
+**Version**: 1.5.0 - Schauspieler-Profile Edition  
+**Letztes Update**: Februar 2026  
 **Status**: Aktiv entwickelt
+
+*Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
