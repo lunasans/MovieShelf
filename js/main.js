@@ -53,6 +53,17 @@ class DVDApp {
             return;
         }
 
+        // Actor Profile Toggle - NEU
+        const actorLink = e.target.closest('.actor-link, [data-actor-slug]');
+        if (actorLink) {
+            e.preventDefault();
+            const actorSlug = actorLink.dataset.actorSlug || actorLink.getAttribute('data-actor-slug');
+            if (actorSlug) {
+                this.loadActorProfile(actorSlug);
+            }
+            return;
+        }
+
         // Close Detail Button
         if (e.target.classList.contains('close-detail-button')) {
             e.preventDefault();
@@ -150,6 +161,9 @@ class DVDApp {
                 
                 // 📺 STAFFELN/EPISODEN INITIALISIEREN
                 this.initSeasons();
+                
+                // 🎭 ACTOR-LINKS NEU BINDEN (für Cast in film-view.php)
+                this.rebindActorLinks();
             }
         } catch (error) {
             console.error('❌ Fehler beim Laden des Films:', error);
@@ -157,6 +171,64 @@ class DVDApp {
                 this.container.innerHTML = '<div style="color: red;">Fehler beim Laden des Films.</div>';
             }
         }
+    }
+
+    // 🎭 NEUE METHODE: Actor-Profil laden (analog zu loadFilmDetail)
+    async loadActorProfile(actorSlug) {
+        try {
+            console.log('🎭 Actor-Slug wird geladen:', actorSlug);
+            
+            const response = await fetch(`actor-fragment.php?slug=${encodeURIComponent(actorSlug)}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const html = await response.text();
+            
+            console.log('📄 Actor-Profil Antwort erhalten, erste 100 Zeichen:', html.substring(0, 100));
+            
+            if (this.container) {
+                this.container.innerHTML = html;
+                history.replaceState(null, '', '?page=actor&slug=' + actorSlug);
+                
+                // Fancybox für neue Inhalte binden
+                this.bindFancybox();
+                
+                // Event-Listener für Actor-Links im geladenen Profil neu binden
+                // (für Cast-Listen in Filmographie)
+                this.rebindActorLinks();
+            }
+        } catch (error) {
+            console.error('❌ Fehler beim Laden des Actor-Profils:', error);
+            if (this.container) {
+                this.container.innerHTML = `
+                    <div class="error-message" style="padding: 40px; text-align: center;">
+                        <div class="error-icon" style="font-size: 4rem; margin-bottom: 20px; color: #f48771;">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <h3 style="color: #f48771; margin-bottom: 15px;">Fehler beim Laden</h3>
+                        <p style="margin-bottom: 25px;">Das Schauspieler-Profil konnte nicht geladen werden.</p>
+                        <p style="font-size: 0.9em; opacity: 0.7;">${error.message}</p>
+                        <div style="margin-top: 25px;">
+                            <button onclick="location.reload()" class="btn btn-sm btn-primary" style="margin-right: 10px;">
+                                <i class="bi bi-arrow-clockwise"></i> Erneut versuchen
+                            </button>
+                            <a href="/" class="btn btn-sm btn-secondary">
+                                <i class="bi bi-house"></i> Zur Startseite
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // 🎭 NEUE METHODE: Actor-Links im geladenen Content neu binden
+    rebindActorLinks() {
+        console.log('🔗 Actor-Links werden neu gebunden...');
+        // Event-Delegation funktioniert automatisch durch handleDocumentClick
+        // Diese Methode ist für zukünftige Erweiterungen reserviert
     }
 
     // 🌟 NEUE METHODE: Film-Rating System initialisieren
@@ -549,10 +621,46 @@ class DVDApp {
     }
 
     async loadPage(page) {
-        const response = await fetch(`partials/${page}.php`);
+        // Spezialbehandlung für Actor-Profile
+        if (page === 'actor') {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('slug');
+            
+            if (slug) {
+                // Lade Actor-Profil via loadActorProfile
+                await this.loadActorProfile(slug);
+            } else {
+                // Kein Slug → Fehler
+                this.container.innerHTML = `
+                    <div class="error-message" style="padding: 40px; text-align: center;">
+                        <div class="error-icon" style="font-size: 4rem; margin-bottom: 20px; color: #f48771;">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+                        <h3 style="color: #f48771;">Kein Schauspieler angegeben</h3>
+                        <p>Bitte wählen Sie einen Schauspieler aus.</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+        
+        // Standard-Verhalten für andere Pages (inkl. actors)
+        // Query-Parameter durchreichen (außer 'page')
+        const params = new URLSearchParams(window.location.search);
+        params.delete('page'); // 'page' Parameter entfernen
+        
+        const queryString = params.toString();
+        const url = queryString ? `partials/${page}.php?${queryString}` : `partials/${page}.php`;
+        
+        const response = await fetch(url);
         const html = await response.text();
         
         this.container.innerHTML = html;
+        
+        // Event-Handler für Actor-Links neu binden (für actors-Seite)
+        if (page === 'actors') {
+            this.rebindActorLinks();
+        }
         
         if (page === 'stats') {
             await this.ensureChartJsLoaded();

@@ -238,7 +238,7 @@ $backdropUrl = $backCover ?? '';
 /* Titel auf Backdrop - Weiß mit starkem Shadow */
 .detail-inline .hero-wrapper .hero-section .hero-content .film-header h2,
 .hero-content .film-header h2,
-h2[itemprop="name"] {
+{
     margin: 0;
     font-size: 2.5rem;
     font-weight: 700;
@@ -820,9 +820,37 @@ span[itemprop="datePublished"] {
                 <ul itemprop="actor" itemscope itemtype="https://schema.org/Person">
                     <?php foreach ($actors as $actor): ?>
                         <li class="actor-item">
-                            <span class="actor-name" itemprop="name">
-                                <?= htmlspecialchars("{$actor['first_name']} {$actor['last_name']}") ?>
-                            </span>
+                            <?php 
+                            // Slug ermitteln mit mehreren Fallbacks
+                            $actorSlug = '';
+                            if (!empty($actor['slug'])) {
+                                // Bevorzugt: Slug aus Datenbank
+                                $actorSlug = $actor['slug'];
+                            } elseif (!empty($actor['first_name']) && !empty($actor['last_name'])) {
+                                // Fallback 1: Slug aus Namen generieren
+                                $fullName = $actor['first_name'] . '-' . $actor['last_name'];
+                                $actorSlug = strtolower(preg_replace('/[^a-zA-Z0-9-]/', '', 
+                                    str_replace([' ', 'ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü'], 
+                                               ['-', 'ae', 'oe', 'ue', 'ss', 'ae', 'oe', 'ue'], 
+                                               $fullName)));
+                            } elseif (!empty($actor['id'])) {
+                                // Fallback 2: Actor ID verwenden
+                                $actorSlug = 'actor-' . $actor['id'];
+                            }
+                            
+                            $actorFullName = trim(($actor['first_name'] ?? '') . ' ' . ($actor['last_name'] ?? ''));
+                            ?>
+                            <?php if (!empty($actorSlug)): ?>
+                            <a href="#" 
+                               class="actor-name actor-link" 
+                               data-actor-slug="<?= htmlspecialchars($actorSlug) ?>"
+                               itemprop="name"
+                               title="Profil von <?= htmlspecialchars($actorFullName) ?> anzeigen">
+                                <?= htmlspecialchars($actorFullName) ?>
+                            </a>
+                            <?php else: ?>
+                            <span class="actor-name"><?= htmlspecialchars($actorFullName) ?></span>
+                            <?php endif; ?>
                             <?php if (!empty($actor['role'])): ?>
                                 <span class="actor-role">als <em><?= htmlspecialchars($actor['role']) ?></em></span>
                             <?php endif; ?>
@@ -1352,3 +1380,70 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 </script>
+<style>
+/* ============================================
+   Actor Profile Links Styling
+   ============================================ */
+
+.actor-link {
+    color: var(--text-white, #ffffff);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+}
+
+.actor-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-primary, #667eea);
+    transition: width 0.3s ease;
+}
+
+.actor-link:hover {
+    color: var(--accent-primary, #667eea);
+}
+
+.actor-link:hover::after {
+    width: 100%;
+}
+
+/* Actor Item mit besserer Spacing */
+.actor-item {
+    padding: 0.5rem 0;
+    transition: all 0.3s ease;
+}
+
+.actor-item:hover {
+    padding-left: 0.5rem;
+    background: var(--glass-bg, rgba(255, 255, 255, 0.02));
+    border-radius: var(--radius-sm, 6px);
+}
+
+/* Smooth Animation für Actor Links */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.actor-item {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.actor-item:nth-child(1) { animation-delay: 0.05s; }
+.actor-item:nth-child(2) { animation-delay: 0.1s; }
+.actor-item:nth-child(3) { animation-delay: 0.15s; }
+.actor-item:nth-child(4) { animation-delay: 0.2s; }
+.actor-item:nth-child(5) { animation-delay: 0.25s; }
+</style>

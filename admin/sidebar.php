@@ -39,6 +39,11 @@ $dvdProfilerStats = getDVDProfilerStatistics();
             Filme
         </a>
         
+        <a href="?page=actors" class="nav-link <?= ($_GET['page'] ?? '') === 'actors' ? 'active' : '' ?>">
+            <i class="bi bi-people-fill"></i>
+            Schauspieler
+        </a>
+        
         <a href="#" class="nav-link" data-bs-toggle="collapse" data-bs-target="#importSubmenu">
         <i class="bi bi-upload"></i>
         Import

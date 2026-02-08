@@ -1,10 +1,10 @@
-# DVD Profiler Liste
+# MovieShelf - Dein digitales Filmregal
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
 
 ## 🎬 Übersicht
 
-DVD Profiler Liste ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und Präsentation Ihrer DVD/Blu-ray-Sammlung. Das System bietet eine intuitive Benutzeroberfläche mit Glass-Morphism-Design und umfangreiche Funktionen für Film-Enthusiasten.
+MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und Präsentation Ihrer DVD/Blu-ray-Sammlung. Das System bietet eine intuitive Benutzeroberfläche mit Glass-Morphism-Design und umfangreiche Funktionen für Film-Enthusiasten.
 
 ## ✨ Hauptfunktionen
 
@@ -45,7 +45,7 @@ DVD Profiler Liste ist eine vollständige Webanwendung zur Verwaltung, Durchsuch
 ## 📁 Projektstruktur
 
 ```
-dvdprofiler.liste/
+movieshelf/
 ├── admin/                  # Admin-Panel und Verwaltung
 ├── css/                    # Stylesheets und Themes
 │   ├── style.css          # Haupt-Stylesheet
@@ -68,7 +68,7 @@ dvdprofiler.liste/
 ### 1. Repository klonen
 ```bash
 git clone https://github.com/lunasans/dvdprofiler.liste.git
-cd dvdprofiler.liste
+cd movieshelf
 ```
 
 ### 2. Datenbank einrichten

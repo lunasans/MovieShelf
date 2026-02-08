@@ -3,6 +3,11 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/soft-delete-helpers.php';
 
+// Core Functions laden (WICHTIG: Vor allem anderen!)
+if (file_exists(__DIR__ . '/functions.php')) {
+    require_once __DIR__ . '/functions.php';
+}
+
 function setSecurityHeaders(): void {
     // Verhindert XSS Angriffe
     header('X-Content-Type-Options: nosniff');
@@ -482,4 +487,9 @@ if (file_exists(__DIR__ . '/tmdb-helper.php')) {
     require_once __DIR__ . '/tmdb-helper.php';
 }
 
+
+// Actor Profile Functions laden (für Schauspieler-Profile)
+if (file_exists(__DIR__ . '/actor-functions.php')) {
+    require_once __DIR__ . '/actor-functions.php';
+}
 // Bootstrap-Abschluss-Log wird in includes/debug.php behandelt

@@ -205,42 +205,6 @@ HTML;
 }
 ?>
 
-<!-- ============================================================ -->
-<!-- VERSION TEST BANNER - SICHTBAR AUF SEITE -->
-<!-- VERSION: V3.1 - OHNE ALERT -->
-<!-- ============================================================ -->
-<div id="version-test-banner" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: #ff0000;
-    color: #ffffff;
-    padding: 20px;
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    z-index: 999999;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-">
-    ✅ VERSION: ROBUST-POSITION-V3.2 GELADEN! ✅
-    <div style="font-size: 16px; margin-top: 10px;">
-        SYNTAX-FEHLER BEHOBEN! Funktion sollte jetzt funktionieren!
-    </div>
-    <button onclick="document.getElementById('version-test-banner').remove();" style="
-        margin-top: 10px;
-        padding: 10px 20px;
-        background: white;
-        color: black;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-    ">
-        Banner schließen
-    </button>
-</div>
-
 <!-- Tabs für Collection Types -->
 <div class="tabs-wrapper">
   <ul class="tabs">
@@ -643,6 +607,15 @@ let yOffset = 0;
 
 console.log('🔴 SCHRITT 1: Variablen definiert');
 
+// WICHTIG: Modal an das Ende des Body verschieben beim Laden
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('boxsetModal');
+    if (modal && modal.parentElement !== document.body) {
+        console.log('📦 Verschiebe BoxSet Modal an das Ende des Body');
+        document.body.appendChild(modal);
+    }
+});
+
 // WICHTIG: Funktion SOFORT definieren!
 function openBoxSetModal(event, parentId) {
     console.log('🎯 openBoxSetModal aufgerufen!', { event, parentId });
@@ -651,6 +624,9 @@ function openBoxSetModal(event, parentId) {
     const modalTitle = document.getElementById('modalTitle');
     const modalBody = document.getElementById('modalBody');
     const modalContent = modal.querySelector('.modal-content');
+    
+    // Verhindere Hintergrund-Scroll (aber Modal bleibt scrollbar)
+    document.body.style.overflow = 'hidden';
     
     // Mausposition speichern
     const clickX = event.clientX;
@@ -751,6 +727,9 @@ function closeBoxSetModal() {
     
     // Modal ausblenden
     modal.classList.remove('show');
+    
+    // Hintergrund-Scroll wieder erlauben
+    document.body.style.overflow = '';
     
     // Reset für nächstes Öffnen
     xOffset = 0;

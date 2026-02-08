@@ -1,10 +1,10 @@
 <?php
 /**
- * DVD Profiler Liste - Datenschutzerklärung
+ * MovieShelf - Datenschutzerklärung
  * 
- * @package    dvdprofiler.liste
+ * @package    movieshelf
  * @author     René Neuhaus
- * @version    1.4.5
+ * @version    1.5.0
  */
 
 // Bootstrap laden für getSetting() Funktion
@@ -22,7 +22,7 @@ if (!function_exists('getSetting')) {
         $settings = [
             'backup_retention_days' => '30',
             'session_timeout' => '3600',
-            'site_title' => 'DVD Profiler Liste',
+            'site_title' => 'MovieShelf',
             'admin_email' => 'admin@example.com'
         ];
         
@@ -451,7 +451,7 @@ if (!function_exists('getSetting')) {
     <footer class="page-footer">
         <div class="footer-info">
             <p>
-                <strong>DVD Profiler Liste</strong> v<?= DVDPROFILER_VERSION ?> "<?= DVDPROFILER_CODENAME ?>"<br>
+                <strong>MovieShelf</strong> v<?= DVDPROFILER_VERSION ?> "<?= DVDPROFILER_CODENAME ?>"<br>
                 Datenschutzerklärung | Build <?= DVDPROFILER_BUILD_DATE ?> | © <?= date('Y') ?> <?= DVDPROFILER_AUTHOR ?>
             </p>
             <p class="build-details">

@@ -14,8 +14,8 @@
 global $pdo;
 if (!isset($pdo) || !($pdo instanceof PDO)) {
     // Fallback: Bootstrap laden falls nicht vorhanden
-    if (file_exists(__DIR__ . '/includes/bootstrap.php')) {
-        require_once __DIR__ . '/includes/bootstrap.php';
+    if (file_exists(__DIR__ . '/../includes/bootstrap.php')) {
+        require_once __DIR__ . '/../includes/bootstrap.php';
     }
 }
 
@@ -78,12 +78,61 @@ try {
     $totalTrailers = 0;
     $totalPages = 0;
 }
+
+// ============================================================================
+// AJAX-Request? Nur JSON zurückgeben (für Infinite Scroll)
+// ============================================================================
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    header('Content-Type: application/json');
+    
+    $htmlCards = '';
+    foreach ($trailers as $trailer) {
+        // Cover-Bild finden
+        $coverUrl = 'cover/placeholder.png';
+        if (isset($trailer['cover_id']) && $trailer['cover_id']) {
+            if (function_exists('findCoverImage')) {
+                $coverUrl = findCoverImage($trailer['cover_id'], 'f');
+            } else {
+                $coverUrl = "cover/{$trailer['cover_id']}f.jpg";
+            }
+        }
+        
+        $embedUrl = getYouTubeEmbedUrl($trailer['trailer_url']);
+        
+        $htmlCards .= '<div class="trailer-card" data-trailer-id="' . $trailer['id'] . '">';
+        $htmlCards .= '<div class="trailer-thumbnail" onclick="playTrailer(this)" data-embed-url="' . htmlspecialchars($embedUrl) . '">';
+        $htmlCards .= '<img src="' . htmlspecialchars($coverUrl) . '" alt="' . htmlspecialchars($trailer['title']) . ' Cover" loading="lazy" onerror="this.src=\'/../cover/placeholder.png\'">';
+        $htmlCards .= '<div class="play-overlay"><i class="bi bi-play-circle-fill"></i></div>';
+        $htmlCards .= '<div class="trailer-duration">Trailer</div>';
+        $htmlCards .= '</div>';
+        $htmlCards .= '<div class="trailer-info">';
+        $htmlCards .= '<h3 class="trailer-title"><a href="?page=film&id=' . $trailer['id'] . '">' . htmlspecialchars($trailer['title']) . '</a></h3>';
+        $htmlCards .= '<div class="trailer-meta">';
+        $htmlCards .= '<span class="trailer-year"><i class="bi bi-calendar3"></i> ' . $trailer['year'] . '</span>';
+        $htmlCards .= '<span class="trailer-genre"><i class="bi bi-tag"></i> ' . htmlspecialchars($trailer['genre']) . '</span>';
+        $htmlCards .= '</div>';
+        $htmlCards .= '</div>';
+        $htmlCards .= '</div>';
+    }
+    
+    echo json_encode([
+        'success' => true,
+        'html' => $htmlCards,
+        'page' => $page,
+        'hasMore' => ($offset + $trailersPerPage) < $totalTrailers,
+        'total' => $totalTrailers,
+        'loaded' => count($trailers)
+    ]);
+    exit;
+}
+
+$displayedTrailers = count($trailers);
 ?>
 
 <!-- ============================================================================
      PAGE HEADER
      ============================================================================ -->
-<main class="trailers-page">
+<main class="trailers-page" data-total="<?= $totalTrailers ?>" data-per-page="<?= $trailersPerPage ?>" data-current-page="<?= $page ?>">
     <div class="page-header">
         <div class="page-header-content">
             <h1>
@@ -91,7 +140,7 @@ try {
                 Neueste Trailer
             </h1>
             <p class="page-subtitle">
-                <?= $totalTrailers ?> Trailer in der Sammlung
+                <span id="displayedCount"><?= $displayedTrailers ?></span> / <?= $totalTrailers ?> Trailer in der Sammlung
                 <?php /* Debug Info - kann entfernt werden wenn alles funktioniert */ ?>
                 <!--
                 <small style="opacity: 0.6; margin-left: 1rem;">
@@ -124,10 +173,7 @@ try {
                         $coverUrl = findCoverImage($trailer['cover_id'], 'f');
                     } else {
                         // Manueller Fallback falls Funktion fehlt
-                        $testCover = "cover/{$trailer['cover_id']}f.jpg";
-                        if (file_exists($testCover)) {
-                            $coverUrl = $testCover;
-                        }
+                        $coverUrl = "cover/{$trailer['cover_id']}f.jpg";
                     }
                 }
                 
@@ -141,7 +187,7 @@ try {
                         <img src="<?= htmlspecialchars($coverUrl) ?>" 
                              alt="<?= htmlspecialchars($trailer['title']) ?> Cover"
                              loading="lazy"
-                             onerror="this.src='cover/placeholder.png'">
+                             onerror="this.src='/../cover/placeholder.png'">
                         
                         <!-- Play Overlay -->
                         <div class="play-overlay">
@@ -174,44 +220,16 @@ try {
             <?php endforeach; ?>
         </div>
         
-        <!-- ====================================================================
-             PAGINATION
-             ==================================================================== -->
-        <?php if ($totalPages > 1): ?>
-            <nav class="pagination">
-                <!-- Erste / Zurück -->
-                <?php if ($page > 1): ?>
-                    <a href="?page=trailers&p=1" class="pagination-link">« Erste</a>
-                    <a href="?page=trailers&p=<?= $page - 1 ?>" class="pagination-link">‹ Zurück</a>
-                <?php endif; ?>
-                
-                <!-- Page Numbers -->
-                <?php
-                $window = 2;
-                $start = max(1, $page - $window);
-                $end = min($totalPages, $page + $window);
-                
-                for ($i = $start; $i <= $end; $i++):
-                    if ($i === $page): ?>
-                        <span class="pagination-current"><?= $i ?></span>
-                    <?php else: ?>
-                        <a href="?page=trailers&p=<?= $i ?>" class="pagination-link"><?= $i ?></a>
-                    <?php endif;
-                endfor;
-                ?>
-                
-                <!-- Weiter / Letzte -->
-                <?php if ($page < $totalPages): ?>
-                    <a href="?page=trailers&p=<?= $page + 1 ?>" class="pagination-link">Weiter ›</a>
-                    <a href="?page=trailers&p=<?= $totalPages ?>" class="pagination-link">Letzte »</a>
-                <?php endif; ?>
-            </nav>
-            
-            <!-- Pagination Info -->
-            <div class="pagination-info">
-                Seite <?= $page ?> von <?= $totalPages ?>
+        <!-- Infinite Scroll Loading Indicator -->
+        <div id="infiniteScrollLoader" style="display: none; text-align: center; padding: 40px;">
+            <div style="display: inline-block;">
+                <div style="width: 50px; height: 50px; border: 4px solid rgba(78, 201, 176, 0.2); border-top-color: #4EC9B0; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 15px; color: var(--text-muted, #999);">Lade weitere Trailer...</p>
             </div>
-        <?php endif; ?>
+        </div>
+        
+        <!-- Infinite Scroll Trigger (unsichtbar) -->
+        <div id="infiniteScrollTrigger" style="height: 1px;"></div>
     <?php endif; ?>
 </main>
 
@@ -444,6 +462,7 @@ try {
     align-items: center;
     justify-content: center;
     padding: 20px;
+    overflow-y: auto; /* Falls Modal größer als Viewport */
 }
 
 .trailer-modal.show {
@@ -715,10 +734,128 @@ try {
 }
 </style>
 
+<!-- Infinite Scroll Animation -->
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
 <!-- ============================================================================
      JAVASCRIPT
      ============================================================================ -->
 <script>
+// ============================================================================
+// INFINITE SCROLL für Trailer
+// ============================================================================
+(function() {
+    console.log('🔄 Infinite Scroll für Trailer initialisiert');
+    
+    // WICHTIG: Modal an das Ende des Body verschieben
+    // Dies verhindert, dass parent-Container mit transform/filter position:fixed brechen
+    const modal = document.getElementById('trailerModal');
+    if (modal && modal.parentElement !== document.body) {
+        console.log('📦 Verschiebe Modal an das Ende des Body');
+        document.body.appendChild(modal);
+    }
+    
+    const container = document.querySelector('.trailers-page');
+    const trigger = document.getElementById('infiniteScrollTrigger');
+    const loader = document.getElementById('infiniteScrollLoader');
+    const displayedCount = document.getElementById('displayedCount');
+    
+    if (!container || !trigger) {
+        console.error('❌ Container oder Trigger nicht gefunden');
+        return;
+    }
+    
+    let currentPage = parseInt(container.dataset.currentPage) || 1;
+    const perPage = parseInt(container.dataset.perPage) || 12;
+    const total = parseInt(container.dataset.total) || 0;
+    
+    let isLoading = false;
+    let hasMore = (currentPage * perPage) < total;
+    
+    console.log(`📊 Initial: Page ${currentPage}, PerPage ${perPage}, Total ${total}, HasMore ${hasMore}`);
+    
+    // IntersectionObserver für Infinite Scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && hasMore && !isLoading) {
+                console.log('👀 Trigger sichtbar - lade mehr Trailer...');
+                loadMore();
+            }
+        });
+    }, {
+        rootMargin: '300px'  // Lade 300px bevor Trigger erreicht wird
+    });
+    
+    observer.observe(trigger);
+    
+    async function loadMore() {
+        if (isLoading || !hasMore) return;
+        
+        isLoading = true;
+        currentPage++;
+        
+        console.log(`⏳ Lade Trailer-Seite ${currentPage}...`);
+        
+        // Zeige Loading
+        loader.style.display = 'block';
+        
+        try {
+            // Baue URL - DIREKT zu partials/trailers.php!
+            let url = `partials/trailers.php?ajax=1&p=${currentPage}`;
+            
+            console.log('📡 Fetching:', url);
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log(`✅ Geladen: ${data.loaded} Trailer, HasMore: ${data.hasMore}`);
+                
+                // Finde die trailers-grid
+                const trailersGrid = document.querySelector('.trailers-grid');
+                
+                if (trailersGrid && data.html) {
+                    // Füge neue Trailer-Cards hinzu
+                    trailersGrid.insertAdjacentHTML('beforeend', data.html);
+                    
+                    // Update Counter
+                    const currentDisplayed = parseInt(displayedCount.textContent) || 0;
+                    displayedCount.textContent = currentDisplayed + data.loaded;
+                    
+                    hasMore = data.hasMore;
+                    
+                    if (!hasMore) {
+                        console.log('✋ Alle Trailer geladen');
+                        trigger.style.display = 'none';
+                    }
+                } else {
+                    console.error('❌ trailers-grid nicht gefunden oder kein HTML');
+                    hasMore = false;
+                }
+            } else {
+                console.error('❌ Server-Fehler:', data);
+                hasMore = false;
+            }
+        } catch (error) {
+            console.error('❌ Fetch-Fehler:', error);
+            hasMore = false;
+        } finally {
+            loader.style.display = 'none';
+            isLoading = false;
+        }
+    }
+    
+    console.log('✅ Infinite Scroll für Trailer bereit');
+})();
+
+// ============================================================================
+// TRAILER MODAL & PLAYBACK
+// ============================================================================
+
 // Globale Variable für Embed-URL
 let currentEmbedUrl = '';
 let currentCoverUrl = '';
@@ -755,9 +892,14 @@ function playTrailer(element) {
     videoContainer.style.display = 'none';
     videoContainer.innerHTML = ''; // Video zurücksetzen
     
+    // Scroll-Position speichern und Body fixieren (verhindert Scroll-Jump)
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
     // Modal anzeigen
     modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
 }
 
 // ============================================================================
@@ -800,7 +942,13 @@ function closeTrailerModal() {
     
     // Modal verstecken
     modal.classList.remove('show');
-    document.body.style.overflow = '';
+    
+    // Scroll-Position wiederherstellen
+    const scrollY = document.body.style.top;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, parseInt(scrollY || '0') * -1);
     
     // URLs zurücksetzen
     currentEmbedUrl = '';

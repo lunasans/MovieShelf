@@ -1,10 +1,10 @@
 <?php
 /**
- * DVD Profiler Liste - Impressum (Dynamisch)
+ * MovieShelf - Impressum (Dynamisch)
  * Lädt Inhalt aus Settings
  * 
- * @package    dvdprofiler.liste
- * @version    1.4.8
+ * @package    movieshelf
+ * @version    1.5.0
  */
 
 require_once __DIR__ . '/../includes/bootstrap.php';
@@ -71,7 +71,7 @@ require_once __DIR__ . '/../includes/header.php';
             <div class="info-card">
                 <h3><i class="bi bi-code-square"></i> Software</h3>
                 <ul>
-                    <li><strong>Name:</strong> DVD Profiler Liste</li>
+                    <li><strong>Name:</strong> MovieShelf</li>
                     <li><strong>Version:</strong> <?= getDVDProfilerVersionFull() ?></li>
                     <?php if (defined('DVDPROFILER_BUILD_DATE')): ?>
                     <li><strong>Build:</strong> <?= DVDPROFILER_BUILD_DATE ?></li>
@@ -136,7 +136,7 @@ require_once __DIR__ . '/../includes/header.php';
     <footer class="page-footer">
         <div class="footer-info">
             <p>
-                <strong>DVD Profiler Liste</strong> v<?= DVDPROFILER_VERSION ?> 
+                <strong>MovieShelf</strong> v<?= DVDPROFILER_VERSION ?> 
                 <?php if (defined('DVDPROFILER_CODENAME')): ?>
                 "<?= DVDPROFILER_CODENAME ?>"
                 <?php endif; ?>

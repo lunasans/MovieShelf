@@ -1,6 +1,6 @@
 <?php
 /**
- * DVD Profiler Signatur-Banner Generator
+ * MovieShelf Signatur-Banner Generator
  * Generiert dynamische Banner mit Film-Covern
  * Liest Einstellungen aus settings-Tabelle
  */
@@ -371,7 +371,7 @@ elseif ($type === 2) {
     drawGlassBackground($img, 0, 0, $width - 1, $height - 1, $glass_bg_top, $glass_bg_bottom, $glass_border, $glass_shadow);
     
     // Header
-    imagestring($img, 4, 15, 8, "DVD Profiler Liste", $text_white);
+    imagestring($img, 4, 15, 8, "MovieShelf", $text_white);
     imagestring($img, 3, 180, 10, "{$totalFilms} Filme", $accent);
     imagestring($img, 3, 290, 10, "{$filmCount} Neueste:", $text_muted);
     
