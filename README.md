@@ -10,6 +10,7 @@ MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und 
 
 ### 📥 Import & Datenmanagement
 - **XML-Import** aus collection.xml (kompatibel mit DVD Profiler)
+- **TMDb-Import** - Filme und Serien direkt über TMDb API importieren
 - **Automatischer Datenbankabgleich** mit Update- und Einfügefunktionen
 - **BoxSet-Erkennung** mit gruppierten, aufklappbaren Unterfilmen
 
@@ -25,16 +26,17 @@ MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und 
 - **Verknüpfung Film ↔ Schauspieler** mit Rolleninformationen
 - **Inline-Editing** für schnelle Aktualisierungen
 
-### � Benutzer-Features (NEU in v1.5.0)
+###  Benutzer-Features (NEU in v1.5.0)
 - **Persönliche Bewertungen** für Filme
 - **"Gesehen"-Status** zum Tracking
 - **Wunschliste** für zukünftige Filme
 - **Aktivitäts-Log** zur Nachverfolgung
 
-### �📊 Erweiterte Features
+### 📊 Erweiterte Features
 - **Statistikseite** mit interaktiven Diagrammen (Chart.js)
 - **Admin-Panel** mit umfangreichen Verwaltungsfunktionen
 - **Besucherzähler** für Nutzungsstatistiken
+- **Foren-Signaturbanner** - Dynamische Banner mit neuesten Filmen
 - **2FA-Authentifizierung** für erhöhte Sicherheit
 - **DSGVO-konformes Design** mit Impressum und Datenschutz
 
