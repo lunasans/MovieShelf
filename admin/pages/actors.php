@@ -35,6 +35,10 @@ if (isset($_SESSION['actors_error'])) {
     unset($_SESSION['actors_error']);
 }
 
+// ============================================
+// INITIALIZE VARIABLES FIRST (needed for POST handlers)
+// ============================================
+
 // Pagination
 $page = isset($_GET['p']) ? (int)$_GET['p'] : 1;
 $perPage = 25;
@@ -70,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_actor'])) {
         $_SESSION['actors_error'] = 'Ungültiger Sicherheitstoken';
     } else {
         $actorId = (int)$_POST['actor_id'];
+        
         if (deleteActor($pdo, $actorId)) {
             $_SESSION['actors_success'] = 'Schauspieler erfolgreich gelöscht';
         } else {
@@ -77,8 +82,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_actor'])) {
         }
     }
     
-    // Reload page
-    header('Location: ?page=actors&p=' . $page . ($search ? '&search=' . urlencode($search) : ''));
+    // Build redirect URL - go to page 1 after delete to avoid pagination issues
+    $redirectParams = ['page' => 'actors'];
+    if (!empty($search)) $redirectParams['search'] = $search;
+    if ($sortColumn !== 'id') $redirectParams['sort'] = $sortColumn;
+    if ($sortOrder !== 'desc') $redirectParams['order'] = $sortOrder;
+    
+    $redirectUrl = 'index.php?' . http_build_query($redirectParams);
+    
+    // Use JavaScript redirect because headers are already sent (page is included)
+    echo '<script>window.location.href = "' . htmlspecialchars($redirectUrl, ENT_QUOTES) . '";</script>';
     exit;
 }
 
@@ -116,8 +129,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_actors_bulk'])
         }
     }
     
-    // Reload page
-    header('Location: ?page=actors&p=' . $page . ($search ? '&search=' . urlencode($search) : ''));
+    // Build redirect URL - go to page 1 after delete to avoid pagination issues
+    $redirectParams = ['page' => 'actors'];
+    if (!empty($search)) $redirectParams['search'] = $search;
+    if ($sortColumn !== 'id') $redirectParams['sort'] = $sortColumn;
+    if ($sortOrder !== 'desc') $redirectParams['order'] = $sortOrder;
+    
+    $redirectUrl = 'index.php?' . http_build_query($redirectParams);
+    
+    // Use JavaScript redirect because headers are already sent (page is included)
+    echo '<script>window.location.href = "' . htmlspecialchars($redirectUrl, ENT_QUOTES) . '";</script>';
     exit;
 }
 
@@ -825,118 +846,125 @@ function confirmDelete(actorId, actorName) {
 // ============================================
 // BULK DELETE FUNCTIONALITY
 // ============================================
-const bulkActionsToolbar = document.getElementById('bulkActionsToolbar');
-const selectedCountEl = document.getElementById('selectedCount');
-const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-const actorCheckboxes = document.querySelectorAll('.actor-checkbox');
-const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-const clearSelectionBtn = document.getElementById('clearSelectionBtn');
-
-// Update toolbar visibility and count
-function updateBulkActions() {
-    const checkedBoxes = document.querySelectorAll('.actor-checkbox:checked');
-    const count = checkedBoxes.length;
+document.addEventListener('DOMContentLoaded', function() {
+    const bulkActionsToolbar = document.getElementById('bulkActionsToolbar');
+    const selectedCountEl = document.getElementById('selectedCount');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const actorCheckboxes = document.querySelectorAll('.actor-checkbox');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const clearSelectionBtn = document.getElementById('clearSelectionBtn');
     
-    selectedCountEl.textContent = count;
-    
-    if (count > 0) {
-        bulkActionsToolbar.classList.add('active');
-    } else {
-        bulkActionsToolbar.classList.remove('active');
-    }
-    
-    // Update select all checkbox state
-    if (count === 0) {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-    } else if (count === actorCheckboxes.length) {
-        selectAllCheckbox.checked = true;
-        selectAllCheckbox.indeterminate = false;
-    } else {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = true;
-    }
-    
-    // Update row highlighting
-    document.querySelectorAll('.actor-checkbox').forEach(checkbox => {
-        const row = checkbox.closest('tr');
-        if (checkbox.checked) {
-            row.classList.add('selected');
-        } else {
-            row.classList.remove('selected');
-        }
-    });
-}
-
-// Select All functionality
-selectAllCheckbox.addEventListener('change', function() {
-    const isChecked = this.checked;
-    actorCheckboxes.forEach(checkbox => {
-        checkbox.checked = isChecked;
-    });
-    updateBulkActions();
-});
-
-// Individual checkbox change
-actorCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', updateBulkActions);
-});
-
-// Clear selection
-clearSelectionBtn.addEventListener('click', function() {
-    actorCheckboxes.forEach(checkbox => {
-        checkbox.checked = false;
-    });
-    updateBulkActions();
-});
-
-// Bulk delete
-bulkDeleteBtn.addEventListener('click', function() {
-    const checkedBoxes = document.querySelectorAll('.actor-checkbox:checked');
-    const count = checkedBoxes.length;
-    
-    if (count === 0) {
-        alert('Bitte wählen Sie mindestens einen Schauspieler aus.');
+    // Check if elements exist (might not exist if no actors)
+    if (!bulkActionsToolbar || !selectAllCheckbox || actorCheckboxes.length === 0) {
         return;
     }
     
-    const actorNames = [];
-    checkedBoxes.forEach(checkbox => {
-        const row = checkbox.closest('tr');
-        const nameCell = row.querySelector('strong');
-        if (nameCell) {
-            actorNames.push(nameCell.textContent.trim());
+    // Update toolbar visibility and count
+    function updateBulkActions() {
+        const checkedBoxes = document.querySelectorAll('.actor-checkbox:checked');
+        const count = checkedBoxes.length;
+        
+        selectedCountEl.textContent = count;
+        
+        if (count > 0) {
+            bulkActionsToolbar.classList.add('active');
+        } else {
+            bulkActionsToolbar.classList.remove('active');
+        }
+        
+        // Update select all checkbox state
+        if (count === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (count === actorCheckboxes.length) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        }
+        
+        // Update row highlighting
+        document.querySelectorAll('.actor-checkbox').forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            if (checkbox.checked) {
+                row.classList.add('selected');
+            } else {
+                row.classList.remove('selected');
+            }
+        });
+    }
+    
+    // Select All functionality
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        actorCheckboxes.forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+        updateBulkActions();
+    });
+    
+    // Individual checkbox change
+    actorCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+    
+    // Clear selection
+    clearSelectionBtn.addEventListener('click', function() {
+        actorCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateBulkActions();
+    });
+    
+    // Bulk delete
+    bulkDeleteBtn.addEventListener('click', function() {
+        const checkedBoxes = document.querySelectorAll('.actor-checkbox:checked');
+        const count = checkedBoxes.length;
+        
+        if (count === 0) {
+            alert('Bitte wählen Sie mindestens einen Schauspieler aus.');
+            return;
+        }
+        
+        const actorNames = [];
+        checkedBoxes.forEach(checkbox => {
+            const row = checkbox.closest('tr');
+            const nameCell = row.querySelector('strong');
+            if (nameCell) {
+                actorNames.push(nameCell.textContent.trim());
+            }
+        });
+        
+        let confirmMsg = 'Wirklich ' + count + ' Schauspieler löschen?\n\n';
+        
+        if (actorNames.length <= 5) {
+            confirmMsg += actorNames.join('\n');
+        } else {
+            confirmMsg += actorNames.slice(0, 5).join('\n');
+            confirmMsg += '\n... und ' + (actorNames.length - 5) + ' weitere';
+        }
+        
+        confirmMsg += '\n\nAlle Verknüpfungen zu Filmen werden ebenfalls entfernt.';
+        
+        if (confirm(confirmMsg)) {
+            // Create hidden inputs for each selected ID
+            const bulkDeleteIds = document.getElementById('bulkDeleteIds');
+            bulkDeleteIds.innerHTML = '';
+            
+            checkedBoxes.forEach(checkbox => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'actor_ids[]';
+                input.value = checkbox.value;
+                bulkDeleteIds.appendChild(input);
+            });
+            
+            document.getElementById('bulkDeleteForm').submit();
         }
     });
     
-    let confirmMsg = 'Wirklich ' + count + ' Schauspieler löschen?\n\n';
-    
-    if (actorNames.length <= 5) {
-        confirmMsg += actorNames.join('\n');
-    } else {
-        confirmMsg += actorNames.slice(0, 5).join('\n');
-        confirmMsg += '\n... und ' + (actorNames.length - 5) + ' weitere';
-    }
-    
-    confirmMsg += '\n\nAlle Verknüpfungen zu Filmen werden ebenfalls entfernt.';
-    
-    if (confirm(confirmMsg)) {
-        // Create hidden inputs for each selected ID
-        const bulkDeleteIds = document.getElementById('bulkDeleteIds');
-        bulkDeleteIds.innerHTML = '';
-        
-        checkedBoxes.forEach(checkbox => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'actor_ids[]';
-            input.value = checkbox.value;
-            bulkDeleteIds.appendChild(input);
-        });
-        
-        document.getElementById('bulkDeleteForm').submit();
-    }
+    // Initialize on page load
+    updateBulkActions();
 });
-
-// Initialize on page load
-updateBulkActions();
 </script>
