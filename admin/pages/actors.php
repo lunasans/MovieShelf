@@ -59,6 +59,68 @@ if (!in_array($sortOrder, ['asc', 'desc'])) {
     $sortOrder = 'desc';
 }
 
+// ============================================
+// POST HANDLERS - MUST BE BEFORE DATA LOADING
+// ============================================
+
+// Einzelnen Schauspieler löschen
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_actor'])) {
+    // CSRF Check
+    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+        $_SESSION['actors_error'] = 'Ungültiger Sicherheitstoken';
+    } else {
+        $actorId = (int)$_POST['actor_id'];
+        if (deleteActor($pdo, $actorId)) {
+            $_SESSION['actors_success'] = 'Schauspieler erfolgreich gelöscht';
+        } else {
+            $_SESSION['actors_error'] = 'Fehler beim Löschen des Schauspielers';
+        }
+    }
+    
+    // Reload page
+    header('Location: ?page=actors&p=' . $page . ($search ? '&search=' . urlencode($search) : ''));
+    exit;
+}
+
+// Mehrere Schauspieler löschen (Bulk Delete)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_actors_bulk'])) {
+    // CSRF Check
+    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
+        $_SESSION['actors_error'] = 'Ungültiger Sicherheitstoken';
+    } else {
+        $actorIds = $_POST['actor_ids'] ?? [];
+        
+        if (empty($actorIds)) {
+            $_SESSION['actors_error'] = 'Keine Schauspieler ausgewählt';
+        } else {
+            $deletedCount = 0;
+            $failedCount = 0;
+            
+            foreach ($actorIds as $actorId) {
+                $actorId = (int)$actorId;
+                if (deleteActor($pdo, $actorId)) {
+                    $deletedCount++;
+                } else {
+                    $failedCount++;
+                }
+            }
+            
+            if ($deletedCount > 0) {
+                $_SESSION['actors_success'] = $deletedCount . ' Schauspieler erfolgreich gelöscht';
+                if ($failedCount > 0) {
+                    $_SESSION['actors_success'] .= ' (' . $failedCount . ' fehlgeschlagen)';
+                }
+            } else {
+                $_SESSION['actors_error'] = 'Fehler beim Löschen der Schauspieler';
+            }
+        }
+    }
+    
+    // Reload page
+    header('Location: ?page=actors&p=' . $page . ($search ? '&search=' . urlencode($search) : ''));
+    exit;
+}
+
 // Helper function for sortable column headers
 function getActorSortUrl($column, $currentSort, $currentOrder, $search) {
     // Toggle order if same column, otherwise default to ASC
@@ -171,26 +233,8 @@ $allParams = array_merge($params, [$perPage, $offset]);
 $stmt = $pdo->prepare($sql);
 $stmt->execute($allParams);
 $actors = $stmt->fetchAll();
-
-// Löschen-Handler
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_actor'])) {
-    // CSRF Check
-    if (!hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'] ?? '')) {
-        $_SESSION['actors_error'] = 'Ungültiger Sicherheitstoken';
-    } else {
-        $actorId = (int)$_POST['actor_id'];
-        if (deleteActor($pdo, $actorId)) {
-            $_SESSION['actors_success'] = 'Schauspieler erfolgreich gelöscht';
-        } else {
-            $_SESSION['actors_error'] = 'Fehler beim Löschen des Schauspielers';
-        }
-    }
-    
-    // Reload page
-    header('Location: ?page=actors&p=' . $page . ($search ? '&search=' . urlencode($search) : ''));
-    exit;
-}
 ?>
+
 
 <style>
 /* ============================================
@@ -425,6 +469,88 @@ small.text-muted {
     justify-content: center;
     color: var(--clr-text-muted);
 }
+
+/* ============================================
+   BULK DELETE FUNCTIONALITY
+   ============================================ */
+
+/* Bulk Action Toolbar */
+.bulk-actions-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+    border: 1px solid var(--clr-accent);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    animation: slideDown 0.3s ease;
+}
+
+.bulk-actions-toolbar.active {
+    display: flex;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bulk-actions-toolbar .selected-count {
+    font-weight: 600;
+    color: var(--clr-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bulk-actions-toolbar .selected-count .count {
+    background: var(--clr-accent);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9em;
+}
+
+.bulk-actions-toolbar .actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Checkbox Styling */
+.actor-checkbox,
+.select-all-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--clr-accent);
+}
+
+.table tbody tr.selected {
+    background: rgba(102, 126, 234, 0.15) !important;
+}
+
+.table tbody tr.selected td {
+    background: transparent !important;
+}
+
+/* Checkbox Column */
+.table th.checkbox-col,
+.table td.checkbox-col {
+    width: 50px;
+    text-align: center;
+    padding: 0.5rem !important;
+}
 </style>
 
 <div class="container-fluid px-4">
@@ -492,10 +618,30 @@ small.text-muted {
                     <i class="bi bi-info-circle"></i> Keine Schauspieler gefunden.
                 </div>
             <?php else: ?>
+                <!-- Bulk Actions Toolbar -->
+                <div class="bulk-actions-toolbar" id="bulkActionsToolbar">
+                    <div class="selected-count">
+                        <i class="bi bi-check-square"></i>
+                        <span class="count" id="selectedCount">0</span> ausgewählt
+                    </div>
+                    <div class="actions">
+                        <button type="button" class="btn btn-danger" id="bulkDeleteBtn">
+                            <i class="bi bi-trash"></i> Ausgewählte löschen
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="clearSelectionBtn">
+                            <i class="bi bi-x"></i> Auswahl aufheben
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="table-responsive">
+
                     <table class="table table-hover align-middle">
                         <thead>
                             <tr>
+                                <th class="checkbox-col">
+                                    <input type="checkbox" class="select-all-checkbox" id="selectAllCheckbox" title="Alle auswählen">
+                                </th>
                                 <th style="width: 80px;">
                                     <a href="<?= getActorSortUrl('id', $sortColumn, $sortOrder, $search) ?>">
                                         ID<?= getActorSortIcon('id', $sortColumn, $sortOrder) ?>
@@ -528,7 +674,10 @@ small.text-muted {
                             $actorName = htmlspecialchars(trim($actor['first_name'] . ' ' . $actor['last_name']));
                             $actorSlug = htmlspecialchars($actor['slug'] ?? '');
                             ?>
-                            <tr>
+                            <tr data-actor-id="<?= $actor['id'] ?>">
+                                <td class="checkbox-col">
+                                    <input type="checkbox" class="actor-checkbox" value="<?= $actor['id'] ?>">
+                                </td>
                                 <td>
                                     <span class="badge bg-secondary"><?= $actor['id'] ?></span>
                                 </td>
@@ -649,18 +798,145 @@ small.text-muted {
     </div>
 </div>
 
-<!-- Delete Form (Hidden) -->
+<!-- Delete Forms (Hidden) -->
 <form id="deleteForm" method="POST" style="display: none;">
     <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
     <input type="hidden" name="delete_actor" value="1">
     <input type="hidden" name="actor_id" id="deleteActorId">
 </form>
 
+<form id="bulkDeleteForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+    <input type="hidden" name="delete_actors_bulk" value="1">
+    <div id="bulkDeleteIds"></div>
+</form>
+
 <script>
+// ============================================
+// SINGLE DELETE
+// ============================================
 function confirmDelete(actorId, actorName) {
     if (confirm('Wirklich löschen?\n\nSchauspieler: ' + actorName + '\n\nAlle Verknüpfungen zu Filmen werden ebenfalls entfernt.')) {
         document.getElementById('deleteActorId').value = actorId;
         document.getElementById('deleteForm').submit();
     }
 }
+
+// ============================================
+// BULK DELETE FUNCTIONALITY
+// ============================================
+const bulkActionsToolbar = document.getElementById('bulkActionsToolbar');
+const selectedCountEl = document.getElementById('selectedCount');
+const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+const actorCheckboxes = document.querySelectorAll('.actor-checkbox');
+const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+
+// Update toolbar visibility and count
+function updateBulkActions() {
+    const checkedBoxes = document.querySelectorAll('.actor-checkbox:checked');
+    const count = checkedBoxes.length;
+    
+    selectedCountEl.textContent = count;
+    
+    if (count > 0) {
+        bulkActionsToolbar.classList.add('active');
+    } else {
+        bulkActionsToolbar.classList.remove('active');
+    }
+    
+    // Update select all checkbox state
+    if (count === 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    } else if (count === actorCheckboxes.length) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    }
+    
+    // Update row highlighting
+    document.querySelectorAll('.actor-checkbox').forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        if (checkbox.checked) {
+            row.classList.add('selected');
+        } else {
+            row.classList.remove('selected');
+        }
+    });
+}
+
+// Select All functionality
+selectAllCheckbox.addEventListener('change', function() {
+    const isChecked = this.checked;
+    actorCheckboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+    });
+    updateBulkActions();
+});
+
+// Individual checkbox change
+actorCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', updateBulkActions);
+});
+
+// Clear selection
+clearSelectionBtn.addEventListener('click', function() {
+    actorCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateBulkActions();
+});
+
+// Bulk delete
+bulkDeleteBtn.addEventListener('click', function() {
+    const checkedBoxes = document.querySelectorAll('.actor-checkbox:checked');
+    const count = checkedBoxes.length;
+    
+    if (count === 0) {
+        alert('Bitte wählen Sie mindestens einen Schauspieler aus.');
+        return;
+    }
+    
+    const actorNames = [];
+    checkedBoxes.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const nameCell = row.querySelector('strong');
+        if (nameCell) {
+            actorNames.push(nameCell.textContent.trim());
+        }
+    });
+    
+    let confirmMsg = 'Wirklich ' + count + ' Schauspieler löschen?\n\n';
+    
+    if (actorNames.length <= 5) {
+        confirmMsg += actorNames.join('\n');
+    } else {
+        confirmMsg += actorNames.slice(0, 5).join('\n');
+        confirmMsg += '\n... und ' + (actorNames.length - 5) + ' weitere';
+    }
+    
+    confirmMsg += '\n\nAlle Verknüpfungen zu Filmen werden ebenfalls entfernt.';
+    
+    if (confirm(confirmMsg)) {
+        // Create hidden inputs for each selected ID
+        const bulkDeleteIds = document.getElementById('bulkDeleteIds');
+        bulkDeleteIds.innerHTML = '';
+        
+        checkedBoxes.forEach(checkbox => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'actor_ids[]';
+            input.value = checkbox.value;
+            bulkDeleteIds.appendChild(input);
+        });
+        
+        document.getElementById('bulkDeleteForm').submit();
+    }
+});
+
+// Initialize on page load
+updateBulkActions();
 </script>
