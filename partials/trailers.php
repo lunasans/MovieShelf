@@ -88,15 +88,12 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     $htmlCards = '';
     foreach ($trailers as $trailer) {
         // Cover-Bild finden
-        $coverUrl = '/../cover/placeholder.png';
+        $coverUrl = 'cover/placeholder.png';
         if (isset($trailer['cover_id']) && $trailer['cover_id']) {
             if (function_exists('findCoverImage')) {
                 $coverUrl = findCoverImage($trailer['cover_id'], 'f');
             } else {
-                $testCover = "/../cover/{$trailer['cover_id']}f.jpg";
-                if (file_exists($testCover)) {
-                    $coverUrl = $testCover;
-                }
+                $coverUrl = "cover/{$trailer['cover_id']}f.jpg";
             }
         }
         
@@ -170,16 +167,13 @@ $displayedTrailers = count($trailers);
         <div class="trailers-grid">
             <?php foreach ($trailers as $trailer): 
                 // Cover-Bild finden mit Fallback
-                $coverUrl = '/../cover/placeholder.png'; // Default
+                $coverUrl = 'cover/placeholder.png'; // Default
                 if (isset($trailer['cover_id']) && $trailer['cover_id']) {
                     if (function_exists('findCoverImage')) {
                         $coverUrl = findCoverImage($trailer['cover_id'], 'f');
                     } else {
                         // Manueller Fallback falls Funktion fehlt
-                        $testCover = "/../cover/{$trailer['cover_id']}f.jpg";
-                        if (file_exists($testCover)) {
-                            $coverUrl = $testCover;
-                        }
+                        $coverUrl = "cover/{$trailer['cover_id']}f.jpg";
                     }
                 }
                 
@@ -468,6 +462,7 @@ $displayedTrailers = count($trailers);
     align-items: center;
     justify-content: center;
     padding: 20px;
+    overflow-y: auto; /* Falls Modal größer als Viewport */
 }
 
 .trailer-modal.show {
@@ -756,6 +751,14 @@ $displayedTrailers = count($trailers);
 (function() {
     console.log('🔄 Infinite Scroll für Trailer initialisiert');
     
+    // WICHTIG: Modal an das Ende des Body verschieben
+    // Dies verhindert, dass parent-Container mit transform/filter position:fixed brechen
+    const modal = document.getElementById('trailerModal');
+    if (modal && modal.parentElement !== document.body) {
+        console.log('📦 Verschiebe Modal an das Ende des Body');
+        document.body.appendChild(modal);
+    }
+    
     const container = document.querySelector('.trailers-page');
     const trigger = document.getElementById('infiniteScrollTrigger');
     const loader = document.getElementById('infiniteScrollLoader');
@@ -889,9 +892,14 @@ function playTrailer(element) {
     videoContainer.style.display = 'none';
     videoContainer.innerHTML = ''; // Video zurücksetzen
     
+    // Scroll-Position speichern und Body fixieren (verhindert Scroll-Jump)
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    
     // Modal anzeigen
     modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
 }
 
 // ============================================================================
@@ -934,7 +942,13 @@ function closeTrailerModal() {
     
     // Modal verstecken
     modal.classList.remove('show');
-    document.body.style.overflow = '';
+    
+    // Scroll-Position wiederherstellen
+    const scrollY = document.body.style.top;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, parseInt(scrollY || '0') * -1);
     
     // URLs zurücksetzen
     currentEmbedUrl = '';
