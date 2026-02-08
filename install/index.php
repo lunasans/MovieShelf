@@ -614,7 +614,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ready) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DVD-Verwaltung Installation</title>
+    <title>MovieShelf Installation</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -1117,8 +1117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ready) {
     <div class="container">
         <div class="install-container">
             <div class="header">
-                <h1>🎬 DVD-Verwaltung</h1>
-                <h2>Installation <span class="version-badge">v<?= DB_VERSION ?></span></h2>
+                <h1>MovieShelf</h1>
+            <h2>Dein digitales Filmregal - Installation <span class="version-badge">v<?= DB_VERSION ?></span></h2>
             </div>
 
             <?php if (!empty($errors)): ?>

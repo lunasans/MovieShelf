@@ -76,7 +76,7 @@ $systemRequirements = [
                                     <div class="mb-3">
                                         <label for="site_title" class="form-label">Website-Titel *</label>
                                         <input type="text" name="site_title" id="site_title" class="form-control" 
-                                               value="<?= htmlspecialchars(getSetting('site_title', 'DVD Profiler Liste')) ?>" 
+                                               value="<?= htmlspecialchars(getSetting('site_title', 'MovieShelf')) ?>" 
                                                required maxlength="255">
                                     </div>
                                 </div>

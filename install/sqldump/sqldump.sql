@@ -1,5 +1,6 @@
 -- ============================================================================
--- DVD Profiler Liste - Datenbank-Schema
+-- MovieShelf - Datenbank-Schema
+-- Dein digitales Filmregal
 -- ============================================================================
 -- Version: 1.5.0
 -- Erstellt: 08.02.2026

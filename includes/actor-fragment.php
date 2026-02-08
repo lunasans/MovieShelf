@@ -96,7 +96,7 @@ if (!$actor) {
 
 // SEO Meta-Daten updaten
 $fullName = trim($actor['first_name'] . ' ' . $actor['last_name']);
-$pageTitle = $fullName . ' - Schauspieler-Profil | ' . ($siteTitle ?? 'DVD Profiler Liste');
+$pageTitle = $fullName . ' - Schauspieler-Profil | ' . ($siteTitle ?? 'MovieShelf');
 $metaDescription = 'Profil von ' . $fullName;
 
 if (!empty($actor['bio'])) {

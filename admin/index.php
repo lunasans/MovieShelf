@@ -15,7 +15,7 @@ if (!isset($_SESSION['user_id'])) {
 // Erlaubte Seiten - AKTUALISIERT: 'films' hinzugefügt
 $allowedPages = ['dashboard', 'users', 'settings', 'import', 'update', 'films', 'actors', 'actor-edit', 'impressum', 'tmdb-import', 'statistics','signature-preview'];
 $page = $_GET['page'] ?? 'dashboard';
-$siteTitle = getSetting('site_title', 'DVD Profiler Liste');
+$siteTitle = getSetting('site_title', 'MovieShelf');
 
 if (!in_array($page, $allowedPages)) {
     $page = 'dashboard'; // Fallback

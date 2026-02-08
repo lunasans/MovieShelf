@@ -1,11 +1,11 @@
 <?php
 /**
- * DVD Profiler Liste - Footer
+ * MovieShelf - Footer
  * Vereinfachte und aufgeräumte Version
  * 
- * @package    dvdprofiler.liste
- * @version    1.4.8
+ * @package    movieshelf
  * @author     René Neuhaus
+ * @version    1.5.0
  */
 
 require_once __DIR__ . '/version.php';
@@ -33,7 +33,7 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
         <div class="footer-section">
             <div class="footer-logo">
                 <i class="bi bi-film"></i>
-                <span>DVD Profiler Liste</span>
+                <span>MovieShelf</span>
             </div>
             <p class="footer-tagline">Moderne Filmverwaltung</p>
         </div>

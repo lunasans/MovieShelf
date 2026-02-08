@@ -4,8 +4,9 @@
  * 
  * Diese Datei aktiviert Debug-Features und Wartungsmodus wenn environment = 'development'
  * 
- * @package    dvdprofiler.liste
+ * @package    movieshelf
  * @author     René Neuhaus
+ * @version    1.5.0
  */
 
 declare(strict_types=1);
@@ -82,7 +83,7 @@ function showMaintenancePage(): void
     http_response_code(503);
     header('Retry-After: 3600'); // 1 Stunde
     
-    $siteTitle = getSetting('site_title', 'DVD Profiler Liste');
+    $siteTitle = getSetting('site_title', 'MovieShelf');
     ?>
     <!DOCTYPE html>
     <html lang="de">

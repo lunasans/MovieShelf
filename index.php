@@ -1,12 +1,12 @@
 <?php
 /*
- * DVD Profiler Liste - PHP basierte DVD Verwaltung
+ * MovieShelf - Dein digitales Filmregal
  * 
- * Diese Datei ist Teil des DVD Profiler Liste Projekts.
+ * Diese Datei ist Teil des MovieShelf Projekts.
  * 
- * @package    dvdprofiler.liste
+ * @package    movieshelf
  * @author     René Neuhaus
- * @version    1.4.8
+ * @version    1.5.0
  */
 declare(strict_types=1);
 
@@ -48,7 +48,7 @@ if (!in_array($page, $allowedPages) && $page !== 'home') {
 }
 
 // Site-Konfiguration laden (jetzt von der neuen Versionsverwaltung überschrieben)
-$siteTitle = getSetting('site_title', 'DVD Profiler Liste');
+$siteTitle = getSetting('site_title', 'MovieShelf');
 $siteDescription = getSetting('site_description', 'Professionelle DVD-Sammlung verwalten und durchsuchen');
 // $version wird jetzt von version.php bereitgestellt
 // Theme laden: Gäste aus Cookie, Admin aus DB
@@ -125,7 +125,7 @@ $schema = [
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
-    <meta name="keywords" content="DVD Verwaltung, Filmsammlung, DVD Profiler, Medienverwaltung">
+    <meta name="keywords" content="DVD Verwaltung, Filmsammlung, MovieShelf, Medienverwaltung, Filmregal">
     <meta name="robots" content="index, follow">
     <meta name="author" content="<?= DVDPROFILER_AUTHOR ?>">
     
@@ -299,7 +299,7 @@ $schema = [
             
             // System Info für Debug (nur im Development)
             <?php if (getSetting('environment', 'production') === 'development'): ?>
-            console.log('DVD Profiler Liste <?= getDVDProfilerVersionFull() ?>');
+            console.log('MovieShelf <?= getDVDProfilerVersionFull() ?>');
             console.log('Build: <?= DVDPROFILER_BUILD_DATE ?> | PHP: <?= PHP_VERSION ?>');
             console.log('Features: <?= count(array_filter(DVDPROFILER_FEATURES)) ?> aktiv');
             <?php endif; ?>

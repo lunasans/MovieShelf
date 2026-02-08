@@ -1,11 +1,9 @@
 <?php
 /**
- * DVD Profiler Liste - Schauspieler-Profil Ansicht
+ * MovieShelf - Schauspieler-Profil Ansicht
+ * Zeigt detaillierte Informationen zu einem Schauspieler
  * 
- * Zeigt detaillierte Informationen über einen Schauspieler
- * sowie alle Filme in der Sammlung mit diesem Schauspieler
- * 
- * @package    dvdprofiler.liste
+ * @package    movieshelf
  * @version    1.4.8
  * @author     René Neuhaus
  */
