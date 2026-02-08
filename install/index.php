@@ -198,11 +198,11 @@ function createDatabaseSchema(PDO $pdo): void {
 
         // 2. DVDs-Tabelle (Haupttabelle für Filme)
         "CREATE TABLE IF NOT EXISTS dvds (
-            id BIGINT NOT NULL PRIMARY KEY,
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
             year INT,
             genre VARCHAR(255),
-            cover_id VARCHAR(50),
+            cover_id VARCHAR(200),
             collection_type VARCHAR(100),
             runtime INT,
             rating_age INT,
@@ -210,16 +210,19 @@ function createDatabaseSchema(PDO $pdo): void {
             trailer_url VARCHAR(500),
             boxset_parent BIGINT DEFAULT NULL,
             user_id BIGINT DEFAULT NULL,
-            deleted TINYINT(1) DEFAULT 0,
+            is_deleted TINYINT(1) DEFAULT 0,
+            view_count INT DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            deleted TINYINT(1) NOT NULL DEFAULT 0,
             INDEX idx_title (title),
             INDEX idx_year (year),
             INDEX idx_genre (genre),
             INDEX idx_collection_type (collection_type),
             INDEX idx_user (user_id),
-            INDEX idx_deleted (deleted),
+            INDEX idx_deleted (is_deleted),
             INDEX idx_boxset_parent (boxset_parent),
+            INDEX idx_view_count (view_count),
             FULLTEXT idx_search (title, overview),
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
             FOREIGN KEY (boxset_parent) REFERENCES dvds(id) ON DELETE SET NULL
@@ -349,12 +352,69 @@ function createDatabaseSchema(PDO $pdo): void {
             INDEX idx_action (action),
             INDEX idx_created_at (created_at),
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+        // 12. Counter Tabelle (Besucherzähler)
+        "CREATE TABLE IF NOT EXISTS counter (
+            id INT NOT NULL DEFAULT 1,
+            visits BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            last_visit_date DATE NULL,
+            daily_visits BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            INDEX idx_last_visit (last_visit_date)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+
+        // 13. User-Ratings Tabelle (Benutzer-Bewertungen)
+        "CREATE TABLE IF NOT EXISTS user_ratings (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            film_id BIGINT NOT NULL,
+            user_id BIGINT NOT NULL,
+            rating DECIMAL(2,1) NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_user_film (user_id, film_id),
+            INDEX idx_film_id (film_id),
+            INDEX idx_user_id (user_id),
+            INDEX idx_rating (rating),
+            FOREIGN KEY (film_id) REFERENCES dvds(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+
+        // 14. User-Watched Tabelle (Gesehen-Status)
+        "CREATE TABLE IF NOT EXISTS user_watched (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            film_id BIGINT NOT NULL,
+            watched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_user_film_watched (user_id, film_id),
+            INDEX idx_user_id (user_id),
+            INDEX idx_film_id (film_id),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (film_id) REFERENCES dvds(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+
+        // 15. User-Wishlist Tabelle (Wunschliste)
+        "CREATE TABLE IF NOT EXISTS user_wishlist (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            film_id BIGINT NOT NULL,
+            added_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_user_film_wish (user_id, film_id),
+            INDEX idx_user_id (user_id),
+            INDEX idx_film_id (film_id),
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (film_id) REFERENCES dvds(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci"
     ];
 
     foreach ($sqlStatements as $sql) {
         $pdo->exec($sql);
     }
+
+    // Counter-Tabelle initialisieren
+    $pdo->exec("INSERT IGNORE INTO counter (id, visits, last_visit_date, daily_visits) VALUES (1, 0, CURDATE(), 0)");
 }
 
 function insertDefaultSettings(PDO $pdo, string $siteTitle, string $baseUrl): void {
@@ -466,7 +526,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ready) {
             // Datenbankschema erstellen
             createDatabaseSchema($pdo);
 
-            $installationSteps[] = '✅ Datenbankschema erstellt (9 Tabellen)';
+            $installationSteps[] = '✅ Datenbankschema erstellt (15 Tabellen)';
             $installationSteps[] = '⚙️ Standardeinstellungen einfügen...';
 
             // Transaktion für Datenoperationen starten
@@ -501,7 +561,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ready) {
             $activityStmt->execute([
                 $userId,
                 'SYSTEM_INSTALL',
-                json_encode(['version' => DB_VERSION, 'admin_email' => $adminEmail, 'tables_created' => 9]),
+                json_encode(['version' => DB_VERSION, 'admin_email' => $adminEmail, 'tables_created' => 15]),
                 $_SERVER['REMOTE_ADDR'] ?? 'unknown',
                 $_SERVER['HTTP_USER_AGENT'] ?? 'unknown'
             ]);

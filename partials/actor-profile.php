@@ -148,12 +148,20 @@ if (!empty($actor['bio'])) {
             
             <!-- Wiki-Edit Button (nur für eingeloggte User) -->
             <?php if (isset($_SESSION['user_id'])): ?>
-            <button class="btn-wiki-edit" onclick="openActorEditModal()" title="Schauspieler bearbeiten">
-                <i class="bi bi-pencil-square"></i> Bearbeiten
-            </button>
+            <div class="inline-edit-controls">
+                <button class="btn-wiki-edit" id="toggleEditMode" title="Bearbeiten">
+                    <i class="bi bi-pencil-square"></i> Bearbeiten
+                </button>
+                <button class="btn-wiki-save" id="saveEdits" style="display: none;" title="Speichern">
+                    <i class="bi bi-check-lg"></i> Speichern
+                </button>
+                <button class="btn-wiki-cancel" id="cancelEdits" style="display: none;" title="Abbrechen">
+                    <i class="bi bi-x-lg"></i> Abbrechen
+                </button>
+            </div>
             <?php endif; ?>
             
-            <div class="actor-meta">
+            <div class="actor-meta" id="actorMetaSection">
                 <?php if (!empty($actor['birth_date'])): ?>
                 <div class="meta-item">
                     <i class="bi bi-calendar-event"></i>
@@ -223,7 +231,11 @@ if (!empty($actor['bio'])) {
     <?php if (!empty($actor['bio'])): ?>
     <section class="actor-section biography">
         <h2><i class="bi bi-journal-text"></i> Biografie</h2>
-        <div class="bio-content" itemprop="description">
+        <div class="bio-content editable-field" 
+             id="bioContent"
+             data-field="bio"
+             data-original="<?= htmlspecialchars($actor['bio']) ?>"
+             itemprop="description">
             <?= nl2br(htmlspecialchars($actor['bio'])) ?>
         </div>
     </section>
@@ -306,99 +318,11 @@ if (!empty($actor['bio'])) {
     <?php endif; ?>
 </article>
 
-<!-- ============================================================================
-     WIKI-STYLE EDIT MODAL
-     ============================================================================ -->
+<!-- Hidden data for inline editing -->
 <?php if (isset($_SESSION['user_id'])): ?>
-<div id="actorEditModal" class="edit-modal" style="display: none;">
-    <div class="edit-modal-overlay" onclick="closeActorEditModal()"></div>
-    <div class="edit-modal-content">
-        <div class="edit-modal-header">
-            <h2><i class="bi bi-pencil-square"></i> Schauspieler bearbeiten</h2>
-            <button class="btn-close-modal" onclick="closeActorEditModal()"><i class="bi bi-x-lg"></i></button>
-        </div>
-        <form id="actorEditForm" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>">
-            <input type="hidden" name="id" value="<?= $actor['id'] ?>">
-            <div class="edit-modal-body">
-                <div class="form-section">
-                    <h3><i class="bi bi-person"></i> Basis-Informationen</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="edit_first_name">Vorname *</label>
-                            <input type="text" id="edit_first_name" name="first_name" value="<?= htmlspecialchars($actor['first_name'] ?? '') ?>" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="edit_last_name">Nachname *</label>
-                            <input type="text" id="edit_last_name" name="last_name" value="<?= htmlspecialchars($actor['last_name'] ?? '') ?>" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="edit_birth_date">Geburtsdatum</label>
-                            <input type="date" id="edit_birth_date" name="birth_date" value="<?= $actor['birth_date'] ?? '' ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit_birth_place">Geburtsort</label>
-                            <input type="text" id="edit_birth_place" name="birth_place" value="<?= htmlspecialchars($actor['birth_place'] ?? '') ?>">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="edit_death_date">Todesdatum</label>
-                            <input type="date" id="edit_death_date" name="death_date" value="<?= $actor['death_date'] ?? '' ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit_nationality">Nationalität</label>
-                            <input type="text" id="edit_nationality" name="nationality" value="<?= htmlspecialchars($actor['nationality'] ?? '') ?>">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-section">
-                    <h3><i class="bi bi-image"></i> Foto</h3>
-                    <?php if (!empty($actor['photo_path'])): ?>
-                    <div class="current-photo">
-                        <p><strong>Aktuelles Foto:</strong></p>
-                        <img src="images/actors/<?= basename($actor['photo_path']) ?>" alt="<?= htmlspecialchars($fullName) ?>" style="max-width: 200px; border-radius: 8px;">
-                    </div>
-                    <?php endif; ?>
-                    <div class="form-group">
-                        <label for="edit_photo">Neues Foto hochladen</label>
-                        <input type="file" id="edit_photo" name="photo" accept="image/*">
-                        <small>JPG, PNG, GIF, WebP - Max 5MB</small>
-                    </div>
-                </div>
-                <div class="form-section">
-                    <h3><i class="bi bi-file-text"></i> Biografie</h3>
-                    <div class="form-group">
-                        <label for="edit_bio">Lebenslauf / Karriere</label>
-                        <textarea id="edit_bio" name="bio" rows="10"><?= htmlspecialchars($actor['bio'] ?? '') ?></textarea>
-                    </div>
-                </div>
-                <div class="form-section">
-                    <h3><i class="bi bi-link-45deg"></i> Externe Links</h3>
-                    <div class="form-group">
-                        <label for="edit_website">Website</label>
-                        <input type="url" id="edit_website" name="website" value="<?= htmlspecialchars($actor['website'] ?? '') ?>" placeholder="https://...">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="edit_imdb_id">IMDb ID</label>
-                            <input type="text" id="edit_imdb_id" name="imdb_id" value="<?= htmlspecialchars($actor['imdb_id'] ?? '') ?>" placeholder="nm0000123">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit_tmdb_id">TMDb ID</label>
-                            <input type="text" id="edit_tmdb_id" name="tmdb_id" value="<?= htmlspecialchars($actor['tmdb_id'] ?? '') ?>" placeholder="12345">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="edit-modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeActorEditModal()"><i class="bi bi-x"></i> Abbrechen</button>
-                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Speichern</button>
-            </div>
-        </form>
-    </div>
+<div id="actorEditData" style="display: none;" 
+     data-actor-id="<?= $actor['id'] ?>"
+     data-csrf-token="<?= $_SESSION['csrf_token'] ?? '' ?>">
 </div>
 <?php endif; ?>
 
@@ -774,317 +698,320 @@ if (!empty($actor['bio'])) {
 }
 
 /* ============================================================================
-   WIKI-EDIT BUTTON & MODAL
+   INLINE EDITING STYLES (Wikipedia-Style)
    ============================================================================ */
 
-.btn-wiki-edit {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: var(--primary-color, #4EC9B0);
-    color: #1e1e1e;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
+.inline-edit-controls {
     display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-wiki-edit,
+.btn-wiki-save,
+.btn-wiki-cancel {
+    display: inline-flex;
     align-items: center;
     gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 12px rgba(78, 201, 176, 0.3);
-    z-index: 100;
+    font-size: 0.9rem;
+}
+
+.btn-wiki-edit {
+    background: var(--primary-color, #4EC9B0);
+    color: #1e1e1e;
+    box-shadow: 0 2px 8px rgba(78, 201, 176, 0.3);
 }
 
 .btn-wiki-edit:hover {
     background: #45b59f;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(78, 201, 176, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(78, 201, 176, 0.4);
 }
 
-.actor-header-info {
-    position: relative;
+.btn-wiki-save {
+    background: #28a745;
+    color: white;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
 }
 
-.edit-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    display: none;
+.btn-wiki-save:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
 }
 
-.edit-modal.show {
-    display: block;
+.btn-wiki-save:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.edit-modal-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(4px);
-}
-
-.edit-modal-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--clr-bg, #1e1e1e);
-    border-radius: 12px;
-    width: 90%;
-    max-width: 800px;
-    max-height: 90vh;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.edit-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 30px;
-    border-bottom: 2px solid rgba(78, 201, 176, 0.2);
-}
-
-.edit-modal-header h2 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--primary-color, #4EC9B0);
-}
-
-.btn-close-modal {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-color, #e0e0e0);
-    cursor: pointer;
-    padding: 5px;
-    transition: color 0.3s;
-}
-
-.btn-close-modal:hover {
-    color: var(--primary-color, #4EC9B0);
-}
-
-.edit-modal-body {
-    padding: 30px;
-    max-height: calc(90vh - 180px);
-    overflow-y: auto;
-}
-
-.edit-modal-footer {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    padding: 20px 30px;
-    border-top: 2px solid rgba(78, 201, 176, 0.2);
-}
-
-.form-section {
-    margin-bottom: 30px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.form-section:last-child {
-    border-bottom: none;
-}
-
-.form-section h3 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 20px;
-    color: var(--primary-color, #4EC9B0);
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--text-color, #e0e0e0);
-}
-
-.form-group input[type="text"],
-.form-group input[type="date"],
-.form-group input[type="url"],
-.form-group textarea,
-.form-group input[type="file"] {
-    width: 100%;
-    padding: 10px 15px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: var(--text-color, #e0e0e0);
-    font-size: 14px;
-    transition: all 0.3s;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: var(--primary-color, #4EC9B0);
-    background: rgba(78, 201, 176, 0.05);
-}
-
-.form-group textarea {
-    resize: vertical;
-    font-family: inherit;
-}
-
-.form-group small {
-    display: block;
-    margin-top: 5px;
-    color: var(--text-muted, #999);
-    font-size: 12px;
-}
-
-.current-photo {
-    margin-bottom: 20px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 8px;
-}
-
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
-}
-
-.btn-primary {
-    background: var(--primary-color, #4EC9B0);
-    color: #1e1e1e;
-}
-
-.btn-primary:hover {
-    background: #45b59f;
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
+.btn-wiki-cancel {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-color, #e0e0e0);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.btn-secondary:hover {
+.btn-wiki-cancel:hover {
     background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
-.edit-modal-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-.edit-modal-body::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.edit-modal-body::-webkit-scrollbar-thumb {
-    background: rgba(78, 201, 176, 0.3);
+/* Editable Fields */
+.editable-field {
+    transition: all 0.3s;
     border-radius: 4px;
+    padding: 0;
 }
 
-.edit-modal-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(78, 201, 176, 0.5);
+.editable-field.editing {
+    background: rgba(78, 201, 176, 0.05);
+    border: 2px dashed rgba(78, 201, 176, 0.3);
+    padding: 12px;
+    outline: none;
+    min-height: 100px;
 }
+
+.editable-field.editing:focus {
+    background: rgba(78, 201, 176, 0.08);
+    border-color: rgba(78, 201, 176, 0.5);
+}
+
+/* Edit Mode Indicator */
+.actor-profile.edit-mode::before {
+    content: '✏️ Bearbeitungsmodus aktiv';
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: rgba(78, 201, 176, 0.9);
+    color: #1e1e1e;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Remove old modal styles - not needed anymore */
 </style>
 
 <script>
 // ============================================================================
-// WIKI-STYLE EDIT MODAL
+// WIKIPEDIA-STYLE INLINE EDITING
 // ============================================================================
 
-function openActorEditModal() {
-    const modal = document.getElementById('actorEditModal');
-    if (modal) {
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-function closeActorEditModal() {
-    const modal = document.getElementById('actorEditModal');
-    if (modal) {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-}
-
-// ESC-Key schließt Modal
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        const modal = document.getElementById('actorEditModal');
-        if (modal && modal.classList.contains('show')) {
-            closeActorEditModal();
-        }
-    }
-});
-
-// Form Submit via AJAX
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('actorEditForm');
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
+    console.log('✅ Actor Edit Form initialisiert');
+    
+    const toggleEditBtn = document.getElementById('toggleEditMode');
+    const saveBtn = document.getElementById('saveEdits');
+    const cancelBtn = document.getElementById('cancelEdits');
+    const editData = document.getElementById('actorEditData');
+    
+    if (!toggleEditBtn || !editData) {
+        console.log('ℹ️ Inline-Edit nicht verfügbar (nicht eingeloggt)');
+        return;
+    }
+    
+    const actorId = editData.dataset.actorId;
+    const csrfToken = editData.dataset.csrfToken;
+    const editableFields = document.querySelectorAll('.editable-field');
+    
+    let isEditMode = false;
+    let originalValues = {};
+    
+    // Toggle Edit Mode
+    toggleEditBtn.addEventListener('click', function() {
+        isEditMode = true;
+        enterEditMode();
+    });
+    
+    // Save Changes
+    saveBtn.addEventListener('click', async function() {
+        await saveChanges();
+    });
+    
+    // Cancel Editing
+    cancelBtn.addEventListener('click', function() {
+        exitEditMode(true); // restore original values
+    });
+    
+    // Enter Edit Mode
+    function enterEditMode() {
+        console.log('✏️ Bearbeitungsmodus aktiviert');
+        
+        // Store original values
+        editableFields.forEach(field => {
+            originalValues[field.id] = field.dataset.original || field.textContent.trim();
             
-            const formData = new FormData(form);
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
+            // Make field editable
+            field.contentEditable = true;
+            field.classList.add('editing');
             
-            try {
-                // Button disabled & Loading
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Speichere...';
+            // Remove <br> tags for editing (convert back to plain text)
+            field.innerHTML = field.dataset.original || field.textContent.trim();
+        });
+        
+        // Update UI
+        toggleEditBtn.style.display = 'none';
+        saveBtn.style.display = 'inline-flex';
+        cancelBtn.style.display = 'inline-flex';
+        
+        // Add edit mode indicator
+        document.querySelector('.actor-profile').classList.add('edit-mode');
+    }
+    
+    // Exit Edit Mode
+    function exitEditMode(restore = false) {
+        console.log('❌ Bearbeitungsmodus beendet' + (restore ? ' (Änderungen verworfen)' : ''));
+        
+        editableFields.forEach(field => {
+            if (restore) {
+                // Restore original value
+                field.innerHTML = nl2br(originalValues[field.id] || '');
+            } else {
+                // Keep new value but format it
+                const newValue = field.textContent.trim();
+                field.innerHTML = nl2br(newValue);
+            }
+            
+            field.contentEditable = false;
+            field.classList.remove('editing');
+        });
+        
+        // Update UI
+        toggleEditBtn.style.display = 'inline-flex';
+        saveBtn.style.display = 'none';
+        cancelBtn.style.display = 'none';
+        
+        document.querySelector('.actor-profile').classList.remove('edit-mode');
+        isEditMode = false;
+    }
+    
+    // Save Changes via AJAX
+    async function saveChanges() {
+        console.log('💾 Speichere Änderungen...');
+        
+        // Collect changed data
+        const formData = new FormData();
+        formData.append('csrf_token', csrfToken);
+        formData.append('id', actorId);
+        
+        editableFields.forEach(field => {
+            const fieldName = field.dataset.field;
+            const newValue = field.textContent.trim();
+            formData.append(fieldName, newValue);
+            console.log(`  ${fieldName}: ${newValue.substring(0, 50)}...`);
+        });
+        
+        // Disable save button
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class=\"bi bi-hourglass-split\"></i> Speichere...';
+        
+        try {
+            console.log('🌐 Sende Request an: admin/api/actor-save.php');
+            const response = await fetch('admin/api/actor-save.php', {
+                method: 'POST',
+                body: formData
+            });
+            
+            console.log('📥 Response Status:', response.status, response.statusText);
+            
+            const data = await response.json();
+            console.log('📦 Response Data:', data);
+            
+            if (data.success) {
+                console.log('✅ Erfolgreich gespeichert!');
+                showNotification('✅ Änderungen gespeichert!', 'success');
                 
-                const response = await fetch('admin/api/actor-save.php', {
-                    method: 'POST',
-                    body: formData
+                // Update original values
+                editableFields.forEach(field => {
+                    const newValue = field.textContent.trim();
+                    field.dataset.original = newValue;
+                    originalValues[field.id] = newValue;
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Erfolg!
-                    alert('✅ Änderungen gespeichert! Die Seite wird neu geladen...');
-                    // Seite neu laden um Änderungen anzuzeigen
-                    window.location.reload();
-                } else {
-                    alert('❌ Fehler: ' + (data.error || 'Unbekannter Fehler'));
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                }
-                
-            } catch (error) {
-                console.error('Save error:', error);
-                alert('❌ Fehler beim Speichern: ' + error.message);
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
+                exitEditMode(false);
+            } else {
+                console.error('❌ Server Error:', data.error);
+                showNotification('❌ Fehler: ' + (data.error || 'Unbekannter Fehler'), 'error');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class=\"bi bi-check-lg\"></i> Speichern';
             }
-        });
+            
+        } catch (error) {
+            console.error('❌ Save error:', error);
+            showNotification('❌ Fehler beim Speichern: ' + error.message, 'error');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class=\"bi bi-check-lg\"></i> Speichern';
+        }
     }
+    
+    // Helper: Convert newlines to <br> tags
+    function nl2br(str) {
+        return str.replace(/\n/g, '<br>');
+    }
+    
+    // Helper: Show notification
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `inline-notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.9);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-left: 4px solid ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+            border-radius: 8px;
+            color: white;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // ESC key to cancel editing
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isEditMode) {
+            exitEditMode(true);
+        }
+    });
 });
 </script>

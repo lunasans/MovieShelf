@@ -71,3 +71,6 @@ cache/tmdb/e6adcf23e553697b1cd17cbdea51a1d4.json
 cache/tmdb/f00e4df551556326c8d831d8bf114e3a.json
 cache/tmdb/ff207c4ac994ae597a753f238bd6b2de.json
 install/quick-fix.sql
+/old_files
+old_files/moviedb(2).sql
+install/sqldump/sqldump.sql
