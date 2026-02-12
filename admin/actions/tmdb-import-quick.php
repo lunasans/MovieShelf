@@ -282,34 +282,64 @@ function importActors($pdo, $filmId, $actors) {
         $firstName = $nameParts[0] ?? '';
         $lastName = $nameParts[1] ?? '';
         
+        // Slug generieren
+        $baseSlug = strtolower(trim(preg_replace('/[^a-z0-9]+/i', '-', $fullName), '-'));
+        
         try {
-            // Prüfe ob Schauspieler existiert
+            // WICHTIG: Zuerst nach Slug suchen (verhindert Duplikate)
             $stmt = $pdo->prepare("
                 SELECT id FROM actors
-                WHERE first_name = :first_name
-                AND last_name = :last_name
+                WHERE slug = :slug
                 LIMIT 1
             ");
             
-            $stmt->execute([
-                'first_name' => $firstName,
-                'last_name' => $lastName
-            ]);
-            
+            $stmt->execute(['slug' => $baseSlug]);
             $existingActor = $stmt->fetch();
             
-            if ($existingActor) {
-                $actorId = $existingActor['id'];
-            } else {
-                // Neuen Schauspieler anlegen
+            // Falls kein Slug-Match, nach Namen suchen
+            if (!$existingActor) {
                 $stmt = $pdo->prepare("
-                    INSERT INTO actors (first_name, last_name, created_at, updated_at)
-                    VALUES (:first_name, :last_name, NOW(), NOW())
+                    SELECT id, slug FROM actors
+                    WHERE first_name = :first_name
+                    AND last_name = :last_name
+                    LIMIT 1
                 ");
                 
                 $stmt->execute([
                     'first_name' => $firstName,
                     'last_name' => $lastName
+                ]);
+                
+                $existingActor = $stmt->fetch();
+                
+                // Falls Actor ohne Slug existiert, Slug nachtragen
+                if ($existingActor && empty($existingActor['slug'])) {
+                    $stmt = $pdo->prepare("
+                        UPDATE actors
+                        SET slug = :slug, updated_at = NOW()
+                        WHERE id = :id
+                    ");
+                    
+                    $stmt->execute([
+                        'slug' => $baseSlug,
+                        'id' => $existingActor['id']
+                    ]);
+                }
+            }
+            
+            if ($existingActor) {
+                $actorId = $existingActor['id'];
+            } else {
+                // Neuen Schauspieler anlegen MIT Slug
+                $stmt = $pdo->prepare("
+                    INSERT INTO actors (first_name, last_name, slug, created_at, updated_at)
+                    VALUES (:first_name, :last_name, :slug, NOW(), NOW())
+                ");
+                
+                $stmt->execute([
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'slug' => $baseSlug
                 ]);
                 
                 $actorId = $pdo->lastInsertId();

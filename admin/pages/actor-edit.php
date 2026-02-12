@@ -104,6 +104,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_actor'])) {
             } else {
                 $errors[] = 'Ungültiges Dateiformat. Erlaubt: JPG, PNG, WEBP';
             }
+        } elseif (!empty($_POST['tmdb_profile_image_url'])) {
+            // TMDb Profilbild herunterladen
+            $tmdbImageUrl = $_POST['tmdb_profile_image_url'];
+            $uploadDir = __DIR__ . '/../../images/actors/';
+            
+            // Verzeichnis erstellen falls nicht vorhanden
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            
+            try {
+                $imageData = @file_get_contents($tmdbImageUrl);
+                if ($imageData !== false) {
+                    $tempSlug = createSlugFromName($data['first_name'], $data['last_name']);
+                    $fileName = $tempSlug . '.jpg';
+                    $uploadPath = $uploadDir . $fileName;
+                    
+                    if (file_put_contents($uploadPath, $imageData)) {
+                        $data['photo_path'] = 'images/actors/' . $fileName;
+                        error_log("TMDb profile image downloaded: {$uploadPath}");
+                    } else {
+                        error_log("Failed to save TMDb profile image: {$uploadPath}");
+                    }
+                } else {
+                    error_log("Failed to download TMDb profile image from: {$tmdbImageUrl}");
+                }
+            } catch (Exception $e) {
+                error_log("TMDb image download error: " . $e->getMessage());
+            }
         } elseif (!empty($_POST['existing_photo'])) {
             // Bestehendes Foto beibehalten
             $data['photo_path'] = $_POST['existing_photo'];
@@ -663,16 +692,29 @@ if ($isEdit && $actorId > 0) {
                         
                         <div class="form-group">
                             <label for="tmdb_id">TMDb ID</label>
-                            <input 
-                                type="number" 
-                                id="tmdb_id" 
-                                name="tmdb_id" 
-                                class="form-control"
-                                value="<?= htmlspecialchars($actor['tmdb_id'] ?? '') ?>"
-                                placeholder="123456"
-                            >
+                            <div class="input-group">
+                                <input 
+                                    type="number" 
+                                    id="tmdb_id" 
+                                    name="tmdb_id" 
+                                    class="form-control"
+                                    value="<?= htmlspecialchars($actor['tmdb_id'] ?? '') ?>"
+                                    placeholder="123456"
+                                >
+                                <button type="button" class="btn btn-info" id="loadFromTMDbBtn" title="Von TMDb laden">
+                                    <i class="bi bi-cloud-download"></i>
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">TMDb ID oder "Von TMDb laden" klicken</small>
                         </div>
                     </div>
+                    
+                    <?php if ($isEdit): ?>
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Tipp:</strong> Klicken Sie auf <i class="bi bi-cloud-download"></i> um nach diesem Schauspieler auf TMDb zu suchen und das Profil automatisch auszufüllen.
+                    </div>
+                    <?php endif; ?>
                 </div>
                 <div class="form-actions">
                     <button type="submit" name="save_actor" class="btn btn-primary btn-lg">
@@ -1084,6 +1126,223 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 <?php endif; ?>
+
+// ============================================================================
+// TMDb Actor Enrichment
+// ============================================================================
+const loadFromTMDbBtn = document.getElementById('loadFromTMDbBtn');
+const csrfToken = '<?= $_SESSION['csrf_token'] ?>';
+
+if (loadFromTMDbBtn) {
+    loadFromTMDbBtn.addEventListener('click', async function() {
+        const actorName = (document.getElementById('first_name').value + ' ' + document.getElementById('last_name').value).trim();
+        
+        if (!actorName || actorName.length < 3) {
+            alert('Bitte geben Sie zuerst einen Namen ein!');
+            return;
+        }
+        
+        // Button disabled während der Suche
+        loadFromTMDbBtn.disabled = true;
+        loadFromTMDbBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Suche...';
+        
+        try {
+            // Schritt 1: Schauspieler auf TMDb suchen
+            const searchResponse = await fetch('actions/tmdb-actor-search.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `name=${encodeURIComponent(actorName)}&csrf_token=${encodeURIComponent(csrfToken)}`
+            });
+            
+            const searchData = await searchResponse.json();
+            
+            if (!searchData.success || !searchData.results || searchData.results.length === 0) {
+                alert('Kein Schauspieler auf TMDb gefunden für: ' + actorName);
+                loadFromTMDbBtn.disabled = false;
+                loadFromTMDbBtn.innerHTML = '<i class="bi bi-cloud-download"></i>';
+                return;
+            }
+            
+            // Schritt 2: Wenn mehrere Ergebnisse, zeige Auswahl-Modal
+            let selectedTMDbId = null;
+            
+            if (searchData.results.length === 1) {
+                // Nur ein Ergebnis - direkt verwenden
+                selectedTMDbId = searchData.results[0].tmdb_id;
+            } else {
+                // Mehrere Ergebnisse - Benutzer wählen lassen
+                selectedTMDbId = await showTMDbSearchResults(searchData.results);
+                
+                if (!selectedTMDbId) {
+                    loadFromTMDbBtn.disabled = false;
+                    loadFromTMDbBtn.innerHTML = '<i class="bi bi-cloud-download"></i>';
+                    return;
+                }
+            }
+            
+            // Schritt 3: Actor-Details laden und Formular füllen
+            await enrichActorProfile(selectedTMDbId);
+            
+        } catch (error) {
+            console.error('TMDb Error:', error);
+            alert('Fehler beim Laden von TMDb: ' + error.message);
+        } finally {
+            loadFromTMDbBtn.disabled = false;
+            loadFromTMDbBtn.innerHTML = '<i class="bi bi-cloud-download"></i>';
+        }
+    });
+}
+
+async function showTMDbSearchResults(results) {
+    return new Promise((resolve) => {
+        // Modal erstellen
+        const modal = document.createElement('div');
+        modal.className = 'tmdb-search-modal';
+        modal.innerHTML = `
+            <div class="tmdb-modal-overlay"></div>
+            <div class="tmdb-modal-content">
+                <h3><i class="bi bi-search"></i> TMDb Suchergebnisse</h3>
+                <p class="text-muted">Bitte wählen Sie den richtigen Schauspieler:</p>
+                <div class="tmdb-results-list">
+                    ${results.map(actor => `
+                        <div class="tmdb-result-item" data-tmdb-id="${actor.tmdb_id}">
+                            ${actor.profile_path ? `
+                                <img src="https://image.tmdb.org/t/p/w92${actor.profile_path}" alt="${actor.name}">
+                            ` : `
+                                <div class="tmdb-no-image"><i class="bi bi-person"></i></div>
+                            `}
+                            <div class="tmdb-result-info">
+                                <div class="tmdb-result-name">${actor.name}</div>
+                                <div class="tmdb-result-meta">
+                                    ${actor.known_for ? `<small>${actor.known_for}</small>` : ''}
+                                    ${actor.popularity ? `<span class="badge bg-secondary">${Math.round(actor.popularity)}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn btn-secondary" id="tmdbCancelBtn">Abbrechen</button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Event Listeners
+        modal.querySelectorAll('.tmdb-result-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const tmdbId = parseInt(this.dataset.tmdbId);
+                modal.remove();
+                resolve(tmdbId);
+            });
+        });
+        
+        document.getElementById('tmdbCancelBtn').addEventListener('click', () => {
+            modal.remove();
+            resolve(null);
+        });
+        
+        modal.querySelector('.tmdb-modal-overlay').addEventListener('click', () => {
+            modal.remove();
+            resolve(null);
+        });
+    });
+}
+
+async function enrichActorProfile(tmdbId) {
+    try {
+        const response = await fetch('actions/enrich-actor-from-tmdb.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `tmdb_id=${tmdbId}&csrf_token=${encodeURIComponent(csrfToken)}`
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Fehler beim Laden der Daten');
+        }
+        
+        // Formular-Felder füllen
+        const actorData = data.data;
+        
+        // Name aufteilen
+        if (actorData.name) {
+            const nameParts = actorData.name.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            
+            document.getElementById('first_name').value = firstName;
+            document.getElementById('last_name').value = lastName;
+        }
+        
+        // Biografie
+        if (actorData.biography) {
+            document.getElementById('bio').value = actorData.biography;
+            updateCharCount(); // Zeichen-Counter aktualisieren
+        }
+        
+        // Geburtsdatum
+        if (actorData.birth_date) {
+            document.getElementById('birth_date').value = actorData.birth_date;
+        }
+        
+        // Geburtsort
+        if (actorData.birth_place) {
+            document.getElementById('birth_place').value = actorData.birth_place;
+        }
+        
+        // Todesdatum
+        if (actorData.death_date) {
+            document.getElementById('death_date').value = actorData.death_date;
+        }
+        
+        // TMDb ID
+        document.getElementById('tmdb_id').value = tmdbId;
+        
+        // Profilbild-Vorschau (falls vorhanden)
+        if (actorData.profile_image_url) {
+            showProfileImagePreview(actorData.profile_image_url);
+        }
+        
+        // Success-Nachricht
+        showNotification('✅ Profil erfolgreich von TMDb geladen!', 'success');
+        
+    } catch (error) {
+        console.error('Enrichment error:', error);
+        throw error;
+    }
+}
+
+function showProfileImagePreview(imageUrl) {
+    const photoSection = document.querySelector('.form-section:has(#photo)');
+    
+    // Entferne alte Vorschau falls vorhanden
+    const oldPreview = document.getElementById('tmdbPhotoPreview');
+    if (oldPreview) {
+        oldPreview.remove();
+    }
+    
+    // Neue Vorschau erstellen
+    const preview = document.createElement('div');
+    preview.id = 'tmdbPhotoPreview';
+    preview.className = 'alert alert-success';
+    preview.innerHTML = `
+        <h5><i class="bi bi-check-circle"></i> Profilbild von TMDb gefunden</h5>
+        <img src="${imageUrl}" alt="TMDb Profilbild" style="max-width: 200px; border-radius: 8px; margin-top: 10px;">
+        <p class="mt-2 mb-0">
+            <small>Dieses Bild wird beim Speichern automatisch heruntergeladen.</small><br>
+            <small>Sie können auch ein eigenes Foto hochladen (überschreibt das TMDb-Bild).</small>
+        </p>
+        <input type="hidden" name="tmdb_profile_image_url" value="${imageUrl}">
+    `;
+    
+    photoSection.insertBefore(preview, photoSection.querySelector('.form-group'));
+}
+
 </script>
 
 <style>
@@ -1108,4 +1367,143 @@ function showNotification(message, type = 'info') {
         opacity: 0;
     }
 }
+
+/* ============================================================================
+   TMDb Search Modal Styles
+   ============================================================================ */
+.tmdb-search-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tmdb-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.tmdb-modal-content {
+    position: relative;
+    background: var(--clr-card, #2a2a2a);
+    border: 1px solid var(--clr-border, rgba(255, 255, 255, 0.1));
+    border-radius: var(--radius, 12px);
+    padding: 2rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.tmdb-modal-content h3 {
+    margin: 0 0 1rem 0;
+    color: var(--clr-text, #fff);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tmdb-modal-content h3 i {
+    color: var(--clr-accent, #667eea);
+}
+
+.tmdb-results-list {
+    margin: 1.5rem 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.tmdb-result-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--clr-border, rgba(255, 255, 255, 0.1));
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tmdb-result-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--clr-accent, #667eea);
+    transform: translateX(4px);
+}
+
+.tmdb-result-item img {
+    width: 60px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tmdb-no-image {
+    width: 60px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    color: var(--clr-text-muted, rgba(255, 255, 255, 0.3));
+    font-size: 2rem;
+}
+
+.tmdb-result-info {
+    flex: 1;
+}
+
+.tmdb-result-name {
+    font-weight: 600;
+    color: var(--clr-text, #fff);
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
+}
+
+.tmdb-result-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--clr-text-muted, rgba(255, 255, 255, 0.6));
+    font-size: 0.9rem;
+}
+
+.tmdb-result-meta small {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#tmdbCancelBtn {
+    width: 100%;
+    margin-top: 1rem;
+}
+
 </style>
