@@ -1,6 +1,6 @@
 # MovieShelf - Dein digitales Filmregal 
 
-![Logo](https://cloud.neuhaus.or.at/s/JRjrdS82DrgqYCP)
+![Logo]([https://cloud.neuhaus.or.at/s/JRjrdS82DrgqYCP](https://cloud.neuhaus.or.at/core/preview?fileId=2044332&x=2560&y=1440&a=true&etag=28c05ad9b8f08362c856116d9c4cbdc8))
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
 
