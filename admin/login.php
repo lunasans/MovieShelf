@@ -399,7 +399,7 @@ $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
     <meta name="author" content="<?= DVDPROFILER_AUTHOR ?>">
     
     <!-- Enhanced Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233498db'%3E%3Cpath d='M18 4v1h-2V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v1H4v11c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4h-2zM8 4h6v1H8V4zm10 13H6V6h2v1h6V6h2v11z'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/png" href="../assets/logo/favicon.ico">
     
     <!-- Security Headers via Meta -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">

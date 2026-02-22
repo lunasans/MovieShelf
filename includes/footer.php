@@ -32,7 +32,7 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
         <!-- Linke Seite: Logo & Branding -->
         <div class="footer-section">
             <div class="footer-logo">
-                <i class="bi bi-film"></i>
+                <img src="/assets/logo/logo_small.png" alt="MovieShelf Logo" class="footer-logo-img">
                 <span>MovieShelf</span>
             </div>
             <p class="footer-tagline">Moderne Filmverwaltung</p>
@@ -253,9 +253,11 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
     margin-bottom: var(--space-sm, 0.5rem);
 }
 
-.footer-logo i {
-    font-size: 1.5rem;
-    color: var(--accent-color, #667eea);
+.footer-logo-img {
+    height: 1.5rem;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .footer-tagline {

@@ -56,7 +56,7 @@ $memoryStart = memory_get_usage(true);
     <link href="css/settings.css" rel="stylesheet">
     
     <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <link rel="icon" type="image/png" href="../assets/logo/favicon.ico">
 </head>
 <body>
     

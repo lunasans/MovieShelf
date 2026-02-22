@@ -1,5 +1,7 @@
 # MovieShelf - Dein digitales Filmregal
 
+
+
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
 
 ## 🎬 Übersicht

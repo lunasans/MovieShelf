@@ -3,7 +3,12 @@
 ?>
 <header class="smart-header">
   <div class="header-inner">
-    <div class="logo"><?= htmlspecialchars($siteTitle) ?></div>
+    <div class="logo">
+      <a href="index.php" class="logo-link">
+        <img src="/assets/logo/logo.png" alt="<?= htmlspecialchars($siteTitle) ?>" class="logo-img">
+        <span class="logo-text"><?= htmlspecialchars($siteTitle) ?></span>
+      </a>
+    </div>
     <nav class="main-nav">
       <a href="index.php" class="route-link">
         <i class="bi bi-house-fill"></i> Start
