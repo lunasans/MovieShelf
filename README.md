@@ -1,12 +1,8 @@
-# MovieShelf - Dein digitales Filmregal 
-
 ![Logo](https://rene-neuhaus.eu/assets/logo/logo.png)
 
+# MovieShelf - Dein digitales Filmregal 
+
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
-
-## 🎬 Übersicht
-
-MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und Präsentation Ihrer DVD/Blu-ray-Sammlung. Das System bietet eine intuitive Benutzeroberfläche mit Glass-Morphism-Design und umfangreiche Funktionen für Film-Enthusiasten.
 
 ## ✨ Hauptfunktionen
 
@@ -183,4 +179,4 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 **Letztes Update**: Februar 2026  
 **Status**: Aktiv entwickelt
 
-*Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
+
