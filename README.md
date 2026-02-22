@@ -1,4 +1,4 @@
-![Logo](https://rene-neuhaus.eu/assets/logo/logo.png =200x200)
+![Logo](https://rene-neuhaus.eu/assets/logo/logo.png)
 
 # MovieShelf - Dein digitales Filmregal 
 
