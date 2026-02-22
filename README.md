@@ -4,7 +4,15 @@
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
 
-## ✨ Hauptfunktionen
+# Signatur Banner
+
+![Signatur Banner](https://rene-neuhaus.eu/signature.php?type=1)
+
+![Signatur Banner](https://rene-neuhaus.eu/signature.php?type=2)
+
+![Signatur Banner](https://rene-neuhaus.eu/signature.php?type=3)
+
+# ✨ Hauptfunktionen
 
 ### 📥 Import & Datenmanagement
 - **XML-Import** aus collection.xml (kompatibel mit DVD Profiler)
