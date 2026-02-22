@@ -15,24 +15,12 @@ if (!defined('DVDPROFILER_VERSION')) {
     die('Direct access not permitted');
 }
 
-// Actor Functions laden
-require_once __DIR__ . '/actor-functions.php';
+// Actor-Daten sind bereits von index.php geladen worden
+// (siehe index.php - Actor-Profil Meta-Daten Sektion)
+// $actor Variable ist bereits verfügbar
 
-// Actor-Parameter aus URL
-$actorSlug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
-$actorId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-// Actor laden (entweder via Slug oder ID)
-$actor = null;
-
-if (!empty($actorSlug)) {
-    $actor = getActorBySlug($pdo, $actorSlug);
-} elseif ($actorId > 0) {
-    $actor = getActorById($pdo, $actorId);
-}
-
-// Falls Actor nicht gefunden
-if (!$actor) {
+// Falls Actor nicht gefunden (sollte nicht vorkommen, da index.php bereits prüft)
+if (!isset($actor) || !$actor) {
     http_response_code(404);
     ?>
     <div class="error-container">
@@ -94,14 +82,8 @@ if (!$actor) {
     return;
 }
 
-// SEO Meta-Daten updaten
-$fullName = trim($actor['first_name'] . ' ' . $actor['last_name']);
-$pageTitle = $fullName . ' - Schauspieler-Profil | ' . ($siteTitle ?? 'MovieShelf');
-$metaDescription = 'Profil von ' . $fullName;
-
-if (!empty($actor['bio'])) {
-    $metaDescription .= ' - ' . mb_substr(strip_tags($actor['bio']), 0, 150);
-}
+// Meta-Daten werden jetzt in index.php gesetzt (vor HTML-Head)
+// $actor ist bereits von index.php verfügbar
 
 // Actor-Profil Template laden
-require __DIR__ . '/partials/actor-profile.php';
+require __DIR__ . '/../partials/actor-profile.php';

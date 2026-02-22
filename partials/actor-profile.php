@@ -4,37 +4,72 @@
  * Zeigt detaillierte Informationen zu einem Schauspieler
  * 
  * @package    movieshelf
- * @version    1.4.8
+ * @version    1.5.0
  * @author     René Neuhaus
  */
+
+// Konstanten für Konfiguration
+define('ACTOR_PROFILE_MAX_TOP_GENRES', 5);
+define('ACTOR_PROFILE_MAX_FILM_GENRES', 2);
+define('ACTOR_PROFILE_DEFAULT_NAME', 'Unbekannter Schauspieler');
 
 // Sicherheitscheck
 if (!isset($actor) || !is_array($actor) || empty($actor['id'])) {
     throw new InvalidArgumentException('Invalid actor data provided to actor-profile.php');
 }
 
-// Vollständigen Namen zusammensetzen
-$fullName = trim($actor['first_name'] . ' ' . $actor['last_name']);
+// Helper-Funktion für Genre-Verarbeitung
+if (!function_exists('parseGenres')) {
+    function parseGenres(?string $genreString): array {
+        if (empty($genreString)) {
+            return [];
+        }
+        return array_map('trim', explode(',', $genreString));
+    }
+}
+
+// Vollständigen Namen zusammensetzen mit Fallback
+$firstName = trim($actor['first_name'] ?? '');
+$lastName = trim($actor['last_name'] ?? '');
+$fullName = trim($firstName . ' ' . $lastName);
+
+// Fallback wenn Name leer ist
+if (empty($fullName)) {
+    $fullName = ACTOR_PROFILE_DEFAULT_NAME;
+}
 
 // Alter berechnen (falls Geburtsdatum vorhanden)
 $age = null;
 $ageText = '';
 if (!empty($actor['birth_date'])) {
-    $birthDate = new DateTime($actor['birth_date']);
-    $today = new DateTime();
-    
-    if (!empty($actor['death_date'])) {
-        $deathDate = new DateTime($actor['death_date']);
-        $age = $birthDate->diff($deathDate)->y;
-        $ageText = "✝ $age Jahre";
-    } else {
-        $age = $birthDate->diff($today)->y;
-        $ageText = "$age Jahre";
+    try {
+        $birthDate = new DateTime($actor['birth_date']);
+        $today = new DateTime();
+
+        if (!empty($actor['death_date'])) {
+            try {
+                $deathDate = new DateTime($actor['death_date']);
+                $age = $birthDate->diff($deathDate)->y;
+                $ageText = "✝ $age Jahre";
+            } catch (Exception $e) {
+                error_log("Invalid death_date for actor {$actor['id']}: " . $e->getMessage());
+                // Nur Geburtsdatum anzeigen, ohne Sterbedatum
+                $age = $birthDate->diff($today)->y;
+                $ageText = "$age Jahre";
+            }
+        } else {
+            $age = $birthDate->diff($today)->y;
+            $ageText = "$age Jahre";
+        }
+    } catch (Exception $e) {
+        error_log("Invalid birth_date for actor {$actor['id']}: " . $e->getMessage());
+        // Kein Alter anzeigen bei ungültigem Datum
     }
 }
 
 // Filme des Schauspielers laden
 $actorFilms = [];
+$filmLoadError = null;
 try {
     $stmt = $pdo->prepare("
         SELECT 
@@ -51,6 +86,7 @@ try {
     $actorFilms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     error_log("Actor films query error: " . $e->getMessage());
+    $filmLoadError = "Fehler beim Laden der Filmographie. Bitte versuchen Sie es später erneut.";
 }
 
 // Statistiken berechnen
@@ -60,22 +96,19 @@ $mainRoles = array_filter($actorFilms, function($film) {
 });
 $mainRoleCount = count($mainRoles);
 
-// Genre-Verteilung
+// Genre-Verteilung mit Helper-Funktion
 $genres = [];
 foreach ($actorFilms as $film) {
-    if (!empty($film['genre'])) {
-        $filmGenres = explode(',', $film['genre']);
-        foreach ($filmGenres as $genre) {
-            $genre = trim($genre);
-            if (!isset($genres[$genre])) {
-                $genres[$genre] = 0;
-            }
-            $genres[$genre]++;
+    $filmGenres = parseGenres($film['genre'] ?? null);
+    foreach ($filmGenres as $genre) {
+        if (!isset($genres[$genre])) {
+            $genres[$genre] = 0;
         }
+        $genres[$genre]++;
     }
 }
 arsort($genres);
-$topGenres = array_slice($genres, 0, 5);
+$topGenres = array_slice($genres, 0, ACTOR_PROFILE_MAX_TOP_GENRES);
 
 // Zeitspanne berechnen
 $years = array_filter(array_column($actorFilms, 'year'));
@@ -83,11 +116,19 @@ $firstYear = !empty($years) ? min($years) : null;
 $lastYear = !empty($years) ? max($years) : null;
 $yearSpan = ($firstYear && $lastYear) ? "$firstYear - $lastYear" : null;
 
-// View Counter erhöhen
-try {
-    $pdo->prepare("UPDATE actors SET view_count = view_count + 1 WHERE id = ?")->execute([$actor['id']]);
-} catch (PDOException $e) {
-    error_log("Actor view count update error: " . $e->getMessage());
+// View Counter erhöhen (nur einmal pro Session)
+$viewedActorsKey = 'viewed_actors';
+if (!isset($_SESSION[$viewedActorsKey])) {
+    $_SESSION[$viewedActorsKey] = [];
+}
+
+if (!in_array($actor['id'], $_SESSION[$viewedActorsKey], true)) {
+    try {
+        $pdo->prepare("UPDATE actors SET view_count = view_count + 1 WHERE id = ?")->execute([$actor['id']]);
+        $_SESSION[$viewedActorsKey][] = $actor['id'];
+    } catch (PDOException $e) {
+        error_log("Actor view count update error: " . $e->getMessage());
+    }
 }
 
 // Foto-Pfad
@@ -107,9 +148,9 @@ if (!empty($actor['bio'])) {
     <!-- Header mit Foto und Basis-Info -->
     <header class="actor-header">
         <div class="actor-photo-container">
-            <img 
-                src="<?= $actorPhoto ?>" 
-                alt="<?= htmlspecialchars($fullName) ?>"
+            <img
+                src="<?= $actorPhoto ?>"
+                alt="Porträtfoto von <?= htmlspecialchars($fullName) ?>"
                 class="actor-photo"
                 itemprop="image"
                 onerror="this.src='images/placeholder-actor.png'"
@@ -119,21 +160,23 @@ if (!empty($actor['bio'])) {
             <?php if (!empty($actor['imdb_id']) || !empty($actor['website'])): ?>
             <div class="actor-social-links">
                 <?php if (!empty($actor['imdb_id'])): ?>
-                <a href="https://www.imdb.com/name/<?= htmlspecialchars($actor['imdb_id']) ?>/" 
-                   target="_blank" 
+                <a href="https://www.imdb.com/name/<?= htmlspecialchars($actor['imdb_id']) ?>/"
+                   target="_blank"
                    rel="noopener noreferrer"
                    class="social-link imdb"
-                   title="IMDb Profil">
+                   title="IMDb Profil"
+                   aria-label="<?= htmlspecialchars($fullName) ?> auf IMDb ansehen">
                     <i class="bi bi-film"></i> IMDb
                 </a>
                 <?php endif; ?>
-                
+
                 <?php if (!empty($actor['website'])): ?>
-                <a href="<?= htmlspecialchars($actor['website']) ?>" 
-                   target="_blank" 
+                <a href="<?= htmlspecialchars($actor['website']) ?>"
+                   target="_blank"
                    rel="noopener noreferrer"
                    class="social-link website"
-                   title="Offizielle Website">
+                   title="Offizielle Website"
+                   aria-label="Offizielle Website von <?= htmlspecialchars($fullName) ?> besuchen">
                     <i class="bi bi-globe"></i> Website
                 </a>
                 <?php endif; ?>
@@ -143,21 +186,7 @@ if (!empty($actor['bio'])) {
         
         <div class="actor-header-info">
             <h1 class="actor-name" itemprop="name"><?= htmlspecialchars($fullName) ?></h1>
-            
-            <!-- Wiki-Edit Button (nur für eingeloggte User) -->
-            <?php if (isset($_SESSION['user_id'])): ?>
-            <div class="inline-edit-controls">
-                <button class="btn-wiki-edit" id="toggleEditMode" title="Bearbeiten">
-                    <i class="bi bi-pencil-square"></i> Bearbeiten
-                </button>
-                <button class="btn-wiki-save" id="saveEdits" style="display: none;" title="Speichern">
-                    <i class="bi bi-check-lg"></i> Speichern
-                </button>
-                <button class="btn-wiki-cancel" id="cancelEdits" style="display: none;" title="Abbrechen">
-                    <i class="bi bi-x-lg"></i> Abbrechen
-                </button>
-            </div>
-            <?php endif; ?>
+
             
             <div class="actor-meta" id="actorMetaSection">
                 <?php if (!empty($actor['birth_date'])): ?>
@@ -189,32 +218,32 @@ if (!empty($actor['bio'])) {
             
             <!-- Statistiken -->
             <div class="actor-stats">
-                <div class="stat-box">
+                <div class="stat-box" role="group" aria-label="<?= $totalFilms ?> Filme in Sammlung">
                     <div class="stat-value"><?= $totalFilms ?></div>
                     <div class="stat-label">Filme in Sammlung</div>
                 </div>
-                
+
                 <?php if ($mainRoleCount > 0): ?>
-                <div class="stat-box">
+                <div class="stat-box" role="group" aria-label="<?= $mainRoleCount ?> Hauptrollen">
                     <div class="stat-value"><?= $mainRoleCount ?></div>
                     <div class="stat-label">Hauptrollen</div>
                 </div>
                 <?php endif; ?>
-                
+
                 <?php if ($yearSpan): ?>
-                <div class="stat-box">
+                <div class="stat-box" role="group" aria-label="Zeitspanne <?= htmlspecialchars($yearSpan) ?>">
                     <div class="stat-value"><?= $yearSpan ?></div>
                     <div class="stat-label">Zeitspanne</div>
                 </div>
                 <?php endif; ?>
-                
+
                 <?php if (!empty($topGenres)): ?>
-                <div class="stat-box full-width">
+                <div class="stat-box full-width" role="group" aria-label="Häufigste Genres">
                     <div class="stat-label">Häufigste Genres</div>
                     <div class="genre-tags">
                         <?php foreach ($topGenres as $genre => $count): ?>
                         <span class="genre-tag">
-                            <?= htmlspecialchars($genre) ?> 
+                            <?= htmlspecialchars($genre) ?>
                             <span class="genre-count">(<?= $count ?>)</span>
                         </span>
                         <?php endforeach; ?>
@@ -229,11 +258,7 @@ if (!empty($actor['bio'])) {
     <?php if (!empty($actor['bio'])): ?>
     <section class="actor-section biography">
         <h2><i class="bi bi-journal-text"></i> Biografie</h2>
-        <div class="bio-content editable-field" 
-             id="bioContent"
-             data-field="bio"
-             data-original="<?= htmlspecialchars($actor['bio']) ?>"
-             itemprop="description">
+        <div class="bio-content" itemprop="description">
             <?= nl2br(htmlspecialchars($actor['bio'])) ?>
         </div>
     </section>
@@ -246,31 +271,41 @@ if (!empty($actor['bio'])) {
             <span class="section-count"><?= $totalFilms ?> Film<?= $totalFilms !== 1 ? 'e' : '' ?></span>
         </h2>
         
-        <?php if (empty($actorFilms)): ?>
-        <div class="empty-state">
+        <?php if ($filmLoadError): ?>
+        <div class="error-message" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <p><?= htmlspecialchars($filmLoadError) ?></p>
+        </div>
+        <?php elseif (empty($actorFilms)): ?>
+        <div class="empty-state" role="status" aria-live="polite">
             <i class="bi bi-inbox"></i>
             <p>Keine Filme in der Sammlung mit diesem Schauspieler.</p>
         </div>
         <?php else: ?>
         <div class="filmography-grid">
             <?php foreach ($actorFilms as $film): ?>
-            <div class="film-card" onclick="loadFilmDetails(<?= $film['id'] ?>)">
+            <div class="film-card"
+                 onclick="window.app?.loadFilmDetail(<?= $film['id'] ?>)"
+                 onkeypress="if(event.key==='Enter'||event.key===' ')window.app?.loadFilmDetail(<?= $film['id'] ?>)"
+                 tabindex="0"
+                 role="button"
+                 aria-label="Film <?= htmlspecialchars($film['title']) ?> von <?= !empty($film['year']) ? htmlspecialchars($film['year']) : 'unbekannt' ?> anzeigen">
                 <div class="film-cover">
                     <?php 
                     $coverPath = findCoverImage($film['cover_id'] ?? '', 'f');
                     if (file_exists($coverPath)):
                     ?>
                         <img src="<?= htmlspecialchars($coverPath) ?>" 
-                             alt="<?= htmlspecialchars($film['title']) ?>"
+                             alt="Cover von <?= htmlspecialchars($film['title']) ?>"
                              loading="lazy">
                     <?php else: ?>
-                        <div class="cover-placeholder">
+                        <div class="cover-placeholder" aria-label="Kein Cover verfügbar">
                             <i class="bi bi-film"></i>
                         </div>
                     <?php endif; ?>
                     
                     <?php if (!empty($film['is_main_role'])): ?>
-                    <div class="main-role-badge" title="Hauptrolle">
+                    <div class="main-role-badge" title="Hauptrolle" aria-label="Hauptrolle">
                         <i class="bi bi-star-fill"></i>
                     </div>
                     <?php endif; ?>
@@ -292,10 +327,10 @@ if (!empty($actor['bio'])) {
                     <?php if (!empty($film['genre'])): ?>
                     <div class="film-genres">
                         <?php 
-                        $filmGenres = array_slice(explode(',', $film['genre']), 0, 2);
+                        $filmGenres = array_slice(parseGenres($film['genre']), 0, ACTOR_PROFILE_MAX_FILM_GENRES);
                         foreach ($filmGenres as $genre): 
                         ?>
-                        <span class="genre-badge"><?= htmlspecialchars(trim($genre)) ?></span>
+                        <span class="genre-badge"><?= htmlspecialchars($genre) ?></span>
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
@@ -316,40 +351,49 @@ if (!empty($actor['bio'])) {
     <?php endif; ?>
 </article>
 
-<!-- Hidden data for inline editing -->
-<?php if (isset($_SESSION['user_id'])): ?>
-<div id="actorEditData" style="display: none;" 
-     data-actor-id="<?= $actor['id'] ?>"
-     data-csrf-token="<?= $_SESSION['csrf_token'] ?? '' ?>">
-</div>
-<?php endif; ?>
+
 
 <!-- Schema.org JSON-LD -->
-<script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "<?= htmlspecialchars($fullName) ?>",
-    <?php if (!empty($actor['birth_date'])): ?>
-    "birthDate": "<?= $actor['birth_date'] ?>",
-    <?php endif; ?>
-    <?php if (!empty($actor['birth_place'])): ?>
-    "birthPlace": "<?= htmlspecialchars($actor['birth_place']) ?>",
-    <?php endif; ?>
-    <?php if (!empty($actor['death_date'])): ?>
-    "deathDate": "<?= $actor['death_date'] ?>",
-    <?php endif; ?>
-    <?php if (!empty($actor['nationality'])): ?>
-    "nationality": "<?= htmlspecialchars($actor['nationality']) ?>",
-    <?php endif; ?>
-    <?php if (!empty($actor['bio'])): ?>
-    "description": "<?= htmlspecialchars(mb_substr(strip_tags($actor['bio']), 0, 200)) ?>",
-    <?php endif; ?>
-    <?php if (!empty($actorPhoto)): ?>
-    "image": "<?= $actorPhoto ?>",
-    <?php endif; ?>
-    "url": "<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>"
+<?php
+// Build JSON-LD schema properly to avoid trailing comma issues
+$personSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Person',
+    'name' => $fullName
+];
+
+if (!empty($actor['birth_date'])) {
+    $personSchema['birthDate'] = $actor['birth_date'];
 }
+
+if (!empty($actor['birth_place'])) {
+    $personSchema['birthPlace'] = $actor['birth_place'];
+}
+
+if (!empty($actor['death_date'])) {
+    $personSchema['deathDate'] = $actor['death_date'];
+}
+
+if (!empty($actor['nationality'])) {
+    $personSchema['nationality'] = $actor['nationality'];
+}
+
+if (!empty($actor['bio'])) {
+    $personSchema['description'] = mb_substr(strip_tags($actor['bio']), 0, 200);
+}
+
+if (!empty($actorPhoto) && $actorPhoto !== 'images/placeholder-actor.png') {
+    $personSchema['image'] = $actorPhoto;
+}
+
+// Sichere URL-Generierung
+$currentUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . 
+              '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . 
+              ($_SERVER['REQUEST_URI'] ?? '');
+$personSchema['url'] = filter_var($currentUrl, FILTER_SANITIZE_URL);
+?>
+<script type="application/ld+json">
+<?= json_encode($personSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?>
 </script>
 
 <style>
@@ -644,6 +688,46 @@ if (!empty($actor['bio'])) {
     opacity: 0.3;
 }
 
+/* Error Message Styling */
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md, 1rem);
+    padding: var(--space-lg, 1.5rem);
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-left: 4px solid #dc3545;
+    border-radius: var(--radius-md, 8px);
+    color: #ff6b6b;
+    margin-bottom: var(--space-lg, 1.5rem);
+}
+
+.error-message i {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.error-message p {
+    margin: 0;
+    flex: 1;
+}
+
+/* Keyboard Focus Styles for Accessibility */
+.film-card:focus {
+    outline: 2px solid var(--accent-primary, #667eea);
+    outline-offset: 2px;
+}
+
+.film-card:focus-visible {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--accent-primary, #667eea);
+    outline-offset: 2px;
+}
+
 .admin-actions {
     text-align: center;
     margin-top: var(--space-xl, 2rem);
@@ -695,321 +779,6 @@ if (!empty($actor['bio'])) {
     }
 }
 
-/* ============================================================================
-   INLINE EDITING STYLES (Wikipedia-Style)
-   ============================================================================ */
 
-.inline-edit-controls {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-.btn-wiki-edit,
-.btn-wiki-save,
-.btn-wiki-cancel {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 0.9rem;
-}
-
-.btn-wiki-edit {
-    background: var(--primary-color, #4EC9B0);
-    color: #1e1e1e;
-    box-shadow: 0 2px 8px rgba(78, 201, 176, 0.3);
-}
-
-.btn-wiki-edit:hover {
-    background: #45b59f;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(78, 201, 176, 0.4);
-}
-
-.btn-wiki-save {
-    background: #28a745;
-    color: white;
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-}
-
-.btn-wiki-save:hover:not(:disabled) {
-    background: #218838;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-}
-
-.btn-wiki-save:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.btn-wiki-cancel {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-color, #e0e0e0);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.btn-wiki-cancel:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-/* Editable Fields */
-.editable-field {
-    transition: all 0.3s;
-    border-radius: 4px;
-    padding: 0;
-}
-
-.editable-field.editing {
-    background: rgba(78, 201, 176, 0.05);
-    border: 2px dashed rgba(78, 201, 176, 0.3);
-    padding: 12px;
-    outline: none;
-    min-height: 100px;
-}
-
-.editable-field.editing:focus {
-    background: rgba(78, 201, 176, 0.08);
-    border-color: rgba(78, 201, 176, 0.5);
-}
-
-/* Edit Mode Indicator */
-.actor-profile.edit-mode::before {
-    content: '✏️ Bearbeitungsmodus aktiv';
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    background: rgba(78, 201, 176, 0.9);
-    color: #1e1e1e;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    animation: slideInRight 0.3s ease-out;
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-/* Remove old modal styles - not needed anymore */
 </style>
 
-<script>
-// ============================================================================
-// WIKIPEDIA-STYLE INLINE EDITING
-// ============================================================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Actor Edit Form initialisiert');
-    
-    const toggleEditBtn = document.getElementById('toggleEditMode');
-    const saveBtn = document.getElementById('saveEdits');
-    const cancelBtn = document.getElementById('cancelEdits');
-    const editData = document.getElementById('actorEditData');
-    
-    if (!toggleEditBtn || !editData) {
-        console.log('ℹ️ Inline-Edit nicht verfügbar (nicht eingeloggt)');
-        return;
-    }
-    
-    const actorId = editData.dataset.actorId;
-    const csrfToken = editData.dataset.csrfToken;
-    const editableFields = document.querySelectorAll('.editable-field');
-    
-    let isEditMode = false;
-    let originalValues = {};
-    
-    // Toggle Edit Mode
-    toggleEditBtn.addEventListener('click', function() {
-        isEditMode = true;
-        enterEditMode();
-    });
-    
-    // Save Changes
-    saveBtn.addEventListener('click', async function() {
-        await saveChanges();
-    });
-    
-    // Cancel Editing
-    cancelBtn.addEventListener('click', function() {
-        exitEditMode(true); // restore original values
-    });
-    
-    // Enter Edit Mode
-    function enterEditMode() {
-        console.log('✏️ Bearbeitungsmodus aktiviert');
-        
-        // Store original values
-        editableFields.forEach(field => {
-            originalValues[field.id] = field.dataset.original || field.textContent.trim();
-            
-            // Make field editable
-            field.contentEditable = true;
-            field.classList.add('editing');
-            
-            // Remove <br> tags for editing (convert back to plain text)
-            field.innerHTML = field.dataset.original || field.textContent.trim();
-        });
-        
-        // Update UI
-        toggleEditBtn.style.display = 'none';
-        saveBtn.style.display = 'inline-flex';
-        cancelBtn.style.display = 'inline-flex';
-        
-        // Add edit mode indicator
-        document.querySelector('.actor-profile').classList.add('edit-mode');
-    }
-    
-    // Exit Edit Mode
-    function exitEditMode(restore = false) {
-        console.log('❌ Bearbeitungsmodus beendet' + (restore ? ' (Änderungen verworfen)' : ''));
-        
-        editableFields.forEach(field => {
-            if (restore) {
-                // Restore original value
-                field.innerHTML = nl2br(originalValues[field.id] || '');
-            } else {
-                // Keep new value but format it
-                const newValue = field.textContent.trim();
-                field.innerHTML = nl2br(newValue);
-            }
-            
-            field.contentEditable = false;
-            field.classList.remove('editing');
-        });
-        
-        // Update UI
-        toggleEditBtn.style.display = 'inline-flex';
-        saveBtn.style.display = 'none';
-        cancelBtn.style.display = 'none';
-        
-        document.querySelector('.actor-profile').classList.remove('edit-mode');
-        isEditMode = false;
-    }
-    
-    // Save Changes via AJAX
-    async function saveChanges() {
-        console.log('💾 Speichere Änderungen...');
-        
-        // Collect changed data
-        const formData = new FormData();
-        formData.append('csrf_token', csrfToken);
-        formData.append('id', actorId);
-        
-        editableFields.forEach(field => {
-            const fieldName = field.dataset.field;
-            const newValue = field.textContent.trim();
-            formData.append(fieldName, newValue);
-            console.log(`  ${fieldName}: ${newValue.substring(0, 50)}...`);
-        });
-        
-        // Disable save button
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class=\"bi bi-hourglass-split\"></i> Speichere...';
-        
-        try {
-            console.log('🌐 Sende Request an: admin/api/actor-save.php');
-            const response = await fetch('admin/api/actor-save.php', {
-                method: 'POST',
-                body: formData
-            });
-            
-            console.log('📥 Response Status:', response.status, response.statusText);
-            
-            const data = await response.json();
-            console.log('📦 Response Data:', data);
-            
-            if (data.success) {
-                console.log('✅ Erfolgreich gespeichert!');
-                showNotification('✅ Änderungen gespeichert!', 'success');
-                
-                // Update original values
-                editableFields.forEach(field => {
-                    const newValue = field.textContent.trim();
-                    field.dataset.original = newValue;
-                    originalValues[field.id] = newValue;
-                });
-                
-                exitEditMode(false);
-            } else {
-                console.error('❌ Server Error:', data.error);
-                showNotification('❌ Fehler: ' + (data.error || 'Unbekannter Fehler'), 'error');
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i class=\"bi bi-check-lg\"></i> Speichern';
-            }
-            
-        } catch (error) {
-            console.error('❌ Save error:', error);
-            showNotification('❌ Fehler beim Speichern: ' + error.message, 'error');
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '<i class=\"bi bi-check-lg\"></i> Speichern';
-        }
-    }
-    
-    // Helper: Convert newlines to <br> tags
-    function nl2br(str) {
-        return str.replace(/\n/g, '<br>');
-    }
-    
-    // Helper: Show notification
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `inline-notification notification-${type}`;
-        notification.textContent = message;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            background: rgba(0,0,0,0.9);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-left: 4px solid ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
-            border-radius: 8px;
-            color: white;
-            z-index: 10000;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            font-weight: 500;
-            transform: translateX(100%);
-            transition: transform 0.3s ease-out;
-        `;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 10);
-        
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 3000);
-    }
-    
-    // ESC key to cancel editing
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && isEditMode) {
-            exitEditMode(true);
-        }
-    });
-});
-</script>
