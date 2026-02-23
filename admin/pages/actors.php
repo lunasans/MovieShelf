@@ -67,6 +67,17 @@ if (!in_array($sortOrder, ['asc', 'desc'])) {
 // POST HANDLERS - MUST BE BEFORE DATA LOADING
 // ============================================
 
+// Helper: Redirect nach Schauspieler-Löschung (JS-basiert, da Headers bereits gesendet)
+$redirectToActors = function() use ($search, $sortColumn, $sortOrder) {
+    $redirectParams = ['page' => 'actors'];
+    if (!empty($search))        $redirectParams['search'] = $search;
+    if ($sortColumn !== 'id')   $redirectParams['sort']   = $sortColumn;
+    if ($sortOrder  !== 'desc') $redirectParams['order']  = $sortOrder;
+    $redirectUrl = 'index.php?' . http_build_query($redirectParams);
+    echo '<script>window.location.href = "' . htmlspecialchars($redirectUrl, ENT_QUOTES) . '";</script>';
+    exit;
+};
+
 // Einzelnen Schauspieler löschen
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_actor'])) {
     // CSRF Check
@@ -82,17 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_actor'])) {
         }
     }
     
-    // Build redirect URL - go to page 1 after delete to avoid pagination issues
-    $redirectParams = ['page' => 'actors'];
-    if (!empty($search)) $redirectParams['search'] = $search;
-    if ($sortColumn !== 'id') $redirectParams['sort'] = $sortColumn;
-    if ($sortOrder !== 'desc') $redirectParams['order'] = $sortOrder;
-    
-    $redirectUrl = 'index.php?' . http_build_query($redirectParams);
-    
-    // Use JavaScript redirect because headers are already sent (page is included)
-    echo '<script>window.location.href = "' . htmlspecialchars($redirectUrl, ENT_QUOTES) . '";</script>';
-    exit;
+    $redirectToActors();
 }
 
 // Mehrere Schauspieler löschen (Bulk Delete)
@@ -129,17 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_actors_bulk'])
         }
     }
     
-    // Build redirect URL - go to page 1 after delete to avoid pagination issues
-    $redirectParams = ['page' => 'actors'];
-    if (!empty($search)) $redirectParams['search'] = $search;
-    if ($sortColumn !== 'id') $redirectParams['sort'] = $sortColumn;
-    if ($sortOrder !== 'desc') $redirectParams['order'] = $sortOrder;
-    
-    $redirectUrl = 'index.php?' . http_build_query($redirectParams);
-    
-    // Use JavaScript redirect because headers are already sent (page is included)
-    echo '<script>window.location.href = "' . htmlspecialchars($redirectUrl, ENT_QUOTES) . '";</script>';
-    exit;
+    $redirectToActors();
 }
 
 // Helper function for sortable column headers

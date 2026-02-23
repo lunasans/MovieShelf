@@ -26,30 +26,8 @@ session_start();
 require_once dirname(__DIR__, 2) . '/includes/bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/tmdb-helper.php';
 
-// Nur für eingeloggte User
-if (!isset($_SESSION['user_id'])) {
-    ob_clean();
-    header('Content-Type: application/json');
-    http_response_code(403);
-    die(json_encode(['success' => false, 'error' => 'Unauthorized']));
-}
-
-// CSRF Token prüfen
-if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
-    ob_clean();
-    header('Content-Type: application/json');
-    http_response_code(403);
-    die(json_encode(['success' => false, 'error' => 'CSRF validation failed']));
-}
-
-// API Key Check
-$apiKey = getSetting('tmdb_api_key', '');
-if (empty($apiKey)) {
-    ob_clean();
-    header('Content-Type: application/json');
-    http_response_code(400);
-    die(json_encode(['success' => false, 'error' => 'Kein TMDb API Key gesetzt']));
-}
+// Session, CSRF & API-Key prüfen (zentral)
+require_once dirname(__DIR__, 2) . '/includes/tmdb-ajax-guard.php';
 
 // Parameter
 $title = trim($_POST['title'] ?? '');

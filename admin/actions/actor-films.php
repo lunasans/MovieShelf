@@ -40,6 +40,9 @@ if ($actorId === 0 || $filmId === 0) {
     exit;
 }
 
+// Gemeinsame Parameter für alle actor_id+film_id Queries
+$afParams = [':actor_id' => $actorId, ':film_id' => $filmId];
+
 try {
     switch ($action) {
         case 'add':
@@ -51,10 +54,7 @@ try {
                 SELECT COUNT(*) FROM film_actor 
                 WHERE actor_id = :actor_id AND film_id = :film_id
             ");
-            $stmt->execute([
-                ':actor_id' => $actorId,
-                ':film_id' => $filmId
-            ]);
+            $stmt->execute($afParams);
             
             if ($stmt->fetchColumn() > 0) {
                 echo json_encode([
@@ -103,10 +103,7 @@ try {
                 DELETE FROM film_actor 
                 WHERE actor_id = :actor_id AND film_id = :film_id
             ");
-            $stmt->execute([
-                ':actor_id' => $actorId,
-                ':film_id' => $filmId
-            ]);
+            $stmt->execute($afParams);
             
             echo json_encode([
                 'success' => true,
@@ -123,11 +120,7 @@ try {
                 SET role = :role
                 WHERE actor_id = :actor_id AND film_id = :film_id
             ");
-            $stmt->execute([
-                ':role' => $role,
-                ':actor_id' => $actorId,
-                ':film_id' => $filmId
-            ]);
+            $stmt->execute([':role' => $role] + $afParams);
             
             echo json_encode([
                 'success' => true,
