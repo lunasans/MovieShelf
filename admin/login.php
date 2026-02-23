@@ -426,7 +426,7 @@ $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
                 <?php else: ?>
                     <!-- Normales Login-Formular -->
                     <h1>
-                        <i class="bi bi-film" style="margin-right: 0.5rem; font-size: 0.8em;"></i>
+                        <img src="../assets/logo/logo_small.png" alt="Logo" style="height: 1.2em; width: auto; vertical-align: middle; margin-right: 0.5rem;">
                         Admin Login
                     </h1>
                 <?php endif; ?>
