@@ -467,16 +467,6 @@ if ($isEdit && $actorId > 0) {
     animation: slideDown 0.3s ease;
 }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 </style>
 
 <div class="container-fluid px-4">

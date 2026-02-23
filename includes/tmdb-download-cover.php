@@ -13,8 +13,8 @@ session_start();
 require_once dirname(__DIR__, 2) . '/bootstrap.php';
 require_once dirname(__DIR__, 2) . '/tmdb-helper.php';
 
-// Session, CSRF & API-Key prüfen (zentral)
-require_once __DIR__ . '/tmdb-ajax-guard.php';
+// Session, CSRF & API-Key prüfen
+$apiKey = requireTmdbAjax();
 
 // Parameter
 $filmId = (int)($_POST['film_id'] ?? 0);

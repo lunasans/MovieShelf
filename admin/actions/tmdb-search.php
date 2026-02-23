@@ -26,8 +26,8 @@ session_start();
 require_once dirname(__DIR__, 2) . '/includes/bootstrap.php';
 require_once dirname(__DIR__, 2) . '/includes/tmdb-helper.php';
 
-// Session, CSRF & API-Key prüfen (zentral)
-require_once dirname(__DIR__, 2) . '/includes/tmdb-ajax-guard.php';
+// Session, CSRF & API-Key prüfen
+$apiKey = requireTmdbAjax();
 
 // Parameter
 $title = trim($_POST['title'] ?? '');
