@@ -88,16 +88,23 @@ class Simple2FA {
     }
     
     /**
-     * QR-Code URL mit mehreren Fallback-Providern generieren
+     * Erstellt den otpauth-URI-String (einmalig, als Grundlage für QR und manuelle Eingabe)
      */
-    public static function getQRCodeUrl(string $secret, string $issuer, string $accountName): string {
-        $qrText = sprintf(
+    public static function buildOtpUri(string $secret, string $issuer, string $accountName): string {
+        return sprintf(
             'otpauth://totp/%s:%s?secret=%s&issuer=%s',
             urlencode($issuer),
             urlencode($accountName),
             $secret,
             urlencode($issuer)
         );
+    }
+
+    /**
+     * QR-Code URL mit mehreren Fallback-Providern generieren
+     */
+    public static function getQRCodeUrl(string $secret, string $issuer, string $accountName): string {
+        $qrText = self::buildOtpUri($secret, $issuer, $accountName);
         
         // Mehrere QR-Code-Provider als Fallback
         $providers = [
@@ -150,14 +157,8 @@ try {
     // QR-Code URL generieren (mit mehreren Fallbacks)
     $qrCodeUrl = Simple2FA::getQRCodeUrl($secret, $issuer, $accountName);
     
-    // Fallback: Einfacher ASCII QR-Code für manuelle Eingabe
-    $qrText = sprintf(
-        'otpauth://totp/%s:%s?secret=%s&issuer=%s',
-        urlencode($issuer),
-        urlencode($accountName),
-        $secret,
-        urlencode($issuer)
-    );
+    // QR-Code URI für manuelle Eingabe (kein zweiter sprintf!)
+    $qrText = Simple2FA::buildOtpUri($secret, $issuer, $accountName);
     
     // Test ob QR-Code-URL funktioniert
     $qrCodeWorking = true;
