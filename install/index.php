@@ -417,7 +417,7 @@ function createDatabaseSchema(PDO $pdo): void {
     $pdo->exec("INSERT IGNORE INTO counter (id, visits, last_visit_date, daily_visits) VALUES (1, 0, CURDATE(), 0)");
 }
 
-function insertDefaultSettings(PDO $pdo, string $siteTitle, string $baseUrl): void {
+function insertDefaultSettings(PDO $pdo, string $siteTitle, string $baseUrl, string $adminEmail = '', string $ownerName = ''): void {
     $defaultSettings = [
         // Basis-Einstellungen
         ['site_title', $siteTitle, 'Titel der Website', 1],
@@ -425,7 +425,10 @@ function insertDefaultSettings(PDO $pdo, string $siteTitle, string $baseUrl): vo
         ['language', 'de', 'Standard-Sprache', 1],
         ['db_version', DB_VERSION, 'Datenbank-Schema Version', 0],
         
-        // 2FA und Sicherheit
+        // Impressum / Datenschutz
+        ['impressum_name',  $ownerName,   'Name des Verantwortlichen (Impressum)', 0],
+        ['impressum_email', $adminEmail,  'Kontakt-E-Mail (Impressum)', 0],
+        ['impressum_enabled', '1',        'Impressum aktivieren', 1],
         ['enable_2fa', '0', '2-Faktor-Authentifizierung aktivieren', 0],
         ['2fa_required_for_new_users', '0', '2FA für neue Benutzer erforderlich', 0],
         ['2fa_backup_codes_count', '10', 'Anzahl der Backup-Codes', 0],
@@ -489,6 +492,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ready) {
             $baseUrl = validateUrl($_POST['base_url'] ?? $baseUrl);
             $adminEmail = validateEmail($_POST['admin_email'] ?? '');
             $adminPass = validatePassword($_POST['admin_password'] ?? '');
+            $ownerName = validateInput($_POST['owner_name'] ?? '', MAX_INPUT_LENGTH, false);
 
             $installationSteps[] = '✅ Eingaben validiert';
             $installationSteps[] = '🔌 Datenbankverbindung testen...';
@@ -533,7 +537,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ready) {
             $pdo->beginTransaction();
 
             // Standardeinstellungen einfügen
-            insertDefaultSettings($pdo, $siteTitle, $baseUrl);
+            insertDefaultSettings($pdo, $siteTitle, $baseUrl, $adminEmail, $ownerName);
 
             $installationSteps[] = '✅ Standardeinstellungen eingefügt';
             $installationSteps[] = '👤 Administrator-Account erstellen...';
@@ -1241,6 +1245,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ready) {
                                 <div class="section-title">Administrator-Account</div>
                                 
                                 <div class="form-group">
+                                    <label for="owner_name" class="form-label">Ihr Name <span style="opacity:0.6;font-weight:400;">(für Impressum &amp; Datenschutz)</span></label>
+                                    <input type="text" 
+                                           id="owner_name" 
+                                           name="owner_name" 
+                                           class="form-control" 
+                                           value="<?= htmlspecialchars($_POST['owner_name'] ?? '') ?>"
+                                           maxlength="255"
+                                           placeholder="Vorname Nachname">
+                                    <div class="form-text">Wird im Impressum als Verantwortliche/r angezeigt.</div>
+                                </div>
+
+                                <div class="form-group">
                                     <label for="admin_email" class="form-label">Administrator E-Mail</label>
                                     <input type="email" 
                                            id="admin_email" 
@@ -1249,6 +1265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $ready) {
                                            value="<?= htmlspecialchars($_POST['admin_email'] ?? '') ?>"
                                            maxlength="191"
                                            required>
+                                    <div class="form-text">Wird auch als Kontakt-E-Mail im Impressum verwendet.</div>
                                 </div>
                                 
                                 <div class="form-group">

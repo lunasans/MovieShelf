@@ -33,9 +33,17 @@ $systemHealth = getSystemHealth(); // Aus bootstrap.php
 $pageStartTime = microtime(true);
 $memoryStart = memory_get_usage(true);
 
+// Theme laden (aus DB, Admin sieht immer das gespeicherte Theme)
+$adminTheme = getSetting('theme', 'default');
+$allowedAdminThemes = ['default', 'dark', 'blue', 'green', 'red', 'purple',
+    'christmas', 'newyear', 'easter', 'summer', 'halloween', 'valentine'];
+if (!in_array($adminTheme, $allowedAdminThemes)) {
+    $adminTheme = 'default';
+}
+
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="<?= htmlspecialchars($adminTheme) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

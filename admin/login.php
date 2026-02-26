@@ -58,6 +58,14 @@ class Simple2FA {
     }
 }
 
+// Theme bestimmen (gleiche Logik wie index.php)
+$loginTheme = $_COOKIE['guest_theme'] ?? getSetting('theme', 'default');
+$allowedLoginThemes = ['default', 'dark', 'blue', 'green', 'red', 'purple',
+    'christmas', 'newyear', 'easter', 'summer', 'halloween', 'valentine'];
+if (!in_array($loginTheme, $allowedLoginThemes)) {
+    $loginTheme = 'default';
+}
+
 // Redirect wenn bereits eingeloggt
 if (isset($_SESSION['user_id']) && !isset($_SESSION['require_2fa'])) {
     $redirect = (defined('BASE_URL') && BASE_URL !== '')
@@ -376,7 +384,7 @@ function handleEmailPasswordAuth($pdo, $email, $password, &$require2FA, &$userId
 $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="<?= htmlspecialchars($loginTheme) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -391,6 +399,7 @@ $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="css/login.css" rel="stylesheet">
+    <link href="../css/theme.css" rel="stylesheet">
     
     <!-- Meta Tags -->
     <meta name="description" content="Anmeldung zum <?= htmlspecialchars($siteTitle) ?> Admin-Bereich">
