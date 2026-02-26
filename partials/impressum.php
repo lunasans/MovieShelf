@@ -10,20 +10,16 @@
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/html-purifier.php';
 
-// Prüfe ob Impressum aktiviert ist
-if (getSetting('impressum_enabled', '1') != '1') {
-    header('HTTP/1.0 404 Not Found');
-    echo 'Impressum ist deaktiviert';
-    exit;
-}
-
-// Lade Impressum-Daten
-$impressumName  = getSetting('impressum_name', '');
-$impressumEmail = getSetting('impressum_email', '');
+// Impressum-Daten aus Settings laden
+$impressumName    = getSetting('impressum_name', '');
+$impressumEmail   = getSetting('impressum_email', '');
 $impressumContent = getSetting('impressum_content', '');
 
-// Header laden
-require_once __DIR__ . '/../includes/header.php';
+// Impressum deaktiviert?
+if (getSetting('impressum_enabled', '1') != '1') {
+    echo '<p>Impressum ist deaktiviert.</p>';
+    return;
+}
 ?>
 
 <div class="static-page">
@@ -300,7 +296,3 @@ require_once __DIR__ . '/../includes/header.php';
 }
 </style>
 
-<?php
-// Footer laden
-require_once __DIR__ . '/../includes/footer.php';
-?>

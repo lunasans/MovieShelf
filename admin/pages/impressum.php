@@ -36,8 +36,8 @@ if (isset($_SESSION['impressum_error'])) {
 
 // Lade aktuelles Impressum
 $impressumContent = getSetting('impressum_content', '');
-$impressumName = getSetting('impressum_name', DVDPROFILER_AUTHOR);
-$impressumEmail = getSetting('impressum_email', 'kontakt@example.com');
+$impressumName = getSetting('impressum_name', '');
+$impressumEmail = getSetting('impressum_email', '');
 $impressumEnabled = getSetting('impressum_enabled', '1');
 ?>
 
