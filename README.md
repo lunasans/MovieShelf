@@ -185,8 +185,8 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 1.5.0 - Schauspieler-Profile Edition  
-**Letztes Update**: Februar 2026  
+**Version**: 1.5.1 - Schauspieler-Profile Edition  
+**Letztes Update**: März 2026  
 **Status**: Aktiv entwickelt
 
 
