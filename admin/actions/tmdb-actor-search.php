@@ -1,7 +1,7 @@
 <?php
 /**
- * admin/actions/tmdb-search.php
- * Sucht Filme auf TMDb - gibt ALLE Ergebnisse zurück
+ * admin/actions/tmdb-actor-search.php
+ * Sucht Schauspieler auf TMDb - gibt ALLE Ergebnisse zurück
  */
 
 // Output buffern
@@ -30,22 +30,21 @@ require_once dirname(__DIR__, 2) . '/includes/tmdb-helper.php';
 $apiKey = requireTmdbAjax();
 
 // Parameter
-$title = trim($_POST['title'] ?? '');
-$year = !empty($_POST['year']) ? (int)$_POST['year'] : null;
+$name = trim($_POST['name'] ?? '');
 
-if (empty($title)) {
+if (empty($name)) {
     ob_clean();
     header('Content-Type: application/json');
     http_response_code(400);
-    die(json_encode(['success' => false, 'error' => 'Titel darf nicht leer sein']));
+    die(json_encode(['success' => false, 'error' => 'Name darf nicht leer sein']));
 }
 
 try {
     // TMDb Helper
     $tmdb = new TMDbHelper($apiKey);
     
-    // Filme suchen
-    $results = $tmdb->searchMovies($title, $year, 20);
+    // Schauspieler suchen
+    $results = $tmdb->searchActors($name, 20);
     
     if ($results === null) {
         ob_clean();
@@ -61,7 +60,7 @@ try {
             'success' => true,
             'count' => 0,
             'results' => [],
-            'message' => 'Keine Filme gefunden'
+            'message' => 'Keine Schauspieler gefunden'
         ]);
         exit;
     }
@@ -79,7 +78,7 @@ try {
 } catch (Exception $e) {
     ob_clean();
     header('Content-Type: application/json');
-    error_log('TMDb Search Error: ' . $e->getMessage());
+    error_log('TMDb Actor Search Error: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,

@@ -92,6 +92,36 @@ if (!empty($search)) {
     $metaDescription = "Suchergebnisse für '" . htmlspecialchars($search) . "' in der DVD-Sammlung";
 }
 
+// Actor-Profil Meta-Daten (falls page=actor)
+$actor = null;
+if ($page === 'actor') {
+    // Actor-Funktionen laden
+    require_once __DIR__ . '/includes/actor-functions.php';
+
+    $actorSlug = isset($_GET['slug']) ? trim($_GET['slug']) : '';
+    $actorId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+    if (!empty($actorSlug)) {
+        $actor = getActorBySlug($pdo, $actorSlug);
+    } elseif ($actorId > 0) {
+        $actor = getActorById($pdo, $actorId);
+    }
+
+    if ($actor) {
+        $fullName = trim(($actor['first_name'] ?? '') . ' ' . ($actor['last_name'] ?? ''));
+        if (empty($fullName)) {
+            $fullName = 'Unbekannter Schauspieler';
+        }
+
+        $pageTitle = $fullName . ' - Schauspieler-Profil | ' . $siteTitle;
+        $metaDescription = 'Profil von ' . $fullName;
+
+        if (!empty($actor['bio'])) {
+            $metaDescription .= ' - ' . mb_substr(strip_tags($actor['bio']), 0, 150);
+        }
+    }
+}
+
 // CSP Header für zusätzliche Sicherheit
 $cspPolicy = "default-src 'self'; " .
              "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
@@ -157,7 +187,7 @@ $schema = [
     <link href="libs/fancybox/dist/fancybox/fancybox.css" rel="stylesheet">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <link rel="icon" type="image/png" href="/assets/logo/favicon.ico">
     
     <!-- JSON-LD Schema -->
     <script type="application/ld+json">

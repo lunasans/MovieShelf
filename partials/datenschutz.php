@@ -101,15 +101,27 @@ if (!function_exists('getSetting')) {
     <section class="content-section">
         <h2 id="m3">Verantwortlicher</h2>
         <div class="contact-info">
+            <?php
+            $dsName = getSetting('impressum_name', '');
+            $dsEmail = getSetting('impressum_email', '');
+            ?>
+            <?php if (empty($dsName)): ?>
+            <div class="alert" style="background: rgba(255,160,0,0.15); border-left: 3px solid orange; padding: 12px 16px; border-radius: 8px;">
+                <strong>⚠️ Verantwortlicher nicht konfiguriert!</strong><br>
+                Bitte unter <a href="/admin/?page=impressum">Admin → Impressum</a> Name und E-Mail eintragen.
+            </div>
+            <?php else: ?>
             <p>
-                <strong><?= DVDPROFILER_AUTHOR ?></strong><br>
+                <strong><?= htmlspecialchars($dsName) ?></strong><br>
                 Privatperson<br><br>
-                
-                E-Mail-Adresse: <a href="mailto:kontakt@example.com">kontakt@example.com</a><br>
+                <?php if (!empty($dsEmail)): ?>
+                E-Mail-Adresse: <a href="mailto:<?= htmlspecialchars($dsEmail) ?>"><?= htmlspecialchars($dsEmail) ?></a><br>
+                <?php endif; ?>
                 GitHub: <a href="<?= DVDPROFILER_GITHUB_URL ?>" target="_blank" rel="noopener noreferrer">
                     <?= DVDPROFILER_REPOSITORY ?>
                 </a>
             </p>
+            <?php endif; ?>
         </div>
     </section>
 
@@ -304,6 +316,13 @@ if (!function_exists('getSetting')) {
         <div class="external-services">
             <h3>Verwendete externe Dienste</h3>
             
+            <div class="info-box" style="background: var(--glass-bg, rgba(255,255,255,0.08)); border-left: 3px solid var(--accent-color, #3498db); padding: 12px 16px; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                <strong>Hinweis:</strong> Wir sind ausschließlich für die Datenverarbeitungen verantwortlich, 
+                die wir selbst vornehmen (z.B. API-Anfragen von unserem Server). 
+                Für die Datenverarbeitung auf den Webseiten der nachfolgend genannten Anbieter 
+                sind diese selbst verantwortlich. Es gelten deren Datenschutzerklärungen.
+            </div>
+            
             <div class="service-item">
                 <h4><i class="bi bi-github"></i> GitHub</h4>
                 <p>
@@ -331,6 +350,19 @@ if (!function_exists('getSetting')) {
                     <strong>Anbieter:</strong> Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland<br>
                     <strong>Datenschutz:</strong> <a href="https://policies.google.com/privacy" target="_blank">Google Privacy Policy</a><br>
                     <strong>Hinweis:</strong> Trailer werden nur bei explizitem Nutzer-Wunsch geladen
+                </p>
+            </div>
+
+            <div class="service-item">
+                <h4><i class="bi bi-film"></i> The Movie Database (TMDB)</h4>
+                <p>
+                    <strong>Zweck:</strong> Abruf von Filmmetadaten (Titel, Beschreibungen, Cover-Bilder, Schauspieler-Informationen)<br>
+                    <strong>Anbieter:</strong> Comoto Holdings, Inc., 15303 Ventura Blvd., Suite 1500, Sherman Oaks, CA 91403, USA<br>
+                    <strong>Datenschutz:</strong> <a href="https://www.themoviedb.org/privacy-policy" target="_blank" rel="noopener noreferrer">TMDB Privacy Policy</a><br>
+                    <strong>API-Nutzung:</strong> Anfragen werden ausschließlich serverseitig gestellt. Dabei wird die IP-Adresse des Servers (nicht des Besuchers) an TMDB übermittelt.<br>
+                    <strong>Logo:</strong> Das TMDB-Logo wird lokal auf diesem Server gehostet. Es findet keine Verbindung zu TMDB-Servern beim Seitenaufruf statt.<br>
+                    <strong>Datenübertragung:</strong> Drittlandtransfer in die USA. Als Rechtsgrundlage dient Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an vollständigen Filminformationen).<br>
+                    <strong>Hinweis:</strong> Diese Website verwendet TMDB, wird jedoch nicht von TMDB unterstützt, zertifiziert oder anderweitig genehmigt.
                 </p>
             </div>
         </div>

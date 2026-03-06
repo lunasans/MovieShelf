@@ -10,21 +10,21 @@
     --bg-primary: #0f0f23;
     --bg-secondary: #1a1a2e;
     --bg-tertiary: #16213e;
-    
+
     --text-primary: #e4e4e7;
     --text-secondary: rgba(228, 228, 231, 0.8);
     --text-muted: rgba(228, 228, 231, 0.6);
-    
+
     --accent-primary: #3498db;
     --accent-hover: #2980b9;
     --accent-light: rgba(52, 152, 219, 0.1);
-    
+
     --border-color: rgba(255, 255, 255, 0.1);
     --border-hover: rgba(255, 255, 255, 0.2);
-    
+
     --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -35,21 +35,21 @@
     --bg-primary: #000000;
     --bg-secondary: #0a0a0a;
     --bg-tertiary: #141414;
-    
+
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.9);
     --text-muted: rgba(255, 255, 255, 0.6);
-    
+
     --accent-primary: #bb86fc;
     --accent-hover: #9965f4;
     --accent-light: rgba(187, 134, 252, 0.1);
-    
+
     --border-color: rgba(255, 255, 255, 0.15);
     --border-hover: rgba(255, 255, 255, 0.3);
-    
+
     --gradient-primary: linear-gradient(135deg, #bb86fc 0%, #3700b3 100%);
     --gradient-secondary: linear-gradient(135deg, #cf6679 0%, #b00020 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.8);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.9);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.95);
@@ -60,21 +60,21 @@
     --bg-primary: #001f3f;
     --bg-secondary: #002b54;
     --bg-tertiary: #003d6b;
-    
+
     --text-primary: #e0f2ff;
     --text-secondary: rgba(224, 242, 255, 0.9);
     --text-muted: rgba(224, 242, 255, 0.6);
-    
+
     --accent-primary: #00d4ff;
     --accent-hover: #00b8e6;
     --accent-light: rgba(0, 212, 255, 0.1);
-    
+
     --border-color: rgba(0, 212, 255, 0.2);
     --border-hover: rgba(0, 212, 255, 0.4);
-    
+
     --gradient-primary: linear-gradient(135deg, #00d4ff 0%, #0080ff 100%);
     --gradient-secondary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(0, 212, 255, 0.2);
     --shadow-md: 0 4px 16px rgba(0, 212, 255, 0.3);
     --shadow-lg: 0 8px 32px rgba(0, 212, 255, 0.4);
@@ -85,21 +85,21 @@
     --bg-primary: #0a1f0a;
     --bg-secondary: #0f2b0f;
     --bg-tertiary: #143d14;
-    
+
     --text-primary: #00ff41;
     --text-secondary: rgba(0, 255, 65, 0.9);
     --text-muted: rgba(0, 255, 65, 0.6);
-    
+
     --accent-primary: #00ff41;
     --accent-hover: #00cc33;
     --accent-light: rgba(0, 255, 65, 0.1);
-    
+
     --border-color: rgba(0, 255, 65, 0.2);
     --border-hover: rgba(0, 255, 65, 0.4);
-    
+
     --gradient-primary: linear-gradient(135deg, #00ff41 0%, #00aa2b 100%);
     --gradient-secondary: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(0, 255, 65, 0.2);
     --shadow-md: 0 4px 16px rgba(0, 255, 65, 0.3);
     --shadow-lg: 0 8px 32px rgba(0, 255, 65, 0.4);
@@ -110,21 +110,21 @@
     --bg-primary: #1a0a0a;
     --bg-secondary: #2b0f0f;
     --bg-tertiary: #3d1414;
-    
+
     --text-primary: #ffe0e0;
     --text-secondary: rgba(255, 224, 224, 0.9);
     --text-muted: rgba(255, 224, 224, 0.6);
-    
+
     --accent-primary: #ff4757;
     --accent-hover: #ee5a6f;
     --accent-light: rgba(255, 71, 87, 0.1);
-    
+
     --border-color: rgba(255, 71, 87, 0.2);
     --border-hover: rgba(255, 71, 87, 0.4);
-    
+
     --gradient-primary: linear-gradient(135deg, #ff4757 0%, #c0392b 100%);
     --gradient-secondary: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(255, 71, 87, 0.2);
     --shadow-md: 0 4px 16px rgba(255, 71, 87, 0.3);
     --shadow-lg: 0 8px 32px rgba(255, 71, 87, 0.4);
@@ -135,21 +135,21 @@
     --bg-primary: #1a0a1f;
     --bg-secondary: #2b0f3d;
     --bg-tertiary: #3d1454;
-    
+
     --text-primary: #f0e0ff;
     --text-secondary: rgba(240, 224, 255, 0.9);
     --text-muted: rgba(240, 224, 255, 0.6);
-    
+
     --accent-primary: #9b59b6;
     --accent-hover: #8e44ad;
     --accent-light: rgba(155, 89, 182, 0.1);
-    
+
     --border-color: rgba(155, 89, 182, 0.2);
     --border-hover: rgba(155, 89, 182, 0.4);
-    
+
     --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-secondary: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(155, 89, 182, 0.2);
     --shadow-md: 0 4px 16px rgba(155, 89, 182, 0.3);
     --shadow-lg: 0 8px 32px rgba(155, 89, 182, 0.4);
@@ -255,21 +255,21 @@ button:hover,
     --bg-primary: #0f1e0f;
     --bg-secondary: #1a2e1a;
     --bg-tertiary: #2d4a2d;
-    
+
     --text-primary: #fff5f5;
     --text-secondary: rgba(255, 245, 245, 0.9);
     --text-muted: rgba(255, 245, 245, 0.7);
-    
+
     --accent-primary: #c41e3a;
     --accent-hover: #a01729;
     --accent-light: rgba(196, 30, 58, 0.15);
-    
+
     --border-color: rgba(196, 30, 58, 0.3);
     --border-hover: rgba(196, 30, 58, 0.5);
-    
+
     --gradient-primary: linear-gradient(135deg, #c41e3a 0%, #165b33 50%, #c41e3a 100%);
     --gradient-secondary: linear-gradient(135deg, #ffd700 0%, #c41e3a 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(196, 30, 58, 0.3);
     --shadow-md: 0 4px 16px rgba(196, 30, 58, 0.4);
     --shadow-lg: 0 8px 32px rgba(196, 30, 58, 0.5);
@@ -280,21 +280,21 @@ button:hover,
     --bg-primary: #0a0a1a;
     --bg-secondary: #14142e;
     --bg-tertiary: #1e1e42;
-    
+
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.95);
     --text-muted: rgba(255, 255, 255, 0.7);
-    
+
     --accent-primary: #ffd700;
     --accent-hover: #ffed4e;
     --accent-light: rgba(255, 215, 0, 0.15);
-    
+
     --border-color: rgba(255, 215, 0, 0.3);
     --border-hover: rgba(255, 215, 0, 0.6);
-    
+
     --gradient-primary: linear-gradient(135deg, #ffd700 0%, #ff6b6b 50%, #4ecdc4 100%);
     --gradient-secondary: linear-gradient(135deg, #ff6b6b 0%, #ffd700 50%, #4ecdc4 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(255, 215, 0, 0.3);
     --shadow-md: 0 4px 16px rgba(255, 215, 0, 0.4);
     --shadow-lg: 0 8px 32px rgba(255, 215, 0, 0.5);
@@ -305,21 +305,21 @@ button:hover,
     --bg-primary: #fff9f0;
     --bg-secondary: #fff3e0;
     --bg-tertiary: #ffe0b2;
-    
+
     --text-primary: #000000;
     --text-secondary: rgba(0, 0, 0, 0.85);
     --text-muted: rgba(0, 0, 0, 0.6);
-    
+
     --accent-primary: #e91e63;
     --accent-hover: #c2185b;
     --accent-light: rgba(233, 30, 99, 0.15);
-    
+
     --border-color: rgba(233, 30, 99, 0.3);
     --border-hover: rgba(233, 30, 99, 0.5);
-    
+
     --gradient-primary: linear-gradient(135deg, #ffd3a5 0%, #fd6585 100%);
     --gradient-secondary: linear-gradient(135deg, #96fbc4 0%, #f9f586 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(233, 30, 99, 0.2);
     --shadow-md: 0 4px 16px rgba(233, 30, 99, 0.3);
     --shadow-lg: 0 8px 32px rgba(233, 30, 99, 0.4);
@@ -330,21 +330,21 @@ button:hover,
     --bg-primary: #fff8e1;
     --bg-secondary: #ffecb3;
     --bg-tertiary: #ffe082;
-    
+
     --text-primary: #000000;
     --text-secondary: rgba(0, 0, 0, 0.85);
     --text-muted: rgba(0, 0, 0, 0.6);
-    
+
     --accent-primary: #f57c00;
     --accent-hover: #e65100;
     --accent-light: rgba(245, 124, 0, 0.15);
-    
+
     --border-color: rgba(245, 124, 0, 0.3);
     --border-hover: rgba(245, 124, 0, 0.5);
-    
+
     --gradient-primary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     --gradient-secondary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(245, 124, 0, 0.2);
     --shadow-md: 0 4px 16px rgba(245, 124, 0, 0.3);
     --shadow-lg: 0 8px 32px rgba(245, 124, 0, 0.4);
@@ -355,21 +355,21 @@ button:hover,
     --bg-primary: #1a0a00;
     --bg-secondary: #2e1400;
     --bg-tertiary: #4a2400;
-    
+
     --text-primary: #ff9500;
     --text-secondary: rgba(255, 149, 0, 0.9);
     --text-muted: rgba(255, 149, 0, 0.6);
-    
+
     --accent-primary: #ff6600;
     --accent-hover: #ff8533;
     --accent-light: rgba(255, 102, 0, 0.15);
-    
+
     --border-color: rgba(255, 102, 0, 0.3);
     --border-hover: rgba(255, 102, 0, 0.5);
-    
+
     --gradient-primary: linear-gradient(135deg, #ff6600 0%, #8b00ff 100%);
     --gradient-secondary: linear-gradient(135deg, #000000 0%, #ff6600 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(255, 102, 0, 0.3);
     --shadow-md: 0 4px 16px rgba(255, 102, 0, 0.4);
     --shadow-lg: 0 8px 32px rgba(255, 102, 0, 0.5);
@@ -380,21 +380,21 @@ button:hover,
     --bg-primary: #fff0f5;
     --bg-secondary: #ffe4e9;
     --bg-tertiary: #ffd1dc;
-    
+
     --text-primary: #000000;
     --text-secondary: rgba(0, 0, 0, 0.85);
     --text-muted: rgba(0, 0, 0, 0.6);
-    
+
     --accent-primary: #d81b60;
     --accent-hover: #ad1457;
     --accent-light: rgba(216, 27, 96, 0.15);
-    
+
     --border-color: rgba(216, 27, 96, 0.3);
     --border-hover: rgba(216, 27, 96, 0.5);
-    
+
     --gradient-primary: linear-gradient(135deg, #ff1744 0%, #f50057 100%);
     --gradient-secondary: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%);
-    
+
     --shadow-sm: 0 2px 8px rgba(216, 27, 96, 0.2);
     --shadow-md: 0 4px 16px rgba(216, 27, 96, 0.3);
     --shadow-lg: 0 8px 32px rgba(216, 27, 96, 0.4);
@@ -449,21 +449,45 @@ button:hover,
     color: #000000 !important;
 }
 
-[data-theme="easter"] h1, [data-theme="easter"] h2, [data-theme="easter"] h3,
-[data-theme="easter"] h4, [data-theme="easter"] h5, [data-theme="easter"] h6,
-[data-theme="easter"] p, [data-theme="easter"] span, [data-theme="easter"] div,
-[data-theme="easter"] label, [data-theme="easter"] .dvd-details, 
-[data-theme="easter"] .trailer-title, [data-theme="easter"] .page-header-content h1,
-[data-theme="summer"] h1, [data-theme="summer"] h2, [data-theme="summer"] h3,
-[data-theme="summer"] h4, [data-theme="summer"] h5, [data-theme="summer"] h6,
-[data-theme="summer"] p, [data-theme="summer"] span, [data-theme="summer"] div,
-[data-theme="summer"] label, [data-theme="summer"] .dvd-details,
-[data-theme="summer"] .trailer-title, [data-theme="summer"] .page-header-content h1,
-[data-theme="valentine"] h1, [data-theme="valentine"] h2, [data-theme="valentine"] h3,
-[data-theme="valentine"] h4, [data-theme="valentine"] h5, [data-theme="valentine"] h6,
-[data-theme="valentine"] p, [data-theme="valentine"] span, [data-theme="valentine"] div,
-[data-theme="valentine"] label, [data-theme="valentine"] .dvd-details,
-[data-theme="valentine"] .trailer-title, [data-theme="valentine"] .page-header-content h1 {
+[data-theme="easter"] h1,
+[data-theme="easter"] h2,
+[data-theme="easter"] h3,
+[data-theme="easter"] h4,
+[data-theme="easter"] h5,
+[data-theme="easter"] h6,
+[data-theme="easter"] p,
+[data-theme="easter"] span,
+[data-theme="easter"] div,
+[data-theme="easter"] label,
+[data-theme="easter"] .dvd-details,
+[data-theme="easter"] .trailer-title,
+[data-theme="easter"] .page-header-content h1,
+[data-theme="summer"] h1,
+[data-theme="summer"] h2,
+[data-theme="summer"] h3,
+[data-theme="summer"] h4,
+[data-theme="summer"] h5,
+[data-theme="summer"] h6,
+[data-theme="summer"] p,
+[data-theme="summer"] span,
+[data-theme="summer"] div,
+[data-theme="summer"] label,
+[data-theme="summer"] .dvd-details,
+[data-theme="summer"] .trailer-title,
+[data-theme="summer"] .page-header-content h1,
+[data-theme="valentine"] h1,
+[data-theme="valentine"] h2,
+[data-theme="valentine"] h3,
+[data-theme="valentine"] h4,
+[data-theme="valentine"] h5,
+[data-theme="valentine"] h6,
+[data-theme="valentine"] p,
+[data-theme="valentine"] span,
+[data-theme="valentine"] div,
+[data-theme="valentine"] label,
+[data-theme="valentine"] .dvd-details,
+[data-theme="valentine"] .trailer-title,
+[data-theme="valentine"] .page-header-content h1 {
     color: #000000 !important;
 }
 
@@ -481,16 +505,22 @@ button:hover,
 }
 
 /* Buttons mit weißer Schrift auf Accent-Background */
-[data-theme="easter"] button, [data-theme="easter"] .btn,
-[data-theme="summer"] button, [data-theme="summer"] .btn,
-[data-theme="valentine"] button, [data-theme="valentine"] .btn {
+[data-theme="easter"] button,
+[data-theme="easter"] .btn,
+[data-theme="summer"] button,
+[data-theme="summer"] .btn,
+[data-theme="valentine"] button,
+[data-theme="valentine"] .btn {
     background: var(--accent-primary) !important;
     color: #ffffff !important;
 }
 
-[data-theme="easter"] button:hover, [data-theme="easter"] .btn:hover,
-[data-theme="summer"] button:hover, [data-theme="summer"] .btn:hover,
-[data-theme="valentine"] button:hover, [data-theme="valentine"] .btn:hover {
+[data-theme="easter"] button:hover,
+[data-theme="easter"] .btn:hover,
+[data-theme="summer"] button:hover,
+[data-theme="summer"] .btn:hover,
+[data-theme="valentine"] button:hover,
+[data-theme="valentine"] .btn:hover {
     background: var(--accent-hover) !important;
 }
 
@@ -502,9 +532,332 @@ button:hover,
 }
 
 /* Input fields */
-[data-theme="easter"] input, [data-theme="easter"] textarea, [data-theme="easter"] select,
-[data-theme="summer"] input, [data-theme="summer"] textarea, [data-theme="summer"] select,
-[data-theme="valentine"] input, [data-theme="valentine"] textarea, [data-theme="valentine"] select {
+[data-theme="easter"] input,
+[data-theme="easter"] textarea,
+[data-theme="easter"] select,
+[data-theme="summer"] input,
+[data-theme="summer"] textarea,
+[data-theme="summer"] select,
+[data-theme="valentine"] input,
+[data-theme="valentine"] textarea,
+[data-theme="valentine"] select {
     color: #000000 !important;
     background: var(--bg-tertiary) !important;
+}
+
+/* ============================================
+   LOGO THEME-FÄRBUNG
+   Das Logo ist rot (Hue ~0°). Per hue-rotate()
+   wird der Farbton an die Accent-Farbe angepasst.
+   ============================================ */
+
+/* Default Theme – Blau (#3498db, Hue ~204°) */
+[data-theme="default"] .logo-img,
+[data-theme="default"] .footer-logo-img,
+[data-theme="default"] .sidebar-logo-img,
+[data-theme="default"] img[src*="logo_small"] {
+    filter: hue-rotate(204deg) saturate(1.2);
+}
+
+/* Dark Theme – Lila (#bb86fc, Hue ~275°) */
+[data-theme="dark"] .logo-img,
+[data-theme="dark"] .footer-logo-img,
+[data-theme="dark"] .sidebar-logo-img,
+[data-theme="dark"] img[src*="logo_small"] {
+    filter: hue-rotate(275deg) saturate(1.1);
+}
+
+/* Blue Theme – Cyan (#00d4ff, Hue ~187°) */
+[data-theme="blue"] .logo-img,
+[data-theme="blue"] .footer-logo-img,
+[data-theme="blue"] .sidebar-logo-img,
+[data-theme="blue"] img[src*="logo_small"] {
+    filter: hue-rotate(187deg) saturate(1.3);
+}
+
+/* Green Theme – Matrix-Grün (#00ff41, Hue ~133°) */
+[data-theme="green"] .logo-img,
+[data-theme="green"] .footer-logo-img,
+[data-theme="green"] .sidebar-logo-img,
+[data-theme="green"] img[src*="logo_small"] {
+    filter: hue-rotate(133deg) saturate(1.5) brightness(1.1);
+}
+
+/* Red Theme – Original-Rot behalten, leicht intensiviert */
+[data-theme="red"] .logo-img,
+[data-theme="red"] .footer-logo-img,
+[data-theme="red"] .sidebar-logo-img,
+[data-theme="red"] img[src*="logo_small"] {
+    filter: hue-rotate(355deg) saturate(1.4) brightness(1.05);
+}
+
+/* Purple Theme – Violett (#9b59b6, Hue ~288°) */
+[data-theme="purple"] .logo-img,
+[data-theme="purple"] .footer-logo-img,
+[data-theme="purple"] .sidebar-logo-img,
+[data-theme="purple"] img[src*="logo_small"] {
+    filter: hue-rotate(288deg) saturate(1.2);
+}
+
+/* Christmas Theme – Rot/Grün (#c41e3a, Hue ~350°) */
+[data-theme="christmas"] .logo-img,
+[data-theme="christmas"] .footer-logo-img,
+[data-theme="christmas"] .sidebar-logo-img,
+[data-theme="christmas"] img[src*="logo_small"] {
+    filter: hue-rotate(350deg) saturate(1.3);
+}
+
+/* New Year Theme – Gold (#ffd700, Hue ~51°) */
+[data-theme="newyear"] .logo-img,
+[data-theme="newyear"] .footer-logo-img,
+[data-theme="newyear"] .sidebar-logo-img,
+[data-theme="newyear"] img[src*="logo_small"] {
+    filter: hue-rotate(51deg) saturate(1.6) brightness(1.1);
+}
+
+/* Easter Theme – Pink (#e91e63, Hue ~337°) */
+[data-theme="easter"] .logo-img,
+[data-theme="easter"] .footer-logo-img,
+[data-theme="easter"] .sidebar-logo-img,
+[data-theme="easter"] img[src*="logo_small"] {
+    filter: hue-rotate(337deg) saturate(1.4);
+}
+
+/* Summer Theme – Orange (#f57c00, Hue ~30°) */
+[data-theme="summer"] .logo-img,
+[data-theme="summer"] .footer-logo-img,
+[data-theme="summer"] .sidebar-logo-img,
+[data-theme="summer"] img[src*="logo_small"] {
+    filter: hue-rotate(30deg) saturate(1.5) brightness(1.05);
+}
+
+/* Halloween Theme – Orange (#ff6600, Hue ~24°) */
+[data-theme="halloween"] .logo-img,
+[data-theme="halloween"] .footer-logo-img,
+[data-theme="halloween"] .sidebar-logo-img,
+[data-theme="halloween"] img[src*="logo_small"] {
+    filter: hue-rotate(24deg) saturate(1.6) brightness(1.05);
+}
+
+/* Valentine Theme – Pink (#d81b60, Hue ~337°) */
+[data-theme="valentine"] .logo-img,
+[data-theme="valentine"] .footer-logo-img,
+[data-theme="valentine"] .sidebar-logo-img,
+[data-theme="valentine"] img[src*="logo_small"] {
+    filter: hue-rotate(337deg) saturate(1.4);
+}
+
+/* ============================================
+   LOGIN & ADMIN THEME-OVERRIDES
+   Überschreibt die lokalen CSS-Variablen von
+   login.css (--background, --accent-color, ...)
+   und admin.css (--clr-bg, --clr-accent, ...)
+   Das jeweilige Layout/Design bleibt unverändert.
+   ============================================ */
+
+/* Default Theme – Blau */
+[data-theme="default"] {
+    /* Login */
+    --background: #0f0f23;
+    --primary-color: #1a1a2e;
+    --accent-color: #3498db;
+    --clr-text: #e4e4e7;
+    /* Admin */
+    --clr-bg: #0f0f23;
+    --clr-primary: #1a1a2e;
+    --clr-secondary: #16213e;
+    --clr-card: #1a1a2e;
+    --clr-border: rgba(255, 255, 255, 0.1);
+    --clr-accent: #3498db;
+    --clr-text-muted: rgba(228, 228, 231, 0.6);
+}
+
+/* Dark Theme – Lila */
+[data-theme="dark"] {
+    --background: #000000;
+    --primary-color: #0a0a0a;
+    --accent-color: #bb86fc;
+    --clr-text: #ffffff;
+    --clr-bg: #000000;
+    --clr-primary: #0a0a0a;
+    --clr-secondary: #141414;
+    --clr-card: #1a1a1a;
+    --clr-border: rgba(255, 255, 255, 0.15);
+    --clr-accent: #bb86fc;
+    --clr-text-muted: rgba(255, 255, 255, 0.6);
+}
+
+/* Blue Theme – Cyan */
+[data-theme="blue"] {
+    --background: #001f3f;
+    --primary-color: #002b54;
+    --accent-color: #00d4ff;
+    --clr-text: #e0f2ff;
+    --clr-bg: #001f3f;
+    --clr-primary: #002b54;
+    --clr-secondary: #003d6b;
+    --clr-card: #002b54;
+    --clr-border: rgba(0, 212, 255, 0.2);
+    --clr-accent: #00d4ff;
+    --clr-text-muted: rgba(224, 242, 255, 0.6);
+}
+
+/* Green Theme – Matrix */
+[data-theme="green"] {
+    --background: #0a1f0a;
+    --primary-color: #0f2b0f;
+    --accent-color: #00ff41;
+    --clr-text: #00ff41;
+    --clr-bg: #0a1f0a;
+    --clr-primary: #0f2b0f;
+    --clr-secondary: #143d14;
+    --clr-card: #0f2b0f;
+    --clr-border: rgba(0, 255, 65, 0.2);
+    --clr-accent: #00ff41;
+    --clr-text-muted: rgba(0, 255, 65, 0.6);
+}
+
+/* Red Theme */
+[data-theme="red"] {
+    --background: #1a0a0a;
+    --primary-color: #2b0f0f;
+    --accent-color: #ff4757;
+    --clr-text: #ffe0e0;
+    --clr-bg: #1a0a0a;
+    --clr-primary: #2b0f0f;
+    --clr-secondary: #3d1414;
+    --clr-card: #2b0f0f;
+    --clr-border: rgba(255, 71, 87, 0.2);
+    --clr-accent: #ff4757;
+    --clr-text-muted: rgba(255, 224, 224, 0.6);
+}
+
+/* Purple Theme */
+[data-theme="purple"] {
+    --background: #1a0a1f;
+    --primary-color: #2b0f3d;
+    --accent-color: #9b59b6;
+    --clr-text: #f0e0ff;
+    --clr-bg: #1a0a1f;
+    --clr-primary: #2b0f3d;
+    --clr-secondary: #3d1454;
+    --clr-card: #2b0f3d;
+    --clr-border: rgba(155, 89, 182, 0.2);
+    --clr-accent: #9b59b6;
+    --clr-text-muted: rgba(240, 224, 255, 0.6);
+}
+
+/* Christmas Theme */
+[data-theme="christmas"] {
+    --background: #0f1e0f;
+    --primary-color: #1a2e1a;
+    --accent-color: #c41e3a;
+    --clr-text: #fff5f5;
+    --clr-bg: #0f1e0f;
+    --clr-primary: #1a2e1a;
+    --clr-secondary: #2d4a2d;
+    --clr-card: #1a2e1a;
+    --clr-border: rgba(196, 30, 58, 0.3);
+    --clr-accent: #c41e3a;
+    --clr-text-muted: rgba(255, 245, 245, 0.7);
+}
+
+/* New Year Theme */
+[data-theme="newyear"] {
+    --background: #0a0a1a;
+    --primary-color: #14142e;
+    --accent-color: #ffd700;
+    --clr-text: #ffffff;
+    --clr-bg: #0a0a1a;
+    --clr-primary: #14142e;
+    --clr-secondary: #1e1e42;
+    --clr-card: #14142e;
+    --clr-border: rgba(255, 215, 0, 0.3);
+    --clr-accent: #ffd700;
+    --clr-text-muted: rgba(255, 255, 255, 0.7);
+}
+
+/* Easter Theme */
+[data-theme="easter"] {
+    --background: #fff9f0;
+    --primary-color: #ffe0b2;
+    --accent-color: #e91e63;
+    --clr-text: #000000;
+    --clr-bg: #fff9f0;
+    --clr-primary: #fff3e0;
+    --clr-secondary: #ffe0b2;
+    --clr-card: #fff3e0;
+    --clr-border: rgba(233, 30, 99, 0.3);
+    --clr-accent: #e91e63;
+    --clr-text-muted: rgba(0, 0, 0, 0.6);
+}
+
+/* Summer Theme */
+[data-theme="summer"] {
+    --background: #fff8e1;
+    --primary-color: #ffecb3;
+    --accent-color: #f57c00;
+    --clr-text: #000000;
+    --clr-bg: #fff8e1;
+    --clr-primary: #ffecb3;
+    --clr-secondary: #ffe082;
+    --clr-card: #ffecb3;
+    --clr-border: rgba(245, 124, 0, 0.3);
+    --clr-accent: #f57c00;
+    --clr-text-muted: rgba(0, 0, 0, 0.6);
+}
+
+/* Halloween Theme */
+[data-theme="halloween"] {
+    --background: #1a0a00;
+    --primary-color: #2e1400;
+    --accent-color: #ff6600;
+    --clr-text: #ff9500;
+    --clr-bg: #1a0a00;
+    --clr-primary: #2e1400;
+    --clr-secondary: #4a2400;
+    --clr-card: #2e1400;
+    --clr-border: rgba(255, 102, 0, 0.3);
+    --clr-accent: #ff6600;
+    --clr-text-muted: rgba(255, 149, 0, 0.6);
+}
+
+/* Valentine Theme */
+[data-theme="valentine"] {
+    --background: #fff0f5;
+    --primary-color: #ffd1dc;
+    --accent-color: #d81b60;
+    --clr-text: #000000;
+    --clr-bg: #fff0f5;
+    --clr-primary: #ffe4e9;
+    --clr-secondary: #ffd1dc;
+    --clr-card: #ffe4e9;
+    --clr-border: rgba(216, 27, 96, 0.3);
+    --clr-accent: #d81b60;
+    --clr-text-muted: rgba(0, 0, 0, 0.6);
+}
+
+/* Helle Themes: Admin-Text auf Dunkel erzwingen */
+[data-theme="easter"] .sidebar,
+[data-theme="summer"] .sidebar,
+[data-theme="valentine"] .sidebar {
+    color: #000000;
+}
+
+[data-theme="easter"] .sidebar .nav-link,
+[data-theme="summer"] .sidebar .nav-link,
+[data-theme="valentine"] .sidebar .nav-link,
+[data-theme="easter"] .sidebar h4,
+[data-theme="summer"] .sidebar h4,
+[data-theme="valentine"] .sidebar h4 {
+    color: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="easter"] .sidebar .nav-link:hover,
+[data-theme="easter"] .sidebar .nav-link.active,
+[data-theme="summer"] .sidebar .nav-link:hover,
+[data-theme="summer"] .sidebar .nav-link.active,
+[data-theme="valentine"] .sidebar .nav-link:hover,
+[data-theme="valentine"] .sidebar .nav-link.active {
+    color: var(--clr-accent);
 }

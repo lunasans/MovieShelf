@@ -10,20 +10,16 @@
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/html-purifier.php';
 
-// Prüfe ob Impressum aktiviert ist
-if (getSetting('impressum_enabled', '1') != '1') {
-    header('HTTP/1.0 404 Not Found');
-    echo 'Impressum ist deaktiviert';
-    exit;
-}
-
-// Lade Impressum-Daten
-$impressumName = getSetting('impressum_name', DVDPROFILER_AUTHOR);
-$impressumEmail = getSetting('impressum_email', 'kontakt@example.com');
+// Impressum-Daten aus Settings laden
+$impressumName    = getSetting('impressum_name', '');
+$impressumEmail   = getSetting('impressum_email', '');
 $impressumContent = getSetting('impressum_content', '');
 
-// Header laden
-require_once __DIR__ . '/../includes/header.php';
+// Impressum deaktiviert?
+if (getSetting('impressum_enabled', '1') != '1') {
+    echo '<p>Impressum ist deaktiviert.</p>';
+    return;
+}
 ?>
 
 <div class="static-page">
@@ -38,18 +34,27 @@ require_once __DIR__ . '/../includes/header.php';
     <section class="content-section">
         <h2>Angaben gemäß § 5 TMG</h2>
         <div class="contact-info">
+            <?php if (empty($impressumName)): ?>
+            <div class="alert" style="background: rgba(255,160,0,0.15); border-left: 3px solid orange; padding: 12px 16px; border-radius: 8px; margin-bottom: 1rem;">
+                <strong>⚠️ Impressum nicht konfiguriert!</strong><br>
+                Bitte unter <a href="/admin/?page=impressum">Admin → Impressum</a> Name und E-Mail eintragen.
+            </div>
+            <?php else: ?>
             <p>
                 <strong><?= htmlspecialchars($impressumName) ?></strong><br>
                 Privatperson<br><br>
                 
                 <strong>Kontakt:</strong><br>
+                <?php if (!empty($impressumEmail)): ?>
                 E-Mail: <a href="mailto:<?= htmlspecialchars($impressumEmail) ?>"><?= htmlspecialchars($impressumEmail) ?></a><br>
+                <?php endif; ?>
                 <?php if (defined('DVDPROFILER_GITHUB_URL')): ?>
                 GitHub: <a href="<?= DVDPROFILER_GITHUB_URL ?>" target="_blank" rel="noopener noreferrer">
                     <?= DVDPROFILER_REPOSITORY ?>
                 </a>
                 <?php endif; ?>
             </p>
+            <?php endif; ?>
         </div>
     </section>
 
@@ -291,7 +296,3 @@ require_once __DIR__ . '/../includes/header.php';
 }
 </style>
 
-<?php
-// Footer laden
-require_once __DIR__ . '/../includes/footer.php';
-?>

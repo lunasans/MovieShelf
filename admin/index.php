@@ -33,9 +33,17 @@ $systemHealth = getSystemHealth(); // Aus bootstrap.php
 $pageStartTime = microtime(true);
 $memoryStart = memory_get_usage(true);
 
+// Theme laden (aus DB, Admin sieht immer das gespeicherte Theme)
+$adminTheme = getSetting('theme', 'default');
+$allowedAdminThemes = ['default', 'dark', 'blue', 'green', 'red', 'purple',
+    'christmas', 'newyear', 'easter', 'summer', 'halloween', 'valentine'];
+if (!in_array($adminTheme, $allowedAdminThemes)) {
+    $adminTheme = 'default';
+}
+
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="<?= htmlspecialchars($adminTheme) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,7 +64,7 @@ $memoryStart = memory_get_usage(true);
     <link href="css/settings.css" rel="stylesheet">
     
     <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    <link rel="icon" type="image/png" href="../assets/logo/favicon.ico">
 </head>
 <body>
     

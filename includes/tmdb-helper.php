@@ -632,6 +632,132 @@ class TMDbHelper {
     }
     
     /**
+     * Suche Schauspieler auf TMDb
+     * 
+     * @param string $name Schauspieler-Name
+     * @param int $limit Max. Anzahl Ergebnisse (Standard: 20)
+     * @return array|null Array mit Schauspieler-Ergebnissen
+     */
+    public function searchActors($name, $limit = 20) {
+        try {
+            $searchUrl = $this->baseUrl . '/search/person';
+            $searchParams = [
+                'api_key' => $this->apiKey,
+                'query' => $name,
+                'language' => 'de-DE',
+                'page' => 1
+            ];
+            
+            $searchResult = $this->makeRequest($searchUrl, $searchParams);
+            
+            if (!$searchResult || empty($searchResult['results'])) {
+                return [];
+            }
+            
+            // Alle Ergebnisse formatieren
+            $actors = array_slice($searchResult['results'], 0, $limit);
+            
+            $formatted = array_map(function($actor) {
+                // Bekannte Filme extrahieren
+                $knownFor = [];
+                if (!empty($actor['known_for'])) {
+                    foreach (array_slice($actor['known_for'], 0, 3) as $movie) {
+                        $knownFor[] = $movie['title'] ?? $movie['name'] ?? '';
+                    }
+                }
+                
+                return [
+                    'tmdb_id' => $actor['id'],
+                    'name' => $actor['name'] ?? 'Unbekannt',
+                    'profile_path' => $actor['profile_path'] ?? null,
+                    'known_for_department' => $actor['known_for_department'] ?? '',
+                    'known_for' => $knownFor,
+                    'popularity' => round($actor['popularity'] ?? 0, 1)
+                ];
+            }, $actors);
+            
+            return $formatted;
+            
+        } catch (Exception $e) {
+            error_log('TMDb searchActors error: ' . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Hole komplette Actor Details von TMDb
+     * 
+     * @param int $actorId TMDb Person ID
+     * @return array|null Actor-Daten inkl. Biografie, Filmografie, etc.
+     */
+    public function getActorDetails($actorId) {
+        try {
+            // Hole Actor Details
+            $url = $this->baseUrl . '/person/' . $actorId;
+            $params = [
+                'api_key' => $this->apiKey,
+                'language' => 'de-DE',
+                'append_to_response' => 'movie_credits,tv_credits,images,external_ids'
+            ];
+            
+            $data = $this->makeRequest($url, $params);
+            
+            if (!$data || !isset($data['id'])) {
+                return null;
+            }
+            
+            // Filmografie zusammenstellen (kombiniert Movies + TV)
+            $filmography = [];
+            
+            // Movies
+            if (!empty($data['movie_credits']['cast'])) {
+                foreach ($data['movie_credits']['cast'] as $movie) {
+                    $filmography[] = [
+                        'type' => 'movie',
+                        'id' => $movie['id'],
+                        'title' => $movie['title'] ?? '',
+                        'character' => $movie['character'] ?? '',
+                        'release_date' => $movie['release_date'] ?? '',
+                        'poster_path' => $movie['poster_path'] ?? null,
+                        'vote_average' => $movie['vote_average'] ?? 0
+                    ];
+                }
+            }
+            
+            // TV Shows
+            if (!empty($data['tv_credits']['cast'])) {
+                foreach ($data['tv_credits']['cast'] as $show) {
+                    $filmography[] = [
+                        'type' => 'tv',
+                        'id' => $show['id'],
+                        'title' => $show['name'] ?? '',
+                        'character' => $show['character'] ?? '',
+                        'release_date' => $show['first_air_date'] ?? '',
+                        'poster_path' => $show['poster_path'] ?? null,
+                        'vote_average' => $show['vote_average'] ?? 0
+                    ];
+                }
+            }
+            
+            // Nach Datum sortieren (neueste zuerst)
+            usort($filmography, function($a, $b) {
+                return ($b['release_date'] ?? '') <=> ($a['release_date'] ?? '');
+            });
+            
+            // Limitiere auf Top 20
+            $filmography = array_slice($filmography, 0, 20);
+            
+            $data['filmography'] = $filmography;
+            
+            return $data;
+            
+        } catch (Exception $e) {
+            error_log('TMDb getActorDetails error: ' . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * HTTP Request an TMDb API
      */
     private function makeRequest($url, $params = []) {
@@ -777,4 +903,25 @@ function getTMDbTVShow($tmdbId) {
     }
     
     return $tmdb->getTVShowDetails($tmdbId);
+}
+
+/**
+ * Helper-Funktion: Hole komplette Actor Details von TMDb
+ */
+function getTMDbActor($actorId) {
+    static $tmdb = null;
+    
+    // TMDb API Key aus Settings laden
+    $apiKey = getSetting('tmdb_api_key', '');
+    
+    if (empty($apiKey)) {
+        error_log('TMDb: No API key configured');
+        return null;
+    }
+    
+    if ($tmdb === null) {
+        $tmdb = new TMDbHelper($apiKey);
+    }
+    
+    return $tmdb->getActorDetails($actorId);
 }

@@ -111,3 +111,57 @@ if (!function_exists('getSetting')) {
         }
     }
 }
+
+/**
+ * Guard für Admin-AJAX-Endpunkte.
+ * Prüft eingeloggten User und erzwingt POST-Methode.
+ * Terminiert mit JSON-Fehler wenn nicht erfüllt.
+ */
+function requireAdminAjax(): void
+{
+    if (!isset($_SESSION['user_id'])) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Nicht angemeldet']);
+        exit;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Nur POST erlaubt']);
+        exit;
+    }
+}
+
+/**
+ * Guard für TMDb-AJAX-Endpunkte (setzt ob_start() voraus).
+ * Prüft Session, CSRF-Token und TMDb API-Key.
+ * Terminiert mit JSON-Fehler wenn nicht erfüllt.
+ *
+ * @return string Der TMDb API-Key
+ */
+function requireTmdbAjax(): string
+{
+    if (!isset($_SESSION['user_id'])) {
+        ob_clean();
+        header('Content-Type: application/json');
+        http_response_code(403);
+        die(json_encode(['success' => false, 'error' => 'Unauthorized']));
+    }
+
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'])) {
+        ob_clean();
+        header('Content-Type: application/json');
+        http_response_code(403);
+        die(json_encode(['success' => false, 'error' => 'CSRF validation failed']));
+    }
+
+    $apiKey = getSetting('tmdb_api_key', '');
+    if (empty($apiKey)) {
+        ob_clean();
+        header('Content-Type: application/json');
+        http_response_code(400);
+        die(json_encode(['success' => false, 'error' => 'Kein TMDb API Key gesetzt']));
+    }
+
+    return $apiKey;
+}

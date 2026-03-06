@@ -32,7 +32,7 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
         <!-- Linke Seite: Logo & Branding -->
         <div class="footer-section">
             <div class="footer-logo">
-                <i class="bi bi-film"></i>
+                <img src="/assets/logo/logo_small.png" alt="MovieShelf Logo" class="footer-logo-img">
                 <span>MovieShelf</span>
             </div>
             <p class="footer-tagline">Moderne Filmverwaltung</p>
@@ -79,6 +79,12 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
                 </div>
                 <div class="copyright">
                     &copy; <?= date('Y') ?> <?= htmlspecialchars($author) ?>
+                </div>
+                <div class="tmdb-attribution">
+                    <span>This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</span>
+                    <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" title="The Movie Database (TMDB)">
+                        <img src="/assets/svg/tmdb_logo.svg" alt="TMDB Logo" class="tmdb-logo">
+                    </a>
                 </div>
             </div>
         </div>
@@ -253,9 +259,11 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
     margin-bottom: var(--space-sm, 0.5rem);
 }
 
-.footer-logo i {
-    font-size: 1.5rem;
-    color: var(--accent-color, #667eea);
+.footer-logo-img {
+    height: 1.5rem;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .footer-tagline {
@@ -367,6 +375,28 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
 .copyright {
     font-size: 0.8rem;
     color: var(--text-glass, rgba(255, 255, 255, 0.5));
+}
+
+.tmdb-attribution {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--text-glass, rgba(255, 255, 255, 0.45));
+}
+
+.tmdb-logo {
+    height: 1rem;
+    width: auto;
+    opacity: 0.75;
+    transition: opacity 0.2s ease;
+}
+
+.tmdb-attribution a:hover .tmdb-logo {
+    opacity: 1;
 }
 
 /* Scroll Progress Bar */

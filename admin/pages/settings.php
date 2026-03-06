@@ -386,6 +386,46 @@ $systemRequirements = [
                                     <div id="bulkLoadResults" style="display: none; margin-top: 1rem;"></div>
                                 </div>
                             </div>
+                            
+                            <!-- Actor Rebuild Section -->
+                            <div class="card mb-4" style="background: var(--bg-secondary); border: 1px solid var(--border-color);">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-people-fill"></i> Schauspieler-Datenbank neu aufbauen
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-3">
+                                        Leert die Schauspieler-Tabelle komplett und importiert alle Schauspieler von TMDb neu.
+                                        Dies eliminiert <strong>alle Duplikate</strong> und stellt sicher, dass jeder Schauspieler nur einmal vorhanden ist.
+                                    </p>
+                                    
+                                    <div class="alert alert-warning" role="alert">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        <strong>Achtung:</strong> Diese Aktion löscht ALLE Schauspieler und baut die Datenbank komplett neu auf.
+                                        Dies kann nicht rückgängig gemacht werden und dauert je nach Anzahl der Filme einige Minuten.
+                                    </div>
+                                    
+                                    <button type="button" id="actorRebuildBtn" class="btn btn-warning">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                        Datenbank neu aufbauen
+                                    </button>
+                                    
+                                    <!-- Progress -->
+                                    <div id="actorRebuildProgress" style="display: none; margin-top: 1rem;">
+                                        <div class="progress" style="height: 25px;">
+                                            <div id="actorProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                 role="progressbar" style="width: 0%">
+                                                0%
+                                            </div>
+                                        </div>
+                                        <div id="actorRebuildStatus" class="mt-2 text-muted small"></div>
+                                    </div>
+                                    
+                                    <!-- Results -->
+                                    <div id="actorRebuildResults" style="display: none; margin-top: 1rem;"></div>
+                                </div>
+                            </div>
                             <?php else: ?>
                             <div class="alert alert-warning">
                                 <i class="bi bi-exclamation-triangle-fill"></i>
@@ -503,6 +543,134 @@ $systemRequirements = [
                                 
                                 // Start
                                 loadBatch(0);
+                            });
+                            
+                            // Actor Rebuild Script
+                            document.getElementById('actorRebuildBtn')?.addEventListener('click', function() {
+                                // Bestätigung
+                                if (!confirm('ACHTUNG: Dies löscht ALLE Schauspieler und importiert sie neu von TMDb.\n\nDies kann NICHT rückgängig gemacht werden!\n\nMöchten Sie fortfahren?')) {
+                                    return;
+                                }
+                                
+                                const btn = this;
+                                const progress = document.getElementById('actorRebuildProgress');
+                                const progressBar = document.getElementById('actorProgressBar');
+                                const status = document.getElementById('actorRebuildStatus');
+                                const results = document.getElementById('actorRebuildResults');
+                                
+                                // UI vorbereiten
+                                btn.disabled = true;
+                                progress.style.display = 'block';
+                                results.style.display = 'none';
+                                
+                                let totalImported = 0;
+                                let totalErrors = 0;
+                                let totalSkipped = 0;
+                                let tablesCleared = false;
+                                
+                                function rebuildBatch(offset = 0) {
+                                    const formData = new FormData();
+                                    formData.append('csrf_token', '<?= $csrfToken ?>');
+                                    formData.append('offset', offset);
+                                    
+                                    // Beim ersten Request Tabellen leeren
+                                    if (offset === 0 && !tablesCleared) {
+                                        formData.append('clear_tables', '1');
+                                    }
+                                    
+                                    fetch('actions/actors-rebuild.php', {
+                                        method: 'POST',
+                                        body: formData
+                                    })
+                                    .then(response => {
+                                        return response.text().then(text => {
+                                            <?php if (getSetting('environment', 'production') === 'development'): ?>
+                                            console.log('RAW Response:', text);
+                                            <?php endif; ?>
+                                            
+                                            try {
+                                                return JSON.parse(text);
+                                            } catch (e) {
+                                                <?php if (getSetting('environment', 'production') === 'development'): ?>
+                                                console.error('JSON Parse Error:', e);
+                                                console.error('Response Text:', text);
+                                                <?php endif; ?>
+                                                throw new Error('Server returned invalid JSON. ' + 
+                                                    <?php if (getSetting('environment', 'production') === 'development'): ?>
+                                                    text.substring(0, 200)
+                                                    <?php else: ?>
+                                                    'Bitte Development-Mode aktivieren für Details.'
+                                                    <?php endif; ?>
+                                                );
+                                            }
+                                        });
+                                    })
+                                    .then(data => {
+                                        if (!data.success) {
+                                            throw new Error(data.error || 'Unbekannter Fehler');
+                                        }
+                                        
+                                        // Tabellen geleert?
+                                        if (data.tables_cleared) {
+                                            tablesCleared = true;
+                                            status.innerHTML = '<strong>Tabellen geleert, starte Import...</strong>';
+                                            // Sofort nächsten Batch starten
+                                            setTimeout(() => rebuildBatch(0), 500);
+                                            return;
+                                        }
+                                        
+                                        // Progress aktualisieren
+                                        const percent = data.progress || 0;
+                                        progressBar.style.width = percent + '%';
+                                        progressBar.textContent = percent + '%';
+                                        
+                                        status.innerHTML = `
+                                            Verarbeitet: ${data.processed} / ${data.total} Filme<br>
+                                            Importiert: ${data.imported || 0} | Fehler: ${data.errors || 0} | Übersprungen: ${data.skipped || 0}
+                                        `;
+                                        
+                                        totalImported += data.imported || 0;
+                                        totalErrors += data.errors || 0;
+                                        totalSkipped += data.skipped || 0;
+                                        
+                                        // Fertig?
+                                        if (data.completed) {
+                                            progressBar.classList.remove('progress-bar-animated');
+                                            progressBar.classList.add('bg-success');
+                                            
+                                            results.style.display = 'block';
+                                            results.innerHTML = `
+                                                <div class="alert alert-success">
+                                                    <i class="bi bi-check-circle-fill"></i>
+                                                    <strong>Fertig!</strong><br>
+                                                    ${totalImported} Filme mit Schauspielern importiert<br>
+                                                    ${totalSkipped > 0 ? totalSkipped + ' Filme übersprungen (keine Schauspieler auf TMDb)<br>' : ''}
+                                                    ${totalErrors > 0 ? totalErrors + ' Fehler (Filme nicht auf TMDb gefunden)' : ''}
+                                                </div>
+                                            `;
+                                            
+                                            btn.disabled = false;
+                                            btn.innerHTML = '<i class="bi bi-check"></i> Abgeschlossen';
+                                        } else {
+                                            // Nächster Batch
+                                            setTimeout(() => rebuildBatch(data.next_offset), 500);
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Actor Rebuild Error:', error);
+                                        results.style.display = 'block';
+                                        results.innerHTML = `
+                                            <div class="alert alert-danger">
+                                                <i class="bi bi-x-circle-fill"></i>
+                                                <strong>Fehler:</strong> ${error.message}
+                                            </div>
+                                        `;
+                                        btn.disabled = false;
+                                    });
+                                }
+                                
+                                // Start
+                                rebuildBatch(0);
                             });
                             </script>
                         </form>

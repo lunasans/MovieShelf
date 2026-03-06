@@ -16,7 +16,7 @@ $dvdProfilerStats = getDVDProfilerStatistics();
     <!-- Header -->
     <div class="sidebar-header">
         <h4>
-            <i class="bi bi-film"></i>
+            <img src="../assets/logo/logo_small.png" alt="Logo" class="sidebar-logo-img">
             Admin Center
         </h4>
         <span class="version-badge">
@@ -73,33 +73,13 @@ $dvdProfilerStats = getDVDProfilerStatistics();
             <?php endif; ?>
         </a>
 
-        <a href="?page=statistics" class="nav-link <?= ($_GET['page'] ?? '') === 'settings' ? 'active' : '' ?>">
-            <i class="bi bi-graph-up"></i> Statistiken
-        </a>
 
-       
         <a href="?page=impressum" class="nav-link <?= ($_GET['page'] ?? '') === 'impressum' ? 'active' : '' ?>">
             <i class="bi bi-info-circle"></i>
             Impressum
          </a>
         
-        <hr class="sidebar-divider">
-        
-        <!-- Stats -->
-        <div class="sidebar-stats">
-            <div class="stat-item">
-                <i class="bi bi-database"></i>
-                <span><?= number_format($dvdProfilerStats['total_films'] ?? 0) ?> Filme</span>
-            </div>
-            <div class="stat-item">
-                <i class="bi bi-collection"></i>
-                <span><?= number_format($dvdProfilerStats['total_boxsets'] ?? 0) ?> BoxSets</span>
-            </div>
-            <div class="stat-item">
-                <i class="bi bi-eye"></i>
-                <span><?= number_format($dvdProfilerStats['total_visits'] ?? 0) ?> Besucher</span>
-            </div>
-        </div>
+
         
         <!-- Spacer -->
         <div style="flex-grow: 1;"></div>
@@ -144,6 +124,13 @@ $dvdProfilerStats = getDVDProfilerStatistics();
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.sidebar-logo-img {
+    height: 1.4rem;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .version-badge {

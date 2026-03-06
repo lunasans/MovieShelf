@@ -58,6 +58,14 @@ class Simple2FA {
     }
 }
 
+// Theme bestimmen (gleiche Logik wie index.php)
+$loginTheme = $_COOKIE['guest_theme'] ?? getSetting('theme', 'default');
+$allowedLoginThemes = ['default', 'dark', 'blue', 'green', 'red', 'purple',
+    'christmas', 'newyear', 'easter', 'summer', 'halloween', 'valentine'];
+if (!in_array($loginTheme, $allowedLoginThemes)) {
+    $loginTheme = 'default';
+}
+
 // Redirect wenn bereits eingeloggt
 if (isset($_SESSION['user_id']) && !isset($_SESSION['require_2fa'])) {
     $redirect = (defined('BASE_URL') && BASE_URL !== '')
@@ -376,7 +384,7 @@ function handleEmailPasswordAuth($pdo, $email, $password, &$require2FA, &$userId
 $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
 ?>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="<?= htmlspecialchars($loginTheme) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -391,6 +399,7 @@ $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="css/login.css" rel="stylesheet">
+    <link href="../css/theme.css" rel="stylesheet">
     
     <!-- Meta Tags -->
     <meta name="description" content="Anmeldung zum <?= htmlspecialchars($siteTitle) ?> Admin-Bereich">
@@ -399,7 +408,7 @@ $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
     <meta name="author" content="<?= DVDPROFILER_AUTHOR ?>">
     
     <!-- Enhanced Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233498db'%3E%3Cpath d='M18 4v1h-2V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v1H4v11c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4h-2zM8 4h6v1H8V4zm10 13H6V6h2v1h6V6h2v11z'/%3E%3C/svg%3E">
+    <link rel="icon" type="image/png" href="../assets/logo/favicon.ico">
     
     <!-- Security Headers via Meta -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -426,7 +435,7 @@ $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
                 <?php else: ?>
                     <!-- Normales Login-Formular -->
                     <h1>
-                        <i class="bi bi-film" style="margin-right: 0.5rem; font-size: 0.8em;"></i>
+                        <img src="../assets/logo/logo_small.png" alt="Logo" style="height: 1.2em; width: auto; vertical-align: middle; margin-right: 0.5rem;">
                         Admin Login
                     </h1>
                 <?php endif; ?>

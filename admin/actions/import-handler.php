@@ -194,6 +194,20 @@ try {
             }
         }
 
+        // Gemeinsame Parameter für UPDATE und INSERT
+        $dvdParams = [
+            'title'           => $title,
+            'year'            => $year,
+            'genre'           => $genre,
+            'runtime'         => $runtime,
+            'rating_age'      => $rating_age,
+            'overview'        => $overview,
+            'cover_id'        => $cover_id,
+            'collection_type' => $collection,
+            'boxset_parent'   => $boxsetParent,
+            'created_at'      => $createdAt,
+        ];
+
         try {
             if ($filmExists) {
                 // Film existiert - UPDATE
@@ -214,19 +228,7 @@ try {
                     WHERE id = :id
                 ");
                 
-                $stmt->execute([
-                    'id' => $id,
-                    'title' => $title,
-                    'year' => $year,
-                    'genre' => $genre,
-                    'runtime' => $runtime,
-                    'rating_age' => $rating_age,
-                    'overview' => $overview,
-                    'cover_id' => $cover_id,
-                    'collection_type' => $collection,
-                    'boxset_parent' => $boxsetParent,
-                    'created_at' => $createdAt
-                ]);
+                $stmt->execute(array_merge(['id' => $id], $dvdParams));
                 
                 $updated++;
                 error_log("DVD $id ($title) erfolgreich aktualisiert (Kaufdatum: $createdAt)");
@@ -243,20 +245,7 @@ try {
                     )
                 ");
                 
-                $stmt->execute([
-                    'id' => $id,
-                    'title' => $title,
-                    'year' => $year,
-                    'genre' => $genre,
-                    'runtime' => $runtime,
-                    'rating_age' => $rating_age,
-                    'overview' => $overview,
-                    'cover_id' => $cover_id,
-                    'collection_type' => $collection,
-                    'boxset_parent' => $boxsetParent,
-                    'user_id' => $userId,
-                    'created_at' => $createdAt
-                ]);
+                $stmt->execute(array_merge(['id' => $id, 'user_id' => $userId], $dvdParams));
 
                 $imported++;
                 error_log("DVD $id ($title) erfolgreich neu importiert (Kaufdatum: $createdAt)");

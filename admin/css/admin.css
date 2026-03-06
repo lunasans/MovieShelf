@@ -12,7 +12,7 @@
   --clr-warning: #f39c12;
   --clr-danger: #e74c3c;
   --clr-info: #3498db;
-  
+
   --gap: 1rem;
   --radius: 8px;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -440,7 +440,12 @@ body {
 }
 
 /* Headings */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--clr-text);
   margin-bottom: 1rem;
 }
@@ -578,24 +583,24 @@ code {
   .admin-layout {
     flex-direction: column;
   }
-  
+
   .sidebar {
     width: 100%;
     position: relative;
   }
-  
+
   .admin-content {
     padding: 1rem;
   }
-  
+
   .card-body {
     padding: 1rem;
   }
-  
+
   .btn {
     padding: 0.625rem 1.25rem;
   }
-  
+
   .table-responsive {
     font-size: 0.875rem;
   }
@@ -607,6 +612,7 @@ code {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -643,4 +649,179 @@ code {
 
 .text-info {
   color: var(--clr-info) !important;
+}
+
+/* ============================================
+   THEME-OVERRIDES
+   Überschreibt die :root-Variablen je nach
+   aktivem Theme (data-theme am <html>-Element).
+   ============================================ */
+
+[data-theme="default"] {
+  --clr-bg: #0f0f23;
+  --clr-primary: #1a1a2e;
+  --clr-secondary: #16213e;
+  --clr-card: #1a1a2e;
+  --clr-border: #1e2a4a;
+  --clr-accent: #3498db;
+  --clr-text: #e4e4e7;
+  --clr-text-muted: rgba(228, 228, 231, 0.6);
+}
+
+[data-theme="dark"] {
+  --clr-bg: #000000;
+  --clr-primary: #0a0a0a;
+  --clr-secondary: #141414;
+  --clr-card: #1a1a1a;
+  --clr-border: #2a2a2a;
+  --clr-accent: #bb86fc;
+  --clr-text: #ffffff;
+  --clr-text-muted: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="blue"] {
+  --clr-bg: #001f3f;
+  --clr-primary: #002b54;
+  --clr-secondary: #003d6b;
+  --clr-card: #002b54;
+  --clr-border: #004080;
+  --clr-accent: #00d4ff;
+  --clr-text: #e0f2ff;
+  --clr-text-muted: rgba(224, 242, 255, 0.6);
+}
+
+[data-theme="green"] {
+  --clr-bg: #0a1f0a;
+  --clr-primary: #0f2b0f;
+  --clr-secondary: #143d14;
+  --clr-card: #0f2b0f;
+  --clr-border: #1a4d1a;
+  --clr-accent: #00ff41;
+  --clr-text: #ccffdd;
+  --clr-text-muted: rgba(0, 255, 65, 0.6);
+}
+
+[data-theme="red"] {
+  --clr-bg: #1a0a0a;
+  --clr-primary: #2b0f0f;
+  --clr-secondary: #3d1414;
+  --clr-card: #2b0f0f;
+  --clr-border: #4d1a1a;
+  --clr-accent: #ff4757;
+  --clr-text: #ffe0e0;
+  --clr-text-muted: rgba(255, 224, 224, 0.6);
+}
+
+[data-theme="purple"] {
+  --clr-bg: #1a0a1f;
+  --clr-primary: #2b0f3d;
+  --clr-secondary: #3d1454;
+  --clr-card: #2b0f3d;
+  --clr-border: #4d1a66;
+  --clr-accent: #9b59b6;
+  --clr-text: #f0e0ff;
+  --clr-text-muted: rgba(240, 224, 255, 0.6);
+}
+
+[data-theme="christmas"] {
+  --clr-bg: #0f1e0f;
+  --clr-primary: #1a2e1a;
+  --clr-secondary: #2d4a2d;
+  --clr-card: #1a2e1a;
+  --clr-border: #3a5a3a;
+  --clr-accent: #c41e3a;
+  --clr-text: #fff5f5;
+  --clr-text-muted: rgba(255, 245, 245, 0.7);
+}
+
+[data-theme="newyear"] {
+  --clr-bg: #0a0a1a;
+  --clr-primary: #14142e;
+  --clr-secondary: #1e1e42;
+  --clr-card: #14142e;
+  --clr-border: #2a2a55;
+  --clr-accent: #ffd700;
+  --clr-text: #ffffff;
+  --clr-text-muted: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="easter"] {
+  --clr-bg: #fff9f0;
+  --clr-primary: #fff3e0;
+  --clr-secondary: #ffe0b2;
+  --clr-card: #fff3e0;
+  --clr-border: #ffccaa;
+  --clr-accent: #e91e63;
+  --clr-text: #1a1a1a;
+  --clr-text-muted: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="summer"] {
+  --clr-bg: #fff8e1;
+  --clr-primary: #ffecb3;
+  --clr-secondary: #ffe082;
+  --clr-card: #ffecb3;
+  --clr-border: #ffd54f;
+  --clr-accent: #f57c00;
+  --clr-text: #1a1a1a;
+  --clr-text-muted: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="halloween"] {
+  --clr-bg: #1a0a00;
+  --clr-primary: #2e1400;
+  --clr-secondary: #4a2400;
+  --clr-card: #2e1400;
+  --clr-border: #5a3300;
+  --clr-accent: #ff6600;
+  --clr-text: #ffcc88;
+  --clr-text-muted: rgba(255, 149, 0, 0.6);
+}
+
+[data-theme="valentine"] {
+  --clr-bg: #fff0f5;
+  --clr-primary: #ffe4e9;
+  --clr-secondary: #ffd1dc;
+  --clr-card: #ffe4e9;
+  --clr-border: #ffb3c6;
+  --clr-accent: #d81b60;
+  --clr-text: #1a1a1a;
+  --clr-text-muted: rgba(0, 0, 0, 0.6);
+}
+
+/* Helle Themes: Sidebar-Lesbarkeit */
+[data-theme="easter"] .sidebar,
+[data-theme="summer"] .sidebar,
+[data-theme="valentine"] .sidebar {
+  background: linear-gradient(135deg, #e0e0e0 0%, #cccccc 100%);
+}
+
+[data-theme="easter"] .sidebar .nav-link,
+[data-theme="summer"] .sidebar .nav-link,
+[data-theme="valentine"] .sidebar .nav-link,
+[data-theme="easter"] .sidebar h4,
+[data-theme="summer"] .sidebar h4,
+[data-theme="valentine"] .sidebar h4 {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="easter"] .sidebar .nav-link:hover,
+[data-theme="easter"] .sidebar .nav-link.active,
+[data-theme="summer"] .sidebar .nav-link:hover,
+[data-theme="summer"] .sidebar .nav-link.active,
+[data-theme="valentine"] .sidebar .nav-link:hover,
+[data-theme="valentine"] .sidebar .nav-link.active {
+  color: var(--clr-accent);
+}
+
+[data-theme="easter"] .card,
+[data-theme="summer"] .card,
+[data-theme="valentine"] .card {
+  color: #1a1a1a;
+}
+
+[data-theme="easter"] .text-muted,
+[data-theme="summer"] .text-muted,
+[data-theme="valentine"] .text-muted {
+  color: rgba(0, 0, 0, 0.6) !important;
 }
