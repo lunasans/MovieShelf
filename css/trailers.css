@@ -1,0 +1,322 @@
+/* ============================================================================
+   TRAILERS PAGE STYLES
+   ============================================================================ */
+
+.trailers-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--space-xl, 2rem) var(--space-lg, 1.5rem);
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl, 3rem);
+}
+
+.page-header-content h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md, 1rem);
+    font-size: 2.5rem;
+    margin-bottom: var(--space-sm, 0.5rem);
+    color: var(--text-primary, #e4e4e7);
+}
+
+.page-header-content h1 i {
+    color: var(--accent-primary, #667eea);
+    font-size: 2.8rem;
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted, rgba(228, 228, 231, 0.6));
+}
+
+.trailers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-lg, 1.5rem);
+    margin-bottom: var(--space-2xl, 3rem);
+}
+
+.trailers-page .trailer-card {
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.trailers-page .trailer-card:hover {
+    border-color: var(--accent-primary, #667eea);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    transform: translateY(-4px);
+}
+
+.trailers-page .trailer-thumbnail {
+    position: relative;
+    width: 100%;
+    padding-bottom: 150%;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--bg-tertiary, #16213e);
+}
+
+.trailers-page .trailer-thumbnail img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.trailers-page .trailer-card:hover .trailer-thumbnail img {
+    transform: scale(1.05);
+}
+
+.trailers-page .play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.trailers-page .trailer-card:hover .play-overlay {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.trailers-page .play-overlay i {
+    font-size: 4rem;
+    color: white;
+    opacity: 0.9;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    transition: all 0.3s ease;
+}
+
+.trailers-page .trailer-card:hover .play-overlay i {
+    transform: scale(1.2);
+    opacity: 1;
+}
+
+.trailers-page .trailer-duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.trailers-page .trailer-info {
+    padding: var(--space-md, 1rem);
+}
+
+.trailers-page .trailer-title {
+    margin: 0 0 var(--space-sm, 0.5rem) 0;
+    font-size: 1.1rem;
+}
+
+.trailers-page .trailer-title a {
+    color: var(--text-primary, #e4e4e7);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.trailers-page .trailer-title a:hover {
+    color: var(--accent-primary, #667eea);
+}
+
+.trailers-page .trailer-meta {
+    display: flex;
+    gap: var(--space-md, 1rem);
+    font-size: 0.9rem;
+    color: var(--text-muted, rgba(228, 228, 231, 0.6));
+}
+
+.trailers-page .trailer-meta span {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs, 0.35rem);
+}
+
+/* ============================================================================
+   TRAILER MODAL (GLOBAL)
+   ============================================================================ */
+.trailer-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.trailer-modal.show {
+    display: flex;
+}
+
+.trailer-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    animation: fadeIn 0.3s ease;
+}
+
+.trailer-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    z-index: 2;
+    animation: zoomIn 0.3s ease;
+}
+
+.trailer-modal-close {
+    position: absolute;
+    top: -50px;
+    right: 0;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.trailer-modal-close:hover {
+    background: rgba(255, 71, 87, 0.9);
+    transform: rotate(90deg);
+}
+
+.trailer-video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.trailer-video-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trailer-video-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.modal-play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    transition: background 0.3s ease;
+}
+
+.modal-play-button {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-play-button:hover {
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.modal-play-button i {
+    font-size: 2.5rem;
+    color: white;
+    margin-left: 4px;
+}
+
+.trailer-video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.trailer-video-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

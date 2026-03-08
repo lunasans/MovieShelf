@@ -8,9 +8,10 @@ function findCoverImage(string $coverId, string $suffix = 'f', string $folder = 
 {
     $extensions = ['.jpg', '.jpeg', '.png'];
     foreach ($extensions as $ext) {
-        $file = "{$folder}/{$coverId}{$suffix}{$ext}";
-        if (file_exists($file)) {
-            return $file;
+        $filename = "{$coverId}{$suffix}{$ext}";
+        $fullPath = BASE_PATH . '/' . $folder . '/' . $filename;
+        if (file_exists($fullPath)) {
+            return $folder . '/' . $filename;
         }
     }
     return $fallback;

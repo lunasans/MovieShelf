@@ -609,7 +609,7 @@ $backdropUrl = $backCover ?? '';
                 <div class="login-required">
                     <i class="bi bi-info-circle"></i>
                     <p>Melden Sie sich an, um Filme zu bewerten.</p>
-                    <a href="login.php" class="btn-login">
+                    <a href="admin/login.php" class="btn-login">
                         <i class="bi bi-person"></i> Anmelden
                     </a>
                 </div>
@@ -625,7 +625,7 @@ $backdropUrl = $backCover ?? '';
 
     <!-- Film-Aktionen -->
     <section class="film-actions">
-        <button class="action-btn action-close" onclick="closeDetail()">
+        <button class="action-btn action-close close-detail-button">
             <i class="bi bi-x-lg"></i>
             <span>Schließen</span>
         </button>

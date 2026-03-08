@@ -1,0 +1,187 @@
+/* ============================================================================
+   ACTORS OVERVIEW STYLES
+   ============================================================================ */
+
+.actors-overview-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--space-lg, 1.5rem);
+}
+
+.overview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xl, 2rem);
+    padding-bottom: var(--space-md, 1rem);
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.overview-header h1 {
+    font-size: 2.2rem;
+    margin: 0;
+}
+
+.header-meta {
+    color: var(--text-muted, rgba(255, 255, 255, 0.6));
+    font-size: 0.95rem;
+}
+
+/* Alphabet Navigation */
+.alphabet-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: var(--space-2xl, 3rem);
+    justify-content: center;
+    padding: var(--space-md, 1rem);
+    background: var(--glass-bg, rgba(255, 255, 255, 0.03));
+    border-radius: var(--radius-lg, 12px);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+}
+
+.letter-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm, 6px);
+    background: var(--bg-tertiary, rgba(255, 255, 255, 0.05));
+    color: var(--text-primary, #ffffff);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.letter-link:hover {
+    background: var(--accent-primary, #667eea);
+    transform: translateY(-2px);
+}
+
+.letter-link.active {
+    background: var(--accent-primary, #667eea);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.letter-link.disabled {
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+/* Actors Grid */
+.letter-group {
+    margin-bottom: var(--space-2xl, 3rem);
+}
+
+.letter-title {
+    font-size: 2rem;
+    color: var(--accent-primary, #667eea);
+    margin-bottom: var(--space-lg, 1.5rem);
+    padding-bottom: var(--space-xs, 0.35rem);
+    border-bottom: 2px solid var(--accent-primary, #667eea);
+    display: inline-block;
+}
+
+.actors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-lg, 1.5rem);
+}
+
+.actor-card {
+    background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+    cursor: pointer;
+    position: relative;
+    aspect-ratio: 2/3;
+}
+
+.actor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-primary, #667eea);
+}
+
+.actor-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.actor-card:hover .actor-photo {
+    transform: scale(1.1);
+}
+
+.actor-info-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-md, 1rem);
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+    color: white;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.actor-card:hover .actor-info-overlay {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.actors-overview-container .actor-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    display: block;
+}
+
+.actor-year {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.actor-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(102, 126, 234, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.actor-card:hover .actor-overlay {
+    opacity: 1;
+}
+
+.actor-overlay i {
+    font-size: 2rem;
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+@media (max-width: 768px) {
+    .actors-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
+    .overview-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

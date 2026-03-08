@@ -180,23 +180,3 @@ try {
   </div>
 <?php endif; ?>
 
-<!-- BoxSet Overlay Modal -->
-<div id="boxsetModal" class="boxset-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 id="modalTitle">
-                <i class="bi bi-collection-play"></i>
-                <span>BoxSet</span>
-            </h2>
-            <button class="modal-close" onclick="closeBoxSetModal()" aria-label="Schließen">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-        <div class="modal-body" id="modalBody">
-            <div class="loading">
-                <i class="bi bi-hourglass-split"></i>
-                Lade Filme...
-            </div>
-        </div>
-    </div>
-</div>

@@ -180,6 +180,10 @@ $schema = [
     <link rel="preload" href="css/style.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
     <link rel="preload" href="css/theme.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
     <link rel="preload" href="css/film-view.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
+    <link rel="preload" href="css/trailers.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
+    <link rel="preload" href="css/stats.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
+    <link rel="preload" href="css/actors-overview.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
+    <link rel="preload" href="css/actor-profile.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" as="style">
     
     <!-- CSS -->
@@ -187,8 +191,19 @@ $schema = [
     <link href="css/theme.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
     <link href="css/film-list.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
     <link href="css/film-view.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
+    <link href="css/trailers.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
+    <link href="css/stats.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
+    <link href="css/actors-overview.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
+    <link href="css/actor-profile.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="libs/fancybox/dist/fancybox/fancybox.css" rel="stylesheet">
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+    <script src="js/stats.js?v=<?= DVDPROFILER_VERSION ?>" defer></script>
+    <script src="js/actors-overview.js?v=<?= DVDPROFILER_VERSION ?>" defer></script>
+    <script src="js/trailers.js?v=<?= DVDPROFILER_VERSION ?>" defer></script>
+    <script src="js/main.js?v=<?= DVDPROFILER_VERSION ?>" defer></script>
     
     <script>
         // Sofortige View-Mode Anwendung gegen FOUC
@@ -299,10 +314,55 @@ $schema = [
         </div>
     </div>
 
+    <!-- ============================================================================
+         GLOBAL TRAILER MODAL
+         ============================================================================ -->
+    <div id="trailerModal" class="trailer-modal">
+        <div class="trailer-modal-backdrop"></div>
+        <div class="trailer-modal-content">
+            <button class="trailer-modal-close" aria-label="Schließen">
+                <i class="bi bi-x-lg"></i>
+            </button>
+            <div class="trailer-video-wrapper" id="trailerVideoWrapper">
+                <!-- Cover-Placeholder (wird initial angezeigt) -->
+                <div class="trailer-video-placeholder" id="trailerPlaceholder">
+                    <img id="trailerCoverImage" src="" alt="Film Cover">
+                    <div class="modal-play-overlay">
+                        <div class="modal-play-button">
+                            <i class="bi bi-play-fill"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Video Container -->
+                <div class="trailer-video-container" id="trailerVideoContainer" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📦 GLOBAL BOXSET MODAL -->
+    <div id="boxsetModal" class="boxset-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">
+                    <i class="bi bi-collection-play"></i>
+                    <span>BoxSet</span>
+                </h2>
+                <button class="modal-close" aria-label="Schließen">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="loading">
+                    <i class="bi bi-hourglass-split"></i>
+                    Lade Filme...
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script src="libs/fancybox/dist/index.umd.js"></script>
-    <script src="js/main.js?v=<?= DVDPROFILER_VERSION ?>"></script>
-    
+
     <!-- Cookie Consent Script -->
     <script>
         // Cookie Consent Management
