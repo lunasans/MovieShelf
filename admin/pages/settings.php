@@ -468,7 +468,7 @@ $systemRequirements = [
                                         return response.text().then(text => {
                                             <?php if (getSetting('environment', 'production') === 'development'): ?>
                                             // Debug-Logging nur im Development-Mode
-                                            console.log('RAW Response:', text);
+                                            if (window.IS_DEV) console.log('RAW Response:', text);
                                             <?php endif; ?>
                                             
                                             try {
@@ -585,7 +585,7 @@ $systemRequirements = [
                                     .then(response => {
                                         return response.text().then(text => {
                                             <?php if (getSetting('environment', 'production') === 'development'): ?>
-                                            console.log('RAW Response:', text);
+                                            if (window.IS_DEV) console.log('RAW Response:', text);
                                             <?php endif; ?>
                                             
                                             try {
