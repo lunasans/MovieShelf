@@ -9,14 +9,14 @@
  */
 
 // Version Information
-define('DVDPROFILER_VERSION', '1.5.1');
+define('DVDPROFILER_VERSION', '1.5.2');
 define('DVDPROFILER_CODENAME', 'Cinephile');
-define('DVDPROFILER_BUILD_DATE', '2026.03.05');
-define('DVDPROFILER_RELEASE_DATE', '05. März 2026');
+define('DVDPROFILER_BUILD_DATE', '2026.03.08');
+define('DVDPROFILER_RELEASE_DATE', '08. März 2026');
 
 // Build Information
 define('DVDPROFILER_BUILD_TYPE', 'Release'); // Release, Beta, Alpha, Development
-define('DVDPROFILER_BRANCH', '1.4.9');
+define('DVDPROFILER_BRANCH', '1.5.2');
 define('DVDPROFILER_COMMIT', ''); // Git commit hash (ersten 7 Zeichen)
 
 // Repository Information (ZURÜCK AUF GITHUB)
