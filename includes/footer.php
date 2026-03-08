@@ -243,9 +243,9 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
     max-width: 1400px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: auto 1fr auto;
     gap: var(--space-xl, 2rem);
-    align-items: start;
+    align-items: center;
 }
 
 /* Logo & Branding */
@@ -322,8 +322,9 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
 .footer-nav {
     display: flex;
     flex-direction: row;
-    gap: var(--space-md, 1rem);
+    gap: var(--space-xs, 0.5rem);
     align-items: center;
+    flex-wrap: nowrap;
 }
 
 .footer-nav a {
