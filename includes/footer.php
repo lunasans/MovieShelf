@@ -29,23 +29,27 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
 
 <footer class="site-footer" role="contentinfo">
     <div class="footer-content">
-        <!-- Linke Seite: Logo & Branding -->
-        <div class="footer-section">
-            <div class="footer-logo">
-                <img src="<?= LOGO_PATH ?>/logo_small.png" alt="MovieShelf Logo" class="footer-logo-img">
-                <span>MovieShelf</span>
-            </div>
-            <p class="footer-tagline">Moderne Filmverwaltung</p>
+        <!-- Obere Reihe: Nur Navigation -->
+        <div class="footer-top">
+            <nav class="footer-nav" aria-label="Footer Navigation">
+                <a href="?page=impressum"><i class="bi bi-info-circle"></i> Impressum</a>
+                <a href="?page=datenschutz"><i class="bi bi-shield-lock"></i> Datenschutz</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="<?= $baseUrl ?>/admin/" rel="nofollow"><i class="bi bi-speedometer2"></i> Admin</a>
+                    <a href="<?= $baseUrl ?>/admin/logout.php" rel="nofollow"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                <?php else: ?>
+                    <a href="<?= $baseUrl ?>/admin/login.php" rel="nofollow"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+                <?php endif; ?>
+            </nav>
         </div>
 
-        <!-- Mitte: Statistiken & Version -->
-        <div class="footer-section footer-center">
+        <!-- Mittlere Reihe: Statistiken -->
+        <div class="footer-center">
             <div class="footer-stats">
                 <div class="stat-item" title="Filme in der Sammlung">
                     <i class="bi bi-collection"></i>
                     <span><?= number_format($stats['total_films']) ?> Filme</span>
                 </div>
-                
                 
                 <div class="stat-item" title="Website Besucher gesamt">
                     <i class="bi bi-eye"></i>
@@ -64,47 +68,36 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
                     <span><?= number_format($stats['total_genres']) ?> Genres</span>
                 </div>
             </div>
-            
-            <!-- Version zentriert unter Statistik -->
-            <div class="footer-meta">
+        </div>
+
+        <!-- Untere Reihe: Meta, Copyright & TMDB (Vertikal gestapelt) -->
+        <div class="footer-bottom">
+            <div class="footer-meta-stack">
                 <div class="version-info">
                     <span class="version">v<?= $currentVersion ?></span>
                     <a href="<?= htmlspecialchars($githubUrl) ?>" 
                        target="_blank" 
                        rel="noopener noreferrer"
                        title="Auf GitHub ansehen"
-                       aria-label="GitHub Repository">
+                       class="github-link">
                         <i class="bi bi-github"></i>
                     </a>
                 </div>
+                
                 <div class="copyright">
                     &copy; <?= date('Y') ?> <?= htmlspecialchars($author) ?>
                 </div>
+
                 <div class="tmdb-attribution">
-                    <span>This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</span>
-                    <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" title="The Movie Database (TMDB)">
+                    <span>This website uses TMDB and the TMDB APIs but is not endorsed or certified by TMDB.</span>
+                    <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer">
                         <img src="<?= SVG_PATH ?>/tmdb_logo.svg" alt="TMDB Logo" class="tmdb-logo">
                     </a>
                 </div>
             </div>
         </div>
-
-        <!-- Rechts: Navigation horizontal -->
-        <div class="footer-section footer-right">
-            <nav class="footer-nav" aria-label="Footer Navigation">
-                <a href="?page=impressum"><i class="bi bi-info-circle"></i> Impressum</a>
-                <a href="?page=datenschutz"><i class="bi bi-shield-lock"></i> Datenschutz</a>
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <a href="<?= $baseUrl ?>/admin/" rel="nofollow"><i class="bi bi-speedometer2"></i> Admin</a>
-                    <a href="<?= $baseUrl ?>/admin/logout.php" rel="nofollow"><i class="bi bi-box-arrow-right"></i> Logout</a>
-                <?php else: ?>
-                    <a href="<?= $baseUrl ?>/admin/login.php" rel="nofollow"><i class="bi bi-box-arrow-in-right"></i> Login</a>
-                <?php endif; ?>
-            </nav>
-        </div>
     </div>
     
-    <!-- Scroll Progress Indicator -->
     <div class="scroll-progress" role="progressbar" aria-label="Scroll-Fortschritt"></div>
 </footer>
 
@@ -232,202 +225,206 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
 .site-footer {
     position: relative;
     background: var(--glass-bg-strong, rgba(20, 20, 30, 0.95));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
     border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
     margin-top: var(--space-2xl, 3rem);
-    padding: var(--space-xl, 2rem) var(--space-lg, 1.5rem);
+    padding: var(--space-xl, 2rem) 0;
+    color: var(--text-glass, rgba(255, 255, 255, 0.7));
 }
 
 .footer-content {
     max-width: 1400px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
+    padding: 0 var(--space-lg, 1.5rem);
+    display: flex;
+    flex-direction: column;
     gap: var(--space-xl, 2rem);
-    align-items: center;
 }
 
-/* Logo & Branding */
-.footer-logo {
+/* Obere Reihe: Navigation zentriert */
+.footer-top {
     display: flex;
-    align-items: center;
-    gap: var(--space-sm, 0.5rem);
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--text-white, #ffffff);
-    margin-bottom: var(--space-sm, 0.5rem);
-}
-
-.footer-logo-img {
-    height: 1.5rem;
-    width: auto;
-    object-fit: contain;
-    display: block;
-}
-
-.footer-tagline {
-    font-size: 0.9rem;
-    color: var(--text-glass, rgba(255, 255, 255, 0.6));
-    margin: 0;
-}
-
-/* Mitte: Statistiken + Version */
-.footer-center {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-md, 1rem);
-}
-
-.footer-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-sm, 0.5rem);
     justify-content: center;
     align-items: center;
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs, 0.35rem);
-    padding: var(--space-xs, 0.35rem) var(--space-sm, 0.5rem);
-    background: var(--glass-bg, rgba(255, 255, 255, 0.05));
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-    border-radius: var(--radius-md, 8px);
-    font-size: 0.85rem;
-    color: var(--text-glass, rgba(255, 255, 255, 0.8));
-    transition: all 0.3s ease;
-}
-
-.stat-item:hover {
-    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.1));
-    transform: translateY(-2px);
-}
-
-.stat-item i {
-    font-size: 1rem;
-    color: var(--accent-color, #667eea);
-}
-
-/* Rechts: Navigation horizontal */
-.footer-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
+    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.05));
+    padding-bottom: var(--space-lg, 1.5rem);
 }
 
 .footer-nav {
     display: flex;
-    flex-direction: row;
-    gap: var(--space-xs, 0.5rem);
-    align-items: center;
-    flex-wrap: nowrap;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .footer-nav a {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
     color: var(--text-glass, rgba(255, 255, 255, 0.7));
     text-decoration: none;
     font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: var(--radius-lg, 12px);
+    background: var(--glass-bg, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.05));
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0.5rem 1rem;
-    white-space: nowrap;
-    border-radius: var(--radius-md, 12px);
-    background: transparent;
-    border: 1px solid transparent;
-}
-
-.footer-nav a i {
-    font-size: 1.1rem;
-    transition: transform 0.3s ease;
 }
 
 .footer-nav a:hover {
     color: var(--text-white, #ffffff);
-    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.08));
-    border-color: var(--glass-border, rgba(255, 255, 255, 0.15));
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.1));
+    border-color: var(--accent-color, #667eea);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-.footer-nav a:hover i {
-    transform: scale(1.2);
+.footer-nav a i {
+    font-size: 1.1rem;
     color: var(--accent-color, #667eea);
 }
 
-.footer-meta {
+/* Mittlere Reihe: Statistiken */
+.footer-center {
+    display: flex;
+    justify-content: center;
+}
+
+.footer-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-md, 1rem);
+    width: 100%;
+    max-width: 900px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: var(--space-md, 1rem);
+    background: var(--glass-bg, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.05));
+    border-radius: var(--radius-xl, 20px);
+    transition: all 0.4s ease;
+}
+
+.stat-item:hover {
+    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.08));
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.stat-item i {
+    font-size: 1.5rem;
+    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-item span {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-white, #ffffff);
+}
+
+/* Untere Reihe: Meta-Stack (Vertikal) */
+.footer-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: var(--space-lg, 1.5rem);
+    border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.05));
+    font-size: 0.8rem;
+}
+
+.footer-meta-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
     text-align: center;
 }
 
 .version-info {
     display: flex;
     align-items: center;
-    gap: var(--space-sm, 0.5rem);
-    justify-content: center;
-    margin-bottom: var(--space-xs, 0.35rem);
+    gap: 0.5rem;
 }
 
 .version {
-    background: var(--accent-color, #667eea);
+    background: var(--gradient-primary, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
     color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: 700;
     font-size: 0.75rem;
-    font-weight: 600;
 }
 
-.version-info a {
-    color: var(--text-glass, rgba(255, 255, 255, 0.7));
+.github-link {
     font-size: 1.2rem;
-    transition: all 0.3s ease;
+    color: var(--text-glass, rgba(255, 255, 255, 0.5));
+    transition: color 0.3s ease;
 }
 
-.version-info a:hover {
-    color: var(--accent-color, #667eea);
-    transform: scale(1.1);
+.github-link:hover {
+    color: var(--text-white, #ffffff);
 }
 
 .copyright {
-    font-size: 0.8rem;
-    color: var(--text-glass, rgba(255, 255, 255, 0.5));
+    color: var(--text-glass, rgba(255, 255, 255, 0.4));
+    font-weight: 500;
 }
 
 .tmdb-attribution {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 0.3rem;
-    margin-top: 0.5rem;
-    font-size: 0.72rem;
-    color: var(--text-glass, rgba(255, 255, 255, 0.45));
+    gap: 0.5rem;
+    max-width: 600px;
+    color: var(--text-glass, rgba(255, 255, 255, 0.35));
+}
+
+.tmdb-attribution span {
+    line-height: 1.4;
 }
 
 .tmdb-logo {
-    height: 1rem;
+    height: 1.1rem;
     width: auto;
-    opacity: 0.75;
-    transition: opacity 0.2s ease;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
 }
 
 .tmdb-attribution a:hover .tmdb-logo {
     opacity: 1;
 }
 
-/* Scroll Progress Bar */
+/* Scroll Progress */
 .scroll-progress {
     position: absolute;
     bottom: 0;
     left: 0;
     height: 3px;
     width: 0%;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    transition: width 0.1s ease;
+    background: var(--gradient-primary, linear-gradient(90deg, #667eea 0%, #764ba2 100%));
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .footer-top, .footer-bottom {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+    
+    .tmdb-attribution {
+        text-align: center;
+    }
 }
 
 /* ============================================
