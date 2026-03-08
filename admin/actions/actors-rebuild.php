@@ -401,7 +401,7 @@ function importActorsWithDetails($pdo, $tmdb, $filmId, $actors) {
  * 
  * @param string $tmdbPath TMDb Pfad (z.B. "/abc123.jpg")
  * @param string $slug Actor Slug für Dateinamen
- * @return string|null Lokaler Pfad relativ zu images/actors/ oder null bei Fehler
+ * @return string|null Lokaler Pfad relativ zu ACTOR_IMG_PATH oder null bei Fehler
  */
 function downloadActorPhoto($tmdbPath, $slug) {
     if (empty($tmdbPath)) {
@@ -413,7 +413,7 @@ function downloadActorPhoto($tmdbPath, $slug) {
         $imageUrl = 'https://image.tmdb.org/t/p/w185' . $tmdbPath;
         
         // Zielverzeichnis
-        $actorDir = dirname(__DIR__, 2) . '/images/actors';
+        $actorDir = BASE_PATH . '/' . ACTOR_IMG_PATH;
         if (!file_exists($actorDir)) {
             mkdir($actorDir, 0755, true);
         }
@@ -435,7 +435,7 @@ function downloadActorPhoto($tmdbPath, $slug) {
         
         if ($success) {
             // Relativer Pfad für DB (wie in actor-save.php)
-            return 'images/actors/' . $fileName;
+            return ACTOR_IMG_PATH . '/' . $fileName;
         }
         
         return null;

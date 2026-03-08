@@ -593,7 +593,7 @@ small.text-warning {
         document.querySelectorAll('.setup-2fa-btn').forEach(btn => {
             btn.addEventListener('click', function () {
                 currentUserId = this.dataset.id; // Hier wird die Variable gesetzt
-                console.log('Setting currentUserId to:', currentUserId);
+                if (window.IS_DEV) console.log('Setting currentUserId to:', currentUserId);
 
                 // Reset modal
                 document.getElementById('setup-step-1').style.display = 'block';
@@ -610,8 +610,8 @@ small.text-warning {
 
         // Generate 2FA QR Code
         document.getElementById('generate2faBtn').addEventListener('click', function () {
-            console.log('Generate 2FA button clicked');
-            console.log('Current User ID:', currentUserId);
+            if (window.IS_DEV) console.log('Generate 2FA button clicked');
+            if (window.IS_DEV) console.log('Current User ID:', currentUserId);
 
             // Prüfe ob currentUserId gesetzt ist
             if (!currentUserId) {
@@ -627,7 +627,7 @@ small.text-warning {
                 'action': 'generate'
             };
 
-            console.log('Request data:', requestData);
+            if (window.IS_DEV) console.log('Request data:', requestData);
 
             fetch('actions/generate_2fa.php', {
                 method: 'POST',
@@ -637,17 +637,17 @@ small.text-warning {
                 body: new URLSearchParams(requestData)
             })
                 .then(response => {
-                    console.log('Response received');
-                    console.log('Status:', response.status);
-                    console.log('Status text:', response.statusText);
+                    if (window.IS_DEV) console.log('Response received');
+                    if (window.IS_DEV) console.log('Status:', response.status);
+                    if (window.IS_DEV) console.log('Status text:', response.statusText);
 
                     // Erst den rohen Text holen
                     return response.text();
                 })
                 .then(text => {
-                    console.log('Raw response text:');
-                    console.log(text);
-                    console.log('Text length:', text.length);
+                    if (window.IS_DEV) console.log('Raw response text:');
+                    if (window.IS_DEV) console.log(text);
+                    if (window.IS_DEV) console.log('Text length:', text.length);
 
                     // Prüfe ob es HTML ist (Fehlerseite)
                     if (text.trim().startsWith('<')) {
@@ -665,7 +665,7 @@ small.text-warning {
                     let data;
                     try {
                         data = JSON.parse(text);
-                        console.log('Parsed JSON:', data);
+                        if (window.IS_DEV) console.log('Parsed JSON:', data);
                     } catch (parseError) {
                         console.error('JSON Parse Error:', parseError);
                         console.error('Response was not valid JSON');
@@ -677,28 +677,27 @@ small.text-warning {
                     }
 
                     if (data.success) {
-                        console.log('Generation successful');
+                        if (window.IS_DEV) console.log('Generation successful');
 
                         // QR-Code anzeigen
                         if (data.qrcode) {
-                            console.log('Setting QR code image:', data.qrcode);
+                            if (window.IS_DEV) console.log('Setting QR code image:', data.qrcode);
                             document.getElementById('qrcode-image').src = data.qrcode;
 
                             // Test ob QR-Code lädt
                             document.getElementById('qrcode-image').onload = function () {
-                                console.log('QR code image loaded successfully');
+                                if (window.IS_DEV) console.log('QR code image loaded successfully');
                             };
                             document.getElementById('qrcode-image').onerror = function () {
                                 console.error('QR code image failed to load');
                                 // Versuche alternativen QR-Code Provider
                                 if (data.debug && data.debug.qr_providers) {
-                                    console.log('Trying alternative QR providers...');
+                                if (window.IS_DEV) console.log('Trying alternative QR providers...');
                                     const providers = Object.values(data.debug.qr_providers);
                                     let providerIndex = 1; // Starte mit dem zweiten Provider
 
-                                    const tryNextProvider = () => {
                                         if (providerIndex < providers.length) {
-                                            console.log(`Trying provider ${providerIndex + 1}:`, providers[providerIndex]);
+                                            if (window.IS_DEV) console.log(`Trying provider ${providerIndex + 1}:`, providers[providerIndex]);
                                             this.src = providers[providerIndex];
                                             providerIndex++;
                                         } else {
@@ -721,8 +720,8 @@ small.text-warning {
 
                         // Debug-Infos loggen
                         if (data.debug) {
-                            console.log('Debug info:', data.debug);
-                            console.log('Current test code:', data.debug.current_test_code);
+                            if (window.IS_DEV) console.log('Debug info:', data.debug);
+                            if (window.IS_DEV) console.log('Current test code:', data.debug.current_test_code);
                         }
 
                         // Zu Schritt 2 wechseln
@@ -739,7 +738,7 @@ small.text-warning {
                         alert('Fehler bei der 2FA-Generierung: ' + (data.message || 'Unbekannter Fehler'));
 
                         if (data.debug) {
-                            console.log('Error debug info:', data.debug);
+                            if (window.IS_DEV) console.log('Error debug info:', data.debug);
                         }
                     }
                 })
@@ -781,7 +780,7 @@ small.text-warning {
             })
                 .then(response => response.text())
                 .then(text => {
-                    console.log('Verify response:', text);
+                    if (window.IS_DEV) console.log('Verify response:', text);
 
                     let data;
                     try {
@@ -865,19 +864,21 @@ Diese Codes können verwendet werden, wenn Sie keinen Zugang zu Ihrer Authentica
 
         // Test-Funktionen für Debugging (global verfügbar)
         window.debug2FAStatus = function () {
-            console.log('Current 2FA Debug Status:');
-            console.log('- Current User ID:', currentUserId);
-            console.log('- Setup Step 1 visible:', document.getElementById('setup-step-1').style.display !== 'none');
-            console.log('- Setup Step 2 visible:', document.getElementById('setup-step-2').style.display !== 'none');
-            console.log('- QR Image src:', document.getElementById('qrcode-image').src);
-            console.log('- Manual secret:', document.getElementById('manual-secret').textContent);
+            if (window.IS_DEV) {
+                console.log('Current 2FA Debug Status:');
+                console.log('- Current User ID:', currentUserId);
+                console.log('- Setup Step 1 visible:', document.getElementById('setup-step-1').style.display !== 'none');
+                console.log('- Setup Step 2 visible:', document.getElementById('setup-step-2').style.display !== 'none');
+                console.log('- QR Image src:', document.getElementById('qrcode-image').src);
+                console.log('- Manual secret:', document.getElementById('manual-secret').textContent);
+            }
         };
 
         window.test2FAGeneration = function () {
-            console.log('Testing 2FA generation with current user ID:', currentUserId);
+            if (window.IS_DEV) console.log('Testing 2FA generation with current user ID:', currentUserId);
 
             if (!currentUserId) {
-                console.log('No current user ID set, using test ID 1');
+                if (window.IS_DEV) console.log('No current user ID set, using test ID 1');
                 currentUserId = '1';
             }
 
@@ -893,10 +894,10 @@ Diese Codes können verwendet werden, wenn Sie keinen Zugang zu Ihrer Authentica
             })
                 .then(response => response.text())
                 .then(text => {
-                    console.log('Test response:', text);
+                    if (window.IS_DEV) console.log('Test response:', text);
                     try {
                         const data = JSON.parse(text);
-                        console.log('Test parsed:', data);
+                        if (window.IS_DEV) console.log('Test parsed:', data);
                     } catch (e) {
                         console.error('Test parse error:', e);
                     }

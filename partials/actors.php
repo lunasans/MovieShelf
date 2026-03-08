@@ -126,13 +126,13 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     foreach ($actorsByLetter as $currentLetter => $actorsInGroup) {
         foreach ($actorsInGroup as $actor) {
             $hasPhoto = !empty($actor['photo_path']);
-            $photoPath = $hasPhoto ? 'images/actors/' . basename($actor['photo_path']) : '';
+            $photoPath = $hasPhoto ? ACTOR_IMG_PATH . '/' . basename($actor['photo_path']) : '';
             
             $htmlCards .= '<div class="actor-card">';
             $htmlCards .= '<a href="#" class="actor-card-link actor-link" data-actor-slug="' . htmlspecialchars($actor['slug']) . '">';
             $htmlCards .= '<div class="actor-photo">';
             
-            if ($hasPhoto) {
+            if ($hasPhoto && file_exists($photoPath)) {
                 $htmlCards .= '<img src="' . htmlspecialchars($photoPath) . '" alt="' . htmlspecialchars($actor['name']) . '" loading="lazy">';
             } else {
                 $htmlCards .= '<div class="actor-photo-placeholder"><i class="bi bi-person-circle"></i></div>';
@@ -221,8 +221,8 @@ $displayedActors = count($actors);
                     <a href="#" class="actor-card-link actor-link" data-actor-slug="<?= htmlspecialchars($actor['slug']) ?>">
                         <div class="actor-photo">
                             <?php
-                            if (!empty($actor['photo_path'])):
-                                $photoPath = 'images/actors/' . basename($actor['photo_path']);
+                            if (!empty($actor['photo_path']) && file_exists('images/actors/' . basename($actor['photo_path']))):
+                                $photoPath = ACTOR_IMG_PATH . '/' . basename($actor['photo_path']);
                             ?>
                                 <img src="<?= htmlspecialchars($photoPath) ?>" alt="<?= htmlspecialchars($actor['name']) ?>" loading="lazy">
                             <?php else: ?>
@@ -525,7 +525,7 @@ $displayedActors = count($actors);
 // INFINITE SCROLL für Actors
 // ========================================
 (function() {
-    console.log('🔄 Infinite Scroll initialisiert');
+    if (window.IS_DEV) console.log('🔄 Infinite Scroll initialisiert');
     
     const container = document.querySelector('.actors-overview-container');
     const trigger = document.getElementById('infiniteScrollTrigger');
@@ -545,13 +545,13 @@ $displayedActors = count($actors);
     let isLoading = false;
     let hasMore = (currentPage * perPage) < total;
     
-    console.log(`📊 Initial: Page ${currentPage}, PerPage ${perPage}, Total ${total}, HasMore ${hasMore}`);
+    if (window.IS_DEV) console.log(`📊 Initial: Page ${currentPage}, PerPage ${perPage}, Total ${total}, HasMore ${hasMore}`);
     
     // IntersectionObserver für Infinite Scroll
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting && hasMore && !isLoading) {
-                console.log('👀 Trigger sichtbar - lade mehr...');
+                if (window.IS_DEV) console.log('👀 Trigger sichtbar - lade mehr...');
                 loadMore();
             }
         });
@@ -567,7 +567,7 @@ $displayedActors = count($actors);
         isLoading = true;
         currentPage++;
         
-        console.log(`⏳ Lade Seite ${currentPage}...`);
+        if (window.IS_DEV) console.log(`⏳ Lade Seite ${currentPage}...`);
         
         // Zeige Loading
         loader.style.display = 'block';
@@ -579,13 +579,13 @@ $displayedActors = count($actors);
                 url += `&letter=${encodeURIComponent(letter)}`;
             }
             
-            console.log('📡 Fetching:', url);
+            if (window.IS_DEV) console.log('📡 Fetching:', url);
             
             const response = await fetch(url);
             const data = await response.json();
             
             if (data.success) {
-                console.log(`✅ Geladen: ${data.loaded} Schauspieler, HasMore: ${data.hasMore}`);
+                if (window.IS_DEV) console.log(`✅ Geladen: ${data.loaded} Schauspieler, HasMore: ${data.hasMore}`);
                 
                 // Finde die richtige actors-grid
                 let actorsGrid;
@@ -616,7 +616,7 @@ $displayedActors = count($actors);
                     hasMore = data.hasMore;
                     
                     if (!hasMore) {
-                        console.log('✋ Alle Schauspieler geladen');
+                        if (window.IS_DEV) console.log('✋ Alle Schauspieler geladen');
                         trigger.style.display = 'none';
                     }
                 } else {
@@ -636,6 +636,6 @@ $displayedActors = count($actors);
         }
     }
     
-    console.log('✅ Infinite Scroll bereit');
+    if (window.IS_DEV) console.log('✅ Infinite Scroll bereit');
 })();
 </script>

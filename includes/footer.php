@@ -32,7 +32,7 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
         <!-- Linke Seite: Logo & Branding -->
         <div class="footer-section">
             <div class="footer-logo">
-                <img src="/assets/logo/logo_small.png" alt="MovieShelf Logo" class="footer-logo-img">
+                <img src="<?= LOGO_PATH ?>/logo_small.png" alt="MovieShelf Logo" class="footer-logo-img">
                 <span>MovieShelf</span>
             </div>
             <p class="footer-tagline">Moderne Filmverwaltung</p>
@@ -83,7 +83,7 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
                 <div class="tmdb-attribution">
                     <span>This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</span>
                     <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer" title="The Movie Database (TMDB)">
-                        <img src="/assets/svg/tmdb_logo.svg" alt="TMDB Logo" class="tmdb-logo">
+                        <img src="<?= SVG_PATH ?>/tmdb_logo.svg" alt="TMDB Logo" class="tmdb-logo">
                     </a>
                 </div>
             </div>
@@ -565,7 +565,7 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
                 
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('Theme saved:', result);
+                    if (window.IS_DEV) console.log('Theme saved:', result);
                 } else {
                     console.error('Theme save failed:', response.status);
                 }

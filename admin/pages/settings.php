@@ -1152,6 +1152,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 4000);
     }
     
-    console.log('✅ AJAX Settings System loaded - ' + forms.length + ' Forms found');
+    if (window.IS_DEV) console.log('✅ AJAX Settings System loaded - ' + forms.length + ' Forms found');
 });
 </script>

@@ -64,7 +64,7 @@ if (!in_array($adminTheme, $allowedAdminThemes)) {
     <link href="css/settings.css" rel="stylesheet">
     
     <!-- Favicons -->
-    <link rel="icon" type="image/png" href="../assets/logo/favicon.ico">
+    <link rel="icon" type="image/png" href="../<?= LOGO_PATH ?>/favicon.ico">
 </head>
 <body>
     
@@ -226,6 +226,9 @@ if (!in_array($adminTheme, $allowedAdminThemes)) {
     
     <!-- Custom Admin JS -->
     <script>
+        // Global Environment Flag
+        window.IS_DEV = <?= getSetting('environment', 'production') === 'development' ? 'true' : 'false' ?>;
+
         // Enhanced Admin JavaScript
         document.addEventListener('DOMContentLoaded', function() {
             // Active navigation highlighting
@@ -251,7 +254,7 @@ if (!in_array($adminTheme, $allowedAdminThemes)) {
                 }
             });
 
-            console.log('DVD Profiler Admin loaded - v<?= DVDPROFILER_VERSION ?>');
+            if (window.IS_DEV) console.log('DVD Profiler Admin loaded - v<?= DVDPROFILER_VERSION ?>');
         });
     </script>
 </body>

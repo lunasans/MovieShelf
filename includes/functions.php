@@ -4,7 +4,7 @@
  * Version: 1.4.8 (Fixed)
  */
 
-function findCoverImage(string $coverId, string $suffix = 'f', string $folder = 'cover', string $fallback = 'cover/placeholder.png'): string
+function findCoverImage(string $coverId, string $suffix = 'f', string $folder = COVER_IMG_PATH, string $fallback = COVER_IMG_PATH . '/placeholder.png'): string
 {
     $extensions = ['.jpg', '.jpeg', '.png'];
     foreach ($extensions as $ext) {
@@ -68,27 +68,111 @@ function getChildDvds(PDO $pdo, string $parentId): array
     return $stmt->fetchAll();
 }
 
-function renderFilmCard(array $dvd, bool $isChild = false): string
-{
-    $cover = htmlspecialchars(findCoverImage($dvd['cover_id'], 'f'));
-    $title = htmlspecialchars($dvd['title']);
-    $year = (int)$dvd['year'];
-    $genre = htmlspecialchars($dvd['genre'] ?? '');
-    $id = (int)$dvd['id'];
-
-    $hasChildren = !$isChild && !empty(getChildDvds($GLOBALS['pdo'], $id));
-
-    return '
-    <div class="dvd' . ($isChild ? ' child-dvd' : '') . '" data-dvd-id="' . $id . '">
-      <div class="cover-area">
-        <img src="' . $cover . '" alt="Cover">
-      </div>
-      <div class="dvd-details">
-        <h2><a href="#" class="toggle-detail" data-id="' . $id . '">' . $title . ' (' . $year . ')</a></h2>
-        <p><strong>Genre:</strong> ' . $genre . '</p>'
-        . ($hasChildren ? '<button class="boxset-toggle">► Box-Inhalte anzeigen</button>' : '') .
-      '</div>
-    </div>';
+/**
+ * Helper: Film Card mit Badge (Grid) und Sternen (List)
+ */
+function renderFilmCard(array $dvd): string {
+    $title = htmlspecialchars($dvd['title'] ?? 'Unbekannt');
+    $year = (int)($dvd['year'] ?? 0);
+    $genre = htmlspecialchars($dvd['genre'] ?? 'Unbekannt');
+    $id = (int)($dvd['id'] ?? 0);
+    $cover = COVER_IMG_PATH . '/placeholder.png';
+    
+    if (!empty($dvd['cover_id'])) {
+        $extensions = ['.jpg', '.jpeg', '.png'];
+        foreach ($extensions as $ext) {
+            $file = BASE_PATH . '/' . COVER_IMG_PATH . "/{$dvd['cover_id']}f{$ext}";
+            if (file_exists($file)) {
+                $cover = COVER_IMG_PATH . "/{$dvd['cover_id']}f{$ext}";
+                break;
+            }
+        }
+    }
+    
+    $childrenCount = (int)($dvd['children_count'] ?? 0);
+    $isBoxSet = $childrenCount > 0;
+    
+    $ratingBadge = '';
+    $tmdbStarsHtml = '';
+    
+    if (getSetting('tmdb_show_ratings_on_cards', '1') == '1' && !empty(getSetting('tmdb_api_key', ''))) {
+        $ratings = getFilmRatings($dvd['title'], $year);
+        if ($ratings && isset($ratings['tmdb_rating'])) {
+            $rating = $ratings['tmdb_rating'];
+            $votes = $ratings['tmdb_votes'] ?? 0;
+            
+            if ($rating >= 8) {
+                $color = '#4caf50';
+            } elseif ($rating >= 6) {
+                $color = '#ff9800';
+            } else {
+                $color = '#f44336';
+            }
+            
+            $ratingFormatted = number_format((float)$rating, 1);
+            $ratingBadge = <<<HTML
+<div class="tmdb-rating-badge" style="background-color: {$color};">
+    <i class="bi bi-star-fill"></i>
+    <span>{$ratingFormatted}</span>
+</div>
+HTML;
+            
+            $starsRating = (float)$rating / 2;
+            $fullStars = floor($starsRating);
+            $hasHalfStar = ($starsRating - $fullStars) >= 0.3;
+            
+            $starsHtml = '';
+            for ($i = 1; $i <= 5; $i++) {
+                if ($i <= $fullStars) {
+                    $starsHtml .= '<i class="bi bi-star-fill" style="color: ' . $color . ';"></i>';
+                } elseif ($i == $fullStars + 1 && $hasHalfStar) {
+                    $starsHtml .= '<i class="bi bi-star-half" style="color: ' . $color . ';"></i>';
+                } else {
+                    $starsHtml .= '<i class="bi bi-star" style="color: rgba(255,255,255,0.2);"></i>';
+                }
+            }
+            
+            $votesFormatted = number_format((float)$votes);
+            $tmdbStarsHtml = <<<HTML
+<div class="tmdb-rating-stars">
+    <span class="tmdb-label">TMDb:</span>
+    <div class="tmdb-stars">{$starsHtml}</div>
+    <span class="tmdb-score" style="color: {$color};">{$ratingFormatted}</span>
+    <span class="tmdb-votes">({$votesFormatted})</span>
+</div>
+HTML;
+        }
+    }
+    
+    $badge = '';
+    if ($isBoxSet) {
+        $badge = <<<HTML
+<div class="boxset-badge" onclick="event.stopPropagation(); openBoxSetModal(event, {$id});">
+    <i class="bi bi-collection-play"></i>
+    <span>{$childrenCount}</span>
+</div>
+HTML;
+    }
+    
+    $boxsetClass = $isBoxSet ? ' has-boxset' : '';
+    $coverEscaped = htmlspecialchars($cover);
+    
+    return <<<HTML
+<div class="dvd{$boxsetClass}" data-dvd-id="{$id}" data-children-count="{$childrenCount}">
+  <div class="cover-area">
+    <img src="{$coverEscaped}" alt="Cover">
+    {$ratingBadge}
+    {$badge}
+  </div>
+  <div class="dvd-details">
+    <div class="film-info">
+      <h2><a href="#" class="toggle-detail" data-id="{$id}">{$title} ({$year})</a></h2>
+      <p class="genre-info"><strong>Genre:</strong> {$genre}</p>
+    </div>
+    {$tmdbStarsHtml}
+  </div>
+</div>
+HTML;
 }
 
 /**
@@ -164,4 +248,19 @@ function requireTmdbAjax(): string
     }
 
     return $apiKey;
+}
+
+/**
+ * BuildQuery-Funktion für Pagination
+ */
+function buildQuery($params = []) {
+    $currentParams = $_GET;
+    foreach ($params as $key => $value) {
+        if ($value === '') {
+            unset($currentParams[$key]);
+        } else {
+            $currentParams[$key] = $value;
+        }
+    }
+    return http_build_query($currentParams);
 }

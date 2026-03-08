@@ -31,14 +31,14 @@ try {
     
     // Cover-Pfade für Children generieren
     foreach ($children as &$child) {
-        $child['cover'] = 'cover/placeholder.png';
+        $child['cover'] = COVER_IMG_PATH . '/placeholder.png';
         
         if (!empty($child['cover_id'])) {
             $extensions = ['.jpg', '.jpeg', '.png'];
             foreach ($extensions as $ext) {
-                $file = __DIR__ . "/../cover/{$child['cover_id']}f{$ext}";
+                $file = BASE_PATH . '/' . COVER_IMG_PATH . "/{$child['cover_id']}f{$ext}";
                 if (file_exists($file)) {
-                    $child['cover'] = "cover/{$child['cover_id']}f{$ext}";
+                    $child['cover'] = COVER_IMG_PATH . "/{$child['cover_id']}f{$ext}";
                     break;
                 }
             }

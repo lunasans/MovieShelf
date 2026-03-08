@@ -754,9 +754,9 @@ span[itemprop="datePublished"] {
                     <span class="fsk-badge">
                         <?php
                         $fskAge = (int)$dvd['rating_age'];
-                        $fskSvgPath = "assets/svg/fsk/fsk-{$fskAge}.svg";
+                        $fskSvgPath = SVG_PATH . "/fsk/fsk-{$fskAge}.svg";
                         
-                        if (file_exists($fskSvgPath)): ?>
+                        if (file_exists(BASE_PATH . '/' . $fskSvgPath)): ?>
                             <img src="<?= htmlspecialchars($fskSvgPath) ?>" 
                                  alt="FSK <?= $fskAge ?>" 
                                  class="fsk-logo"
@@ -1016,7 +1016,7 @@ span[itemprop="datePublished"] {
 // Funktioniert auch bei AJAX-Loads
 // ===================================================================
 (function() {
-    console.log('🎬 Trailer Age-Verification Script geladen');
+    if (window.IS_DEV) console.log('🎬 Trailer Age-Verification Script geladen');
     
     // Event-Delegation auf document für trailer-box clicks
     document.addEventListener('click', function(e) {
@@ -1033,7 +1033,7 @@ span[itemprop="datePublished"] {
         const ratingAge = parseInt(trailerBox.dataset.ratingAge || 0);
         const trailerUrl = trailerBox.dataset.src;
         
-        console.log('🎬 Trailer geklickt - FSK:', ratingAge);
+        if (window.IS_DEV) console.log('🎬 Trailer geklickt - FSK:', ratingAge);
         
         // Cookie-Check
         function hasAgeConfirmation() {
@@ -1041,7 +1041,7 @@ span[itemprop="datePublished"] {
         }
         
         if (ratingAge >= 18 && !hasAgeConfirmation()) {
-            console.log('🔞 Zeige Altersverifizierung');
+            if (window.IS_DEV) console.log('🔞 Zeige Altersverifizierung');
             const ageModal = document.getElementById('ageVerificationModal');
             if (ageModal) {
                 ageModal.style.display = 'flex';
@@ -1054,7 +1054,7 @@ span[itemprop="datePublished"] {
                 console.error('❌ Age Modal nicht gefunden');
             }
         } else {
-            console.log('✅ Spiele Trailer direkt ab');
+            if (window.IS_DEV) console.log('✅ Spiele Trailer direkt ab');
             playTrailerNow(trailerBox, trailerUrl);
         }
     }, true); // useCapture = true, damit wir VOR anderen Handlern greifen
@@ -1070,7 +1070,7 @@ span[itemprop="datePublished"] {
         if (ageConfirmBtn && !ageConfirmBtn.dataset.listenerAdded) {
             ageConfirmBtn.dataset.listenerAdded = 'true';
             ageConfirmBtn.addEventListener('click', function() {
-                console.log('✅ Alter bestätigt');
+                if (window.IS_DEV) console.log('✅ Alter bestätigt');
                 
                 // Cookie setzen (30 Tage)
                 const expires = new Date();
@@ -1092,7 +1092,7 @@ span[itemprop="datePublished"] {
         if (ageDenyBtn && !ageDenyBtn.dataset.listenerAdded) {
             ageDenyBtn.dataset.listenerAdded = 'true';
             ageDenyBtn.addEventListener('click', function() {
-                console.log('❌ Alter abgelehnt');
+                if (window.IS_DEV) console.log('❌ Alter abgelehnt');
                 ageModal.style.display = 'none';
                 document.body.style.overflow = '';
                 window._pendingTrailerBox = null;
@@ -1147,7 +1147,7 @@ span[itemprop="datePublished"] {
         box.style.display = 'none';
         container.appendChild(iframe);
         
-        console.log('▶️ Trailer wird abgespielt');
+        if (window.IS_DEV) console.log('▶️ Trailer wird abgespielt');
     }
     
     // Setup sofort und bei DOM-ready

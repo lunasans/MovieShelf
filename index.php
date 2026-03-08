@@ -15,8 +15,11 @@ try {
     require_once __DIR__ . '/includes/bootstrap.php';
     require_once __DIR__ . '/includes/counter.php';
     require_once __DIR__ . '/includes/version.php'; // Neue Versionsverwaltung laden
-} catch (Exception $e) {
-    error_log('Bootstrap error: ' . $e->getMessage());
+} catch (Throwable $e) {
+    error_log('Fatal bootstrapping error: ' . $e->getMessage());
+    if (getSetting('environment', 'production') === 'development') {
+        exit('Fatal Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    }
     http_response_code(500);
     exit('Anwendungsfehler. Bitte versuchen Sie es später erneut.');
 }
@@ -37,8 +40,8 @@ header('X-XSS-Protection: 1; mode=block');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 
 // Input Sanitization und Validierung
-$search = isset($_GET['q']) ? trim(filter_var($_GET['q'], FILTER_SANITIZE_STRING)) : '';
-$page = isset($_GET['page']) ? trim(filter_var($_GET['page'], FILTER_SANITIZE_STRING)) : 'home';
+$search = isset($_GET['q']) ? trim(strip_tags((string)$_GET['q'])) : '';
+$page = isset($_GET['page']) ? trim(strip_tags((string)$_GET['page'])) : 'home';
 $filmId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 // Erlaubte Seiten definieren für Sicherheit
@@ -176,7 +179,7 @@ $schema = [
     <!-- Preload critical resources -->
     <link rel="preload" href="css/style.css" as="style">
     <link rel="preload" href="css/theme.css" as="style">
-    <link rel="preload" href="css/film-view.css" rel="style">
+    <link rel="preload" href="css/film-view.css" as="style">
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" as="style">
     
     <!-- CSS -->
@@ -187,11 +190,16 @@ $schema = [
     <link href="libs/fancybox/dist/fancybox/fancybox.css" rel="stylesheet">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/assets/logo/favicon.ico">
+    <link rel="icon" type="image/png" href="<?= LOGO_PATH ?>/favicon.ico">
     
     <!-- JSON-LD Schema -->
     <script type="application/ld+json">
     <?= json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>
+    </script>
+
+    <script>
+        // Global environment flag for JavaScript
+        window.IS_DEV = <?= json_encode(getSetting('environment', 'production') === 'development') ?>;
     </script>
 </head>
 <body>

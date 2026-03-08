@@ -53,7 +53,7 @@ try {
     
     // Foto-Upload verarbeiten
     if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-        $uploadDir = __DIR__ . '/../../images/actors/';
+        $uploadDir = BASE_PATH . '/' . ACTOR_IMG_PATH . '/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
@@ -77,7 +77,7 @@ try {
                     }
                 }
                 
-                $actorData['photo_path'] = $filename;
+                $actorData['photo_path'] = ACTOR_IMG_PATH . '/' . $filename;
             }
         }
     }

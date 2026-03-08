@@ -364,17 +364,17 @@ try {
 <!-- Chart.js Skripte - SYNTAX FIXED VERSION -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-console.log('🚀 Charts werden geladen...');
+if (window.IS_DEV) console.log('🚀 Charts werden geladen...');
 
 // Warten auf Chart.js und DOM
 function initializeCharts() {
     if (typeof Chart === 'undefined') {
-        console.log('⏳ Chart.js noch nicht geladen, warte...');
+        if (window.IS_DEV) console.log('⏳ Chart.js noch nicht geladen, warte...');
         setTimeout(initializeCharts, 100);
         return;
     }
     
-    console.log('✅ Chart.js verfügbar, starte Initialisierung');
+    if (window.IS_DEV) console.log('✅ Chart.js verfügbar, starte Initialisierung');
     
     // Canvas-Elemente suchen
     var collectionCanvas = document.getElementById('collectionChart');
@@ -382,7 +382,7 @@ function initializeCharts() {
     var genreCanvas = document.getElementById('genreChart');
     var yearCanvas = document.getElementById('yearChart');
     
-    console.log('🎯 Canvas-Elemente:', {
+    if (window.IS_DEV) console.log('🎯 Canvas-Elemente:', {
         collection: !!collectionCanvas,
         rating: !!ratingCanvas,
         genre: !!genreCanvas,
@@ -397,7 +397,7 @@ function initializeCharts() {
         years: <?= json_encode($yearDistribution) ?>
     };
     
-    console.log('📊 Daten geladen:', chartData);
+        if (window.IS_DEV) console.log('📊 Daten geladen:', chartData);
     
     // Fallback-Daten setzen
     if (chartData.collections.length === 0) {
@@ -406,7 +406,7 @@ function initializeCharts() {
             {collection_type: 'Blu-ray', count: 20, percentage: 40},
             {collection_type: '4K UHD', count: 5, percentage: 10}
         ];
-        console.log('⚠️ Fallback für Collection-Daten verwendet');
+        if (window.IS_DEV) console.log('⚠️ Fallback für Collection-Daten verwendet');
     }
     
     if (chartData.ratings.length === 0) {
@@ -417,7 +417,7 @@ function initializeCharts() {
             {rating_age: 16, count: 12, percentage: 24},
             {rating_age: 18, count: 5, percentage: 10}
         ];
-        console.log('⚠️ Fallback für Rating-Daten verwendet');
+        if (window.IS_DEV) console.log('⚠️ Fallback für Rating-Daten verwendet');
     }
     
     if (chartData.genres.length === 0) {
@@ -430,7 +430,7 @@ function initializeCharts() {
             {genre: 'Horror', count: 6, percentage: 8},
             {genre: 'Romance', count: 3, percentage: 4}
         ];
-        console.log('⚠️ Fallback für Genre-Daten verwendet');
+        if (window.IS_DEV) console.log('⚠️ Fallback für Genre-Daten verwendet');
     }
     
     if (Object.keys(chartData.years).length === 0) {
@@ -441,7 +441,7 @@ function initializeCharts() {
             '2023': 18,
             '2024': 10
         };
-        console.log('⚠️ Fallback für Jahr-Daten verwendet');
+        if (window.IS_DEV) console.log('⚠️ Fallback für Jahr-Daten verwendet');
     }
     
     // Farben definieren
@@ -468,7 +468,7 @@ function initializeCharts() {
     // 1. Collection Chart (Doughnut)
     if (collectionCanvas) {
         try {
-            console.log('🔨 Erstelle Collection Chart...');
+            if (window.IS_DEV) console.log('🔨 Erstelle Collection Chart...');
             new Chart(collectionCanvas, {
                 type: 'doughnut',
                 data: {
@@ -484,7 +484,7 @@ function initializeCharts() {
                     cutout: '60%'
                 })
             });
-            console.log('✅ Collection Chart erfolgreich erstellt');
+            if (window.IS_DEV) console.log('✅ Collection Chart erfolgreich erstellt');
         } catch (e) {
             console.error('❌ Collection Chart Fehler:', e);
         }
@@ -493,7 +493,7 @@ function initializeCharts() {
     // 2. Rating Chart (Bar)
     if (ratingCanvas) {
         try {
-            console.log('🔨 Erstelle Rating Chart...');
+            if (window.IS_DEV) console.log('🔨 Erstelle Rating Chart...');
             new Chart(ratingCanvas, {
                 type: 'bar',
                 data: {
@@ -520,7 +520,7 @@ function initializeCharts() {
                     }
                 })
             });
-            console.log('✅ Rating Chart erfolgreich erstellt');
+            if (window.IS_DEV) console.log('✅ Rating Chart erfolgreich erstellt');
         } catch (e) {
             console.error('❌ Rating Chart Fehler:', e);
         }
@@ -529,7 +529,7 @@ function initializeCharts() {
     // 3. Genre Chart (Horizontal Bar)
     if (genreCanvas) {
         try {
-            console.log('🔨 Erstelle Genre Chart...');
+            if (window.IS_DEV) console.log('🔨 Erstelle Genre Chart...');
             new Chart(genreCanvas, {
                 type: 'bar',
                 data: {
@@ -557,7 +557,7 @@ function initializeCharts() {
                     }
                 })
             });
-            console.log('✅ Genre Chart erfolgreich erstellt');
+            if (window.IS_DEV) console.log('✅ Genre Chart erfolgreich erstellt');
         } catch (e) {
             console.error('❌ Genre Chart Fehler:', e);
         }
@@ -566,7 +566,7 @@ function initializeCharts() {
     // 4. Year Chart (Line)
     if (yearCanvas) {
         try {
-            console.log('🔨 Erstelle Year Chart...');
+            if (window.IS_DEV) console.log('🔨 Erstelle Year Chart...');
             new Chart(yearCanvas, {
                 type: 'line',
                 data: {
@@ -603,13 +603,13 @@ function initializeCharts() {
                     }
                 })
             });
-            console.log('✅ Year Chart erfolgreich erstellt');
+            if (window.IS_DEV) console.log('✅ Year Chart erfolgreich erstellt');
         } catch (e) {
             console.error('❌ Year Chart Fehler:', e);
         }
     }
     
-    console.log('🎯 Alle Charts initialisiert!');
+    if (window.IS_DEV) console.log('🎯 Alle Charts initialisiert!');
 }
 
 // Sofort starten

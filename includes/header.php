@@ -5,7 +5,7 @@
   <div class="header-inner">
     <div class="logo">
       <a href="index.php" class="logo-link">
-        <img src="/assets/logo/logo.png" alt="<?= htmlspecialchars($siteTitle) ?>" class="logo-img">
+        <img src="<?= LOGO_PATH ?>/logo.png" alt="<?= htmlspecialchars($siteTitle) ?>" class="logo-img">
         <span class="logo-text"><?= htmlspecialchars($siteTitle) ?></span>
       </a>
     </div>

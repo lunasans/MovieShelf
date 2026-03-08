@@ -224,7 +224,7 @@ function safeFormatRuntime($minutes) {
      ============================================================================ -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Latest fragment loaded with', <?= count($latest) ?>, 'films');
+    if (window.IS_DEV) console.log('Latest fragment loaded with', <?= count($latest) ?>, 'films');
     
     // ========================================================================
     // FILM DETAIL ANZEIGEN
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Watched clicked for film', this.dataset.filmId);
+            if (window.IS_DEV) console.log('Watched clicked for film', this.dataset.filmId);
             // TODO: Implement watched functionality
         });
     });

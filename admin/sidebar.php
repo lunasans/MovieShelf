@@ -16,7 +16,7 @@ $dvdProfilerStats = getDVDProfilerStatistics();
     <!-- Header -->
     <div class="sidebar-header">
         <h4>
-            <img src="../assets/logo/logo_small.png" alt="Logo" class="sidebar-logo-img">
+            <img src="../<?= LOGO_PATH ?>/logo_small.png" alt="Logo" class="sidebar-logo-img">
             Admin Center
         </h4>
         <span class="version-badge">

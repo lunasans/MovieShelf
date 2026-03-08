@@ -408,7 +408,7 @@ $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
     <meta name="author" content="<?= DVDPROFILER_AUTHOR ?>">
     
     <!-- Enhanced Favicon -->
-    <link rel="icon" type="image/png" href="../assets/logo/favicon.ico">
+    <link rel="icon" type="image/png" href="../<?= LOGO_PATH ?>/favicon.ico">
     
     <!-- Security Headers via Meta -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
@@ -435,7 +435,7 @@ $siteTitle = getSetting('site_title', 'DVD-Verwaltung');
                 <?php else: ?>
                     <!-- Normales Login-Formular -->
                     <h1>
-                        <img src="../assets/logo/logo_small.png" alt="Logo" style="height: 1.2em; width: auto; vertical-align: middle; margin-right: 0.5rem;">
+                        <img src="../<?= LOGO_PATH ?>/logo_small.png" alt="Logo" style="height: 1.2em; width: auto; vertical-align: middle; margin-right: 0.5rem;">
                         Admin Login
                     </h1>
                 <?php endif; ?>

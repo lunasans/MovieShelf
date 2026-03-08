@@ -252,10 +252,10 @@ window.addEventListener('load', function() {
     try {
         const existingContent = <?= json_encode($impressumContent, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
         if (existingContent && existingContent.trim() !== '') {
-            console.log('Loading content:', existingContent);
+            if (window.IS_DEV) console.log('Loading content:', existingContent);
             quill.clipboard.dangerouslyPasteHTML(existingContent);
         } else {
-            console.log('No content to load');
+            if (window.IS_DEV) console.log('No content to load');
         }
     } catch (e) {
         console.error('Error loading content:', e);

@@ -831,22 +831,22 @@ small.text-muted {
 <script>
 // Edit Film
 function editFilm(filmId) {
-    console.log('Loading film:', filmId);
+    if (window.IS_DEV) console.log('Loading film:', filmId);
     
     // Load film data via AJAX
     fetch(`actions/get-film.php?id=${filmId}`)
         .then(response => {
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers.get('content-type'));
+            if (window.IS_DEV) console.log('Response status:', response.status);
+            if (window.IS_DEV) console.log('Response headers:', response.headers.get('content-type'));
             return response.text(); // Erstmal als Text holen
         })
         .then(text => {
-            console.log('Response text:', text);
+            if (window.IS_DEV) console.log('Response text:', text);
             
             // Versuche JSON zu parsen
             try {
                 const film = JSON.parse(text);
-                console.log('Parsed film:', film);
+                if (window.IS_DEV) console.log('Parsed film:', film);
                 
                 if (film.error) {
                     alert('Fehler: ' + film.error);

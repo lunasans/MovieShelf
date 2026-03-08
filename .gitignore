@@ -1,5 +1,5 @@
 /config/
-/cover/
+/assets/images/cover
 /admin/xml/*.xml
 counter.txt
 /install/install.lock

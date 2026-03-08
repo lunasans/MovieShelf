@@ -142,12 +142,12 @@ class DVDApp {
     // Film Detail laden mit Rating-Integration
     async loadFilmDetail(filmId) {
         try {
-            console.log('🎬 Film-ID wird geladen:', filmId);
+            if (window.IS_DEV) console.log('🎬 Film-ID wird geladen:', filmId);
 
             const response = await fetch(`film-fragment.php?id=${filmId}`);
             const html = await response.text();
 
-            console.log('📄 Antwort erhalten, erste 100 Zeichen:', html.substring(0, 100));
+            if (window.IS_DEV) console.log('📄 Antwort erhalten, erste 100 Zeichen:', html.substring(0, 100));
 
             if (this.container) {
                 this.container.innerHTML = html;
@@ -176,7 +176,7 @@ class DVDApp {
     // 🎭 NEUE METHODE: Actor-Profil laden (analog zu loadFilmDetail)
     async loadActorProfile(actorSlug) {
         try {
-            console.log('🎭 Actor-Slug wird geladen:', actorSlug);
+            if (window.IS_DEV) console.log('🎭 Actor-Slug wird geladen:', actorSlug);
 
             const response = await fetch(`actor-fragment.php?slug=${encodeURIComponent(actorSlug)}`);
 
@@ -186,7 +186,7 @@ class DVDApp {
 
             const html = await response.text();
 
-            console.log('📄 Actor-Profil Antwort erhalten, erste 100 Zeichen:', html.substring(0, 100));
+            if (window.IS_DEV) console.log('📄 Actor-Profil Antwort erhalten, erste 100 Zeichen:', html.substring(0, 100));
 
             if (this.container) {
                 this.container.innerHTML = html;
@@ -226,14 +226,14 @@ class DVDApp {
 
     // 🎭 NEUE METHODE: Actor-Links im geladenen Content neu binden
     rebindActorLinks() {
-        console.log('🔗 Actor-Links werden neu gebunden...');
+        if (window.IS_DEV) console.log('🔗 Actor-Links werden neu gebunden...');
         // Event-Delegation funktioniert automatisch durch handleDocumentClick
         // Diese Methode ist für zukünftige Erweiterungen reserviert
     }
 
     // 🌟 NEUE METHODE: Film-Rating System initialisieren
     initFilmRating() {
-        console.log('🌟 Film Rating wird initialisiert...');
+        if (window.IS_DEV) console.log('🌟 Film Rating wird initialisiert...');
 
         // Rating-System
         const ratingStars = document.querySelectorAll('.rating-star');
@@ -242,7 +242,7 @@ class DVDApp {
         const ratingInput = document.querySelector('.star-rating-input');
 
         if (!ratingStars.length) {
-            console.log('ℹ️ Keine Rating-Sterne gefunden (User nicht eingeloggt oder keine Rating-Sektion)');
+            if (window.IS_DEV) console.log('ℹ️ Keine Rating-Sterne gefunden (User nicht eingeloggt oder keine Rating-Sektion)');
             this.initOtherFilmFeatures(); // Andere Features trotzdem initialisieren
             return;
         }
@@ -250,7 +250,7 @@ class DVDApp {
         const currentRating = parseFloat(ratingInput?.dataset.currentRating || 0);
         let selectedRating = currentRating;
 
-        console.log('⭐ Rating System gefunden:', {
+        if (window.IS_DEV) console.log('⭐ Rating System gefunden:', {
             ratingStars: ratingStars.length,
             saveRatingBtn: !!saveRatingBtn,
             ratingDisplay: !!ratingDisplay,
@@ -272,7 +272,7 @@ class DVDApp {
 
             star.addEventListener('click', () => {
                 selectedRating = parseInt(star.dataset.rating);
-                console.log('⭐ Stern geklickt, gewählte Bewertung:', selectedRating);
+                if (window.IS_DEV) console.log('⭐ Stern geklickt, gewählte Bewertung:', selectedRating);
 
                 this.highlightStars(ratingStars, selectedRating);
 
@@ -289,7 +289,7 @@ class DVDApp {
         if (saveRatingBtn) {
             saveRatingBtn.addEventListener('click', () => {
                 const filmId = ratingInput?.dataset.filmId;
-                console.log('💾 Speichere Rating:', { filmId, selectedRating });
+                if (window.IS_DEV) console.log('💾 Speichere Rating:', { filmId, selectedRating });
                 this.saveUserRating(filmId, selectedRating);
             });
         }
@@ -313,7 +313,7 @@ class DVDApp {
 
     // Andere Film-Features (Wishlist, Watched, Share, Trailer)
     initOtherFilmFeatures() {
-        console.log('🎭 Andere Film-Features werden initialisiert...');
+        if (window.IS_DEV) console.log('🎭 Andere Film-Features werden initialisiert...');
 
         // Wishlist-Button
         const wishlistBtn = document.querySelector('.add-to-wishlist');
@@ -347,26 +347,26 @@ class DVDApp {
 
     // 📺 NEUE METHODE: Staffeln/Episoden Toggle initialisieren
     initSeasons() {
-        console.log('📺 Staffeln/Episoden wird initialisiert...');
+        if (window.IS_DEV) console.log('📺 Staffeln/Episoden wird initialisiert...');
 
         // Alle Season-Headers finden
         const headers = document.querySelectorAll('.season-header');
-        console.log('📺 Gefundene Staffel-Headers:', headers.length);
+        if (window.IS_DEV) console.log('📺 Gefundene Staffel-Headers:', headers.length);
 
         if (headers.length === 0) {
-            console.log('ℹ️ Keine Staffeln gefunden (wahrscheinlich ein Film, keine Serie)');
+            if (window.IS_DEV) console.log('ℹ️ Keine Staffeln gefunden (wahrscheinlich ein Film, keine Serie)');
             return;
         }
 
         // Event Listener für jeden Header hinzufügen
         headers.forEach(header => {
             const seasonNumber = header.getAttribute('data-season');
-            console.log('📺 Verarbeite Staffel:', seasonNumber);
+            if (window.IS_DEV) console.log('📺 Verarbeite Staffel:', seasonNumber);
 
             header.style.cursor = 'pointer';
 
             header.addEventListener('click', () => {
-                console.log('🖱️ Staffel geklickt:', seasonNumber);
+                if (window.IS_DEV) console.log('🖱️ Staffel geklickt:', seasonNumber);
 
                 const content = document.querySelector(`[data-content="${seasonNumber}"]`);
                 const caret = document.querySelector(`[data-caret="${seasonNumber}"]`);
@@ -380,11 +380,11 @@ class DVDApp {
                 if (content.style.display === 'none') {
                     content.style.display = 'block';
                     caret.classList.add('rotated');
-                    console.log('✅ Staffel', seasonNumber, 'geöffnet');
+                    if (window.IS_DEV) console.log('✅ Staffel', seasonNumber, 'geöffnet');
                 } else {
                     content.style.display = 'none';
                     caret.classList.remove('rotated');
-                    console.log('✅ Staffel', seasonNumber, 'geschlossen');
+                    if (window.IS_DEV) console.log('✅ Staffel', seasonNumber, 'geschlossen');
                 }
             });
         });
@@ -393,15 +393,15 @@ class DVDApp {
         const firstCaret = document.querySelector('.season-caret');
         if (firstCaret) {
             firstCaret.classList.add('rotated');
-            console.log('✅ Erste Staffel ist aufgeklappt');
+            if (window.IS_DEV) console.log('✅ Erste Staffel ist aufgeklappt');
         }
 
-        console.log('✨ Staffeln/Episoden initialisierung abgeschlossen!');
+        if (window.IS_DEV) console.log('✨ Staffeln/Episoden initialisierung abgeschlossen!');
     }
 
     // AJAX: User-Rating speichern
     async saveUserRating(filmId, rating) {
-        console.log('📡 AJAX: saveUserRating aufgerufen', { filmId, rating });
+        if (window.IS_DEV) console.log('📡 AJAX: saveUserRating aufgerufen', { filmId, rating });
 
         try {
             const response = await fetch('api/save-rating.php', {
@@ -412,7 +412,7 @@ class DVDApp {
                 body: JSON.stringify({ film_id: filmId, rating: rating })
             });
 
-            console.log('📡 Response status:', response.status);
+            if (window.IS_DEV) console.log('📡 Response status:', response.status);
 
             if (response.ok) {
                 this.showNotification('Bewertung gespeichert!', 'success');
@@ -513,7 +513,7 @@ class DVDApp {
 
     // Notification anzeigen
     showNotification(message, type = 'info') {
-        console.log(`🔔 Notification: ${message} (${type})`);
+        if (window.IS_DEV) console.log(`🔔 Notification: ${message} (${type})`);
 
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
@@ -704,7 +704,7 @@ class DVDApp {
             // Restore View Mode
             this.restoreViewMode();
 
-            console.log(`🔍 Suche nach: "${query}"`);
+            if (window.IS_DEV) console.log(`🔍 Suche nach: "${query}"`);
         } catch (error) {
             console.error('Suchfehler:', error);
             const filmListArea = document.querySelector('.film-list-area');
@@ -732,7 +732,7 @@ class DVDApp {
             // Restore View Mode nach Laden
             this.restoreViewMode();
 
-            console.log(`📋 Film-Liste geladen: ${queryString}`);
+            if (window.IS_DEV) console.log(`📋 Film-Liste geladen: ${queryString}`);
         } catch (error) {
             console.error('Film-List Fehler:', error);
             const filmListArea = document.querySelector('.film-list-area');
@@ -758,7 +758,7 @@ class DVDApp {
             // Restore View Mode
             this.restoreViewMode();
 
-            console.log(`📄 Pagination geladen: ${href}`);
+            if (window.IS_DEV) console.log(`📄 Pagination geladen: ${href}`);
 
             // BoxSet Modal Drag neu initialisieren nach AJAX-Reload
             if (typeof window.reinitBoxSetModal === 'function') {
@@ -784,7 +784,7 @@ class DVDApp {
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
             script.onload = () => {
-                console.log('📊 Chart.js geladen');
+                if (window.IS_DEV) console.log('📊 Chart.js geladen');
                 resolve();
             };
             document.head.appendChild(script);
@@ -823,7 +823,7 @@ class DVDApp {
             }
         });
 
-        console.log(`📋 View-Modus: ${mode}`);
+        if (window.IS_DEV) console.log(`📋 View-Modus: ${mode}`);
     }
 
     restoreViewMode() {
@@ -857,7 +857,7 @@ class DVDApp {
             oldScript.parentNode.replaceChild(newScript, oldScript);
         });
 
-        console.log(`✅ ${scripts.length} Inline-Scripts ausgeführt`);
+        if (window.IS_DEV) console.log(`✅ ${scripts.length} Inline-Scripts ausgeführt`);
     }
 }
 

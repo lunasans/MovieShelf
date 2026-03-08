@@ -134,7 +134,7 @@ if (!in_array($actor['id'], $_SESSION[$viewedActorsKey], true)) {
 // Foto-Pfad
 $actorPhoto = !empty($actor['photo_path']) 
     ? htmlspecialchars($actor['photo_path']) 
-    : 'images/placeholder-actor.png';
+    : ACTOR_PLACEHOLDER;
 
 // Meta-Daten für SEO
 $pageTitle = $fullName . " - Schauspieler-Profil";
@@ -153,7 +153,7 @@ if (!empty($actor['bio'])) {
                 alt="Porträtfoto von <?= htmlspecialchars($fullName) ?>"
                 class="actor-photo"
                 itemprop="image"
-                onerror="this.src='images/placeholder-actor.png'"
+                onerror="this.src='<?= ACTOR_PLACEHOLDER ?>'"
             >
             
             <!-- Social Links -->
@@ -285,8 +285,8 @@ if (!empty($actor['bio'])) {
         <div class="filmography-grid">
             <?php foreach ($actorFilms as $film): ?>
             <div class="film-card"
-                 onclick="window.app?.loadFilmDetail(<?= $film['id'] ?>)"
-                 onkeypress="if(event.key==='Enter'||event.key===' ')window.app?.loadFilmDetail(<?= $film['id'] ?>)"
+                 onclick="window.dvdApp?.loadFilmDetail(<?= $film['id'] ?>)"
+                 onkeypress="if(event.key==='Enter'||event.key===' ')window.dvdApp?.loadFilmDetail(<?= $film['id'] ?>)"
                  tabindex="0"
                  role="button"
                  aria-label="Film <?= htmlspecialchars($film['title']) ?> von <?= !empty($film['year']) ? htmlspecialchars($film['year']) : 'unbekannt' ?> anzeigen">
@@ -382,7 +382,7 @@ if (!empty($actor['bio'])) {
     $personSchema['description'] = mb_substr(strip_tags($actor['bio']), 0, 200);
 }
 
-if (!empty($actorPhoto) && $actorPhoto !== 'images/placeholder-actor.png') {
+if (!empty($actorPhoto) && $actorPhoto !== ACTOR_PLACEHOLDER) {
     $personSchema['image'] = $actorPhoto;
 }
 

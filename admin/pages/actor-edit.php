@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_actor'])) {
                 $uploadPath = $uploadDir . $fileName;
                 
                 if (move_uploaded_file($_FILES['photo']['tmp_name'], $uploadPath)) {
-                    $data['photo_path'] = 'images/actors/' . $fileName;
+                    $data['photo_path'] = ACTOR_IMG_PATH . '/' . $fileName;
                 } else {
                     $errors[] = 'Fehler beim Hochladen des Fotos';
                 }
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_actor'])) {
                     $uploadPath = $uploadDir . $fileName;
                     
                     if (file_put_contents($uploadPath, $imageData)) {
-                        $data['photo_path'] = 'images/actors/' . $fileName;
+                        $data['photo_path'] = ACTOR_IMG_PATH . '/' . $fileName;
                         error_log("TMDb profile image downloaded: {$uploadPath}");
                     } else {
                         error_log("Failed to save TMDb profile image: {$uploadPath}");

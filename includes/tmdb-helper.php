@@ -231,7 +231,7 @@ class TMDbHelper {
         
         try {
             // Cover-Verzeichnis
-            $coverDir = dirname(__DIR__) . '/cover';
+            $coverDir = BASE_PATH . '/' . COVER_IMG_PATH;
             if (!file_exists($coverDir)) {
                 mkdir($coverDir, 0755, true);
             }
@@ -278,7 +278,7 @@ class TMDbHelper {
         $imageUrl = 'https://image.tmdb.org/t/p/w1280' . $backdropPath;
         
         try {
-            $coverDir = dirname(__DIR__) . '/cover';
+            $coverDir = BASE_PATH . '/' . COVER_IMG_PATH;
             if (!file_exists($coverDir)) {
                 mkdir($coverDir, 0755, true);
             }

@@ -214,7 +214,7 @@ function loadCover($coverId, $targetWidth, $targetHeight) {
     
     $extensions = ['.jpg', '.jpeg', '.png'];
     foreach ($extensions as $ext) {
-        $file = __DIR__ . "/cover/{$coverId}f{$ext}";
+        $file = BASE_PATH . '/' . COVER_IMG_PATH . "/{$coverId}f{$ext}";
         if (file_exists($file)) {
             $info = getimagesize($file);
             if (!$info) continue;

@@ -3,10 +3,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/soft-delete-helpers.php';
 
-// Core Functions laden (WICHTIG: Vor allem anderen!)
-if (file_exists(__DIR__ . '/functions.php')) {
-    require_once __DIR__ . '/functions.php';
-}
 
 function setSecurityHeaders(): void {
     // Verhindert XSS Angriffe
@@ -39,6 +35,19 @@ if (!file_exists($lockFile)) {
 // Konfiguration einbinden
 define('BASE_PATH', dirname(__DIR__));
 $config = require BASE_PATH . '/config/config.php';
+
+// Zentrale Pfad-Konstanten (IMMER verfügbar)
+define('IMG_PATH', 'assets/images');
+define('ACTOR_IMG_PATH', IMG_PATH . '/actors');
+define('COVER_IMG_PATH', IMG_PATH . '/cover');
+define('LOGO_PATH', IMG_PATH . '/logo');
+define('SVG_PATH', IMG_PATH . '/svg');
+define('ACTOR_PLACEHOLDER', ACTOR_IMG_PATH . '/no_actor.png');
+
+// Haupt-Funktionen laden (Nach den Pfaden!)
+if (file_exists(__DIR__ . '/functions.php')) {
+    require_once __DIR__ . '/functions.php';
+}
 
 // Datenbankverbindung mit besserer Fehlerbehandlung
 try {

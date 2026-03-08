@@ -123,7 +123,7 @@ try {
         
         // Download Front Cover (Poster)
         $posterUrl = 'https://image.tmdb.org/t/p/w500' . $posterPath;
-        $frontPath = __DIR__ . '/../../cover/' . $newCoverId . 'f.jpg';
+        $frontPath = BASE_PATH . '/' . COVER_IMG_PATH . '/' . $newCoverId . 'f.jpg';
         
         $posterContent = @file_get_contents($posterUrl);
         if ($posterContent !== false) {
@@ -133,7 +133,7 @@ try {
         // Download Back Cover (Backdrop) falls vorhanden
         if (!empty($backdropPath)) {
             $backdropUrl = 'https://image.tmdb.org/t/p/w1280' . $backdropPath;
-            $backPath = __DIR__ . '/../../cover/' . $newCoverId . 'b.jpg';
+            $backPath = BASE_PATH . '/' . COVER_IMG_PATH . '/' . $newCoverId . 'b.jpg';
             
             $backdropContent = @file_get_contents($backdropUrl);
             if ($backdropContent !== false) {
@@ -143,8 +143,8 @@ try {
         
         // Lösche altes Cover (falls anders)
         if ($oldCoverId && $oldCoverId !== $newCoverId) {
-            @unlink(__DIR__ . '/../../cover/' . $oldCoverId . 'f.jpg');
-            @unlink(__DIR__ . '/../../cover/' . $oldCoverId . 'b.jpg');
+            @unlink(BASE_PATH . '/' . COVER_IMG_PATH . '/' . $oldCoverId . 'f.jpg');
+            @unlink(BASE_PATH . '/' . COVER_IMG_PATH . '/' . $oldCoverId . 'b.jpg');
         }
     }
     

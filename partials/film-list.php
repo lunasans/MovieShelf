@@ -6,18 +6,6 @@ if (!isset($pdo)) {
     require_once __DIR__ . '/../includes/bootstrap.php';
 }
 
-// BuildQuery-Funktion für Pagination
-function buildQuery($params = []) {
-    $currentParams = $_GET;
-    foreach ($params as $key => $value) {
-        if ($value === '') {
-            unset($currentParams[$key]);
-        } else {
-            $currentParams[$key] = $value;
-        }
-    }
-    return http_build_query($currentParams);
-}
 
 // Einfache, sichere Datenabfrage
 $search = trim($_GET['q'] ?? '');
@@ -98,111 +86,6 @@ try {
     $totalPages = 0;
 }
 
-// Helper: Film Card mit BoxSet Badge
-// Helper: Film Card mit Badge (Grid) und Sternen (List)
-function renderFilmCard(array $dvd): string {
-    $title = htmlspecialchars($dvd['title'] ?? 'Unbekannt');
-    $year = (int)($dvd['year'] ?? 0);
-    $genre = htmlspecialchars($dvd['genre'] ?? 'Unbekannt');
-    $id = (int)($dvd['id'] ?? 0);
-    $cover = 'cover/placeholder.png';
-    
-    if (!empty($dvd['cover_id'])) {
-        $extensions = ['.jpg', '.jpeg', '.png'];
-        foreach ($extensions as $ext) {
-            $file = __DIR__ . "/../cover/{$dvd['cover_id']}f{$ext}";
-            if (file_exists($file)) {
-                $cover = "cover/{$dvd['cover_id']}f{$ext}";
-                break;
-            }
-        }
-    }
-    
-    $childrenCount = (int)($dvd['children_count'] ?? 0);
-    $isBoxSet = $childrenCount > 0;
-    
-    $ratingBadge = '';
-    $tmdbStarsHtml = '';
-    
-    if (getSetting('tmdb_show_ratings_on_cards', '1') == '1' && !empty(getSetting('tmdb_api_key', ''))) {
-        $ratings = getFilmRatings($dvd['title'], $year);
-        if ($ratings && isset($ratings['tmdb_rating'])) {
-            $rating = $ratings['tmdb_rating'];
-            $votes = $ratings['tmdb_votes'] ?? 0;
-            
-            if ($rating >= 8) {
-                $color = '#4caf50';
-            } elseif ($rating >= 6) {
-                $color = '#ff9800';
-            } else {
-                $color = '#f44336';
-            }
-            
-            $ratingFormatted = number_format($rating, 1);
-            $ratingBadge = <<<HTML
-<div class="tmdb-rating-badge" style="background-color: {$color};">
-    <i class="bi bi-star-fill"></i>
-    <span>{$ratingFormatted}</span>
-</div>
-HTML;
-            
-            $starsRating = $rating / 2;
-            $fullStars = floor($starsRating);
-            $hasHalfStar = ($starsRating - $fullStars) >= 0.3;
-            
-            $starsHtml = '';
-            for ($i = 1; $i <= 5; $i++) {
-                if ($i <= $fullStars) {
-                    $starsHtml .= '<i class="bi bi-star-fill" style="color: ' . $color . ';"></i>';
-                } elseif ($i == $fullStars + 1 && $hasHalfStar) {
-                    $starsHtml .= '<i class="bi bi-star-half" style="color: ' . $color . ';"></i>';
-                } else {
-                    $starsHtml .= '<i class="bi bi-star" style="color: rgba(255,255,255,0.2);"></i>';
-                }
-            }
-            
-            $votesFormatted = number_format($votes);
-            $tmdbStarsHtml = <<<HTML
-<div class="tmdb-rating-stars">
-    <span class="tmdb-label">TMDb:</span>
-    <div class="tmdb-stars">{$starsHtml}</div>
-    <span class="tmdb-score" style="color: {$color};">{$ratingFormatted}</span>
-    <span class="tmdb-votes">({$votesFormatted})</span>
-</div>
-HTML;
-        }
-    }
-    
-    $badge = '';
-    if ($isBoxSet) {
-        $badge = <<<HTML
-<div class="boxset-badge" onclick="event.stopPropagation(); openBoxSetModal(event, {$id});">
-    <i class="bi bi-collection-play"></i>
-    <span>{$childrenCount}</span>
-</div>
-HTML;
-    }
-    
-    $boxsetClass = $isBoxSet ? ' has-boxset' : '';
-    $coverEscaped = htmlspecialchars($cover);
-    
-    return <<<HTML
-<div class="dvd{$boxsetClass}" data-dvd-id="{$id}" data-children-count="{$childrenCount}">
-  <div class="cover-area">
-    <img src="{$coverEscaped}" alt="Cover">
-    {$ratingBadge}
-    {$badge}
-  </div>
-  <div class="dvd-details">
-    <div class="film-info">
-      <h2><a href="#" class="toggle-detail" data-id="{$id}">{$title} ({$year})</a></h2>
-      <p class="genre-info"><strong>Genre:</strong> {$genre}</p>
-    </div>
-    {$tmdbStarsHtml}
-  </div>
-</div>
-HTML;
-}
 ?>
 
 <!-- Tabs für Collection Types -->
@@ -584,7 +467,7 @@ HTML;
 // SYNTAX-FEHLER BEHOBEN - Duplizierten Code entfernt!
 // ============================================================
 
-console.log('🔴 START: film-list.php lädt...');
+if (window.IS_DEV) console.log('🔴 START: film-list.php lädt...');
 
 // BoxSet Modal Functions
 let isDragging = false;
@@ -595,20 +478,20 @@ let initialY;
 let xOffset = 0;
 let yOffset = 0;
 
-console.log('🔴 SCHRITT 1: Variablen definiert');
+if (window.IS_DEV) console.log('🔴 SCHRITT 1: Variablen definiert');
 
 // WICHTIG: Modal an das Ende des Body verschieben beim Laden
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('boxsetModal');
     if (modal && modal.parentElement !== document.body) {
-        console.log('📦 Verschiebe BoxSet Modal an das Ende des Body');
+        if (window.IS_DEV) console.log('📦 Verschiebe BoxSet Modal an das Ende des Body');
         document.body.appendChild(modal);
     }
 });
 
 // WICHTIG: Funktion SOFORT definieren!
 function openBoxSetModal(event, parentId) {
-    console.log('🎯 openBoxSetModal aufgerufen!', { event, parentId });
+    if (window.IS_DEV) console.log('🎯 openBoxSetModal aufgerufen!', { event, parentId });
     
     const modal = document.getElementById('boxsetModal');
     const modalTitle = document.getElementById('modalTitle');
@@ -873,9 +756,11 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ERFOLG: Alle Funktionen definiert!
-console.log('✅ ERFOLG: Alle Funktionen geladen!');
-console.log('✅ openBoxSetModal ist definiert:', typeof openBoxSetModal);
-console.log('✅ VERSION: ROBUST-POSITION-V3.2 - SYNTAX-FEHLER BEHOBEN!');
+if (window.IS_DEV) {
+    console.log('✅ ERFOLG: Alle Funktionen geladen!');
+    console.log('✅ openBoxSetModal ist definiert:', typeof openBoxSetModal);
+    console.log('✅ VERSION: ROBUST-POSITION-V3.2 - SYNTAX-FEHLER BEHOBEN!');
+}
 </script>
 <style>
 .tmdb-rating-badge {
