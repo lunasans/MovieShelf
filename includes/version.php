@@ -1,9 +1,9 @@
 <?php
 /**
- * DVD Profiler Liste - Versionsverwaltung (GitHub-basiert)
+ * MovieShelf - Versionsverwaltung (GitHub-basiert)
  * Zentrale Stelle für alle Versionsinformationen
  * 
- * @package    dvdprofiler.liste
+ * @package    movieshelf
  * @author     René Neuhaus
  * @repository https://github.com/lunasans/dvdprofiler.liste
  */
