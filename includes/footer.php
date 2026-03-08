@@ -552,7 +552,7 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
             // Theme in Datenbank speichern (AJAX)
             try {
                 const formData = new FormData();
-                formData.append('csrf_token', '<?= $_SESSION['csrf_token'] ?? "" ?>');
+                formData.append('csrf_token', '<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>');
                 formData.append('theme', newTheme);
                 
                 const response = await fetch('theme-save.php', {
