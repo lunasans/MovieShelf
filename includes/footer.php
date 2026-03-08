@@ -92,13 +92,13 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
         <!-- Rechts: Navigation horizontal -->
         <div class="footer-section footer-right">
             <nav class="footer-nav" aria-label="Footer Navigation">
-                <a href="?page=impressum">Impressum</a>
-                <a href="?page=datenschutz">Datenschutz</a>
+                <a href="?page=impressum"><i class="bi bi-info-circle"></i> Impressum</a>
+                <a href="?page=datenschutz"><i class="bi bi-shield-lock"></i> Datenschutz</a>
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <a href="<?= $baseUrl ?>/admin/" rel="nofollow">Admin</a>
-                    <a href="<?= $baseUrl ?>/admin/logout.php" rel="nofollow">Logout</a>
+                    <a href="<?= $baseUrl ?>/admin/" rel="nofollow"><i class="bi bi-speedometer2"></i> Admin</a>
+                    <a href="<?= $baseUrl ?>/admin/logout.php" rel="nofollow"><i class="bi bi-box-arrow-right"></i> Logout</a>
                 <?php else: ?>
-                    <a href="<?= $baseUrl ?>/admin/login.php" rel="nofollow">Login</a>
+                    <a href="<?= $baseUrl ?>/admin/login.php" rel="nofollow"><i class="bi bi-box-arrow-in-right"></i> Login</a>
                 <?php endif; ?>
             </nav>
         </div>
@@ -327,17 +327,36 @@ $baseUrl = defined('BASE_URL') ? BASE_URL : '';
 }
 
 .footer-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     color: var(--text-glass, rgba(255, 255, 255, 0.7));
     text-decoration: none;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
-    padding: var(--space-xs, 0.35rem);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0.5rem 1rem;
     white-space: nowrap;
+    border-radius: var(--radius-md, 12px);
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+.footer-nav a i {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
 }
 
 .footer-nav a:hover {
     color: var(--text-white, #ffffff);
+    background: var(--glass-bg-strong, rgba(255, 255, 255, 0.08));
+    border-color: var(--glass-border, rgba(255, 255, 255, 0.15));
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.footer-nav a:hover i {
+    transform: scale(1.2);
+    color: var(--accent-color, #667eea);
 }
 
 .footer-meta {

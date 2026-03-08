@@ -1,8 +1,10 @@
-// main.js - Erweitert mit Film-Rating Funktionalität
+// main.js - Zentralisiertes JavaScript für die DVD Profiler Liste
+// Enthält Logik für Film-Details, BoxSets, Ratings, Trailer und View-Modi
 
 class DVDApp {
     constructor() {
         this.container = document.getElementById('detail-container');
+        this.pendingTrailer = null; // Für Altersverifizierung
         this.init();
     }
 
@@ -11,11 +13,23 @@ class DVDApp {
         this.loadFromUrl();
         this.restoreViewMode();
         this.updateNavigation();
+        this.initBoxSetModal();
     }
+
+    // Modal Drag properties
+    dragData = {
+        isDragging: false,
+        currentX: 0,
+        currentY: 0,
+        initialX: 0,
+        initialY: 0,
+        xOffset: 0,
+        yOffset: 0
+    };
 
     // Event Handlers mit Event Delegation
     setupEventListeners() {
-        // Event Delegation für Film-Details
+        // Event Delegation für Film-Details und allgemeine Klicks
         document.addEventListener('click', this.handleDocumentClick.bind(this));
 
         // Keyboard Events
@@ -53,7 +67,7 @@ class DVDApp {
             return;
         }
 
-        // Actor Profile Toggle - NEU
+        // Actor Profile Toggle
         const actorLink = e.target.closest('.actor-link, [data-actor-slug]');
         if (actorLink) {
             e.preventDefault();
@@ -71,7 +85,7 @@ class DVDApp {
             return;
         }
 
-        // Boxset Toggle
+        // Boxset Toggle (in der Liste)
         if (e.target.classList.contains('boxset-toggle')) {
             e.preventDefault();
             this.handleBoxsetToggle(e.target);
@@ -90,7 +104,7 @@ class DVDApp {
             return;
         }
 
-        // Tabs/Filter Links (in film-list.php) - laden in LINKE Seite
+        // Tabs/Filter Links (in film-list.php)
         const tabLink = e.target.closest('.tabs a');
         if (tabLink) {
             const href = tabLink.getAttribute('href');
@@ -102,7 +116,7 @@ class DVDApp {
             return;
         }
 
-        // Pagination Links - laden in LINKE Seite (film-list-area)
+        // Pagination Links
         const paginationLink = e.target.closest('.pagination a');
         if (paginationLink) {
             const href = paginationLink.getAttribute('href');
@@ -125,7 +139,33 @@ class DVDApp {
             return;
         }
 
-        // YouTube Trailer
+        // Boxset Toggle (Badge auf Filmkarte)
+        const boxsetBadge = e.target.closest('.boxset-badge');
+        if (boxsetBadge) {
+            e.preventDefault();
+            const parentId = boxsetBadge.dataset.parentId;
+            if (parentId) {
+                this.openBoxSetModal(e, parentId);
+            }
+            return;
+        }
+
+        // BoxSet Modal Close
+        if (e.target.closest('.modal-close')) {
+            e.preventDefault();
+            this.closeBoxSetModal();
+            return;
+        }
+
+        // YouTube Trailer (aus film-view.php)
+        const trailerBox = e.target.closest('.trailer-box');
+        if (trailerBox && !trailerBox.closest('.trailers-grid')) {
+            e.preventDefault();
+            this.handleTrailerClick(trailerBox);
+            return;
+        }
+
+        // Generische Trailer Placeholder
         const placeholder = e.target.closest('.trailer-placeholder');
         if (placeholder) {
             this.loadTrailer(placeholder);
@@ -136,10 +176,11 @@ class DVDApp {
     handleKeydown(e) {
         if (e.key === 'Escape') {
             this.closeDetail();
+            this.closeBoxSetModal();
         }
     }
 
-    // Film Detail laden mit Rating-Integration
+    // Film Detail laden
     async loadFilmDetail(filmId) {
         try {
             if (window.IS_DEV) console.log('🎬 Film-ID wird geladen:', filmId);
@@ -147,22 +188,13 @@ class DVDApp {
             const response = await fetch(`film-fragment.php?id=${filmId}`);
             const html = await response.text();
 
-            if (window.IS_DEV) console.log('📄 Antwort erhalten, erste 100 Zeichen:', html.substring(0, 100));
-
             if (this.container) {
                 this.container.innerHTML = html;
                 history.replaceState(null, '', '?id=' + filmId);
 
-                // Fancybox für neue Inhalte binden
                 this.bindFancybox();
-
-                // 🌟 FILM-RATING INITIALISIEREN
                 this.initFilmRating();
-
-                // 📺 STAFFELN/EPISODEN INITIALISIEREN
                 this.initSeasons();
-
-                // 🎭 ACTOR-LINKS NEU BINDEN (für Cast in film-view.php)
                 this.rebindActorLinks();
             }
         } catch (error) {
@@ -173,132 +205,68 @@ class DVDApp {
         }
     }
 
-    // 🎭 NEUE METHODE: Actor-Profil laden (analog zu loadFilmDetail)
+    // Actor-Profil laden
     async loadActorProfile(actorSlug) {
         try {
             if (window.IS_DEV) console.log('🎭 Actor-Slug wird geladen:', actorSlug);
 
             const response = await fetch(`actor-fragment.php?slug=${encodeURIComponent(actorSlug)}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const html = await response.text();
-
-            if (window.IS_DEV) console.log('📄 Actor-Profil Antwort erhalten, erste 100 Zeichen:', html.substring(0, 100));
 
             if (this.container) {
                 this.container.innerHTML = html;
                 history.replaceState(null, '', '?page=actor&slug=' + actorSlug);
-
-                // Fancybox für neue Inhalte binden
                 this.bindFancybox();
-
-                // Event-Listener für Actor-Links im geladenen Profil neu binden
-                // (für Cast-Listen in Filmographie)
                 this.rebindActorLinks();
             }
         } catch (error) {
             console.error('❌ Fehler beim Laden des Actor-Profils:', error);
-            if (this.container) {
-                this.container.innerHTML = `
-                    <div class="error-message" style="padding: 40px; text-align: center;">
-                        <div class="error-icon" style="font-size: 4rem; margin-bottom: 20px; color: #f48771;">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
-                        <h3 style="color: #f48771; margin-bottom: 15px;">Fehler beim Laden</h3>
-                        <p style="margin-bottom: 25px;">Das Schauspieler-Profil konnte nicht geladen werden.</p>
-                        <p style="font-size: 0.9em; opacity: 0.7;">${error.message}</p>
-                        <div style="margin-top: 25px;">
-                            <button onclick="location.reload()" class="btn btn-sm btn-primary" style="margin-right: 10px;">
-                                <i class="bi bi-arrow-clockwise"></i> Erneut versuchen
-                            </button>
-                            <a href="/" class="btn btn-sm btn-secondary">
-                                <i class="bi bi-house"></i> Zur Startseite
-                            </a>
-                        </div>
-                    </div>
-                `;
-            }
         }
     }
 
-    // 🎭 NEUE METHODE: Actor-Links im geladenen Content neu binden
     rebindActorLinks() {
-        if (window.IS_DEV) console.log('🔗 Actor-Links werden neu gebunden...');
-        // Event-Delegation funktioniert automatisch durch handleDocumentClick
-        // Diese Methode ist für zukünftige Erweiterungen reserviert
+        if (window.IS_DEV) console.log('🔗 Actor-Links rebunden...');
     }
 
-    // 🌟 NEUE METHODE: Film-Rating System initialisieren
+    // Rating System initialisieren
     initFilmRating() {
-        if (window.IS_DEV) console.log('🌟 Film Rating wird initialisiert...');
-
-        // Rating-System
         const ratingStars = document.querySelectorAll('.rating-star');
         const saveRatingBtn = document.querySelector('.save-rating');
         const ratingDisplay = document.querySelector('.rating-display');
         const ratingInput = document.querySelector('.star-rating-input');
 
         if (!ratingStars.length) {
-            if (window.IS_DEV) console.log('ℹ️ Keine Rating-Sterne gefunden (User nicht eingeloggt oder keine Rating-Sektion)');
-            this.initOtherFilmFeatures(); // Andere Features trotzdem initialisieren
+            this.initOtherFilmFeatures();
             return;
         }
 
         const currentRating = parseFloat(ratingInput?.dataset.currentRating || 0);
         let selectedRating = currentRating;
 
-        if (window.IS_DEV) console.log('⭐ Rating System gefunden:', {
-            ratingStars: ratingStars.length,
-            saveRatingBtn: !!saveRatingBtn,
-            ratingDisplay: !!ratingDisplay,
-            currentRating: currentRating
-        });
-
-        // Event-Listener für Sterne
-        ratingStars.forEach((star, index) => {
+        ratingStars.forEach((star) => {
             star.style.cursor = 'pointer';
-
-            star.addEventListener('mouseenter', () => {
-                const rating = parseInt(star.dataset.rating);
-                this.highlightStars(ratingStars, rating);
-            });
-
-            star.addEventListener('mouseleave', () => {
-                this.highlightStars(ratingStars, selectedRating);
-            });
-
+            star.addEventListener('mouseenter', () => this.highlightStars(ratingStars, parseInt(star.dataset.rating)));
+            star.addEventListener('mouseleave', () => this.highlightStars(ratingStars, selectedRating));
             star.addEventListener('click', () => {
                 selectedRating = parseInt(star.dataset.rating);
-                if (window.IS_DEV) console.log('⭐ Stern geklickt, gewählte Bewertung:', selectedRating);
-
                 this.highlightStars(ratingStars, selectedRating);
-
-                if (saveRatingBtn) {
-                    saveRatingBtn.style.display = 'inline-block';
-                }
-                if (ratingDisplay) {
-                    ratingDisplay.textContent = selectedRating + '/5';
-                }
+                if (saveRatingBtn) saveRatingBtn.style.display = 'inline-block';
+                if (ratingDisplay) ratingDisplay.textContent = selectedRating + '/5';
             });
         });
 
-        // Save-Button Event
         if (saveRatingBtn) {
             saveRatingBtn.addEventListener('click', () => {
                 const filmId = ratingInput?.dataset.filmId;
-                if (window.IS_DEV) console.log('💾 Speichere Rating:', { filmId, selectedRating });
                 this.saveUserRating(filmId, selectedRating);
             });
         }
 
-        // Andere Film-Features initialisieren
         this.initOtherFilmFeatures();
     }
 
-    // Sterne hervorheben
     highlightStars(stars, rating) {
         stars.forEach((star, index) => {
             if (index < rating) {
@@ -311,130 +279,69 @@ class DVDApp {
         });
     }
 
-    // Andere Film-Features (Wishlist, Watched, Share, Trailer)
     initOtherFilmFeatures() {
-        if (window.IS_DEV) console.log('🎭 Andere Film-Features werden initialisiert...');
-
-        // Wishlist-Button
+        // Wishlist
         const wishlistBtn = document.querySelector('.add-to-wishlist');
         if (wishlistBtn) {
-            wishlistBtn.addEventListener('click', () => {
-                const filmId = wishlistBtn.dataset.filmId;
-                this.toggleWishlist(filmId, wishlistBtn);
-            });
+            wishlistBtn.addEventListener('click', () => this.toggleWishlist(wishlistBtn.dataset.filmId, wishlistBtn));
         }
 
-        // Watched-Button
+        // Watched
         const watchedBtn = document.querySelector('.mark-as-watched');
         if (watchedBtn) {
-            watchedBtn.addEventListener('click', () => {
-                const filmId = watchedBtn.dataset.filmId;
-                this.toggleWatched(filmId, watchedBtn);
-            });
+            watchedBtn.addEventListener('click', () => this.toggleWatched(watchedBtn.dataset.filmId, watchedBtn));
         }
 
-        // Share-Button
+        // Share
         const shareBtn = document.querySelector('.share-film');
         if (shareBtn) {
-            shareBtn.addEventListener('click', () => {
-                const filmId = shareBtn.dataset.filmId;
-                const filmTitle = shareBtn.dataset.filmTitle;
-                this.shareFilm(filmId, filmTitle);
-            });
+            shareBtn.addEventListener('click', () => this.shareFilm(shareBtn.dataset.filmId, shareBtn.dataset.filmTitle));
         }
 
+        // Age Verification Setup
+        this.setupAgeButtons();
     }
 
-    // 📺 NEUE METHODE: Staffeln/Episoden Toggle initialisieren
     initSeasons() {
-        if (window.IS_DEV) console.log('📺 Staffeln/Episoden wird initialisiert...');
-
-        // Alle Season-Headers finden
         const headers = document.querySelectorAll('.season-header');
-        if (window.IS_DEV) console.log('📺 Gefundene Staffel-Headers:', headers.length);
-
-        if (headers.length === 0) {
-            if (window.IS_DEV) console.log('ℹ️ Keine Staffeln gefunden (wahrscheinlich ein Film, keine Serie)');
-            return;
-        }
-
-        // Event Listener für jeden Header hinzufügen
         headers.forEach(header => {
-            const seasonNumber = header.getAttribute('data-season');
-            if (window.IS_DEV) console.log('📺 Verarbeite Staffel:', seasonNumber);
-
             header.style.cursor = 'pointer';
-
             header.addEventListener('click', () => {
-                if (window.IS_DEV) console.log('🖱️ Staffel geklickt:', seasonNumber);
-
+                const seasonNumber = header.getAttribute('data-season');
                 const content = document.querySelector(`[data-content="${seasonNumber}"]`);
                 const caret = document.querySelector(`[data-caret="${seasonNumber}"]`);
 
-                if (!content || !caret) {
-                    console.error('❌ Elemente nicht gefunden für Staffel:', seasonNumber);
-                    return;
-                }
-
-                // Toggle visibility
-                if (content.style.display === 'none') {
-                    content.style.display = 'block';
-                    caret.classList.add('rotated');
-                    if (window.IS_DEV) console.log('✅ Staffel', seasonNumber, 'geöffnet');
-                } else {
-                    content.style.display = 'none';
-                    caret.classList.remove('rotated');
-                    if (window.IS_DEV) console.log('✅ Staffel', seasonNumber, 'geschlossen');
+                if (content && caret) {
+                    const isHidden = content.style.display === 'none';
+                    content.style.display = isHidden ? 'block' : 'none';
+                    isHidden ? caret.classList.add('rotated') : caret.classList.remove('rotated');
                 }
             });
         });
 
-        // Erste Staffel automatisch aufklappen
         const firstCaret = document.querySelector('.season-caret');
-        if (firstCaret) {
-            firstCaret.classList.add('rotated');
-            if (window.IS_DEV) console.log('✅ Erste Staffel ist aufgeklappt');
-        }
-
-        if (window.IS_DEV) console.log('✨ Staffeln/Episoden initialisierung abgeschlossen!');
+        if (firstCaret) firstCaret.classList.add('rotated');
     }
 
-    // AJAX: User-Rating speichern
     async saveUserRating(filmId, rating) {
-        if (window.IS_DEV) console.log('📡 AJAX: saveUserRating aufgerufen', { filmId, rating });
-
         try {
             const response = await fetch('api/save-rating.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ film_id: filmId, rating: rating })
             });
 
-            if (window.IS_DEV) console.log('📡 Response status:', response.status);
-
             if (response.ok) {
                 this.showNotification('Bewertung gespeichert!', 'success');
-                const saveBtn = document.querySelector('.save-rating');
-                if (saveBtn) saveBtn.style.display = 'none';
-
-                // Seite nach kurzer Zeit neu laden um Community-Rating zu aktualisieren
-                setTimeout(() => {
-                    this.loadFilmDetail(filmId); // Reload der Film-Details
-                }, 1500);
+                setTimeout(() => this.loadFilmDetail(filmId), 1500);
             } else {
-                const errorText = await response.text();
-                console.error('❌ Response error:', errorText);
-                this.showNotification('Fehler beim Speichern: ' + response.status, 'error');
+                this.showNotification('Fehler beim Speichern', 'error');
             }
         } catch (error) {
-            console.error('❌ AJAX Error:', error);
-            this.showNotification('Fehler beim Speichern der Bewertung', 'error');
+            console.error('AJAX Error:', error);
         }
     }
 
-    // AJAX: Wishlist Toggle
     async toggleWishlist(filmId, button) {
         try {
             const response = await fetch('api/toggle-wishlist.php', {
@@ -445,22 +352,15 @@ class DVDApp {
 
             if (response.ok) {
                 const result = await response.json();
-                if (result.added) {
-                    button.innerHTML = '<i class="bi bi-heart-fill"></i> Auf Wunschliste';
-                    button.classList.add('active');
-                    this.showNotification('Zur Wunschliste hinzugefügt!', 'success');
-                } else {
-                    button.innerHTML = '<i class="bi bi-heart"></i> Zur Wunschliste';
-                    button.classList.remove('active');
-                    this.showNotification('Von Wunschliste entfernt!', 'info');
-                }
+                button.innerHTML = result.added ? '<i class="bi bi-heart-fill"></i> Auf Wunschliste' : '<i class="bi bi-heart"></i> Zur Wunschliste';
+                button.classList.toggle('active', result.added);
+                this.showNotification(result.added ? 'Hinzugefügt!' : 'Entfernt!', 'success');
             }
         } catch (error) {
             this.showNotification('Fehler bei Wunschliste', 'error');
         }
     }
 
-    // AJAX: Watched Toggle
     async toggleWatched(filmId, button) {
         try {
             const response = await fetch('api/toggle-watched.php', {
@@ -471,412 +371,361 @@ class DVDApp {
 
             if (response.ok) {
                 const result = await response.json();
-                if (result.watched) {
-                    button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Gesehen';
-                    button.classList.add('active');
-                    this.showNotification('Als gesehen markiert!', 'success');
-                } else {
-                    button.innerHTML = '<i class="bi bi-check-circle"></i> Als gesehen markieren';
-                    button.classList.remove('active');
-                    this.showNotification('Markierung entfernt!', 'info');
-                }
+                button.innerHTML = result.watched ? '<i class="bi bi-check-circle-fill"></i> Gesehen' : '<i class="bi bi-check-circle"></i> Markieren';
+                button.classList.toggle('active', result.watched);
+                this.showNotification(result.watched ? 'Als gesehen markiert!' : 'Markierung entfernt!', 'success');
             }
         } catch (error) {
-            this.showNotification('Fehler beim Markieren', 'error');
+            this.showNotification('Fehler bei Watched', 'error');
         }
     }
 
-    // Share-Funktion
     shareFilm(filmId, filmTitle) {
         const url = window.location.origin + window.location.pathname + '?id=' + filmId;
-
         if (navigator.share) {
-            navigator.share({
-                title: filmTitle,
-                text: 'Schau dir diesen Film an: ' + filmTitle,
-                url: url
-            });
+            navigator.share({ title: filmTitle, url: url });
         } else {
-            navigator.clipboard.writeText(url).then(() => {
-                this.showNotification('Link kopiert!', 'success');
-            }).catch(() => {
-                const textArea = document.createElement('textarea');
-                textArea.value = url;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                this.showNotification('Link kopiert!', 'success');
-            });
+            navigator.clipboard.writeText(url).then(() => this.showNotification('Link kopiert!', 'success'));
         }
     }
 
-    // Notification anzeigen
     showNotification(message, type = 'info') {
-        if (window.IS_DEV) console.log(`🔔 Notification: ${message} (${type})`);
-
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            background: rgba(0,0,0,0.9);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-left: 4px solid ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
-            border-radius: 8px;
-            color: white;
-            z-index: 10000;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            font-weight: 500;
-            transform: translateX(100%);
-            transition: transform 0.3s ease-out;
+        const n = document.createElement('div');
+        n.className = `notification notification-${type}`;
+        n.textContent = message;
+        n.style.cssText = `
+            position: fixed; top: 20px; right: 20px; padding: 1rem 1.5rem;
+            background: rgba(0,0,0,0.9); border-radius: 8px; color: white;
+            z-index: 10000; backdrop-filter: blur(10px); transform: translateX(120%);
+            transition: transform 0.3s ease-out; border-left: 4px solid ${type === 'success' ? '#28a745' : '#dc3545'};
         `;
-
-        document.body.appendChild(notification);
-
+        document.body.appendChild(n);
+        setTimeout(() => n.style.transform = 'translateX(0)', 10);
         setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 10);
-
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
+            n.style.transform = 'translateX(120%)';
+            setTimeout(() => n.remove(), 300);
         }, 3000);
     }
 
-    // Detail schließen
     async closeDetail() {
         try {
             const response = await fetch('10-latest-fragment.php');
             const html = await response.text();
-
-            if (this.container) {
-                this.container.innerHTML = html;
-            }
+            if (this.container) this.container.innerHTML = html;
             history.replaceState(null, '', 'index.php');
-        } catch (error) {
-            console.error('Fehler beim Schließen:', error);
+        } catch (e) {
+            console.error(e);
         }
     }
 
-    // Boxset Toggle
     handleBoxsetToggle(button) {
-        const dvdCard = button.closest('.dvd');
-        const nextSibling = dvdCard?.nextElementSibling;
-
-        if (nextSibling && nextSibling.classList.contains('boxset-children')) {
-            const isOpen = nextSibling.classList.toggle('open');
-            button.textContent = isOpen ?
-                '▼ Box-Inhalte ausblenden' :
-                '► Box-Inhalte anzeigen';
+        const dvd = button.closest('.dvd');
+        const children = dvd?.nextElementSibling;
+        if (children?.classList.contains('boxset-children')) {
+            const isOpen = children.classList.toggle('open');
+            button.textContent = isOpen ? '▼ Ausblenden' : '► Anzeigen';
         }
     }
 
-    // YouTube Trailer laden
     loadTrailer(placeholder) {
         const ytUrl = placeholder.dataset.yt;
         const iframe = document.createElement('iframe');
-        iframe.src = ytUrl + '?autoplay=1';
+        iframe.src = ytUrl + (ytUrl.includes('?') ? '&' : '?') + 'autoplay=1';
         iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
         iframe.allowFullscreen = true;
-        iframe.style.cssText = `
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-            border-radius: 6px;
-        `;
+        iframe.style.cssText = 'width: 100%; height: 100%; border: none; border-radius: 6px;';
         placeholder.replaceWith(iframe);
     }
 
-    // Routing bei Seitenwechsel
+    handleTrailerClick(box) {
+        const age = parseInt(box.dataset.ratingAge || 0);
+        const url = box.dataset.src;
+        const confirmed = document.cookie.includes('age_confirmed_18=true');
+
+        if (age >= 18 && !confirmed) {
+            const modal = document.getElementById('ageVerificationModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                this.pendingTrailer = { box, url };
+            }
+        } else {
+            this.playTrailerNow(box, url);
+        }
+    }
+
+    setupAgeButtons() {
+        const confirm = document.getElementById('ageConfirmBtn');
+        const deny = document.getElementById('ageDenyBtn');
+        const modal = document.getElementById('ageVerificationModal');
+
+        if (!modal) return;
+
+        if (confirm && !confirm.dataset.listener) {
+            confirm.dataset.listener = 'true';
+            confirm.addEventListener('click', () => {
+                const d = new Date(); d.setDate(d.getDate() + 30);
+                document.cookie = `age_confirmed_18=true; expires=${d.toUTCString()}; path=/; SameSite=Strict`;
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                if (this.pendingTrailer) {
+                    this.playTrailerNow(this.pendingTrailer.box, this.pendingTrailer.url);
+                    this.pendingTrailer = null;
+                }
+            });
+        }
+        if (deny && !deny.dataset.listener) {
+            deny.dataset.listener = 'true';
+            deny.addEventListener('click', () => {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                this.pendingTrailer = null;
+            });
+        }
+    }
+
+    playTrailerNow(box, url) {
+        if (!url) return;
+        const container = box.closest('.trailer-container');
+        if (!container) return;
+
+        let embed = url;
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            const id = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
+            if (id) embed = `https://www.youtube.com/embed/${id}?autoplay=1&modestbranding=1`;
+        }
+
+        const iframe = document.createElement('iframe');
+        iframe.src = embed;
+        iframe.width = '100%';
+        iframe.style.aspectRatio = '16/9';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '8px';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+
+        box.style.display = 'none';
+        container.appendChild(iframe);
+    }
+
+    // Routing & Loading
     async loadFromUrl() {
         const params = new URLSearchParams(window.location.search);
-
         if (!this.container) return;
 
-        try {
-            if (params.has('id')) {
-                await this.loadFilmDetail(params.get('id'));
+        if (params.has('id')) await this.loadFilmDetail(params.get('id'));
+        else if (params.has('page')) await this.loadPage(params.get('page'));
+        else if (params.has('q') || params.has('type') || params.has('seite')) await this.loadFilmList(params);
+        else await this.loadLatest();
 
-            } else if (params.has('page')) {
-                await this.loadPage(params.get('page'));
-
-            } else if (params.has('q') || params.has('type') || params.has('seite')) {
-                // Suche, Filter oder Pagination → lade film-list.php
-                await this.loadFilmList(params);
-
-            } else {
-                // Keine Parameter → lade 10 neueste
-                await this.loadLatest();
-            }
-        } catch (error) {
-            console.error('Fehler beim Laden der Seite:', error);
-        }
+        this.updateNavigation();
     }
 
     async loadPage(page) {
-        // Spezialbehandlung für Actor-Profile
         if (page === 'actor') {
-            const params = new URLSearchParams(window.location.search);
-            const slug = params.get('slug');
-
-            if (slug) {
-                // Lade Actor-Profil via loadActorProfile
-                await this.loadActorProfile(slug);
-            } else {
-                // Kein Slug → Fehler
-                this.container.innerHTML = `
-                    <div class="error-message" style="padding: 40px; text-align: center;">
-                        <div class="error-icon" style="font-size: 4rem; margin-bottom: 20px; color: #f48771;">
-                            <i class="bi bi-exclamation-circle"></i>
-                        </div>
-                        <h3 style="color: #f48771;">Kein Schauspieler angegeben</h3>
-                        <p>Bitte wählen Sie einen Schauspieler aus.</p>
-                    </div>
-                `;
-            }
+            const slug = new URLSearchParams(window.location.search).get('slug');
+            if (slug) await this.loadActorProfile(slug);
             return;
         }
 
-        // Standard-Verhalten für andere Pages (inkl. actors)
-        // Query-Parameter durchreichen (außer 'page')
         const params = new URLSearchParams(window.location.search);
-        params.delete('page'); // 'page' Parameter entfernen
+        params.delete('page');
+        const url = `partials/${page}.php${params.toString() ? '?' + params.toString() : ''}`;
 
-        const queryString = params.toString();
-        const url = queryString ? `partials/${page}.php?${queryString}` : `partials/${page}.php`;
+        try {
+            const response = await fetch(url);
+            this.container.innerHTML = await response.text();
+            if (page === 'actors') this.rebindActorLinks();
 
-        const response = await fetch(url);
-        const html = await response.text();
-
-        this.container.innerHTML = html;
-
-        // Event-Handler für Actor-Links neu binden (für actors-Seite)
-        if (page === 'actors') {
-            this.rebindActorLinks();
-        }
-
-        if (page === 'stats') {
-            await this.ensureChartJsLoaded();
-            this.executeInlineScripts(this.container);
-            if (typeof renderStatsCharts === 'function') {
-                renderStatsCharts();
+            if (page === 'stats') {
+                await this.ensureChartJsLoaded();
+                this.executeInlineScripts(this.container);
+                if (typeof renderStatsCharts === 'function') renderStatsCharts();
+            } else {
+                this.executeInlineScripts(this.container);
             }
-        } else {
-            this.executeInlineScripts(this.container);
-        }
-    }
-
-    async loadLatestWithPagination(seite) {
-        const response = await fetch(`10-latest-fragment.php?seite=${seite}`);
-        const html = await response.text();
-        this.container.innerHTML = html;
+        } catch (e) { console.error(e); }
     }
 
     async loadLatest() {
-        const response = await fetch('10-latest-fragment.php');
-        const html = await response.text();
-        this.container.innerHTML = html;
+        const r = await fetch('10-latest-fragment.php');
+        if (this.container) this.container.innerHTML = await r.text();
     }
 
     async loadSearch(query) {
-        try {
-            // Lade in film-list-area (LINKE Seite)
-            const filmListArea = document.querySelector('.film-list-area');
-            if (!filmListArea) {
-                console.error('film-list-area nicht gefunden');
-                return;
-            }
-
-            const response = await fetch(`partials/film-list.php?q=${encodeURIComponent(query)}`);
-            const html = await response.text();
-            filmListArea.innerHTML = html;
-
-            // URL aktualisieren
-            history.pushState({}, '', `?q=${encodeURIComponent(query)}`);
-
-            // Restore View Mode
-            this.restoreViewMode();
-
-            if (window.IS_DEV) console.log(`🔍 Suche nach: "${query}"`);
-        } catch (error) {
-            console.error('Suchfehler:', error);
-            const filmListArea = document.querySelector('.film-list-area');
-            if (filmListArea) {
-                filmListArea.innerHTML = '<div class="alert alert-danger">Fehler bei der Suche</div>';
-            }
-        }
+        const area = document.querySelector('.film-list-area');
+        if (!area) return;
+        const r = await fetch(`partials/film-list.php?q=${encodeURIComponent(query)}`);
+        area.innerHTML = await r.text();
+        history.pushState({}, '', `?q=${encodeURIComponent(query)}`);
+        this.restoreViewMode();
     }
 
     async loadFilmList(params) {
-        try {
-            // Lade in film-list-area (LINKE Seite)
-            const filmListArea = document.querySelector('.film-list-area');
-            if (!filmListArea) {
-                console.error('film-list-area nicht gefunden');
-                return;
-            }
-
-            // Baue URL mit allen Parametern (q, type, seite)
-            const queryString = params.toString();
-            const response = await fetch(`partials/film-list.php?${queryString}`);
-            const html = await response.text();
-            filmListArea.innerHTML = html;
-
-            // Restore View Mode nach Laden
-            this.restoreViewMode();
-
-            if (window.IS_DEV) console.log(`📋 Film-Liste geladen: ${queryString}`);
-        } catch (error) {
-            console.error('Film-List Fehler:', error);
-            const filmListArea = document.querySelector('.film-list-area');
-            if (filmListArea) {
-                filmListArea.innerHTML = '<div class="alert alert-danger">Fehler beim Laden</div>';
-            }
-        }
+        const area = document.querySelector('.film-list-area');
+        if (!area) return;
+        const r = await fetch(`partials/film-list.php?${params.toString()}`);
+        area.innerHTML = await r.text();
+        this.restoreViewMode();
     }
 
     async loadPaginationPage(href) {
-        try {
-            // Lade in film-list-area (LINKE Seite), nicht in detail-container!
-            const filmListArea = document.querySelector('.film-list-area');
-            if (!filmListArea) {
-                console.error('film-list-area nicht gefunden');
-                return;
-            }
-
-            const response = await fetch(`partials/film-list.php${href}`);
-            const html = await response.text();
-            filmListArea.innerHTML = html;
-
-            // Restore View Mode
-            this.restoreViewMode();
-
-            if (window.IS_DEV) console.log(`📄 Pagination geladen: ${href}`);
-
-            // BoxSet Modal Drag neu initialisieren nach AJAX-Reload
-            if (typeof window.reinitBoxSetModal === 'function') {
-                window.reinitBoxSetModal();
-            }
-        } catch (error) {
-            console.error('Pagination Fehler:', error);
-        }
+        const area = document.querySelector('.film-list-area');
+        if (!area) return;
+        const r = await fetch(`partials/film-list.php${href}`);
+        area.innerHTML = await r.text();
+        this.restoreViewMode();
     }
 
-    // Fancybox binden
+    // Utility
     bindFancybox() {
-        if (typeof Fancybox !== 'undefined') {
-            Fancybox.bind("[data-fancybox]", {});
-        }
+        if (typeof Fancybox !== 'undefined') Fancybox.bind("[data-fancybox]", {});
     }
 
-    // Chart.js laden
     async ensureChartJsLoaded() {
         if (window.Chart) return;
-
-        return new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-            script.onload = () => {
-                if (window.IS_DEV) console.log('📊 Chart.js geladen');
-                resolve();
-            };
-            document.head.appendChild(script);
-        });
-    }
-
-    // Restliche Methoden (updateNavigation, restoreViewMode, executeInlineScripts) bleiben unverändert...
-    updateNavigation() {
-        const links = document.querySelectorAll('.main-nav a');
-        const current = window.location.search;
-
-        links.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === current) {
-                link.classList.add('active');
-            }
+        return new Promise(r => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            s.onload = r;
+            document.head.appendChild(s);
         });
     }
 
     setViewMode(mode) {
         const list = document.querySelector('.film-list');
         if (!list) return;
-
-        // Entferne alte Klassen
         list.classList.remove('grid-mode', 'list-mode');
         list.classList.add(mode + '-mode');
-
-        // Speichere Präferenz
-        localStorage.setItem('viewMode', mode);
-
-        // Update Button States
-        document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.mode === mode) {
-                btn.classList.add('active');
-            }
-        });
-
-        if (window.IS_DEV) console.log(`📋 View-Modus: ${mode}`);
+        document.documentElement.setAttribute('data-view-mode', mode);
+        localStorage.setItem('movieViewMode', mode);
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
     }
 
     restoreViewMode() {
-        const savedMode = localStorage.getItem('viewMode') || 'grid';
-        this.setViewMode(savedMode);
+        const m = localStorage.getItem('movieViewMode') || 'grid';
+        this.setViewMode(m);
     }
 
-    executeInlineScripts(container) {
-        if (!container) return;
+    executeInlineScripts(c) {
+        if (!c) return;
+        c.querySelectorAll('script').forEach(s => {
+            const n = document.createElement('script');
+            Array.from(s.attributes).forEach(a => n.setAttribute(a.name, a.value));
+            if (s.src) n.src = s.src; else n.textContent = s.textContent;
+            s.parentNode.replaceChild(n, s);
+        });
+    }
 
-        // Finde alle <script> Tags im Container
-        const scripts = container.querySelectorAll('script');
+    // Navigation Active Link Handling
+    updateNavigation() {
+        const params = new URLSearchParams(window.location.search);
+        const page = params.get('page') || 'home';
+        const search = params.get('q');
 
-        scripts.forEach(oldScript => {
-            // Erstelle neues Script-Element
-            const newScript = document.createElement('script');
+        document.querySelectorAll('.main-nav .route-link').forEach(link => {
+            const href = link.getAttribute('href');
+            let isActive = false;
 
-            // Kopiere alle Attribute
-            Array.from(oldScript.attributes).forEach(attr => {
-                newScript.setAttribute(attr.name, attr.value);
-            });
-
-            // Kopiere Inline-Code oder src
-            if (oldScript.src) {
-                newScript.src = oldScript.src;
-            } else {
-                newScript.textContent = oldScript.textContent;
+            if (page === 'home' && (href === 'index.php' || href === '/')) {
+                // Nur aktiv wenn keine Suche aktiv ist (sonst ist "Start" zu oft aktiv)
+                isActive = !search;
+            } else if (href && href.includes(`page=${page}`)) {
+                isActive = true;
             }
 
-            // Ersetze altes Script mit neuem (damit es ausgeführt wird)
-            oldScript.parentNode.replaceChild(newScript, oldScript);
+            link.classList.toggle('active', isActive);
         });
+    }
 
-        if (window.IS_DEV) console.log(`✅ ${scripts.length} Inline-Scripts ausgeführt`);
+    // 📦 BOXSET MODAL LOGIC
+    initBoxSetModal() {
+        const modal = document.getElementById('boxsetModal');
+        if (modal) {
+            if (modal.parentElement !== document.body) document.body.appendChild(modal);
+            this.initBoxSetModalDrag();
+        }
+    }
+
+    async openBoxSetModal(event, parentId) {
+        const modal = document.getElementById('boxsetModal');
+        const title = document.getElementById('modalTitle');
+        const body = document.getElementById('modalBody');
+        const content = modal?.querySelector('.modal-content');
+        if (!modal || !content) return;
+
+        document.body.style.overflow = 'hidden';
+        modal.classList.add('show');
+        content.style.opacity = '0';
+
+        try {
+            const r = await fetch(`partials/boxset-children.php?parent_id=${parentId}`);
+            const d = await r.json();
+            if (title) title.innerHTML = `<i class="bi bi-arrows-move drag-handle"></i> <span>${d.parent_title} (${d.children.length})</span>`;
+            if (body) {
+                let html = '<div class="modal-films-grid">';
+                d.children.forEach(f => html += this.renderModalFilmCard(f));
+                html += '</div>';
+                body.innerHTML = html;
+            }
+
+            requestAnimationFrame(() => {
+                const w = content.offsetWidth, h = content.offsetHeight;
+                let x = Math.max(20, Math.min(event.clientX - 50, window.innerWidth - w - 20));
+                let y = Math.max(20, Math.min(event.clientY - 50, window.innerHeight - h - 20));
+                this.dragData.xOffset = x; this.dragData.yOffset = y;
+                content.style.transform = `translate(${x}px, ${y}px)`;
+                content.style.opacity = '1';
+            });
+        } catch (e) {
+            if (body) body.innerHTML = '❌ Fehler';
+            content.style.opacity = '1';
+        }
+    }
+
+    closeBoxSetModal() {
+        const m = document.getElementById('boxsetModal');
+        if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+
+    renderModalFilmCard(f) {
+        let b = '';
+        if (f.tmdb_rating > 0) {
+            let color = f.tmdb_rating >= 8 ? '#4caf50' : (f.tmdb_rating >= 6 ? '#ff9800' : '#f44336');
+            b = `<div class="tmdb-rating-badge" style="background:${color}"><i class="bi bi-star-fill"></i> ${parseFloat(f.tmdb_rating).toFixed(1)}</div>`;
+        }
+        return `<div class="dvd"><div class="cover-area"><img src="${f.cover}">${b}</div><div class="dvd-details"><h2><a href="#" class="toggle-detail" data-id="${f.id}">${f.title}</a></h2></div></div>`;
+    }
+
+    initBoxSetModalDrag() {
+        const m = document.getElementById('boxsetModal'), c = m?.querySelector('.modal-content');
+        if (!c) return;
+        const start = (e) => {
+            if (!e.target.closest('.modal-header') || e.target.closest('.modal-close')) return;
+            this.dragData.isDragging = true;
+            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+            this.dragData.initialX = clientX - this.dragData.xOffset;
+            this.dragData.initialY = clientY - this.dragData.yOffset;
+        };
+        const move = (e) => {
+            if (!this.dragData.isDragging) return;
+            e.preventDefault();
+            const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+            this.dragData.xOffset = clientX - this.dragData.initialX;
+            this.dragData.yOffset = clientY - this.dragData.initialY;
+            c.style.transform = `translate(${this.dragData.xOffset}px, ${this.dragData.yOffset}px)`;
+        };
+        const end = () => this.dragData.isDragging = false;
+        m.addEventListener('mousedown', start); m.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+        m.addEventListener('touchstart', start, { passive: false }); m.addEventListener('touchmove', move, { passive: false }); window.addEventListener('touchend', end);
     }
 }
 
-// App initialisieren
-document.addEventListener('DOMContentLoaded', () => {
-    //    console.log('🚀 DVD App wird initialisiert...');
-    window.dvdApp = new DVDApp();
-});
-
-// Global verfügbare Funktion für closeDetail (für Backwards-Kompatibilität)
-function closeDetail() {
-    if (window.dvdApp) {
-        window.dvdApp.closeDetail();
-    }
-}
-
-// Global verfügbare Funktion für setViewMode
-window.setViewMode = function (mode) {
-    if (window.dvdApp) {
-        window.dvdApp.setViewMode(mode);
-    }
-};
+// Global Helpers
+document.addEventListener('DOMContentLoaded', () => { window.dvdApp = new DVDApp(); });
+function closeDetail() { if (window.dvdApp) window.dvdApp.closeDetail(); }
+window.setViewMode = function (m) { if (window.dvdApp) window.dvdApp.setViewMode(m); };
+window.openBoxSetModal = function (e, p) { if (window.dvdApp) window.dvdApp.openBoxSetModal(e, p); };
+window.IS_DEV = false; // Setze auf true für Logs

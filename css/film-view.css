@@ -93,7 +93,7 @@
 }
 
 .episode-item:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .episode-header {
@@ -258,7 +258,8 @@
     margin-top: var(--space-md);
 }
 
-.community-rating, .user-rating {
+.community-rating,
+.user-rating {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
@@ -480,14 +481,16 @@
 
 .trailer-channel-link a:hover {
     background: var(--glass-bg-strong);
-    border-color: #ff0000; /* YouTube rot */
+    border-color: #ff0000;
+    /* YouTube rot */
     color: var(--text-white);
     transform: translateY(-2px);
 }
 
 .trailer-channel-link i {
     font-size: 1.2rem;
-    color: #ff0000; /* YouTube rot */
+    color: #ff0000;
+    /* YouTube rot */
 }
 
 .user-rating-section {
@@ -613,39 +616,40 @@
     .film-rating {
         gap: var(--space-sm);
     }
-    
-    .community-rating, .user-rating {
+
+    .community-rating,
+    .user-rating {
         flex-direction: column;
         gap: var(--space-xs);
     }
-    
+
     .user-rating-section {
         align-items: flex-start;
     }
-    
+
     .rating-input {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .film-actions {
         flex-direction: column;
     }
-    
+
     .film-actions .btn {
         width: 100%;
     }
-    
+
     .boxset-children-grid {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: var(--space-sm);
     }
-    
+
     .film-info-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: var(--space-sm);
     }
-    
+
     .user-status-badges {
         flex-direction: column;
         align-items: center;
@@ -657,8 +661,13 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .notification {
@@ -670,11 +679,13 @@
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
     }
 }
+
 /* Age Verification Modal Styles */
 .age-modal {
     position: fixed;
@@ -692,8 +703,13 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .age-modal-content {
@@ -708,8 +724,15 @@
 }
 
 @keyframes slideUp {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .age-modal-header {
@@ -806,9 +829,17 @@
 }
 
 @media (max-width: 576px) {
-    .age-modal-content { padding: 1.5rem; }
-    .age-modal-actions { flex-direction: column; }
-    .age-modal-header i { font-size: 2.5rem; }
+    .age-modal-content {
+        padding: 1.5rem;
+    }
+
+    .age-modal-actions {
+        flex-direction: column;
+    }
+
+    .age-modal-header i {
+        font-size: 2.5rem;
+    }
 }
 
 /* User Rating Card - TMDb Style */
@@ -964,8 +995,797 @@
     .user-rating-card .rating-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .user-rating-card .rating-score {
         font-size: 2rem;
+    }
+}
+
+/* ============================================
+   INLINE STYLES FROM FILM-VIEW.PHP
+   ============================================ */
+
+/* Backdrop Hintergrund */
+.detail-inline {
+    position: relative;
+    overflow: hidden;
+}
+
+.backdrop-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    background-color: var(--bg-primary, #0f0f23);
+}
+
+/* Hero-Wrapper für Backdrop-Container */
+.hero-wrapper {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 3rem;
+    border-radius: 16px;
+}
+
+/* Titel auf Backdrop - Weiß mit starkem Shadow */
+.detail-inline .hero-wrapper .hero-section .hero-content .film-header h2,
+.hero-content .film-header h2 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffffff !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9), 0 4px 8px rgba(0, 0, 0, 0.7);
+}
+
+.detail-inline .hero-wrapper .hero-section .hero-content .film-header .film-year,
+.hero-content .film-header .film-year,
+span[itemprop="datePublished"] {
+    font-weight: 400;
+    opacity: 0.9;
+    color: #ffffff !important;
+}
+
+/* Moderne Action-Buttons */
+.film-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.5rem 0;
+    margin-top: 2rem;
+}
+
+/* User-Status Badges (Gesehen) */
+.user-status-badges {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.badge-watched {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2) 0%, rgba(40, 167, 69, 0.1) 100%);
+    border: 2px solid rgba(40, 167, 69, 0.4);
+    border-radius: 20px;
+    color: #28a745;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.badge-watched i {
+    font-size: 1rem;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn i {
+    font-size: 1.1rem;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+/* Schließen Button */
+.action-close {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.action-close:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Als gesehen Button */
+.action-watched {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 2px solid rgba(40, 167, 69, 0.3);
+}
+
+.action-watched:hover {
+    background: rgba(40, 167, 69, 0.2);
+    border-color: #28a745;
+}
+
+.action-watched.active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.action-watched.active:hover {
+    background: #218838;
+}
+
+/* Teilen Button */
+.action-share {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+    border: 2px solid rgba(23, 162, 184, 0.3);
+}
+
+.action-share:hover {
+    background: rgba(23, 162, 184, 0.2);
+    border-color: #17a2b8;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .film-actions {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+.backdrop-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(2px);
+    transform: scale(1.1);
+}
+
+.backdrop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Default Theme - Dunkles Blau (#0f0f23) */
+:root .backdrop-overlay,
+[data-theme="default"] .backdrop-overlay {
+    background: linear-gradient(to bottom,
+            rgba(15, 15, 35, 0.3) 0%,
+            rgba(15, 15, 35, 0.5) 20%,
+            rgba(15, 15, 35, 0.7) 40%,
+            rgba(15, 15, 35, 0.85) 60%,
+            rgba(15, 15, 35, 0.95) 80%,
+            rgba(15, 15, 35, 1) 100%);
+}
+
+/* Dark Theme - Schwarz (#000000) */
+[data-theme="dark"] .backdrop-overlay {
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.3) 0%,
+            rgba(0, 0, 0, 0.5) 20%,
+            rgba(0, 0, 0, 0.7) 40%,
+            rgba(0, 0, 0, 0.85) 60%,
+            rgba(0, 0, 0, 0.95) 80%,
+            rgba(0, 0, 0, 1) 100%);
+}
+
+/* Blue Theme - Dunkles Blau (#001f3f) */
+[data-theme="blue"] .backdrop-overlay {
+    background: linear-gradient(to bottom,
+            rgba(0, 31, 63, 0.3) 0%,
+            rgba(0, 31, 63, 0.5) 20%,
+            rgba(0, 31, 63, 0.7) 40%,
+            rgba(0, 31, 63, 0.85) 60%,
+            rgba(0, 31, 63, 0.95) 80%,
+            rgba(0, 31, 63, 1) 100%);
+}
+
+/* Purple Theme - Dunkles Lila (#1a0a1f) */
+[data-theme="purple"] .backdrop-overlay {
+    background: linear-gradient(to bottom,
+            rgba(26, 10, 31, 0.3) 0%,
+            rgba(26, 10, 31, 0.5) 20%,
+            rgba(26, 10, 31, 0.7) 40%,
+            rgba(26, 10, 31, 0.85) 60%,
+            rgba(26, 10, 31, 0.95) 80%,
+            rgba(26, 10, 31, 1) 100%);
+}
+
+/* Green Theme - Dunkles Grün (#0a1f0a) */
+[data-theme="green"] .backdrop-overlay {
+    background: linear-gradient(to bottom,
+            rgba(10, 31, 10, 0.3) 0%,
+            rgba(10, 31, 10, 0.5) 20%,
+            rgba(10, 31, 10, 0.7) 40%,
+            rgba(10, 31, 10, 0.85) 60%,
+            rgba(10, 31, 10, 0.95) 80%,
+            rgba(10, 31, 10, 1) 100%);
+}
+
+/* Red Theme - Dunkles Rot (#1a0a0a) */
+[data-theme="red"] .backdrop-overlay {
+    background: linear-gradient(to bottom,
+            rgba(26, 10, 10, 0.3) 0%,
+            rgba(26, 10, 10, 0.5) 20%,
+            rgba(26, 10, 10, 0.7) 40%,
+            rgba(26, 10, 10, 0.85) 60%,
+            rgba(26, 10, 10, 0.95) 80%,
+            rgba(26, 10, 10, 1) 100%);
+}
+
+/* Content über Backdrop */
+.film-header,
+.cover-gallery,
+.film-info,
+.film-meta,
+.ratings-section,
+.film-description,
+.cast-section,
+.seasons-section,
+.boxset-children,
+.trailer-section,
+.actions-bar,
+.close-detail {
+    position: relative;
+    z-index: 1;
+}
+
+/* Hero Section - Horizontales Layout (TMDb-Style) */
+.hero-section {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 3rem;
+    padding: 3rem 2rem;
+    min-height: 500px;
+}
+
+/* WICHTIG: Alle Elemente in Hero transparent halten */
+.hero-section .film-header,
+.hero-section .meta-card,
+.hero-section .rating-card,
+.hero-section .ratings-section {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Ratings in Hero-Section - transparent und kompakt */
+.hero-section .ratings-container {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.hero-section .ratings-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+.hero-section .rating-card {
+    background: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.hero-section .rating-card.tmdb {
+    background: rgba(1, 180, 228, 0.1) !important;
+}
+
+.hero-section .rating-card.imdb {
+    background: rgba(245, 197, 24, 0.1) !important;
+}
+
+.hero-cover {
+    flex-shrink: 0;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.hero-cover img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.hero-cover .no-cover {
+    width: 100%;
+    height: 450px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--text-muted);
+}
+
+/* Crew-Info unter dem Cover */
+.crew-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.crew-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.crew-role {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted, rgba(228, 228, 231, 0.6));
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.crew-name {
+    font-size: 0.9rem;
+    color: var(--text-primary, #e4e4e7);
+    line-height: 1.4;
+}
+
+.hero-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.hero-meta-line {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-meta-line .fsk-badge {
+    display: inline-flex;
+    align-items: center;
+}
+
+.hero-meta-line .fsk-logo {
+    height: 20px;
+    width: auto;
+}
+
+.hero-overview {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.95);
+    max-width: 800px;
+}
+
+.hero-overview h3 {
+    color: var(--text-primary, #e4e4e7);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .hero-section {
+        flex-direction: column;
+        gap: 2rem;
+        padding: 2rem 1.5rem;
+    }
+
+    .hero-cover {
+        width: 250px;
+        margin: 0 auto;
+    }
+
+    .hero-content .film-header h2 {
+        font-size: 2rem;
+    }
+}
+
+/* Cover-Gallery transparent, damit Backdrop sichtbar bleibt */
+.cover-gallery {
+    background: transparent !important;
+}
+
+/* ============================================
+   Actor Profile Links Styling
+   ============================================ */
+
+.actor-link {
+    color: var(--text-white, #ffffff);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+}
+
+.actor-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-primary, #667eea);
+    transition: width 0.3s ease;
+}
+
+.actor-link:hover {
+    color: var(--accent-primary, #667eea);
+}
+
+.actor-link:hover::after {
+    width: 100%;
+}
+
+/* Actor Item mit besserer Spacing */
+.actor-item {
+    padding: 0.5rem 0;
+    transition: all 0.3s ease;
+}
+
+.actor-item:hover {
+    padding-left: 0.5rem;
+    background: var(--glass-bg, rgba(255, 255, 255, 0.02));
+    border-radius: var(--radius-sm, 6px);
+}
+
+/* Smooth Animation f�r Actor Links */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.actor-item {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.actor-item:nth-child(1) { animation-delay: 0.05s; }
+.actor-item:nth-child(2) { animation-delay: 0.1s; }
+.actor-item:nth-child(3) { animation-delay: 0.15s; }
+.actor-item:nth-child(4) { animation-delay: 0.2s; }
+.actor-item:nth-child(5) { animation-delay: 0.25s; }
+
+
+/* ============================================
+   STYLES FROM rating-details.php
+   ============================================ */
+
+.ratings-container {
+    margin: var(--space-lg, 1.5rem) 0;
+    padding: var(--space-lg, 1.5rem);
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    border-radius: var(--radius-lg, 12px);
+}
+
+.ratings-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm, 0.5rem);
+    margin: 0 0 var(--space-md, 1rem) 0;
+    font-size: 1.3rem;
+    color: var(--text-primary, #e4e4e7);
+}
+
+.ratings-title i {
+    color: var(--accent-primary, #667eea);
+}
+
+.ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md, 1rem);
+}
+
+.rating-card {
+    padding: var(--space-md, 1rem);
+    background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    border-radius: var(--radius-md, 8px);
+    text-align: center;
+}
+
+.rating-logo {
+    margin-bottom: var(--space-sm, 0.5rem);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
+}
+
+.rating-logo img {
+    max-height: 100%;
+}
+
+.rating-score {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: var(--space-sm, 0.5rem) 0;
+}
+
+.rating-max {
+    font-size: 1.2rem;
+    opacity: 0.6;
+    font-weight: 400;
+}
+
+.rating-votes {
+    font-size: 0.9rem;
+    color: var(--text-muted, rgba(228, 228, 231, 0.6));
+    margin-top: var(--space-xs, 0.35rem);
+}
+
+.rating-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted, rgba(228, 228, 231, 0.6));
+    margin-top: var(--space-xs, 0.35rem);
+}
+
+.rating-link {
+    margin-top: var(--space-md, 1rem);
+}
+
+.rating-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs, 0.35rem);
+    padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
+    background: var(--accent-primary, #667eea);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--radius-sm, 6px);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.rating-link a:hover {
+    background: var(--accent-hover, #764ba2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.external-links {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-top: var(--space-lg, 1.5rem);
+    padding-top: var(--space-lg, 1.5rem);
+    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.external-logo-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    border-radius: var(--radius-md, 8px);
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.external-logo-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    border-color: var(--border-color, rgba(255, 255, 255, 0.3));
+}
+
+.external-logo-link img {
+    height: 36px;
+    width: auto;
+}
+
+@media (max-width: 600px) {
+    .ratings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .rating-score {
+        font-size: 2rem;
+    }
+}
+
+/* ============================================
+   STYLES FROM similar-movies.php
+   ============================================ */
+
+.similar-movies-section {
+    margin: var(--space-xl, 2rem) 0;
+    padding: var(--space-lg, 1.5rem);
+    background: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+    border-radius: var(--radius-lg, 12px);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.similar-movies-section h3 {
+    margin-bottom: var(--space-lg, 1.5rem);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm, 0.5rem);
+    color: var(--text-primary, #e4e4e7);
+}
+
+.similar-movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--space-md, 1rem);
+}
+
+.similar-movie-card {
+    background: var(--bg-tertiary, rgba(255, 255, 255, 0.03));
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.similar-movie-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-primary, #667eea);
+}
+
+.similar-movie-card img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+}
+
+.similar-movie-card .no-poster {
+    width: 100%;
+    aspect-ratio: 2/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-quaternary, rgba(255, 255, 255, 0.02));
+    color: var(--text-muted, rgba(228, 228, 231, 0.4));
+}
+
+.similar-movie-card .no-poster i {
+    font-size: 3rem;
+}
+
+.similar-movie-info {
+    padding: var(--space-sm, 0.5rem);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.similar-movie-info h4 {
+    font-size: 0.9rem;
+    margin: 0 0 var(--space-xs, 0.35rem) 0;
+    color: var(--text-primary, #e4e4e7);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.similar-movie-meta {
+    display: flex;
+    gap: var(--space-sm, 0.5rem);
+    align-items: center;
+    font-size: 0.8rem;
+    margin-bottom: var(--space-xs, 0.35rem);
+}
+
+.similar-movie-meta .year {
+    color: var(--text-secondary, rgba(228, 228, 231, 0.7));
+}
+
+.similar-movie-meta .rating {
+    color: var(--accent-primary, #ffd700);
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.similar-movie-info .overview {
+    font-size: 0.75rem;
+    color: var(--text-muted, rgba(228, 228, 231, 0.6));
+    line-height: 1.4;
+    margin: var(--space-xs, 0.35rem) 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+
+.btn-tmdb-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: var(--accent-primary, #667eea);
+    text-decoration: none;
+    margin-top: auto;
+    padding-top: var(--space-xs, 0.35rem);
+    transition: color 0.2s ease;
+}
+
+.btn-tmdb-link:hover {
+    color: var(--accent-hover, #764ba2);
+}
+
+.btn-tmdb-link i {
+    font-size: 0.7rem;
+}
+
+@media (max-width: 768px) {
+    .similar-movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 }

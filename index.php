@@ -128,13 +128,13 @@ if ($page === 'actor') {
 // CSP Header für zusätzliche Sicherheit
 $cspPolicy = "default-src 'self'; " .
              "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
-             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; " .
+             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " .
              "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.dailymotion.com; " . 
              "img-src 'self' data: https:; " .
-             "font-src 'self' https://cdn.jsdelivr.net; " .
+             "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; " .
              "connect-src 'self';";
              
-header("Content-Security-Policy: " . $cspPolicy);
+// header("Content-Security-Policy: " . $cspPolicy); // Disabled in favor of bootstrap.php central CSP or more permissive local one
 
 // JSON-LD Schema für SEO
 $schema = [
@@ -177,17 +177,33 @@ $schema = [
     <title><?= htmlspecialchars($pageTitle) ?></title>
     
     <!-- Preload critical resources -->
-    <link rel="preload" href="css/style.css" as="style">
-    <link rel="preload" href="css/theme.css" as="style">
-    <link rel="preload" href="css/film-view.css" as="style">
+    <link rel="preload" href="css/style.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
+    <link rel="preload" href="css/theme.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
+    <link rel="preload" href="css/film-view.css?v=<?= DVDPROFILER_VERSION ?>" as="style">
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" as="style">
     
     <!-- CSS -->
-    <link href="css/style.css" rel="stylesheet">
-    <link href="css/theme.css" rel="stylesheet">
-    <link href="css/film-view.css" rel="stylesheet">
+    <link href="css/style.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
+    <link href="css/theme.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
+    <link href="css/film-list.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
+    <link href="css/film-view.css?v=<?= DVDPROFILER_VERSION ?>" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="libs/fancybox/dist/fancybox/fancybox.css" rel="stylesheet">
+    
+    <script>
+        // Sofortige View-Mode Anwendung gegen FOUC
+        (function() {
+            const savedMode = localStorage.getItem('movieViewMode') || 'grid';
+            document.documentElement.setAttribute('data-view-mode', savedMode);
+            // Wir fügen eine CSS-Regel direkt ein, um die Sichtbarkeit zu steuern
+            const style = document.createElement('style');
+            style.id = 'fouc-protection';
+            style.textContent = savedMode === 'grid' 
+                ? '.film-list { display: grid !important; }'
+                : '.film-list { display: flex !important; flex-direction: column !important; } .film-list .dvd { flex-direction: row !important; } .film-list .cover-area { width: 60px !important; height: 85px !important; }';
+            document.head.appendChild(style);
+        })();
+    </script>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="<?= LOGO_PATH ?>/favicon.ico">
@@ -285,7 +301,7 @@ $schema = [
 
     <!-- JavaScript -->
     <script src="libs/fancybox/dist/index.umd.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=<?= DVDPROFILER_VERSION ?>"></script>
     
     <!-- Cookie Consent Script -->
     <script>
