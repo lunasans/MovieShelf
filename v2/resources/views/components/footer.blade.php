@@ -1,0 +1,97 @@
+<footer class="mt-20 pb-10 px-8 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div class="max-w-7xl mx-auto flex flex-col items-center gap-12">
+        
+        <!-- Navigation Links -->
+        <nav class="flex flex-wrap justify-center gap-4 md:gap-8">
+            <a href="#" class="text-xs font-bold text-gray-500 uppercase tracking-widest hover:text-blue-400 transition-colors flex items-center gap-2">
+                <i class="bi bi-info-circle text-[10px]"></i>
+                Impressum
+            </a>
+            <a href="#" class="text-xs font-bold text-gray-500 uppercase tracking-widest hover:text-blue-400 transition-colors flex items-center gap-2">
+                <i class="bi bi-shield-lock text-[10px]"></i>
+                Datenschutz
+            </a>
+            @auth
+                <a href="{{ route('admin.dashboard') }}" class="text-xs font-bold text-gray-500 uppercase tracking-widest hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <i class="bi bi-speedometer2 text-[10px]"></i>
+                    Admin
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="text-xs font-bold text-gray-500 uppercase tracking-widest hover:text-red-400 transition-colors flex items-center gap-2">
+                        <i class="bi bi-box-arrow-right text-[10px]"></i>
+                        Logout
+                    </button>
+                </form>
+            @else
+                <a href="{{ route('login') }}" class="text-xs font-bold text-gray-500 uppercase tracking-widest hover:text-blue-400 transition-colors flex items-center gap-2">
+                    <i class="bi bi-person text-[10px]"></i>
+                    Login
+                </a>
+            @endauth
+        </nav>
+
+        <!-- Stats Section -->
+        <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div class="glass py-4 px-6 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-white/[0.03] transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-collection"></i>
+                </div>
+                <div class="text-sm font-black text-white leading-none">{{ number_format($footerStats['total_films']) }}</div>
+                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Filme</div>
+            </div>
+
+            <div class="glass py-4 px-6 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-white/[0.03] transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="text-sm font-black text-white leading-none">{{ number_format($footerStats['total_actors']) }}</div>
+                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Darsteller</div>
+            </div>
+
+            <div class="glass py-4 px-6 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-white/[0.03] transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-tags"></i>
+                </div>
+                <div class="text-sm font-black text-white leading-none">{{ number_format($footerStats['total_genres']) }}</div>
+                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Genres</div>
+            </div>
+
+            <div class="glass py-4 px-6 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-white/[0.03] transition-all group">
+                <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-eye"></i>
+                </div>
+                <div class="text-sm font-black text-white leading-none">{{ number_format($footerStats['total_visits']) }}</div>
+                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Besucher</div>
+            </div>
+        </div>
+
+        <!-- Copyright & Attribution -->
+        <div class="flex flex-col items-center gap-6 text-center">
+            <div class="flex items-center gap-4">
+                <div class="px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full text-[10px] font-bold text-blue-400 uppercase tracking-widest">
+                    v1.5.2 "Cinephile"
+                </div>
+                <a href="https://github.com/lunasans/dvdprofiler.liste" target="_blank" class="text-gray-500 hover:text-white transition-colors">
+                    <i class="bi bi-github text-xl"></i>
+                </a>
+            </div>
+
+            <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-relaxed">
+                &copy; {{ date('Y') }} René Neuhaus. Alle Rechte vorbehalten.<br>
+                Handgefertigt mit <i class="bi bi-heart-fill text-rose-500 mx-1"></i> und Laravel.
+            </p>
+
+            <div class="max-w-md flex flex-col items-center gap-2">
+                <span class="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Powered by</span>
+                <a href="https://www.themoviedb.org" target="_blank" class="opacity-40 hover:opacity-100 transition-opacity">
+                    <img src="{{ asset('img/svg/tmdb_logo.svg') }}" 
+                         alt="TMDB Logo" class="h-4 w-auto grayscale brightness-200">
+                </a>
+                <p class="text-[8px] text-gray-600 leading-tight italic max-w-xs">
+                    This website uses TMDB and the TMDB APIs but is not endorsed or certified by TMDB.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
