@@ -11,36 +11,36 @@
         </span>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-5 gap-2">
         @forelse($latestMovies as $lat)
             <div class="group cursor-pointer" @click="fetchDetails({{ $lat->id }})">
-                <div class="relative aspect-[2/3] rounded-2xl overflow-hidden glass border border-white/5 shadow-lg transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-blue-500/20 group-hover:border-blue-500/30">
+                <div class="relative aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 shadow-xl transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-blue-500/30 group-hover:border-blue-500/50">
                     <!-- Movie Cover Placeholder -->
-                    <div class="absolute inset-0 bg-gray-800 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
                         @if($lat->cover_id)
-                            <img src="{{ Storage::url($lat->cover_id) }}" alt="{{ $lat->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                            <div class="absolute inset-0 bg-blue-500/10 group-hover:bg-transparent transition-colors"></div>
+                            <img src="{{ Storage::url($lat->cover_id) }}" alt="{{ $lat->title }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
                         @else
-                            <i class="bi bi-film text-2xl text-gray-700"></i>
+                            <i class="bi bi-film text-xl text-white/5"></i>
                         @endif
                     </div>
                     
                     <!-- New Badge -->
                     <div class="absolute top-2 left-2 z-20">
-                        <span class="bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-lg uppercase tracking-tighter">
+                        <span class="bg-blue-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded shadow-lg uppercase tracking-tighter">
                             NEW
                         </span>
                     </div>
                 </div>
                 
                 <div class="mt-2 px-1">
-                    <h3 class="text-[11px] font-bold text-gray-200 truncate group-hover:text-blue-400 transition-colors">
+                    <h3 class="text-[11px] font-black text-white leading-tight truncate group-hover:text-blue-400 transition-colors uppercase">
                         {{ $lat->title }}
                     </h3>
-                    <div class="flex items-center gap-1.5 mt-0.5">
-                        <span class="text-[9px] text-gray-500 font-medium">{{ $lat->year }}</span>
-                        <span class="w-0.5 h-0.5 bg-gray-700 rounded-full"></span>
-                        <span class="text-[9px] text-blue-500/80 font-bold uppercase tracking-tighter">{{ $lat->collection_type }}</span>
+                    <div class="flex items-center gap-1.5 mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <span class="text-[9px] text-gray-400 font-bold italic">{{ $lat->year }}</span>
+                        <span class="w-0.5 h-0.5 bg-blue-500 rounded-full"></span>
+                        <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">{{ $lat->collection_type }}</span>
                     </div>
                 </div>
             </div>

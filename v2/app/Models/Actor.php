@@ -11,6 +11,7 @@ class Actor extends Model
 
     protected $fillable = [
         'tmdb_id',
+        'imdb_id',
         'first_name',
         'last_name',
         'profile_path',
@@ -18,7 +19,9 @@ class Actor extends Model
         'birthday',
         'deathday',
         'place_of_birth',
+        'homepage',
         'bio',
+        'view_count',
     ];
 
     public function movies()

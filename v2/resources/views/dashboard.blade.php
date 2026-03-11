@@ -21,6 +21,21 @@
                         this.loading = false;
                     });
             },
+            fetchActor(id) {
+                this.isStatsView = false;
+                this.loading = true;
+                this.error = null;
+                fetch(`/actors/${id}/details`)
+                    .then(res => res.text())
+                    .then(html => {
+                        this.selectedMovie = html; // Reusing the same container for simplicity
+                        this.loading = false;
+                    })
+                    .catch(err => {
+                        this.error = 'Fehler beim Laden des Profils.';
+                        this.loading = false;
+                    });
+            },
             fetchStats() {
                 this.isStatsView = true;
                 this.loading = true;
@@ -80,6 +95,13 @@
                 });
             }
          }"
+         x-init="() => {
+             const urlParams = new URLSearchParams(window.location.search);
+             const movieId = urlParams.get('movie');
+             const actorId = urlParams.get('actor');
+             if (movieId) fetchDetails(movieId);
+             else if (actorId) fetchActor(actorId);
+          }"
          @stats-open.window="fetchStats()"
     >
         <!-- Film-Liste Area (Left Column) -->
@@ -123,44 +145,52 @@
             </div>
 
             <!-- Film Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 @forelse ($movies as $movie)
                     <div class="group cursor-pointer" @click="fetchDetails({{ $movie->id }})">
-                        <div class="relative aspect-[2/3] rounded-2xl overflow-hidden glass border border-white/5 shadow-xl transition-all duration-500 group-hover:scale-[1.03] group-hover:shadow-blue-500/20 group-hover:border-white/20">
+                        <div class="relative aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 shadow-2xl transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-blue-500/30 group-hover:border-blue-500/50">
                             <!-- Movie Cover Placeholder -->
-                            <div class="absolute inset-0 bg-gray-800 flex items-center justify-center">
+                            <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
                                 @if($movie->cover_id)
-                                    <img src="{{ Storage::url($movie->cover_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
-                                    <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black to-transparent z-10"></div>
+                                    <img src="{{ Storage::url($movie->cover_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
                                 @else
-                                    <i class="bi bi-film text-4xl text-gray-700"></i>
+                                    <i class="bi bi-film text-4xl text-white/5"></i>
                                 @endif
                             </div>
 
-                            <!-- Rating Badge -->
-                            <div class="absolute top-3 right-3 z-20 flex flex-col gap-2">
-                                <div class="bg-blue-600/90 backdrop-blur-md px-2 py-1 rounded-lg border border-white/20 flex items-center gap-1 shadow-lg">
+                            <!-- Rating & Collection Badge -->
+                            <div class="absolute top-3 right-3 z-20 flex flex-col gap-2 transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
+                                <div class="bg-blue-600 px-2 py-1 rounded-lg border border-white/20 flex items-center gap-1 shadow-xl">
                                     <i class="bi bi-star-fill text-[10px] text-yellow-400"></i>
-                                    <span class="text-[11px] font-bold text-white">8.2</span>
+                                    <span class="text-[11px] font-black text-white">8.2</span>
                                 </div>
-                                @if($movie->boxsetChildren->count() > 0)
-                                    <div class="bg-purple-600/90 backdrop-blur-md px-2 py-1 rounded-lg border border-white/20 flex items-center gap-1 shadow-lg">
-                                        <i class="bi bi-collection-play text-[10px] text-white"></i>
-                                        <span class="text-[11px] font-bold text-white">{{ $movie->boxsetChildren->count() }}</span>
-                                    </div>
-                                @endif
+                            </div>
+                            
+                            <!-- Collection Type Badge (Bottom Left) -->
+                            <div class="absolute bottom-3 left-3 z-20">
+                                <span class="text-[9px] font-black text-white/90 uppercase tracking-widest glass px-2 py-1 rounded-lg border border-white/10 shadow-lg">
+                                    {{ $movie->collection_type }}
+                                </span>
+                            </div>
+
+                            <!-- Hover Play Icon -->
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-blue-500/10">
+                                <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 transform scale-75 group-hover:scale-100 transition-transform duration-500">
+                                    <i class="bi bi-plus-lg text-2xl"></i>
+                                </div>
                             </div>
                         </div>
                         
                         <!-- Content Below -->
-                        <div class="mt-3 px-1">
-                            <h3 class="text-sm font-bold text-gray-200 truncate group-hover:text-blue-400 transition-colors">
+                        <div class="mt-4 px-1">
+                            <h3 class="text-[13px] font-black text-white leading-tight truncate group-hover:text-blue-400 transition-colors uppercase tracking-tight">
                                 {{ $movie->title }}
                             </h3>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span class="text-[11px] text-gray-500">{{ $movie->year }}</span>
-                                <span class="w-1 h-1 bg-gray-700 rounded-full"></span>
-                                <span class="text-[11px] text-blue-400 font-medium">{{ $movie->collection_type }}</span>
+                            <div class="flex items-center gap-2 mt-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                                <span class="text-[10px] text-gray-400 font-bold italic">{{ $movie->year }}</span>
+                                <span class="w-1 h-1 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">{{ $movie->genre }}</span>
                             </div>
                         </div>
                     </div>

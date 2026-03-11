@@ -37,6 +37,12 @@ class MovieController extends Controller
         return view('dashboard', compact('movies', 'collectionTypes', 'latestMovies'));
     }
 
+    public function show(Movie $movie)
+    {
+        $movie->load(['actors', 'boxsetChildren', 'parentBoxset']);
+        return view('movies.show', compact('movie'));
+    }
+
     public function details(Movie $movie)
     {
         $movie->load(['actors', 'boxsetChildren', 'parentBoxset']);

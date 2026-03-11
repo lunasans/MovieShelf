@@ -13,10 +13,12 @@
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors border-none {{ request()->routeIs('dashboard') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-house-fill mr-2"></i> {{ __('Start') }}
             </x-nav-link>
-            <a href="#" class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center">
+            <a href="{{ route('actors.index') }}" 
+                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('actors.index') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-people-fill mr-2"></i> {{ __('Schauspieler') }}
             </a>
-            <a href="#" class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center">
+            <a href="{{ route('movies.trailers') }}" 
+                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('movies.trailers') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-play-circle mr-2"></i> {{ __('Trailer') }}
             </a>
             <a href="{{ route('statistics') }}" 
@@ -89,7 +91,7 @@
         <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="rounded-xl">
              {{ __('Start') }}
         </x-responsive-nav-link>
-        <a href="#" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors">
+        <a href="{{ route('actors.index') }}" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('actors.index') ? 'bg-white/10' : '' }}">
             {{ __('Schauspieler') }}
         </a>
         <a href="#" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors">

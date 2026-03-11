@@ -91,15 +91,33 @@ class TmdbImportController extends Controller
                     $firstName = $nameParts[0];
                     $lastName = $nameParts[1] ?? '';
 
-                    $actor = Actor::firstOrCreate(
-                        ['first_name' => $firstName, 'last_name' => $lastName],
-                        ['birth_year' => null] // TMDb Details for person would be needed for birth year
+                    $actor = Actor::updateOrCreate(
+                        ['tmdb_id' => $person['id']],
+                        [
+                            'first_name' => $firstName,
+                            'last_name' => $lastName,
+                        ]
                     );
 
-                    $movie->actors()->attach($actor->id, [
-                        'role' => $person['character'],
-                        'is_main_role' => $person['order'] < 3,
-                        'sort_order' => $person['order']
+                    // Handle Profile Image
+                    if (!empty($person['profile_path']) && empty($actor->profile_path)) {
+                        try {
+                            $profileUrl = "https://image.tmdb.org/t/p/w185" . $person['profile_path'];
+                            $imageContent = Http::get($profileUrl)->body();
+                            $filename = 'actors/' . Str::random(20) . '.jpg';
+                            Storage::disk('public')->put($filename, $imageContent);
+                            $actor->update(['profile_path' => $filename]);
+                        } catch (\Exception $e) {
+                            Log::error("Could not download actor profile: " . $e->getMessage());
+                        }
+                    }
+
+                    $movie->actors()->syncWithoutDetaching([
+                        $actor->id => [
+                            'role' => $person['character'],
+                            'is_main_role' => $person['order'] < 3,
+                            'sort_order' => $person['order']
+                        ]
                     ]);
                 }
             }

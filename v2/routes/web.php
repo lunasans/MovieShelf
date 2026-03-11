@@ -11,15 +11,24 @@ Route::get('/', function () {
 Route::get('/dashboard', [MovieController::class, 'index'])
     ->name('dashboard');
 
+Route::get('/movies/{movie}', [MovieController::class, 'show'])
+    ->name('movies.show');
+
 Route::get('/movies/{movie}/details', [MovieController::class, 'details'])
     ->name('movies.details');
+
+Route::get('/actors', [\App\Http\Controllers\ActorController::class, 'index'])->name('actors.index');
+Route::get('/actors/{actor}', [\App\Http\Controllers\ActorController::class, 'show'])->name('actors.show');
+Route::get('/actors/{actor}/details', [\App\Http\Controllers\ActorController::class, 'details'])->name('actors.details');
+Route::get('/trailers', [\App\Http\Controllers\TrailerController::class, 'index'])->name('movies.trailers');
+
+Route::get('/statistics', [\App\Http\Controllers\StatsController::class, 'index'])->name('statistics');
+Route::post('/theme/save', [\App\Http\Controllers\ThemeController::class, 'save'])->name('theme.save');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    Route::get('/statistics', [\App\Http\Controllers\StatsController::class, 'index'])->name('statistics');
 
     // Admin Area
     Route::prefix('admin')->name('admin.')->group(function () {
@@ -35,8 +44,6 @@ Route::middleware('auth')->group(function () {
         Route::get('tmdb/search', [\App\Http\Controllers\Admin\TmdbImportController::class, 'search'])->name('tmdb.search');
         Route::post('tmdb/import', [\App\Http\Controllers\Admin\TmdbImportController::class, 'import'])->name('tmdb.import');
     });
-
-    Route::post('/theme/save', [\App\Http\Controllers\ThemeController::class, 'save'])->name('theme.save');
 });
 
 require __DIR__.'/auth.php';
