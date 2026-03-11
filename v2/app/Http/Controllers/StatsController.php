@@ -17,6 +17,13 @@ class StatsController extends Controller
         $hours = round($totalRuntime / 60);
         $days = round($hours / 24);
 
+        // Watched Stats
+        $watchedFilms = 0;
+        if (auth()->check()) {
+            $watchedFilms = auth()->user()->watchedMovies()->count();
+        }
+        $watchedPercentage = $totalFilms > 0 ? round(($watchedFilms * 100) / $totalFilms, 1) : 0;
+
         // Year Stats
         $yearStats = Movie::where('is_deleted', false)
             ->where('year', '>', 0)
@@ -46,15 +53,26 @@ class StatsController extends Controller
             ->orderBy('rating_age', 'asc')
             ->get();
 
-        // Top Genres
-        $genres = Movie::where('is_deleted', false)
+        // Top Genres (Split by comma)
+        $allGenreStrings = Movie::where('is_deleted', false)
             ->whereNotNull('genre')
             ->where('genre', '!=', '')
-            ->select('genre', DB::raw('count(*) as count'))
-            ->groupBy('genre')
-            ->orderBy('count', 'desc')
-            ->limit(10)
-            ->get();
+            ->pluck('genre');
+
+        $genreCounts = [];
+        foreach ($allGenreStrings as $string) {
+            $parts = array_map('trim', explode(',', $string));
+            foreach ($parts as $genre) {
+                if ($genre) {
+                    $genreCounts[$genre] = ($genreCounts[$genre] ?? 0) + 1;
+                }
+            }
+        }
+
+        arsort($genreCounts);
+        
+        $genres = collect(array_slice($genreCounts, 0, 10))
+            ->map(fn($count, $name) => (object)['genre' => $name, 'count' => $count]);
 
         // Year Distribution (Timeline)
         $yearDistribution = Movie::where('is_deleted', false)
@@ -82,14 +100,14 @@ class StatsController extends Controller
             return view('movies.partials.stats', compact(
                 'totalFilms', 'totalRuntime', 'avgRuntime', 'hours', 'days', 
                 'yearStats', 'collections', 'ratings', 'genres', 
-                'yearDistribution', 'decades'
+                'yearDistribution', 'decades', 'watchedFilms', 'watchedPercentage'
             ));
         }
 
         return view('statistics', compact(
             'totalFilms', 'totalRuntime', 'avgRuntime', 'hours', 'days', 
             'yearStats', 'collections', 'ratings', 'genres', 
-            'yearDistribution', 'decades'
+            'yearDistribution', 'decades', 'watchedFilms', 'watchedPercentage'
         ));
     }
 }

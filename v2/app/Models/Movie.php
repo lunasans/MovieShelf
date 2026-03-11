@@ -60,4 +60,9 @@ class Movie extends Model
     {
         return $this->hasMany(Season::class);
     }
+
+    public function watchedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'movie_user_watched');
+    }
 }

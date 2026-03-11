@@ -11,7 +11,17 @@
     </div>
 
     <!-- Metric Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-5 gap-6">
+        <div class="glass p-6 rounded-3xl flex items-center gap-5 group hover:bg-white/[0.03] transition-all border border-blue-500/20 bg-blue-500/5">
+            <div class="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 text-2xl group-hover:scale-110 transition-transform shadow-inner">
+                <i class="bi bi-eye-fill"></i>
+            </div>
+            <div>
+                <div class="text-2xl font-black text-white">{{ number_format($watchedFilms) }}</div>
+                <div class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">{{ $watchedPercentage }}% Gesehen</div>
+            </div>
+        </div>
+
         <div class="glass p-6 rounded-3xl flex items-center gap-5 group hover:bg-white/[0.03] transition-all">
             <div class="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 text-2xl group-hover:scale-110 transition-transform shadow-inner">
                 <i class="bi bi-collection-play"></i>

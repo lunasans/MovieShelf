@@ -56,6 +56,25 @@
                         this.loading = false;
                     });
             },
+            fetchImpressum() {
+                this.isStatsView = true; // Use wide layout like statistics
+                this.loading = true;
+                this.error = null;
+                fetch('{{ route('impressum') }}', {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => res.text())
+                    .then(html => {
+                        this.selectedMovie = html;
+                        this.loading = false;
+                    })
+                    .catch(err => {
+                        this.error = 'Fehler beim Laden des Impressums.';
+                        this.loading = false;
+                    });
+            },
             initCharts() {
                 const chartOptions = {
                     responsive: true,
@@ -99,10 +118,16 @@
              const urlParams = new URLSearchParams(window.location.search);
              const movieId = urlParams.get('movie');
              const actorId = urlParams.get('actor');
+             const showStats = urlParams.get('stats');
+             const showImpressum = urlParams.get('impressum');
+
              if (movieId) fetchDetails(movieId);
              else if (actorId) fetchActor(actorId);
+             else if (showStats) fetchStats();
+             else if (showImpressum) fetchImpressum();
           }"
          @stats-open.window="fetchStats()"
+         @impressum-open.window="fetchImpressum()"
     >
         <!-- Film-Liste Area (Left Column) -->
         <section class="film-list-area shadow-2xl">
@@ -147,7 +172,10 @@
             <!-- Film Grid -->
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 @forelse ($movies as $movie)
-                    <div class="group cursor-pointer" @click="fetchDetails({{ $movie->id }})">
+                    <div class="group cursor-pointer" 
+                         x-data="{ isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }} }"
+                         @movie-watched-updated.window="if($event.detail.movieId === {{ $movie->id }}) isWatched = $event.detail.watched"
+                         @click="fetchDetails({{ $movie->id }})">
                         <div class="relative aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 shadow-2xl transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-blue-500/30 group-hover:border-blue-500/50">
                             <!-- Movie Cover Placeholder -->
                             <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
@@ -159,11 +187,18 @@
                                 @endif
                             </div>
 
+                            <!-- Watched Indicator (Top Left) -->
+                            <div class="absolute top-3 left-3 z-20 transition-all duration-300" x-show="isWatched" x-cloak>
+                                <div class="bg-blue-500/80 backdrop-blur-md p-1.5 rounded-lg border border-white/20 shadow-lg">
+                                    <i class="bi bi-eye-fill text-white text-[10px]"></i>
+                                </div>
+                            </div>
+
                             <!-- Rating & Collection Badge -->
                             <div class="absolute top-3 right-3 z-20 flex flex-col gap-2 transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
                                 <div class="bg-blue-600 px-2 py-1 rounded-lg border border-white/20 flex items-center gap-1 shadow-xl">
                                     <i class="bi bi-star-fill text-[10px] text-yellow-400"></i>
-                                    <span class="text-[11px] font-black text-white">8.2</span>
+                                    <span class="text-[11px] font-black text-white">{{ number_format($movie->rating ?? 0, 1) }}</span>
                                 </div>
                             </div>
                             

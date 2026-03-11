@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Actor;
 use App\Services\TmdbService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ActorController extends Controller
 {
@@ -21,18 +22,58 @@ class ActorController extends Controller
     public function index(Request $request)
     {
         $query = $request->get('q');
+        $letter = strtoupper($request->get('letter'));
         
-        $actors = Actor::query()
+        // 1. Get available letters for navigation
+        $availableLetters = Actor::select(DB::raw('UPPER(SUBSTRING(last_name, 1, 1)) as first_letter'))
+            ->whereNotNull('last_name')
+            ->where('last_name', '!=', '')
+            ->distinct()
+            ->orderBy('first_letter')
+            ->pluck('first_letter')
+            ->toArray();
+
+        // 2. Build Query
+        $actorsQuery = Actor::query()
             ->when($query, function ($q) use ($query) {
-                $q->where('first_name', 'like', "%{$query}%")
-                  ->orWhere('last_name', 'like', "%{$query}%");
+                $q->where(function($sub) use ($query) {
+                    $sub->where('first_name', 'like', "%{$query}%")
+                        ->orWhere('last_name', 'like', "%{$query}%");
+                });
+            })
+            ->when($letter && preg_match('/^[A-Z#]$/', $letter), function ($q) use ($letter) {
+                if ($letter === '#') {
+                    $q->whereRaw('last_name REGEXP "^[^A-Za-z]"');
+                } else {
+                    $q->where('last_name', 'like', $letter . '%');
+                }
             })
             ->withCount('movies')
             ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->paginate(24);
+            ->orderBy('first_name');
 
-        return view('actors.index', compact('actors'));
+        // 3. Get Totals
+        $totalActors = Actor::count();
+        $filteredActorsCount = $actorsQuery->count();
+
+        // 4. Fetch and Group (if not searching or filtering by letter, we might want to paginate differently, 
+        // but for now we keep it simple or group the paginated results)
+        $actors = $actorsQuery->paginate(60);
+
+        // Grouping logic for the current page
+        $groupedActors = $actors->getCollection()->groupBy(function($actor) {
+            $char = strtoupper(mb_substr($actor->last_name, 0, 1));
+            return preg_match('/^[A-Z]$/', $char) ? $char : '#';
+        });
+
+        return view('actors.index', compact(
+            'actors', 
+            'groupedActors', 
+            'availableLetters', 
+            'totalActors', 
+            'filteredActorsCount',
+            'letter'
+        ));
     }
 
     /**

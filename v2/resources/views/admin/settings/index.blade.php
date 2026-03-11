@@ -63,6 +63,46 @@
                 </div>
             </div>
 
+            <!-- Impressum Settings -->
+            <div class="glass p-8 rounded-3xl border-white/5 shadow-2xl">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <i class="bi bi-info-circle text-blue-400"></i>
+                    Impressum & Rechtliches
+                </h3>
+
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="impressum_name" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Name / Betreiber</label>
+                            <input type="text" name="impressum_name" id="impressum_name" value="{{ old('impressum_name', $settings['impressum_name'] ?? '') }}"
+                                   placeholder="Max Mustermann"
+                                   class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                        </div>
+                        <div>
+                            <label for="impressum_email" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Kontakt E-Mail</label>
+                            <input type="email" name="impressum_email" id="impressum_email" value="{{ old('impressum_email', $settings['impressum_email'] ?? '') }}"
+                                   placeholder="kontakt@example.com"
+                                   class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="impressum_content" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Zusätzlicher Text (HTML erlaubt)</label>
+                        <textarea name="impressum_content" id="impressum_content" rows="4" 
+                                  class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">{{ old('impressum_content', $settings['impressum_content'] ?? '') }}</textarea>
+                        <p class="text-[10px] text-gray-500 mt-2 italic">Hier kannst du z.B. deine Addresse oder weitere rechtliche Hinweise einfügen.</p>
+                    </div>
+
+                    <div class="flex items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/10">
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" name="impressum_enabled" id="impressum_enabled" value="1" {{ (old('impressum_enabled', $settings['impressum_enabled'] ?? '1') == '1') ? 'checked' : '' }}
+                                   class="w-5 h-5 rounded border-white/10 bg-white/5 text-blue-600 focus:ring-blue-500/50 transition-all">
+                            <label for="impressum_enabled" class="text-sm font-bold text-gray-300 uppercase tracking-widest cursor-pointer">Impressum öffentlich anzeigen</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Save Actions -->
             <div class="flex items-center justify-end pt-4">
                 <button type="submit" class="px-10 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">

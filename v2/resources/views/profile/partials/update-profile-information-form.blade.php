@@ -1,10 +1,11 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
+        <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+            <i class="bi bi-person-circle text-blue-400"></i>
             {{ __('Profile Information') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-2 text-sm text-gray-400 font-medium">
             {{ __("Update your account's profile information and email address.") }}
         </p>
     </header>
@@ -56,8 +57,8 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
+                    class="text-sm text-emerald-400 font-bold"
+                ><i class="bi bi-check-circle-fill mr-1"></i> {{ __('Saved.') }}</p>
             @endif
         </div>
     </form>

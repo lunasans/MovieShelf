@@ -1,10 +1,39 @@
 <div class="animate-in fade-in slide-in-from-right-4 duration-500" 
      x-data="{ 
         showTrailer: false,
+        isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }},
+        watchedCount: {{ $movie->watchedByUsers()->count() }},
         get youtubeId() {
             const url = '{{ $movie->trailer_url }}';
             const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:v\/|u\/\w\/|embed\/|watch\?v=))([^#\&\?]*)/);
             return (match && match[1].length == 11) ? match[1] : null;
+        },
+        async toggleWatched() {
+           @if(Auth::check())
+               try {
+                   const response = await fetch('{{ route('movies.watched.toggle', $movie) }}', {
+                       method: 'POST',
+                       headers: {
+                           'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                           'Content-Type': 'application/json',
+                           'Accept': 'application/json'
+                       }
+                   });
+                   const data = await response.json();
+                   if (data.watched !== undefined) {
+                       this.isWatched = data.watched;
+                       this.watchedCount = data.count;
+                       // Dispatch event for dashboard cards
+                       window.dispatchEvent(new CustomEvent('movie-watched-updated', { 
+                           detail: { movieId: {{ $movie->id }}, watched: data.watched } 
+                       }));
+                   }
+               } catch (e) {
+                   console.error('Toggle watched failed', e);
+               }
+           @else
+               window.location.href = '{{ route('login') }}';
+           @endif
         }
      }">
     <!-- Header Area -->
@@ -85,7 +114,7 @@
     <div class="grid grid-cols-3 gap-4 mb-8">
         <div class="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center">
             <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ __('Gesehen') }}</span>
-            <div class="text-xl font-bold text-white">{{ $movie->view_count }}x</div>
+            <div class="text-xl font-bold text-white" x-text="watchedCount + 'x'">{{ $movie->watchedByUsers()->count() }}x</div>
         </div>
         <div class="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center">
             <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ __('FSK') }}</span>
@@ -232,8 +261,11 @@
                 {{ __('Kein Trailer verfügbar') }}
             </button>
         @endif
-        <button class="w-14 h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center justify-center transition-colors">
-            <i class="bi bi-heart text-xl text-gray-400 hover:text-rose-500 transition-colors"></i>
+        <button @click="toggleWatched()" 
+                class="w-14 h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center justify-center transition-all group"
+                :class="isWatched ? 'border-blue-500/50 bg-blue-500/10' : ''">
+            <i class="bi text-xl transition-colors" 
+               :class="isWatched ? 'bi-eye-fill text-blue-400' : 'bi-eye text-gray-400 group-hover:text-blue-400'"></i>
         </button>
     </div>
 </div>

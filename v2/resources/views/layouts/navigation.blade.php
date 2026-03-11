@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="glass rounded-2xl mt-4 px-6 py-4">
+<nav x-data="{ open: false }" class="glass rounded-2xl sticky top-4 z-50 px-6 py-4 transition-all duration-300 shadow-2xl">
     <div class="flex items-center justify-between gap-8 text-white">
         <!-- Logo Section -->
         <div class="flex-shrink-0">
@@ -21,8 +21,8 @@
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('movies.trailers') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-play-circle mr-2"></i> {{ __('Trailer') }}
             </a>
-            <a href="{{ route('statistics') }}" 
-                @click.prevent="$dispatch('stats-open')"
+            <a href="{{ route('dashboard', ['stats' => 1]) }}" 
+                @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('stats-open') } else { window.location.href = $el.href }"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('statistics') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-bar-chart-fill mr-2"></i> {{ __('Statistik') }}
             </a>
@@ -97,8 +97,8 @@
         <a href="#" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors">
             {{ __('Trailer') }}
         </a>
-        <a href="{{ route('statistics') }}" 
-            @click.prevent="$dispatch('stats-open'); open = false"
+        <a href="{{ route('dashboard', ['stats' => 1]) }}" 
+            @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('stats-open'); open = false } else { window.location.href = $el.href }"
             class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('statistics') ? 'bg-white/10' : '' }}">
             {{ __('Statistik') }}
         </a>

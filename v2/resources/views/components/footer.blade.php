@@ -3,7 +3,9 @@
         
         <!-- Navigation Links -->
         <nav class="flex flex-wrap justify-center gap-4 md:gap-8">
-            <a href="#" class="text-xs font-bold text-gray-500 uppercase tracking-widest hover:text-blue-400 transition-colors flex items-center gap-2">
+            <a href="{{ route('dashboard', ['impressum' => 1]) }}" 
+               @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('impressum-open') } else { window.location.href = $el.href }"
+               class="text-xs font-bold text-gray-500 uppercase tracking-widest hover:text-blue-400 transition-colors flex items-center gap-2">
                 <i class="bi bi-info-circle text-[10px]"></i>
                 Impressum
             </a>
