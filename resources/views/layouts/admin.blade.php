@@ -131,6 +131,13 @@
                     </div>
                 @endif
 
+                @if (session('error'))
+                    <div class="mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        <span class="text-sm font-bold">{{ session('error') }}</span>
+                    </div>
+                @endif
+
                 @if (isset($header))
                     <header class="mb-8">
                         {{ $header }}

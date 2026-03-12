@@ -54,7 +54,7 @@
                         <form action="{{ route('admin.update.run') }}" method="POST">
                             @csrf
                             <button type="submit" class="glass-button bg-blue-600 border-blue-500 text-white hover:bg-blue-500 flex items-center gap-2">
-                                <i class="bi bi- lightning-charge-fill"></i>
+                                <i class="bi bi-lightning-charge-fill"></i>
                                 Jetzt Update installieren
                             </button>
                         </form>

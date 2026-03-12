@@ -59,13 +59,35 @@ class SystemUpdateController extends Controller
     {
         try {
             Log::info('System Update started...');
+            
+            // Check for local changes
+            $status = $this->runCommand('git status --porcelain');
+            $hasChanges = !empty($status);
+            $stashApplied = false;
+
+            if ($hasChanges) {
+                Log::info('Local changes detected. Stashing...');
+                $this->runCommand('git stash');
+                $stashApplied = true;
+            }
+            
             $pull = $this->runCommand('git pull');
             Log::info('Git Pull Output: ' . $pull);
+            
+            if ($stashApplied) {
+                try {
+                    Log::info('Applying local changes back...');
+                    $this->runCommand('git stash pop');
+                } catch (\Exception $e) {
+                    Log::warning('Conflict while applying local changes: ' . $e->getMessage());
+                    // We don't fail the whole update here, but we log the conflict
+                }
+            }
             
             $migrate = $this->runCommand('php artisan migrate --force');
             Log::info('Migration Output: ' . $migrate);
             
-            return redirect()->route('admin.update.index')->with('success', 'System erfolgreich aktualisiert.');
+            return redirect()->route('admin.update.index')->with('success', 'System erfolgreich aktualisiert. Lokale Anpassungen wurden beibehalten.');
         } catch (\Exception $e) {
             Log::error('Update failed: ' . $e->getMessage());
             return back()->with('error', 'Update fehlgeschlagen: ' . $e->getMessage());

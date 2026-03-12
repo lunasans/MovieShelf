@@ -69,7 +69,16 @@ class Movie extends Model
 
     public function getCoverUrlAttribute()
     {
-        if (!$this->cover_id) return null;
+        if (!$this->cover_id) {
+            // Fallback for boxsets: use the first child's cover
+            if ($this->boxsetChildren->count() > 0) {
+                $firstChild = $this->boxsetChildren->first();
+                if ($firstChild && $firstChild->cover_id) {
+                    return $firstChild->cover_url;
+                }
+            }
+            return null;
+        }
         
         // If it already has a path/ext (TMDb new style), return it via public disk
         if (str_contains($this->cover_id, '/') || str_contains($this->cover_id, '.')) {
@@ -90,9 +99,17 @@ class Movie extends Model
             return \Illuminate\Support\Facades\Storage::disk('public')->url('backdrops/' . $this->backdrop_id . '.jpg');
         }
 
-        // Fallback: If it's a v1.5 movie, try the 'b' version of the cover
+        // Fallback 1: If it's a v1.5 movie, try the 'b' version of the cover
         if ($this->cover_id && !str_contains($this->cover_id, '/') && !str_contains($this->cover_id, '.')) {
             return \Illuminate\Support\Facades\Storage::disk('public')->url('covers/' . $this->cover_id . 'b.jpg');
+        }
+
+        // Fallback 2: For boxsets, use the first child's backdrop/cover
+        if ($this->boxsetChildren->count() > 0) {
+            $firstChild = $this->boxsetChildren->first();
+            if ($firstChild) {
+                return $firstChild->backdrop_url;
+            }
         }
 
         return null;
