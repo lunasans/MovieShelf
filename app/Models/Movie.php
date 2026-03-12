@@ -66,4 +66,35 @@ class Movie extends Model
     {
         return $this->belongsToMany(User::class, 'movie_user_watched');
     }
+
+    public function getCoverUrlAttribute()
+    {
+        if (!$this->cover_id) return null;
+        
+        // If it already has a path/ext (TMDb new style), return it via public disk
+        if (str_contains($this->cover_id, '/') || str_contains($this->cover_id, '.')) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->cover_id);
+        }
+
+        // Otherwise assume it's a v1.5 ID and append folder, suffix and extension
+        return \Illuminate\Support\Facades\Storage::disk('public')->url('covers/' . $this->cover_id . 'f.jpg');
+    }
+
+    public function getBackdropUrlAttribute()
+    {
+        // If we have a specific backdrop_id (TMDb), use it
+        if ($this->backdrop_id) {
+            if (str_contains($this->backdrop_id, '/') || str_contains($this->backdrop_id, '.')) {
+                return \Illuminate\Support\Facades\Storage::disk('public')->url($this->backdrop_id);
+            }
+            return \Illuminate\Support\Facades\Storage::disk('public')->url('backdrops/' . $this->backdrop_id . '.jpg');
+        }
+
+        // Fallback: If it's a v1.5 movie, try the 'b' version of the cover
+        if ($this->cover_id && !str_contains($this->cover_id, '/') && !str_contains($this->cover_id, '.')) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url('covers/' . $this->cover_id . 'b.jpg');
+        }
+
+        return null;
+    }
 }

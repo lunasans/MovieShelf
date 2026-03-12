@@ -42,8 +42,8 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-4">
                                     <div class="w-10 h-14 bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 border border-white/5 shadow-md flex items-center justify-center relative">
-                                        @if($movie->cover_id)
-                                            <img src="{{ Storage::url($movie->cover_id) }}" alt="" class="w-full h-full object-cover">
+                                        @if($movie->cover_url)
+                                            <img src="{{ $movie->cover_url }}" alt="" class="w-full h-full object-cover">
                                         @else
                                             <i class="bi bi-film text-gray-700"></i>
                                         @endif

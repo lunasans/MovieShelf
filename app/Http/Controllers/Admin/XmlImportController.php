@@ -149,6 +149,7 @@ class XmlImportController extends Controller
                     'rating_age' => is_numeric((string)$dvd->RatingAge) ? (int)$dvd->RatingAge : null,
                     'overview' => trim((string)($dvd->Overview ?? '')),
                     'cover_id' => $originalId,
+                    'backdrop_id' => null,
                     'collection_type' => trim((string)($dvd->CollectionType ?? '')),
                     'boxset_parent' => null, // Set in phase 3
                     'user_id' => auth()->id(),

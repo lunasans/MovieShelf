@@ -51,11 +51,11 @@
     <div class="relative rounded-[2.5rem] overflow-hidden glass-strong mb-10 aspect-[21/9] group shadow-2xl border border-white/5">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-gray-950 flex items-center justify-center">
-             @if($movie->backdrop_id)
-                <img src="{{ Storage::url($movie->backdrop_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover opacity-60">
+             @if($movie->backdrop_url)
+                <img src="{{ $movie->backdrop_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover opacity-60">
                 <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent"></div>
-            @elseif($movie->cover_id)
-                <img src="{{ Storage::url($movie->cover_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover blur-2xl scale-110 opacity-30">
+            @elseif($movie->cover_url)
+                <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover blur-2xl scale-110 opacity-30">
                 <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/20 to-transparent"></div>
             @else
                 <i class="bi bi-film text-6xl text-gray-800"></i>
@@ -67,8 +67,8 @@
             <div class="flex items-end gap-8 relative z-30">
                 <!-- Poster Overlay -->
                 <div class="relative w-32 md:w-40 aspect-[2/3] rounded-2xl overflow-hidden glass border-2 border-white/10 shadow-2xl group/poster shrink-0">
-                    @if($movie->cover_id)
-                        <img src="{{ Storage::url($movie->cover_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
+                    @if($movie->cover_url)
+                        <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
                         @if($movie->trailer_url)
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/poster:opacity-100 transition-opacity cursor-pointer" @click="showTrailer = true">
                                 <div class="w-12 h-12 bg-rose-600 rounded-full flex items-center justify-center shadow-lg shadow-rose-600/40 transform scale-75 group-hover/poster:scale-100 transition-transform">

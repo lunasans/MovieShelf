@@ -5,8 +5,8 @@
     
     <!-- Thumbnail -->
     <div class="relative w-20 aspect-[2/3] rounded-xl overflow-hidden border border-white/10 shrink-0">
-        @if($movie->cover_id)
-            <img src="{{ Storage::url($movie->cover_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
+        @if($movie->cover_url)
+            <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
         @else
             <div class="w-full h-full bg-gray-900 flex items-center justify-center">
                 <i class="bi bi-film text-xl text-white/10"></i>

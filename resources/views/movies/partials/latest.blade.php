@@ -18,8 +18,8 @@
                 <div class="relative aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 shadow-xl transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-blue-500/30 group-hover:border-blue-500/50">
                     <!-- Movie Cover Placeholder -->
                     <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
-                        @if($lat->cover_id)
-                            <img src="{{ Storage::url($lat->cover_id) }}" alt="{{ $lat->title }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                        @if($lat->cover_url)
+                            <img src="{{ $lat->cover_url }}" alt="{{ $lat->title }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
                         @else
                             <i class="bi bi-film text-xl text-white/5"></i>
