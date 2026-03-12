@@ -12,6 +12,16 @@
                     <i class="bi bi-cloud-arrow-down"></i>
                 </div>
                 
+                @if(isset($error))
+                    <div class="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-xs flex gap-3">
+                        <i class="bi bi-exclamation-octagon-fill text-lg"></i>
+                        <div>
+                            <div class="font-black uppercase tracking-widest mb-1">Git Fehler</div>
+                            {{ $error }}
+                        </div>
+                    </div>
+                @endif
+                
                 @if($needsUpdate)
                     <h1 class="text-4xl font-black text-white mb-2">Update verfügbar</h1>
                     <p class="text-blue-400 font-bold uppercase tracking-[0.2em] text-xs">Ein neuer Release steht bereit</p>

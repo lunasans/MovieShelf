@@ -36,11 +36,11 @@ class SystemUpdateController extends Controller
         } catch (\Exception $e) {
             Log::error('Update Check failed: ' . $e->getMessage());
             return view('admin.update.index', [
-                'currentCommit' => '???',
-                'currentBranch' => '???',
+                'currentCommit' => 'v' . config('app.version'),
+                'currentBranch' => 'Release',
                 'formattedChanges' => [],
                 'needsUpdate' => false,
-                'error' => 'Fehler beim Abrufen der Versionsinformationen: ' . $e->getMessage()
+                'error' => 'Git-Informationen konnten nicht geladen werden: ' . $e->getMessage()
             ]);
         }
     }
@@ -76,22 +76,41 @@ class SystemUpdateController extends Controller
     {
         $gitBinary = config('app.git_binary', 'git');
         
-        // Prüfe, ob der konfigurierte Pfad existiert, sonst Fallback auf 'git'
+        // On Linux, if it's a Windows path, it won't exist. Fallback to 'git'.
         if ($gitBinary !== 'git' && !file_exists($gitBinary)) {
+            Log::debug("Configured git binary not found: $gitBinary. Falling back to 'git'.");
             $gitBinary = 'git';
         }
 
-        // Ersetze 'git ' am Anfang des Befehls durch den (evtl. gequoteten) Pfad
+        // Replace 'git ' prefix with the actual binary path
         if (str_starts_with($cmd, 'git ')) {
-            $cmd = '"' . $gitBinary . '"' . substr($cmd, 3);
+            $executable = PHP_OS_FAMILY === 'Windows' ? '"' . $gitBinary . '"' : $gitBinary;
+            $cmd = $executable . substr($cmd, 3);
         }
 
+        Log::debug("Executing command: $cmd in " . base_path());
+        
         $result = Process::path(base_path())->run($cmd);
         
         if (!$result->successful()) {
             $error = $result->errorOutput() ?: $result->output();
-            Log::warning("Git command failed ($cmd): " . $error);
-            throw new \Exception($error);
+            $exitCode = $result->exitCode();
+
+            // Auto-fix for "dubious ownership"
+            if ($exitCode === 128 && str_contains($error, 'safe.directory')) {
+                Log::info("Detected dubious ownership. Attempting auto-fix...");
+                $fixCmd = $executable . ' config --global --add safe.directory ' . str_replace('\\', '/', base_path());
+                Process::path(base_path())->run($fixCmd);
+                
+                // Try original command again
+                $result = Process::path(base_path())->run($cmd);
+                if ($result->successful()) {
+                    return trim($result->output());
+                }
+            }
+
+            Log::warning("Git command failed (Exit $exitCode): $cmd. Error: " . $error);
+            throw new \Exception("Git error ($exitCode): " . $error);
         }
         
         return trim($result->output());
