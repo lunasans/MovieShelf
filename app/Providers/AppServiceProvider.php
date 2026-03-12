@@ -43,6 +43,10 @@ class AppServiceProvider extends ServiceProvider
                 ];
             });
             
+            // Fallback for safety during cache transitions
+            $stats['total_visits'] = $stats['total_visits'] ?? $totalCounter->visits;
+            $stats['daily_visits'] = $stats['daily_visits'] ?? $dailyCounter->visits;
+            
             $view->with('footerStats', $stats);
         });
     }

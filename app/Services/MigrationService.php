@@ -447,16 +447,32 @@ class MigrationService
             $oldCounter = DB::connection($this->connection)->table('counter')->first();
 
             if ($oldCounter) {
+                // Migrate Total Visits
                 Counter::updateOrCreate(
-                    ['id' => $oldCounter->id],
+                    ['page' => 'all'],
                     [
-                        'page' => 'total',
                         'visits' => $oldCounter->visits,
                         'last_visit' => property_exists($oldCounter, 'last_visit_date') ? $oldCounter->last_visit_date : ($oldCounter->last_visit ?? null),
                         'created_at' => $oldCounter->created_at,
                         'updated_at' => $oldCounter->updated_at,
                     ]
                 );
+
+                // Migrate Daily Visits (if exists and has a date)
+                if (property_exists($oldCounter, 'daily_visits') && property_exists($oldCounter, 'last_visit_date')) {
+                    $date = $oldCounter->last_visit_date;
+                    if ($date) {
+                        Counter::updateOrCreate(
+                            ['page' => "daily:$date"],
+                            [
+                                'visits' => $oldCounter->daily_visits,
+                                'last_visit' => $date . ' 23:59:59', // Approximation for historical daily
+                                'created_at' => $oldCounter->updated_at, // Use update date as base
+                                'updated_at' => $oldCounter->updated_at,
+                            ]
+                        );
+                    }
+                }
             }
         } catch (\Exception $e) {
             $this->log("Fehler beim Migrieren des Counters: " . $e->getMessage());
