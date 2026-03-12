@@ -69,42 +69,50 @@ class Movie extends Model
 
     public function getCoverUrlAttribute()
     {
-        if (!$this->cover_id) {
-            // Fallback for boxsets: use the first child's cover
-            if ($this->boxsetChildren->count() > 0) {
-                $firstChild = $this->boxsetChildren->first();
-                if ($firstChild && $firstChild->cover_id) {
-                    return $firstChild->cover_url;
-                }
+        // 1. Try parent's cover if exists
+        if ($this->cover_id) {
+            $path = (str_contains($this->cover_id, '/') || str_contains($this->cover_id, '.'))
+                ? $this->cover_id
+                : 'covers/' . $this->cover_id . 'f.jpg';
+
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
             }
-            return null;
-        }
-        
-        // If it already has a path/ext (TMDb new style), return it via public disk
-        if (str_contains($this->cover_id, '/') || str_contains($this->cover_id, '.')) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->cover_id);
         }
 
-        // Otherwise assume it's a v1.5 ID and append folder, suffix and extension
-        return \Illuminate\Support\Facades\Storage::disk('public')->url('covers/' . $this->cover_id . 'f.jpg');
+        // 2. Fallback for boxsets: use the first child's cover
+        if ($this->boxsetChildren->count() > 0) {
+            $firstChild = $this->boxsetChildren->first();
+            if ($firstChild) {
+                return $firstChild->cover_url;
+            }
+        }
+
+        return null;
     }
 
     public function getBackdropUrlAttribute()
     {
-        // If we have a specific backdrop_id (TMDb), use it
+        // 1. Specific backdrop_id (TMDb)
         if ($this->backdrop_id) {
-            if (str_contains($this->backdrop_id, '/') || str_contains($this->backdrop_id, '.')) {
-                return \Illuminate\Support\Facades\Storage::disk('public')->url($this->backdrop_id);
+            $path = (str_contains($this->backdrop_id, '/') || str_contains($this->backdrop_id, '.'))
+                ? $this->backdrop_id
+                : 'backdrops/' . $this->backdrop_id . '.jpg';
+
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
             }
-            return \Illuminate\Support\Facades\Storage::disk('public')->url('backdrops/' . $this->backdrop_id . '.jpg');
         }
 
-        // Fallback 1: If it's a v1.5 movie, try the 'b' version of the cover
+        // 2. Fallback for v1.5 movies: check 'b' version of the cover
         if ($this->cover_id && !str_contains($this->cover_id, '/') && !str_contains($this->cover_id, '.')) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url('covers/' . $this->cover_id . 'b.jpg');
+            $path = 'covers/' . $this->cover_id . 'b.jpg';
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+                return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+            }
         }
 
-        // Fallback 2: For boxsets, use the first child's backdrop/cover
+        // 3. Fallback for boxsets: use the first child's backdrop/cover
         if ($this->boxsetChildren->count() > 0) {
             $firstChild = $this->boxsetChildren->first();
             if ($firstChild) {
