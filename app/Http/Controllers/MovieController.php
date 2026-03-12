@@ -1,7 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http\Controllers;
- 
+
 use App\Models\Movie;
 use Illuminate\Http\Request;
 
@@ -11,17 +11,14 @@ class MovieController extends Controller
     {
         $query = Movie::query();
 
-        // Standardmäßig nur Haupt-Einträge anzeigen, außer es wird gesucht oder gefiltert
         if (!$request->filled('q') && !$request->filled('type')) {
             $query->whereNull('boxset_parent');
         }
 
-        // Search
         if ($request->filled('q')) {
             $query->where('title', 'like', '%' . $request->q . '%');
         }
 
-        // Collection Type Filter
         if ($request->filled('type')) {
             $query->where('collection_type', $request->type);
         }
