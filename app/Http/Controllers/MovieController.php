@@ -9,7 +9,12 @@ class MovieController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Movie::query()->whereNull('boxset_parent');
+        $query = Movie::query();
+
+        // Standardmäßig nur Haupt-Einträge anzeigen, außer es wird gesucht oder gefiltert
+        if (!$request->filled('q') && !$request->filled('type')) {
+            $query->whereNull('boxset_parent');
+        }
 
         // Search
         if ($request->filled('q')) {

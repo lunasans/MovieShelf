@@ -144,6 +144,15 @@
             <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ __('Medientyp') }}</span>
             <div class="text-lg font-bold text-blue-400 uppercase tracking-tighter">{{ $movie->collection_type }}</div>
         </div>
+
+        @if($movie->parentBoxset)
+            <div @click="fetchDetails({{ $movie->parentBoxset->id }})" class="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white/5 transition-all group/parent">
+                <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ __('Boxset') }}</span>
+                <div class="text-xs font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
+                    {{ $movie->parentBoxset->title }}
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Main Content -->
@@ -203,15 +212,19 @@
                 </h3>
                 <div class="space-y-3">
                     @foreach($movie->boxsetChildren as $child)
-                        <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group/child">
+                        <div @click="fetchDetails({{ $child->id }})" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group/child">
                             <div class="w-8 h-12 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 border border-white/5 group-hover/child:border-blue-500/30 overflow-hidden">
-                                <i class="bi bi-film text-gray-700"></i>
+                                @if($child->cover_url)
+                                    <img src="{{ $child->cover_url }}" alt="{{ $child->title }}" class="w-full h-full object-cover">
+                                @else
+                                    <i class="bi bi-film text-gray-700"></i>
+                                @endif
                             </div>
                             <div class="min-w-0 flex-1">
-                                <div class="text-xs font-bold text-white truncate">{{ $child->title }}</div>
+                                <div class="text-xs font-bold text-white truncate group-hover/child:text-blue-400 transition-colors">{{ $child->title }}</div>
                                 <div class="text-[10px] text-gray-500 uppercase">{{ $child->year }} • {{ $child->collection_type }}</div>
                             </div>
-                            <i class="bi bi-chevron-right text-gray-700 text-xs mr-2"></i>
+                            <i class="bi bi-chevron-right text-gray-700 text-xs mr-2 group-hover/child:text-blue-400 transition-colors"></i>
                         </div>
                     @endforeach
                 </div>
