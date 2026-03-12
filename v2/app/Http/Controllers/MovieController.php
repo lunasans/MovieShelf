@@ -34,18 +34,20 @@ class MovieController extends Controller
             ->limit($latestCount)
             ->get();
 
-        return view('dashboard', compact('movies', 'collectionTypes', 'latestMovies'));
+        $defaultViewMode = \App\Models\Setting::get('default_view_mode', 'grid');
+
+        return view('dashboard', compact('movies', 'collectionTypes', 'latestMovies', 'defaultViewMode'));
     }
 
     public function show(Movie $movie)
     {
-        $movie->load(['actors', 'boxsetChildren', 'parentBoxset']);
+        $movie->load(['actors', 'boxsetChildren', 'parentBoxset', 'seasons.episodes']);
         return view('movies.show', compact('movie'));
     }
 
     public function details(Movie $movie)
     {
-        $movie->load(['actors', 'boxsetChildren', 'parentBoxset']);
+        $movie->load(['actors', 'boxsetChildren', 'parentBoxset', 'seasons.episodes']);
         return view('movies.partials.details', compact('movie'));
     }
 }

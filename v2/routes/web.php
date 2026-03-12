@@ -53,8 +53,23 @@ Route::middleware('auth')->group(function () {
         // TMDb Import
         Route::get('tmdb', [\App\Http\Controllers\Admin\TmdbImportController::class, 'index'])->name('tmdb.index');
         Route::get('tmdb/search', [\App\Http\Controllers\Admin\TmdbImportController::class, 'search'])->name('tmdb.search');
+        Route::get('tmdb/details', [\App\Http\Controllers\Admin\TmdbImportController::class, 'details'])->name('tmdb.details');
         Route::post('tmdb/import', [\App\Http\Controllers\Admin\TmdbImportController::class, 'import'])->name('tmdb.import');
+
+        // XML Import
+        Route::get('import', [\App\Http\Controllers\Admin\XmlImportController::class, 'index'])->name('import.index');
+        Route::post('import', [\App\Http\Controllers\Admin\XmlImportController::class, 'import'])->name('import.post');
+        Route::delete('import/{filename}', [\App\Http\Controllers\Admin\XmlImportController::class, 'destroy'])->name('import.destroy');
+
+        // Users
+        Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
+
+        // System Update
+        Route::get('update', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'index'])->name('update.index');
+        Route::post('update/check', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'check'])->name('update.check');
+        Route::post('update/run', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'update'])->name('update.run');
     });
 });
-
+// Signatur-Banner
+Route::get('/signature', [\App\Http\Controllers\SignatureController::class, 'show'])->name('signature');
 require __DIR__.'/auth.php';

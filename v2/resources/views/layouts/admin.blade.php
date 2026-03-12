@@ -19,23 +19,28 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-[#020617] text-gray-200">
-    <div class="min-h-screen flex">
+    <div class="min-h-screen flex bg-[#020617]">
         <!-- Sidebar -->
-        <aside class="w-64 glass-strong border-r border-white/5 flex flex-col z-50">
+        <aside class="w-64 glass-strong border-r border-white/5 flex flex-col z-50 shrink-0 sticky top-0 h-screen">
             <div class="p-6">
                 <a href="{{ route('dashboard') }}" class="flex items-center group">
                     <x-application-logo class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
                 </a>
             </div>
 
-            <nav class="flex-1 px-4 space-y-2 mt-4">
+            <nav class="flex-1 px-4 space-y-2 mt-4 overflow-y-auto custom-scrollbar">
+                <!-- Übersicht -->
+                <div class="pb-2 px-4 opacity-40">
+                    <span class="text-[10px] font-bold text-white uppercase tracking-widest">Übersicht</span>
+                </div>
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
                     <i class="bi bi-speedometer2"></i>
                     <span class="font-bold text-sm">Dashboard</span>
                 </a>
                 
-                <div class="pt-4 pb-2 px-4">
-                    <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Katalog</span>
+                <!-- Mediathek -->
+                <div class="pt-6 pb-2 px-4 opacity-40">
+                    <span class="text-[10px] font-bold text-white uppercase tracking-widest">Mediathek</span>
                 </div>
 
                 <a href="{{ route('admin.movies.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.movies.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
@@ -43,19 +48,40 @@
                     <span class="font-bold text-sm">Filme</span>
                 </a>
 
-                <a href="{{ route('admin.tmdb.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.tmdb.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                    <i class="bi bi-cloud-download"></i>
-                    <span class="font-bold text-sm">TMDb Import</span>
-                </a>
-
                 <a href="{{ route('admin.actors.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.actors.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
                     <i class="bi bi-people"></i>
                     <span class="font-bold text-sm">Schauspieler</span>
                 </a>
 
-                <div class="pt-4 pb-2 px-4">
-                    <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">System</span>
+                <!-- Datenaustausch -->
+                <div class="pt-6 pb-2 px-4 opacity-40">
+                    <span class="text-[10px] font-bold text-white uppercase tracking-widest">Datenaustausch</span>
                 </div>
+
+                <a href="{{ route('admin.tmdb.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.tmdb.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
+                    <i class="bi bi-cloud-download"></i>
+                    <span class="font-bold text-sm">TMDb Import</span>
+                </a>
+
+                <a href="{{ route('admin.import.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.import.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
+                    <i class="bi bi-file-earmark-arrow-up"></i>
+                    <span class="font-bold text-sm">XML Import</span>
+                </a>
+
+                <!-- System -->
+                <div class="pt-6 pb-2 px-4 opacity-40">
+                    <span class="text-[10px] font-bold text-white uppercase tracking-widest">System</span>
+                </div>
+
+                <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.users.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
+                    <i class="bi bi-person-gear"></i>
+                    <span class="font-bold text-sm">Benutzer</span>
+                </a>
+
+                <a href="{{ route('admin.update.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.update.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span class="font-bold text-sm">System Update</span>
+                </a>
 
                 <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.settings.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
                     <i class="bi bi-gear"></i>
@@ -63,7 +89,7 @@
                 </a>
             </nav>
 
-            <div class="p-4 border-t border-white/5">
+            <div class="p-4 border-t border-white/5 shrink-0">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10 transition-all">
@@ -75,8 +101,8 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto">
-            <header class="h-16 glass border-b border-white/5 flex items-center justify-between px-8 sticky top-0 z-40">
+        <main class="flex-1 flex flex-col min-w-0">
+            <header class="h-16 glass border-b border-white/5 flex items-center justify-between px-8 z-40 shrink-0 sticky top-0">
                 <h1 class="text-lg font-bold text-white flex items-center gap-2">
                     @yield('header_title', 'Administration')
                 </h1>
@@ -107,8 +133,10 @@
                 @endif
 
                 {{ $slot }}
+            </div>
 
-                <x-footer />
+            <div class="mt-auto border-t border-white/5 bg-black/20 backdrop-blur-sm shrink-0">
+                <x-footer :compact="true" />
             </div>
         </main>
     </div>

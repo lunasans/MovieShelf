@@ -75,6 +75,11 @@
                         this.loading = false;
                     });
             },
+            viewMode: localStorage.getItem('movieViewMode') || '{{ $defaultViewMode }}',
+            toggleView(mode) {
+                this.viewMode = mode;
+                localStorage.setItem('movieViewMode', mode);
+            },
             initCharts() {
                 const chartOptions = {
                     responsive: true,
@@ -131,104 +136,68 @@
     >
         <!-- Film-Liste Area (Left Column) -->
         <section class="film-list-area shadow-2xl">
-            <!-- Tabs for Collection Types -->
-            <div class="flex items-center justify-between mb-8 gap-4 flex-wrap">
-                <div class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
-                    <a href="{{ route('dashboard') }}" 
-                        class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {{ !request('type') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
-                        {{ __('Alle') }}
-                    </a>
-                    @foreach($collectionTypes as $type)
-                        <a href="{{ route('dashboard', ['type' => $type, 'q' => request('q')]) }}" 
-                            class="px-5 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {{ request('type') === $type ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
-                            {{ $type }}
+                <div class="h-[46px] flex items-center justify-between mb-8 gap-4 flex-wrap">
+                    <div class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
+                        <a href="{{ route('dashboard') }}" 
+                            class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {{ !request('type') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                            {{ __('Alle') }}
                         </a>
-                    @endforeach
-                </div>
+                        @foreach($collectionTypes as $type)
+                            <a href="{{ route('dashboard', ['type' => $type, 'q' => request('q')]) }}" 
+                                class="px-5 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {{ request('type') === $type ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                                {{ $type }}
+                            </a>
+                        @endforeach
+                    </div>
 
                 <!-- View Mode Toggle -->
                 <div class="flex gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl shrink-0">
-                    <button class="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    <button 
+                        @click="toggleView('grid')"
+                        class="p-2 rounded-xl transition-all"
+                        :class="viewMode === 'grid' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'"
+                    >
                         <i class="bi bi-grid-3x3-gap"></i>
                     </button>
-                    <button class="p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5">
+                    <button 
+                        @click="toggleView('list')"
+                        class="p-2 rounded-xl transition-all"
+                        :class="viewMode === 'list' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'"
+                    >
                         <i class="bi bi-list-ul"></i>
                     </button>
                 </div>
             </div>
 
             <!-- List Area Header -->
-            <div class="flex items-center justify-between mb-6 px-2">
-                <h2 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500">
-                    @if(request('q'))
-                        {{ __('Search Results for ":query"', ['query' => request('q')]) }}
-                    @else
-                        {{ request('type') ?? __('Movie Collection') }}
-                    @endif
+            <div class="h-10 flex items-center justify-between mb-8 px-2">
+                <h2 class="text-xl font-black text-white flex items-center gap-4">
+                    <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <i class="bi bi-collection-play"></i>
+                    </div>
+                    <span>
+                        @if(request('q'))
+                            {{ __('Suche: :query', ['query' => request('q')]) }}
+                        @else
+                            {{ request('type') ?? __('Mediathek') }}
+                        @endif
+                    </span>
                 </h2>
-                <span class="text-gray-500 text-sm font-medium">{{ __('Total: :count', ['count' => $movies->total()]) }}</span>
+                <div class="flex flex-col items-end">
+                    <span class="text-white font-black text-lg leading-none">{{ $movies->total() }}</span>
+                    <span class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">{{ __('Gesamt') }}</span>
+                </div>
             </div>
 
-            <!-- Film Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <!-- Film Grid/List -->
+            <div :class="viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4' : 'flex flex-col gap-3'">
                 @forelse ($movies as $movie)
-                    <div class="group cursor-pointer" 
-                         x-data="{ isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }} }"
-                         @movie-watched-updated.window="if($event.detail.movieId === {{ $movie->id }}) isWatched = $event.detail.watched"
-                         @click="fetchDetails({{ $movie->id }})">
-                        <div class="relative aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 shadow-2xl transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-blue-500/30 group-hover:border-blue-500/50">
-                            <!-- Movie Cover Placeholder -->
-                            <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
-                                @if($movie->cover_id)
-                                    <img src="{{ Storage::url($movie->cover_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
-                                @else
-                                    <i class="bi bi-film text-4xl text-white/5"></i>
-                                @endif
-                            </div>
-
-                            <!-- Watched Indicator (Top Left) -->
-                            <div class="absolute top-3 left-3 z-20 transition-all duration-300" x-show="isWatched" x-cloak>
-                                <div class="bg-blue-500/80 backdrop-blur-md p-1.5 rounded-lg border border-white/20 shadow-lg">
-                                    <i class="bi bi-eye-fill text-white text-[10px]"></i>
-                                </div>
-                            </div>
-
-                            <!-- Rating & Collection Badge -->
-                            <div class="absolute top-3 right-3 z-20 flex flex-col gap-2 transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
-                                <div class="bg-blue-600 px-2 py-1 rounded-lg border border-white/20 flex items-center gap-1 shadow-xl">
-                                    <i class="bi bi-star-fill text-[10px] text-yellow-400"></i>
-                                    <span class="text-[11px] font-black text-white">{{ number_format($movie->rating ?? 0, 1) }}</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Collection Type Badge (Bottom Left) -->
-                            <div class="absolute bottom-3 left-3 z-20">
-                                <span class="text-[9px] font-black text-white/90 uppercase tracking-widest glass px-2 py-1 rounded-lg border border-white/10 shadow-lg">
-                                    {{ $movie->collection_type }}
-                                </span>
-                            </div>
-
-                            <!-- Hover Play Icon -->
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-blue-500/10">
-                                <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/30 transform scale-75 group-hover:scale-100 transition-transform duration-500">
-                                    <i class="bi bi-plus-lg text-2xl"></i>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Content Below -->
-                        <div class="mt-4 px-1">
-                            <h3 class="text-[13px] font-black text-white leading-tight truncate group-hover:text-blue-400 transition-colors uppercase tracking-tight">
-                                {{ $movie->title }}
-                            </h3>
-                            <div class="flex items-center gap-2 mt-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                                <span class="text-[10px] text-gray-400 font-bold italic">{{ $movie->year }}</span>
-                                <span class="w-1 h-1 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
-                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">{{ $movie->genre }}</span>
-                            </div>
-                        </div>
-                    </div>
+                    <template x-if="viewMode === 'grid'">
+                        @include('movies.partials.grid-item', ['movie' => $movie])
+                    </template>
+                    <template x-if="viewMode === 'list'">
+                        @include('movies.partials.list-item', ['movie' => $movie])
+                    </template>
                 @empty
                     <div class="col-span-full py-20 text-center glass rounded-2xl border-dashed">
                         <i class="bi bi-search text-6xl text-gray-800 mb-4 block"></i>
@@ -262,7 +231,9 @@
             </div>
 
             <!-- Content Area: Show Latest Movies when no movie is selected -->
-            <div x-show="!selectedMovie && !loading && !error" class="h-full p-8 overflow-y-auto no-scrollbar">
+            <div x-show="!selectedMovie && !loading && !error" class="h-full p-0 overflow-y-auto no-scrollbar">
+                <!-- Spacer to match Tabs on the left -->
+                <div class="h-[46px] mb-8"></div>
                 @include('movies.partials.latest', ['latestMovies' => $latestMovies])
             </div>
 

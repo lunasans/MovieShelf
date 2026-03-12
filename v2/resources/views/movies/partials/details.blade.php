@@ -185,7 +185,7 @@
         <!-- Boxset -->
         @if($movie->boxsetChildren->count() > 0)
             <div class="glass p-6 rounded-3xl border-white/5">
-                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2 underline decoration-blue-500/50 underline-offset-8">
                     <i class="bi bi-collection-play text-blue-400"></i>
                     {{ __('Filme in diesem Set') }} ({{ $movie->boxsetChildren->count() }})
                 </h3>
@@ -200,6 +200,64 @@
                                 <div class="text-[10px] text-gray-500 uppercase">{{ $child->year }} • {{ $child->collection_type }}</div>
                             </div>
                             <i class="bi bi-chevron-right text-gray-700 text-xs mr-2"></i>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+        <!-- Seasons & Episodes (for Series) -->
+        @if($movie->collection_type === 'Serie' && $movie->seasons->count() > 0)
+            <div class="glass p-6 rounded-3xl border-white/5" x-data="{ activeSeason: null }">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2 underline decoration-blue-500/50 underline-offset-8">
+                    <i class="bi bi-layers text-blue-400"></i>
+                    {{ __('Staffeln & Episoden') }}
+                </h3>
+                
+                <div class="space-y-4">
+                    @foreach($movie->seasons->sortBy('season_number') as $season)
+                        <div class="rounded-2xl border border-white/5 bg-white/5 overflow-hidden transition-all duration-300"
+                             :class="activeSeason === {{ $season->id }} ? 'border-blue-500/30 bg-white/10' : 'hover:border-white/10'">
+                            
+                            <button @click="activeSeason = activeSeason === {{ $season->id }} ? null : {{ $season->id }}" 
+                                    class="w-full flex items-center justify-between p-4 text-left group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center text-blue-400 font-black">
+                                        {{ $season->season_number }}
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-black text-white group-hover:text-blue-400 transition-colors">{{ $season->title ?: __('Staffel ' . $season->season_number) }}</div>
+                                        <div class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">{{ $season->episodes->count() }} {{ __('Folgen') }}</div>
+                                    </div>
+                                </div>
+                                <i class="bi text-gray-500 transition-transform duration-300" 
+                                   :class="activeSeason === {{ $season->id }} ? 'bi-chevron-up rotate-180 text-blue-400' : 'bi-chevron-down'"></i>
+                            </button>
+
+                            <div x-show="activeSeason === {{ $season->id }}" 
+                                 x-collapse
+                                 class="border-t border-white/5 bg-black/20">
+                                @if($season->overview)
+                                    <div class="p-4 text-[11px] text-gray-400 border-b border-white/5 italic">
+                                        {{ $season->overview }}
+                                    </div>
+                                @endif
+                                <div class="divide-y divide-white/5">
+                                    @foreach($season->episodes->sortBy('episode_number') as $episode)
+                                        <div class="p-4 hover:bg-white/5 transition-colors">
+                                            <div class="flex items-center gap-4 mb-1">
+                                                <span class="text-[10px] font-black text-blue-400/50 w-6">E{{ $episode->episode_number }}</span>
+                                                <h4 class="text-xs font-bold text-white">{{ $episode->title }}</h4>
+                                            </div>
+                                            @if($episode->overview)
+                                                <p class="text-[10px] text-gray-500 leading-relaxed ml-10 line-clamp-2">
+                                                    {{ $episode->overview }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
                     @endforeach
                 </div>

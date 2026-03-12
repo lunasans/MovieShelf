@@ -100,6 +100,88 @@ class TmdbService
     }
 
     /**
+     * Search for TV shows by title
+     */
+    public function searchTv(string $query, int $page = 1): array
+    {
+        if (empty($this->apiKey)) {
+            return ['error' => 'TMDb API Key nicht konfiguriert.'];
+        }
+
+        try {
+            $response = Http::get("{$this->baseUrl}/search/tv", [
+                'api_key' => $this->apiKey,
+                'query' => $query,
+                'language' => $this->language,
+                'page' => $page,
+                'include_adult' => false,
+            ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return ['error' => 'API-Anfrage fehlgeschlagen: ' . $response->status()];
+        } catch (\Exception $e) {
+            Log::error('TMDb TV Search Error: ' . $e->getMessage());
+            return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
+        }
+    }
+
+    /**
+     * Get detailed TV show information including credits
+     */
+    public function getTvDetails(int $tmdbId): array
+    {
+        if (empty($this->apiKey)) {
+            return ['error' => 'TMDb API Key nicht konfiguriert.'];
+        }
+
+        try {
+            $response = Http::get("{$this->baseUrl}/tv/{$tmdbId}", [
+                'api_key' => $this->apiKey,
+                'language' => $this->language,
+                'append_to_response' => 'credits,videos,content_ratings',
+            ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return ['error' => 'API-Anfrage fehlgeschlagen: ' . $response->status()];
+        } catch (\Exception $e) {
+            Log::error('TMDb TV Details Error: ' . $e->getMessage());
+            return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
+        }
+    }
+
+    /**
+     * Get detailed season information including episodes
+     */
+    public function getSeasonDetails(int $tmdbId, int $seasonNumber): array
+    {
+        if (empty($this->apiKey)) {
+            return ['error' => 'TMDb API Key nicht konfiguriert.'];
+        }
+
+        try {
+            $response = Http::get("{$this->baseUrl}/tv/{$tmdbId}/season/{$seasonNumber}", [
+                'api_key' => $this->apiKey,
+                'language' => $this->language,
+            ]);
+
+            if ($response->successful()) {
+                return $response->json();
+            }
+
+            return ['error' => 'API-Anfrage fehlgeschlagen: ' . $response->status()];
+        } catch (\Exception $e) {
+            Log::error('TMDb Season Details Error: ' . $e->getMessage());
+            return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
+        }
+    }
+
+    /**
      * Get configuration for image base URLs
      */
     public function getConfiguration(): array

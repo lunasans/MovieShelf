@@ -10,7 +10,7 @@ class Season extends Model
     use HasFactory;
 
     protected $fillable = [
-        'dvd_id',
+        'movie_id',
         'season_number',
         'title',
         'overview',
