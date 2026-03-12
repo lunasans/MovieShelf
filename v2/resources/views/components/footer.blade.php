@@ -76,7 +76,7 @@
         <div class="flex {{ $compact ? 'flex-row justify-between w-full border-t border-white/5 pt-6 items-center' : 'flex-col items-center gap-6' }} text-center">
             <div class="flex items-center gap-4">
                 <div class="px-3 py-1 bg-blue-600/20 border border-blue-500/30 rounded-full text-[10px] font-bold text-blue-400 uppercase tracking-widest">
-                    v1.5.2 "Cinephile"
+                    v{{ config('app.version') }}
                 </div>
                 <a href="https://github.com/lunasans/dvdprofiler.liste" target="_blank" class="text-gray-500 hover:text-white transition-colors">
                     <i class="bi bi-github text-xl"></i>
