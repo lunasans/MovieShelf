@@ -14,6 +14,7 @@ use App\Models\Season;
 use App\Models\Episode;
 use App\Models\UserRating;
 use App\Models\UserWishlist;
+use App\Models\UserWatched;
 use App\Models\UserBackupCode;
 
 class MigrationService
@@ -275,96 +276,6 @@ class MigrationService
         }
         $this->log('Episoden migriert: ' . count($oldEpisodes));
     }
-
-    protected function migrateSettings()
-    {
-        $this->log('Migriere Einstellungen...');
-        $oldSettings = DB::connection($this->connection)->table('settings')->get();
-
-        foreach ($oldSettings as $oldSetting) {
-            Setting::updateOrCreate(
-                ['key' => $oldSetting->key],
-                [
-                    'value' => $oldSetting->value,
-                    'group' => property_exists($oldSetting, 'group') ? $oldSetting->group : 'general',
-                ]
-            );
-        }
-        $this->log('Einstellungen migriert.');
-    }
-
-    protected function migrateCounter()
-    {
-        $this->log('Migriere Counter...');
-        $oldCounter = DB::connection($this->connection)->table('counter')->first();
-
-        if ($oldCounter) {
-            Counter::updateOrCreate(
-                ['id' => $oldCounter->id],
-                [
-                    'visits' => $oldCounter->visits,
-                    'last_visit_date' => $oldCounter->last_visit_date,
-                    'daily_visits' => $oldCounter->daily_visits,
-                    'created_at' => $oldCounter->created_at,
-                    'updated_at' => $oldCounter->updated_at,
-                ]
-            );
-        }
-        $this->log('Counter migriert.');
-    }
-
-    protected function migrateLogs()
-    {
-        $this->log('Migriere Logs...');
-        $oldLogs = DB::connection($this->connection)->table('activity_log')->get();
-        foreach ($oldLogs as $log) {
-            ActivityLog::updateOrCreate(
-                ['id' => $log->id],
-                [
-                    'user_id' => $log->user_id,
-                    'action' => $log->action,
-                    'details' => $log->details,
-                    'ip_address' => $log->ip_address,
-                    'user_agent' => $log->user_agent,
-                    'created_at' => $log->created_at,
-                ]
-            );
-        }
-
-        $oldAudit = DB::connection($this->connection)->table('audit_log')->get();
-        foreach ($oldAudit as $log) {
-            AuditLog::updateOrCreate(
-                ['id' => $log->id],
-                [
-                    'user_id' => $log->user_id,
-                    'action' => $log->action,
-                    'ip_address' => $log->ip_address,
-                    'user_agent' => $log->user_agent,
-                    'created_at' => $log->created_at,
-                ]
-            );
-        }
-        $this->log('Logs migriert.');
-    }
-
-    protected function migrateBackupCodes()
-    {
-        $this->log('Migriere Backup-Codes...');
-        $oldCodes = DB::connection($this->connection)->table('user_backup_codes')->get();
-        foreach ($oldCodes as $code) {
-            UserBackupCode::updateOrCreate(
-                ['id' => $code->id],
-                [
-                    'user_id' => $code->user_id,
-                    'code' => $code->code,
-                    'used_at' => $code->used_at,
-                    'created_at' => $code->created_at,
-                ]
-            );
-        }
-        $this->log('Backup-Codes migriert.');
-    }
-}
 
     protected function migrateSettings()
     {
