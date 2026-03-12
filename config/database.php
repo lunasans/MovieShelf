@@ -43,6 +43,13 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
+        'sqlite_v1' => [
+            'driver' => 'sqlite',
+            'database' => database_path('v1_dump.sqlite'),
+            'prefix' => '',
+            'foreign_key_constraints' => false,
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),
@@ -111,6 +118,20 @@ return [
             'prefix_indexes' => true,
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
+        ],
+
+        'mysql_v1' => [
+            'driver' => 'mysql',
+            'host' => env('DB_V1_HOST', '127.0.0.1'),
+            'port' => env('DB_V1_PORT', '3306'),
+            'database' => env('DB_V1_DATABASE', 'moviedb'),
+            'username' => env('DB_V1_USERNAME', 'root'),
+            'password' => env('DB_V1_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
         ],
 
     ],

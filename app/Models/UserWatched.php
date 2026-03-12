@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserWatched extends Model
 {
+    protected $table = 'user_watched';
     protected $fillable = ['user_id', 'movie_id', 'watched_at'];
 
     public function user()

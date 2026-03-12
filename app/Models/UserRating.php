@@ -4,9 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class UserWishlist extends Model
+class UserRating extends Model
 {
-    protected $fillable = ['user_id', 'movie_id', 'added_at'];
+    protected $table = 'user_ratings';
+    protected $fillable = ['user_id', 'movie_id', 'rating', 'comment'];
 
     public function user()
     {
