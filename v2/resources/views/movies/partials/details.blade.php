@@ -36,7 +36,18 @@
            @endif
         }
      }">
-    <!-- Header Area -->
+    <!-- Layout Alignment Spacer (Matches Dashboard Tabs) -->
+    <div class="h-[46px] mb-8"></div>
+
+    <!-- Title Section (Matches List Header h-10) -->
+    <div class="h-10 flex items-center mb-8 px-2">
+        <h2 class="text-2xl font-black text-white flex items-center gap-4 tracking-tighter uppercase">
+            <div class="h-10 w-2 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+            {{ $movie->title }}
+        </h2>
+    </div>
+
+    <!-- Header Area (Backdrop & Poster) -->
     <div class="relative rounded-[2.5rem] overflow-hidden glass-strong mb-10 aspect-[21/9] group shadow-2xl border border-white/5">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-gray-950 flex items-center justify-center">
@@ -51,60 +62,61 @@
             @endif
         </div>
 
-        <!-- Poster Overlay -->
-        <div class="absolute left-8 bottom-8 flex items-end gap-8 z-20">
-            <div class="relative w-32 md:w-40 aspect-[2/3] rounded-2xl overflow-hidden glass border-2 border-white/10 shadow-2xl group/poster">
-                @if($movie->cover_id)
-                    <img src="{{ Storage::url($movie->cover_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
-                    @if($movie->trailer_url)
-                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/poster:opacity-100 transition-opacity cursor-pointer" @click="showTrailer = true">
-                            <div class="w-12 h-12 bg-rose-600 rounded-full flex items-center justify-center shadow-lg shadow-rose-600/40 transform scale-75 group-hover/poster:scale-100 transition-transform">
-                                <i class="bi bi-play-fill text-2xl text-white ml-0.5"></i>
+        <!-- Content Overlay (Poster & Meta) -->
+        <div class="absolute inset-0 z-20 flex flex-col justify-end p-8 md:p-12">
+            <div class="flex items-end gap-8 relative z-30">
+                <!-- Poster Overlay -->
+                <div class="relative w-32 md:w-40 aspect-[2/3] rounded-2xl overflow-hidden glass border-2 border-white/10 shadow-2xl group/poster shrink-0">
+                    @if($movie->cover_id)
+                        <img src="{{ Storage::url($movie->cover_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
+                        @if($movie->trailer_url)
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/poster:opacity-100 transition-opacity cursor-pointer" @click="showTrailer = true">
+                                <div class="w-12 h-12 bg-rose-600 rounded-full flex items-center justify-center shadow-lg shadow-rose-600/40 transform scale-75 group-hover/poster:scale-100 transition-transform">
+                                    <i class="bi bi-play-fill text-2xl text-white ml-0.5"></i>
+                                </div>
                             </div>
+                        @endif
+                    @else
+                        <div class="w-full h-full bg-white/5 flex items-center justify-center">
+                            <i class="bi bi-camera-video text-white/20 text-3xl"></i>
                         </div>
-                    @endif
-                @else
-                    <div class="w-full h-full bg-white/5 flex items-center justify-center">
-                        <i class="bi bi-camera-video text-white/20 text-3xl"></i>
-                    </div>
-                @endif
-            </div>
-            
-            <div class="pb-2">
-                <div class="flex items-center gap-3 mb-3">
-                    <span class="px-3 py-1 bg-blue-600/80 backdrop-blur-md rounded-lg text-[10px] font-black tracking-widest uppercase border border-white/20 shadow-lg">
-                        {{ $movie->collection_type }}
-                    </span>
-                    <span class="px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg text-[10px] font-black tracking-widest uppercase border border-white/10 shadow-lg">
-                        {{ $movie->year }}
-                    </span>
-                    @if($movie->rating_age !== null)
-                        <img src="{{ asset('img/fsk/fsk-' . $movie->rating_age . '.svg') }}" 
-                             alt="FSK {{ $movie->rating_age }}" 
-                             class="h-8 w-auto drop-shadow-lg"
-                             onerror="this.style.display='none'">
                     @endif
                 </div>
-                <h2 class="text-4xl font-black text-white leading-tight mb-2 drop-shadow-2xl tracking-tighter">
-                    {{ $movie->title }}
-                </h2>
-                <div class="flex items-center gap-6 text-gray-300 text-sm font-medium">
-                    <div class="flex items-center gap-2">
-                        <i class="bi bi-clock text-blue-400"></i>
-                        <span>{{ $movie->runtime }} Min.</span>
+                
+                <div class="pb-2 flex-1 min-w-0">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="px-3 py-1 bg-blue-600/80 backdrop-blur-md rounded-lg text-[10px] font-black tracking-widest uppercase border border-white/20 shadow-lg">
+                            {{ $movie->collection_type }}
+                        </span>
+                        <span class="px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg text-[10px] font-black tracking-widest uppercase border border-white/10 shadow-lg">
+                            {{ $movie->year }}
+                        </span>
+                        @if($movie->rating_age !== null)
+                            <img src="{{ asset('img/fsk/fsk-' . $movie->rating_age . '.svg') }}" 
+                                 alt="FSK {{ $movie->rating_age }}" 
+                                 class="h-8 w-auto drop-shadow-lg"
+                                 onerror="this.style.display='none'">
+                        @endif
                     </div>
-                    @if($movie->rating)
+                    
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-gray-300 text-sm font-medium">
                         <div class="flex items-center gap-2">
-                            <i class="bi bi-star-fill text-yellow-400"></i>
-                            <span class="font-bold text-white">{{ number_format($movie->rating, 1) }} / 10</span>
+                            <i class="bi bi-clock text-blue-400"></i>
+                            <span>{{ $movie->runtime }} Min.</span>
                         </div>
-                    @endif
-                    @if($movie->director)
-                        <div class="flex items-center gap-2">
-                            <i class="bi bi-megaphone text-purple-400"></i>
-                            <span class="text-white">{{ $movie->director }}</span>
-                        </div>
-                    @endif
+                        @if($movie->rating)
+                            <div class="flex items-center gap-2">
+                                <i class="bi bi-star-fill text-yellow-400"></i>
+                                <span class="font-bold text-white">{{ number_format($movie->rating, 1) }} / 10</span>
+                            </div>
+                        @endif
+                        @if($movie->director)
+                            <div class="flex items-center gap-2">
+                                <i class="bi bi-megaphone text-purple-400"></i>
+                                <span class="text-white truncate max-w-[200px]">{{ $movie->director }}</span>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
