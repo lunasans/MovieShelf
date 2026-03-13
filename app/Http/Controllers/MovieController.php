@@ -32,7 +32,7 @@ class MovieController extends Controller
 
         $latestCount = (int)\App\Models\Setting::where('key', 'latest_films_count')->value('value') ?: 15;
         $latestMovies = Movie::whereNull('boxset_parent')
-            ->orderBy('id', 'desc')
+            ->orderBy('created_at', 'desc')
             ->limit($latestCount)
             ->get();
 
