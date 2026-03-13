@@ -300,6 +300,8 @@ class MigrationService
                     
                     if ($rating > 0) {
                         $this->log("Speichere Bewertung für {$oldDvd->title}: {$rating}");
+                        $this->log("Debug movieFields: " . json_encode($this->movieFields));
+                        $this->log("Debug MovieData: " . json_encode($movieData));
                     }
                     
                     $movie->forceFill($movieData)->save();
