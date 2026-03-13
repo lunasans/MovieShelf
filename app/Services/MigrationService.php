@@ -21,15 +21,16 @@ use App\Models\UserBackupCode;
 class MigrationService
 {
     protected $callback;
-    protected $connection = 'mysql_v1';
     protected array $modules = [];
     protected array $movieFields = [];
+    protected $v1Path = null;
 
-    public function migrate($fresh = false, array $modules = [], array $movieFields = [], callable $callback = null)
+    public function migrate($fresh = false, array $modules = [], array $movieFields = [], $v1Path = null, callable $callback = null)
     {
         $this->callback = $callback;
         $this->modules = $modules;
         $this->movieFields = $movieFields;
+        $this->v1Path = $v1Path;
 
         $defaultModules = ['users', 'actors', 'movies', 'movie_actors', 'watched', 'ratings', 'wishlist', 'seasons', 'episodes', 'settings', 'counter', 'logs', 'backup_codes'];
         $activeModules = !empty($this->modules) ? $this->modules : $defaultModules;
@@ -202,11 +203,21 @@ class MigrationService
         }
 
         // Cache directory for TMDB JSON
-        $v1Path = dirname(database_path('v1_dump.sqlite'), 2) . '/dvdprofiler.liste';
-        $v1CacheDir = $v1Path . '/cache/tmdb';
+        $v1CacheDir = $this->v1Path ? rtrim($this->v1Path, '/') . '/cache/tmdb' : null;
+
+        if (!$v1CacheDir || !is_dir($v1CacheDir)) {
+            // Try robust defaults
+            $v1CacheDir = base_path('../dvdprofiler.liste/cache/tmdb');
+        }
+        
         if (!is_dir($v1CacheDir)) {
-            // Fallback for current workspace structure
-            $v1CacheDir = 'q:/cloud.neuhaus.or.at/repos/dvd/versions/dvdprofiler.liste/cache/tmdb';
+            $v1CacheDir = dirname(base_path()) . '/dvdprofiler.liste/cache/tmdb';
+        }
+        
+        if (is_dir($v1CacheDir)) {
+            $this->log('TMDB-Cache gefunden: ' . realpath($v1CacheDir));
+        } else {
+            $this->log('WARNUNG: TMDB-Cache Verzeichnis nicht gefunden! (' . ($v1CacheDir ?: 'kein Pfad angegeben') . ')');
         }
 
         DB::connection($this->connection)->table('dvds')->orderBy('id')->chunk(100, function ($oldDvds) use (&$count, $total, $tmdbMapping, $v1CacheDir) {
@@ -219,13 +230,15 @@ class MigrationService
                         $tmdbId = str_replace('tmdb_', '', $oldDvd->cover_id);
                     }
 
-                    // Try to find cached JSON
                     $tmdbJson = null;
                     if (is_dir($v1CacheDir)) {
                         $cacheKey = md5($oldDvd->title . ($oldDvd->year ?? ''));
                         $cacheFile = $v1CacheDir . '/' . $cacheKey . '.json';
                         if (file_exists($cacheFile)) {
                             $tmdbJson = file_get_contents($cacheFile);
+                            $this->log("Cache-Hit: {$oldDvd->title} ({$cacheKey})");
+                        } else {
+                            // $this->log("Cache-Miss: {$oldDvd->title} ({$cacheKey})");
                         }
                     }
 
@@ -237,8 +250,8 @@ class MigrationService
                     ];
 
                     $rating = property_exists($oldDvd, 'rating') ? $oldDvd->rating : null;
-                    if ($rating === null && isset($tmdbData['vote_average'])) {
-                        $rating = $tmdbData['vote_average'];
+                    if (($rating === null || $rating == 0) && $tmdbData) {
+                        $rating = $tmdbData['vote_average'] ?? $tmdbData['tmdb_rating'] ?? null;
                     }
 
                     $selectableFields = [
@@ -276,7 +289,13 @@ class MigrationService
                     }
 
                     $movie = Movie::firstOrNew(['id' => $oldDvd->id]);
+                    $movie->id = $oldDvd->id; // Explicitly set ID for new records
                     $movie->timestamps = false; // Disable auto-timestamps
+                    
+                    if ($rating > 0) {
+                        $this->log("Speichere Bewertung für {$oldDvd->title}: {$rating}");
+                    }
+                    
                     $movie->forceFill($movieData)->save();
                 } catch (\Exception $e) {
                     $this->log("Fehler beim Migrieren von Film ID {$oldDvd->id} ({$oldDvd->title}): " . $e->getMessage());

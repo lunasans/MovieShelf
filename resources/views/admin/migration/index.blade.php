@@ -52,6 +52,15 @@
                 }">
                     @csrf
                     <div class="flex flex-col gap-8">
+                        <div class="flex flex-col gap-2">
+                            <label for="v1_path" class="text-sm font-medium text-gray-300">v1.5 Projekt-Pfad (für TMDB Cache & Bilder)</label>
+                            <input type="text" name="v1_path" id="v1_path" 
+                                   value="{{ old('v1_path', base_path('../dvdprofiler.liste')) }}"
+                                   placeholder="Z.B. /var/www/dvdprofiler.liste"
+                                   class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                            <p class="text-[10px] text-gray-500 italic">Hier den absoluten Pfad zur alten Installation auf dem Server eingeben.</p>
+                        </div>
+
                         <div class="flex items-center gap-4 group cursor-pointer">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" name="fresh" value="1" class="sr-only peer">

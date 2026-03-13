@@ -35,6 +35,7 @@ class MigrationController extends Controller
                 $request->has('fresh'), 
                 $modules, 
                 $movieFields, 
+                $request->get('v1_path'),
                 function ($message) use (&$logs) {
                     $logs[] = $message;
                 }
