@@ -29,6 +29,8 @@ class Movie extends Model
         'view_count',
         'tmdb_id',
         'tmdb_type',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [

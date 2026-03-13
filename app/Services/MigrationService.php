@@ -114,18 +114,17 @@ class MigrationService
         DB::connection($this->connection)->table('users')->orderBy('id')->chunk(100, function ($oldUsers) use (&$count, $total) {
             foreach ($oldUsers as $oldUser) {
                 try {
-                    User::updateOrCreate(
-                        ['id' => $oldUser->id],
-                        [
-                            'name' => explode('@', $oldUser->email)[0],
-                            'email' => $oldUser->email,
-                            'password' => $oldUser->password,
-                            'two_factor_secret' => property_exists($oldUser, 'twofa_secret') ? $oldUser->twofa_secret : null,
-                            'two_factor_confirmed_at' => (property_exists($oldUser, 'twofa_enabled') && $oldUser->twofa_enabled) ? ($oldUser->twofa_activated_at ?? $oldUser->created_at) : null,
-                            'created_at' => $oldUser->created_at,
-                            'updated_at' => $oldUser->updated_at,
-                        ]
-                    );
+                    $user = User::firstOrNew(['id' => $oldUser->id]);
+                    $user->timestamps = false;
+                    $user->forceFill([
+                        'name' => explode('@', $oldUser->email)[0],
+                        'email' => $oldUser->email,
+                        'password' => $oldUser->password,
+                        'two_factor_secret' => property_exists($oldUser, 'twofa_secret') ? $oldUser->twofa_secret : null,
+                        'two_factor_confirmed_at' => (property_exists($oldUser, 'twofa_enabled') && $oldUser->twofa_enabled) ? ($oldUser->twofa_activated_at ?? $oldUser->created_at) : null,
+                        'created_at' => $oldUser->created_at,
+                        'updated_at' => $oldUser->updated_at,
+                    ])->save();
                 } catch (\Exception $e) {
                     $this->log("Fehler beim Migrieren von Benutzer ID {$oldUser->id}: " . $e->getMessage());
                 }
@@ -149,17 +148,16 @@ class MigrationService
         DB::connection($this->connection)->table('actors')->orderBy('id')->chunk(100, function ($oldActors) use (&$count, $total) {
             foreach ($oldActors as $oldActor) {
                 try {
-                    Actor::updateOrCreate(
-                        ['id' => $oldActor->id],
-                        [
-                            'first_name' => $oldActor->first_name,
-                            'last_name' => $oldActor->last_name,
-                            'birth_year' => $oldActor->birth_year,
-                            'bio' => $oldActor->bio,
-                            'created_at' => $oldActor->created_at,
-                            'updated_at' => $oldActor->updated_at,
-                        ]
-                    );
+                    $actor = Actor::firstOrNew(['id' => $oldActor->id]);
+                    $actor->timestamps = false;
+                    $actor->forceFill([
+                        'first_name' => $oldActor->first_name,
+                        'last_name' => $oldActor->last_name,
+                        'birth_year' => $oldActor->birth_year,
+                        'bio' => $oldActor->bio,
+                        'created_at' => $oldActor->created_at,
+                        'updated_at' => $oldActor->updated_at,
+                    ])->save();
                 } catch (\Exception $e) {
                     $this->log("Fehler beim Migrieren von Schauspieler ID {$oldActor->id}: " . $e->getMessage());
                 }
@@ -219,10 +217,9 @@ class MigrationService
                         $movieData = array_merge($movieData, $selectableFields);
                     }
 
-                    Movie::updateOrCreate(
-                        ['id' => $oldDvd->id],
-                        $movieData
-                    );
+                    $movie = Movie::firstOrNew(['id' => $oldDvd->id]);
+                    $movie->timestamps = false; // Disable auto-timestamps
+                    $movie->forceFill($movieData)->save();
                 } catch (\Exception $e) {
                     $this->log("Fehler beim Migrieren von Film ID {$oldDvd->id} ({$oldDvd->title}): " . $e->getMessage());
                 }
@@ -309,17 +306,16 @@ class MigrationService
         DB::connection($this->connection)->table('user_ratings')->orderBy('id')->chunk(100, function ($oldRatings) use (&$count, $total) {
             foreach ($oldRatings as $oldRating) {
                 try {
-                    UserRating::updateOrCreate(
-                        ['id' => $oldRating->id],
-                        [
-                            'movie_id' => $oldRating->film_id,
-                            'user_id' => $oldRating->user_id,
-                            'rating' => $oldRating->rating,
-                            'comment' => property_exists($oldRating, 'comment') ? $oldRating->comment : null,
-                            'created_at' => $oldRating->created_at,
-                            'updated_at' => $oldRating->updated_at,
-                        ]
-                    );
+                    $rating = UserRating::firstOrNew(['id' => $oldRating->id]);
+                    $rating->timestamps = false;
+                    $rating->forceFill([
+                        'movie_id' => $oldRating->film_id,
+                        'user_id' => $oldRating->user_id,
+                        'rating' => $oldRating->rating,
+                        'comment' => property_exists($oldRating, 'comment') ? $oldRating->comment : null,
+                        'created_at' => $oldRating->created_at,
+                        'updated_at' => $oldRating->updated_at,
+                    ])->save();
                 } catch (\Exception $e) {
                     $this->log("Fehler beim Migrieren von Bewertung ID {$oldRating->id}: " . $e->getMessage());
                 }
@@ -374,17 +370,16 @@ class MigrationService
         DB::connection($this->connection)->table('seasons')->orderBy('id')->chunk(100, function ($oldSeasons) use (&$count, $total) {
             foreach ($oldSeasons as $oldSeason) {
                 try {
-                    Season::updateOrCreate(
-                        ['id' => $oldSeason->id],
-                        [
-                            'movie_id' => $oldSeason->series_id,
-                            'season_number' => $oldSeason->season_number,
-                            'title' => property_exists($oldSeason, 'name') ? $oldSeason->name : ($oldSeason->title ?? "Staffel {$oldSeason->season_number}"),
-                            'overview' => property_exists($oldSeason, 'overview') ? $oldSeason->overview : null,
-                            'created_at' => $oldSeason->created_at,
-                            'updated_at' => $oldSeason->updated_at,
-                        ]
-                    );
+                    $season = Season::firstOrNew(['id' => $oldSeason->id]);
+                    $season->timestamps = false;
+                    $season->forceFill([
+                        'movie_id' => $oldSeason->series_id,
+                        'season_number' => $oldSeason->season_number,
+                        'title' => property_exists($oldSeason, 'name') ? $oldSeason->name : ($oldSeason->title ?? "Staffel {$oldSeason->season_number}"),
+                        'overview' => property_exists($oldSeason, 'overview') ? $oldSeason->overview : null,
+                        'created_at' => $oldSeason->created_at,
+                        'updated_at' => $oldSeason->updated_at,
+                    ])->save();
                 } catch (\Exception $e) {
                     $this->log("Fehler beim Migrieren von Staffel ID {$oldSeason->id}: " . $e->getMessage());
                 }
@@ -408,17 +403,16 @@ class MigrationService
         DB::connection($this->connection)->table('episodes')->orderBy('id')->chunk(200, function ($oldEpisodes) use (&$count, $total) {
             foreach ($oldEpisodes as $oldEpisode) {
                 try {
-                    Episode::updateOrCreate(
-                        ['id' => $oldEpisode->id],
-                        [
-                            'season_id' => $oldEpisode->season_id,
-                            'episode_number' => $oldEpisode->episode_number,
-                            'title' => $oldEpisode->title,
-                            'overview' => $oldEpisode->overview,
-                            'created_at' => $oldEpisode->created_at,
-                            'updated_at' => $oldEpisode->updated_at,
-                        ]
-                    );
+                    $episode = Episode::firstOrNew(['id' => $oldEpisode->id]);
+                    $episode->timestamps = false;
+                    $episode->forceFill([
+                        'season_id' => $oldEpisode->season_id,
+                        'episode_number' => $oldEpisode->episode_number,
+                        'title' => $oldEpisode->title,
+                        'overview' => $oldEpisode->overview,
+                        'created_at' => $oldEpisode->created_at,
+                        'updated_at' => $oldEpisode->updated_at,
+                    ])->save();
                 } catch (\Exception $e) {
                     $this->log("Fehler beim Migrieren von Episode ID {$oldEpisode->id}: " . $e->getMessage());
                 }
