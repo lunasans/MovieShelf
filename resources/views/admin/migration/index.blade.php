@@ -40,6 +40,7 @@
                 <h3 class="text-xl font-bold text-white mb-2">Ziel: MovieShelf v2.0 (SQLite)</h3>
                 <p class="text-gray-400 text-sm mb-8">Dieser Vorgang kopiert alle Daten von der alten v1.5 Datenbank in das neue v2.0 System.</p>
 
+                <form action="{{ route('admin.migration.run') }}" method="POST" id="migrationForm" x-data="{ 
                     modules: ['users', 'actors', 'movies', 'watched', 'ratings', 'wishlist', 'seasons', 'episodes', 'settings', 'counter', 'logs'],
                     movieFields: ['year', 'genre', 'rating', 'runtime', 'rating_age', 'overview', 'director', 'trailer_url', 'view_count', 'created_at', 'cover_id', 'backdrop_id', 'collection_type', 'boxset_parent', 'is_deleted'],
                     selectedModules: ['users', 'actors', 'movies', 'watched', 'ratings', 'wishlist', 'seasons', 'episodes', 'settings', 'counter', 'logs'],
