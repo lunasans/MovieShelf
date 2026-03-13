@@ -327,7 +327,7 @@
                         <div class="w-full h-full">
                             <template x-if="showTrailer">
                                 <iframe 
-                                    :src="'https://www.youtube.com/embed/' + youtubeId + '?autoplay=1&mute=1&rel=0&origin=' + window.location.origin" 
+                                    :src="'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&mute=1&rel=0&origin=' + window.location.origin" 
                                     class="w-full h-full" 
                                     frameborder="0" 
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
