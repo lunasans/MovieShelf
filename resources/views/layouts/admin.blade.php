@@ -38,10 +38,12 @@
                     <span class="font-bold text-sm">Dashboard</span>
                 </a>
 
+                @if(Route::has('admin.stats.index'))
                 <a href="{{ route('admin.stats.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.stats.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
                     <i class="bi bi-graph-up"></i>
                     <span class="font-bold text-sm">Statistiken</span>
                 </a>
+                @endif
                 
                 <!-- Mediathek -->
                 <div class="pt-6 pb-2 px-4 opacity-40">
