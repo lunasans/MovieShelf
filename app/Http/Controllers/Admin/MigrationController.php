@@ -27,9 +27,10 @@ class MigrationController extends Controller
     public function run(Request $request, MigrationService $migrationService)
     {
         $logs = [];
+        $fields = $request->get('fields', []);
         
         try {
-            $migrationService->migrate($request->has('fresh'), function ($message) use (&$logs) {
+            $migrationService->migrate($request->has('fresh'), $fields, function ($message) use (&$logs) {
                 $logs[] = $message;
             });
 

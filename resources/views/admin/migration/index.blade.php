@@ -40,7 +40,11 @@
                 <h3 class="text-xl font-bold text-white mb-2">Ziel: MovieShelf v2.0 (SQLite)</h3>
                 <p class="text-gray-400 text-sm mb-8">Dieser Vorgang kopiert alle Daten von der alten v1.5 Datenbank in das neue v2.0 System.</p>
 
-                <form action="{{ route('admin.migration.run') }}" method="POST" id="migrationForm">
+                <form action="{{ route('admin.migration.run') }}" method="POST" id="migrationForm" x-data="{ 
+                    fields: ['year', 'genre', 'rating', 'runtime', 'rating_age', 'overview', 'director', 'trailer_url', 'view_count', 'created_at'],
+                    selected: ['year', 'genre', 'rating', 'runtime', 'rating_age', 'overview', 'director', 'trailer_url', 'view_count', 'created_at'],
+                    selectAllFields() { this.selected = [...this.fields]; }
+                }">
                     @csrf
                     <div class="flex flex-col gap-6">
                         <div class="flex items-center gap-4 group cursor-pointer">
@@ -49,6 +53,33 @@
                                 <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                             </label>
                             <span class="text-sm font-medium text-gray-300">Alle Tabellen vor der Migration leeren (Fresh Install)</span>
+                        </div>
+
+                        <div class="space-y-4 pt-4 border-t border-white/5">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs font-black text-white/40 uppercase tracking-widest">Zu migrierende Felder (Filme)</h4>
+                                <button type="button" @click="selectAllFields()" class="text-[10px] font-black text-blue-400 uppercase tracking-widest hover:text-blue-300 transition-colors">Alle auswählen</button>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                <template x-for="field in fields">
+                                    <label class="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 cursor-pointer transition-all">
+                                        <input type="checkbox" name="fields[]" :value="field" x-model="selected" class="w-5 h-5 rounded bg-white/5 border-white/10 text-blue-600 focus:ring-blue-500/50">
+                                        <span class="text-xs text-gray-300 font-medium" x-text="{
+                                            'year': 'Produktionsjahr',
+                                            'genre': 'Genre',
+                                            'rating': 'Bewertung',
+                                            'runtime': 'Laufzeit',
+                                            'rating_age': 'FSK',
+                                            'overview': 'Handlung',
+                                            'director': 'Regie',
+                                            'trailer_url': 'Trailer URL',
+                                            'view_count': 'Aufrufe',
+                                            'created_at': 'Hinzugefügt am'
+                                        }[field]"></span>
+                                    </label>
+                                </template>
+                            </div>
                         </div>
 
                         <div class="bg-blue-600/10 border border-blue-500/20 rounded-2xl p-4 text-blue-300 text-sm">

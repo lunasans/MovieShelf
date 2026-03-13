@@ -22,10 +22,12 @@ class MigrationService
 {
     protected $callback;
     protected $connection = 'mysql_v1';
+    protected array $fields = [];
 
-    public function migrate($fresh = false, callable $callback = null)
+    public function migrate($fresh = false, array $fields = [], callable $callback = null)
     {
         $this->callback = $callback;
+        $this->fields = $fields;
 
         // Check if we have an exported SQLite file
         if (file_exists(database_path('v1_dump.sqlite'))) {
@@ -181,28 +183,45 @@ class MigrationService
         DB::connection($this->connection)->table('dvds')->orderBy('id')->chunk(100, function ($oldDvds) use (&$count, $total) {
             foreach ($oldDvds as $oldDvd) {
                 try {
+                    $movieData = [
+                        'title' => $oldDvd->title,
+                        'user_id' => $oldDvd->user_id,
+                    ];
+
+                    $selectableFields = [
+                        'year' => $oldDvd->year,
+                        'genre' => $oldDvd->genre,
+                        'rating' => property_exists($oldDvd, 'rating') ? $oldDvd->rating : null,
+                        'cover_id' => $oldDvd->cover_id,
+                        'backdrop_id' => property_exists($oldDvd, 'backdrop_id') ? $oldDvd->backdrop_id : null,
+                        'collection_type' => $oldDvd->collection_type,
+                        'runtime' => $oldDvd->runtime,
+                        'rating_age' => $oldDvd->rating_age,
+                        'overview' => $oldDvd->overview,
+                        'director' => property_exists($oldDvd, 'director') ? $oldDvd->director : null,
+                        'trailer_url' => $oldDvd->trailer_url,
+                        'boxset_parent' => $oldDvd->boxset_parent,
+                        'is_deleted' => $oldDvd->is_deleted || (property_exists($oldDvd, 'deleted') ? $oldDvd->deleted : false),
+                        'view_count' => $oldDvd->view_count,
+                        'created_at' => $oldDvd->created_at,
+                        'updated_at' => $oldDvd->updated_at,
+                    ];
+
+                    // If fields are specified, filter the selectable fields
+                    if (!empty($this->fields)) {
+                        foreach ($this->fields as $field) {
+                            if (array_key_exists($field, $selectableFields)) {
+                                $movieData[$field] = $selectableFields[$field];
+                            }
+                        }
+                    } else {
+                        // Default: all fields
+                        $movieData = array_merge($movieData, $selectableFields);
+                    }
+
                     Movie::updateOrCreate(
                         ['id' => $oldDvd->id],
-                        [
-                            'title' => $oldDvd->title,
-                            'year' => $oldDvd->year,
-                            'genre' => $oldDvd->genre,
-                            'rating' => property_exists($oldDvd, 'rating') ? $oldDvd->rating : null,
-                            'cover_id' => $oldDvd->cover_id,
-                            'backdrop_id' => property_exists($oldDvd, 'backdrop_id') ? $oldDvd->backdrop_id : null,
-                            'collection_type' => $oldDvd->collection_type,
-                            'runtime' => $oldDvd->runtime,
-                            'rating_age' => $oldDvd->rating_age,
-                            'overview' => $oldDvd->overview,
-                            'director' => property_exists($oldDvd, 'director') ? $oldDvd->director : null,
-                            'trailer_url' => $oldDvd->trailer_url,
-                            'boxset_parent' => $oldDvd->boxset_parent,
-                            'user_id' => $oldDvd->user_id,
-                            'is_deleted' => $oldDvd->is_deleted || (property_exists($oldDvd, 'deleted') ? $oldDvd->deleted : false),
-                            'view_count' => $oldDvd->view_count,
-                            'created_at' => $oldDvd->created_at,
-                            'updated_at' => $oldDvd->updated_at,
-                        ]
+                        $movieData
                     );
                 } catch (\Exception $e) {
                     $this->log("Fehler beim Migrieren von Film ID {$oldDvd->id} ({$oldDvd->title}): " . $e->getMessage());
