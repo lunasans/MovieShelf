@@ -16,27 +16,55 @@ class VisitorCounterMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Only count GET requests and non-AJAX requests (to avoid counting background actions)
+        // 1. Exclude common static asset paths and bot-like files
+        $path = $request->path();
+        if (preg_match('/\.(ico|png|jpg|jpeg|gif|svg|css|js|map|txt|xml|json)$/i', $path)) {
+            return $next($request);
+        }
+
+        // 2. Only count GET requests and non-AJAX requests
         if ($request->isMethod('GET') && !$request->ajax() && !$request->prefetch()) {
             
-            // Prevention of double-counting in the same request process
-            static $alreadyCounted = false;
+            // 3. User-Agent Bot Filtering (Simple list of common bots)
+            $userAgent = $request->header('User-Agent', '');
+            $bots = [
+                'bot', 'crawler', 'spider', 'slurp', 'bingpreview', 'googlebot', 
+                'baiduspider', 'yandex', 'duckduckbot', 'lighthouse', 'headless'
+            ];
             
-            if (!$alreadyCounted) {
-                // Increment total visits
-                $totalCounter = Counter::firstOrCreate(['page' => 'all']);
-                $totalCounter->increment('visits');
-                $totalCounter->last_visit = now();
-                $totalCounter->save();
+            foreach ($bots as $bot) {
+                if (stripos($userAgent, $bot) !== false) {
+                    return $next($request);
+                }
+            }
 
-                // Increment daily visits
-                $today = now()->format('Y-m-d');
-                $dailyCounter = Counter::firstOrCreate(['page' => "daily:$today"]);
-                $dailyCounter->increment('visits');
-                $dailyCounter->last_visit = now();
-                $dailyCounter->save();
+            // 4. Unique IP per Day check using Cache
+            $ip = $request->ip();
+            $today = now()->format('Y-m-d');
+            $cacheKey = "visit:{$today}:" . md5($ip);
+
+            if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                // Prevention of double-counting in the SAME request process
+                static $alreadyCounted = false;
                 
-                $alreadyCounted = true;
+                if (!$alreadyCounted) {
+                    // Increment total visits
+                    $totalCounter = Counter::firstOrCreate(['page' => 'all']);
+                    $totalCounter->increment('visits');
+                    $totalCounter->last_visit = now();
+                    $totalCounter->save();
+
+                    // Increment daily visits
+                    $dailyCounter = Counter::firstOrCreate(['page' => "daily:$today"]);
+                    $dailyCounter->increment('visits');
+                    $dailyCounter->last_visit = now();
+                    $dailyCounter->save();
+                    
+                    $alreadyCounted = true;
+                    
+                    // Mark as visited for this IP today (expires at end of day)
+                    \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->endOfDay());
+                }
             }
         }
 
