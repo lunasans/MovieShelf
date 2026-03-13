@@ -62,6 +62,12 @@
                     </div>
 
                     <div>
+                        <label for="rating" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Bewertung (TMDb)</label>
+                        <input type="number" step="0.1" name="rating" id="rating" x-model="formData.rating" value="{{ old('rating', $movie->rating) }}"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                    </div>
+
+                    <div>
                         <label for="rating_age" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">FSK</label>
                         <select name="rating_age" id="rating_age" x-model="formData.rating_age"
                                 class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all appearance-none">
@@ -199,10 +205,12 @@
                     collection_type: '{{ old('collection_type', $movie->collection_type) }}',
                     genre: '{{ str_replace("'", "\'", old('genre', $movie->genre)) }}',
                     runtime: '{{ old('runtime', $movie->runtime) }}',
+                    rating: '{{ old('rating', $movie->rating) }}',
                     rating_age: '{{ old('rating_age', $movie->rating_age) }}',
                     trailer_url: '{{ old('trailer_url', $movie->trailer_url) }}',
                     overview: `{!! str_replace("`", "\`", old('overview', $movie->overview)) !!}`
                 },
+@verbatim
                 openModal() {
                     this.showModal = true;
                     if (this.results.length === 0) {
@@ -233,7 +241,9 @@
                             this.formData.year = (data.release_date || data.first_air_date || '').substring(0, 4);
                             this.formData.genre = (data.genres || []).map(g => g.name).join(', ');
                             this.formData.runtime = data.runtime || (data.episode_run_time ? data.episode_run_time[0] : null);
+                            this.formData.rating = data.vote_average;
                             this.formData.overview = data.overview;
+@endverbatim
                             
                             // Extract Trailer
                             if (data.videos && data.videos.results) {
