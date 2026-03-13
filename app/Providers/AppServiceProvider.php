@@ -20,18 +20,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         view()->composer(['components.footer', 'layouts.admin', 'layouts.app'], function ($view) {
-            // Increment total visits
+            // Retrieve counters (incrementing is now handled by VisitorCounterMiddleware)
             $totalCounter = \App\Models\Counter::firstOrCreate(['page' => 'all']);
-            $totalCounter->increment('visits');
-            $totalCounter->last_visit = now();
-            $totalCounter->save();
-
-            // Increment daily visits
             $today = now()->format('Y-m-d');
             $dailyCounter = \App\Models\Counter::firstOrCreate(['page' => "daily:$today"]);
-            $dailyCounter->increment('visits');
-            $dailyCounter->last_visit = now();
-            $dailyCounter->save();
 
             $stats = \Illuminate\Support\Facades\Cache::remember('footer_stats', 300, function () use ($totalCounter, $dailyCounter) {
                 return [

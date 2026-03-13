@@ -66,12 +66,15 @@
                 <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
                     <i class="bi bi-eye"></i>
                 </div>
-                <div class="flex items-baseline gap-2">
-                    <div class="text-sm font-black text-white leading-none" title="Heute">{{ number_format($footerStats['daily_visits']) }}</div>
-                    <div class="text-[10px] font-bold text-gray-600">/</div>
-                    <div class="text-[10px] font-bold text-gray-500 leading-none" title="Gesamt">{{ number_format($footerStats['total_visits']) }}</div>
+                <div class="flex flex-col items-center">
+                    <div class="text-sm font-black text-white leading-none">{{ number_format($footerStats['daily_visits']) }}</div>
+                    <div class="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">Heute</div>
                 </div>
-                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Besucher</div>
+                <div class="w-full h-px bg-white/5 my-1"></div>
+                <div class="flex items-center gap-2">
+                    <div class="text-[10px] font-bold text-gray-500 leading-none">{{ number_format($footerStats['total_visits']) }}</div>
+                    <div class="text-[8px] font-bold text-gray-700 uppercase tracking-tighter">Gesamt</div>
+                </div>
             </div>
         </div>
         @endif
