@@ -332,7 +332,7 @@
                         const movies = await res.json();
                         
                         if (movies.length === 0) {
-                            alert('Keine Filme mit TMDb-ID zum Aktualisieren gefunden.');
+                            this.error = 'Keine Filme mit TMDb-ID zum Aktualisieren gefunden. (Bestehende Filme müssen erst verknüpft werden)';
                             this.loading = false;
                             return;
                         }
@@ -347,7 +347,7 @@
                         
                         this.processNextInQueue();
                     } catch (err) {
-                        alert('Fehler beim Laden der Filmliste.');
+                        this.error = 'Fehler beim Laden der Filmliste.';
                         this.loading = false;
                     }
                 },
