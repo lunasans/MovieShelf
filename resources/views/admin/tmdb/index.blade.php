@@ -324,8 +324,6 @@
                             form.submit();
                         }
                     }
-                }
-                    }
                 },
                 async startMassUpdate() {
                     this.loading = true;
@@ -406,5 +404,6 @@
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.2);
             transform: translateY(-1px);
+        }
     </style>
 </x-admin-layout>
