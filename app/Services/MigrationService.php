@@ -21,6 +21,7 @@ use App\Models\UserBackupCode;
 class MigrationService
 {
     protected $callback;
+    protected $connection = 'mysql_v1';
     protected array $modules = [];
     protected array $movieFields = [];
     protected $v1Path = null;
