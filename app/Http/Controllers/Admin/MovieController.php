@@ -59,7 +59,7 @@ class MovieController extends Controller
             'collection_type' => 'required|string',
             'genre' => 'nullable|string',
             'runtime' => 'nullable|integer',
-            'rating' => 'nullable|numeric|min:0|max:10',
+            'rating' => 'nullable|numeric|min:0|max:100',
             'rating_age' => 'nullable|integer',
             'created_at' => 'nullable|date',
             'trailer_url' => 'nullable|url',

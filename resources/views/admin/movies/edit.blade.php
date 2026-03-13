@@ -240,7 +240,7 @@
                             this.formData.year = (data.release_date || data.first_air_date || '').substring(0, 4);
                             this.formData.genre = (data.genres || []).map(g => g.name).join(', ');
                             this.formData.runtime = data.runtime || (data.episode_run_time ? data.episode_run_time[0] : null);
-                            this.formData.rating = data.vote_average;
+                            this.formData.rating = data.vote_average ? Math.round(data.vote_average * 10) / 10 : null;
                             this.formData.overview = data.overview;
                             
                             // Extract Trailer
