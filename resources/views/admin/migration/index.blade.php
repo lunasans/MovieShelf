@@ -42,9 +42,9 @@
 
                 <form action="{{ route('admin.migration.run') }}" method="POST" id="migrationForm" x-data="{ 
                     modules: ['users', 'actors', 'movies', 'watched', 'ratings', 'wishlist', 'seasons', 'episodes', 'settings', 'counter', 'logs'],
-                    movieFields: ['year', 'genre', 'rating', 'runtime', 'rating_age', 'overview', 'director', 'trailer_url', 'view_count', 'created_at', 'cover_id', 'backdrop_id', 'collection_type', 'boxset_parent', 'is_deleted'],
+                    movieFields: ['year', 'genre', 'rating', 'runtime', 'rating_age', 'overview', 'director', 'trailer_url', 'view_count', 'created_at', 'cover_id', 'backdrop_id', 'collection_type', 'boxset_parent', 'is_deleted', 'tmdb_id', 'tmdb_json'],
                     selectedModules: ['users', 'actors', 'movies', 'watched', 'ratings', 'wishlist', 'seasons', 'episodes', 'settings', 'counter', 'logs'],
-                    selectedFields: ['year', 'genre', 'rating', 'runtime', 'rating_age', 'overview', 'director', 'trailer_url', 'view_count', 'created_at', 'cover_id', 'backdrop_id', 'collection_type', 'boxset_parent', 'is_deleted'],
+                    selectedFields: ['year', 'genre', 'rating', 'runtime', 'rating_age', 'overview', 'director', 'trailer_url', 'view_count', 'created_at', 'cover_id', 'backdrop_id', 'collection_type', 'boxset_parent', 'is_deleted', 'tmdb_id', 'tmdb_json'],
                     selectAll() { 
                         this.selectedModules = [...this.modules];
                         this.selectedFields = [...this.movieFields];
@@ -117,7 +117,9 @@
                                             'backdrop_id': 'Backdrop ID',
                                             'collection_type': 'Medientyp',
                                             'boxset_parent': 'Boxset-Verkn.',
-                                            'is_deleted': 'Geloescht-Flag'
+                                            'is_deleted': 'Geloescht-Flag',
+                                            'tmdb_id': 'TMDB ID',
+                                            'tmdb_json': 'TMDB JSON-Daten (Cache)'
                                         }[field]"></span>
                                     </label>
                                 </template>

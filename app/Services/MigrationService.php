@@ -183,12 +183,58 @@ class MigrationService
         $total = DB::connection($this->connection)->table('dvds')->count();
         $count = 0;
 
-        DB::connection($this->connection)->table('dvds')->orderBy('id')->chunk(100, function ($oldDvds) use (&$count, $total) {
+        // Pre-load TMDB mappings from activity_log
+        $tmdbMapping = [];
+        if ($this->tableExists('activity_log')) {
+            $this->log('Lade TMDB-Mappings aus activity_log...');
+            $logs = DB::connection($this->connection)
+                ->table('activity_log')
+                ->where('action', 'FILM_UPDATE_TMDB')
+                ->get();
+            
+            foreach ($logs as $log) {
+                $details = json_decode($log->details, true);
+                if (isset($details['film_id']) && isset($details['tmdb_id'])) {
+                    $tmdbMapping[$details['film_id']] = $details['tmdb_id'];
+                }
+            }
+            $this->log(count($tmdbMapping) . ' TMDB-Mappings geladen.');
+        }
+
+        // Cache directory for TMDB JSON
+        $v1Path = dirname(database_path('v1_dump.sqlite'), 2) . '/dvdprofiler.liste';
+        $v1CacheDir = $v1Path . '/cache/tmdb';
+        if (!is_dir($v1CacheDir)) {
+            // Fallback for current workspace structure
+            $v1CacheDir = 'q:/cloud.neuhaus.or.at/repos/dvd/versions/dvdprofiler.liste/cache/tmdb';
+        }
+
+        DB::connection($this->connection)->table('dvds')->orderBy('id')->chunk(100, function ($oldDvds) use (&$count, $total, $tmdbMapping, $v1CacheDir) {
             foreach ($oldDvds as $oldDvd) {
                 try {
+                    $tmdbId = $tmdbMapping[$oldDvd->id] ?? null;
+                    
+                    // Try to extract from cover_id if not found in mapping
+                    if (!$tmdbId && str_starts_with($oldDvd->cover_id, 'tmdb_')) {
+                        $tmdbId = str_replace('tmdb_', '', $oldDvd->cover_id);
+                    }
+
+                    // Try to find cached JSON
+                    $tmdbJson = null;
+                    if (is_dir($v1CacheDir)) {
+                        $cacheKey = md5($oldDvd->title . ($oldDvd->year ?? ''));
+                        $cacheFile = $v1CacheDir . '/' . $cacheKey . '.json';
+                        if (file_exists($cacheFile)) {
+                            $tmdbJson = file_get_contents($cacheFile);
+                        }
+                    }
+
                     $movieData = [
                         'title' => $oldDvd->title,
                         'user_id' => $oldDvd->user_id,
+                        'tmdb_id' => $tmdbId,
+                        'tmdb_type' => 'movie', // Default
+                        'tmdb_json' => $tmdbJson ? json_decode($tmdbJson, true) : null,
                     ];
 
                     $selectableFields = [

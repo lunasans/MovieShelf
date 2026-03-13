@@ -97,6 +97,7 @@ class TmdbImportController extends Controller
                 'user_id' => auth()->id(),
                 'tmdb_id' => $tmdbId,
                 'tmdb_type' => 'movie',
+                'tmdb_json' => $details,
             ]);
 
             // Handle Images (Poster & Backdrop)
@@ -241,6 +242,7 @@ class TmdbImportController extends Controller
                 'user_id' => auth()->id(),
                 'tmdb_id' => $tmdbId,
                 'tmdb_type' => 'tv',
+                'tmdb_json' => $details,
             ]);
 
             // Images
@@ -398,6 +400,7 @@ class TmdbImportController extends Controller
                     'overview' => $details['overview'] ?? $movie->overview,
                     'director' => $this->extractCreator($details),
                     'rating_age' => $this->extractRating($details) ?? $movie->rating_age,
+                    'tmdb_json' => $details,
                 ]);
 
                 $this->handleActors($movie, $details);
@@ -415,6 +418,7 @@ class TmdbImportController extends Controller
                     'director' => $this->extractDirector($details),
                     'trailer_url' => $this->extractTrailer($details) ?? $movie->trailer_url,
                     'rating_age' => $this->extractRating($details) ?? $movie->rating_age,
+                    'tmdb_json' => $details,
                 ]);
 
                 // Handle Actors (Top 10)

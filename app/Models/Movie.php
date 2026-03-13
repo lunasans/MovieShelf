@@ -29,6 +29,7 @@ class Movie extends Model
         'view_count',
         'tmdb_id',
         'tmdb_type',
+        'tmdb_json',
         'created_at',
         'updated_at',
     ];
@@ -38,6 +39,7 @@ class Movie extends Model
         'year' => 'integer',
         'runtime' => 'integer',
         'view_count' => 'integer',
+        'tmdb_json' => 'array',
     ];
 
     public function user()
