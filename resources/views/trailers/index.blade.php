@@ -148,7 +148,8 @@
                             class="absolute inset-0 w-full h-full"
                             frameborder="0" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
+                            allowfullscreen
+                            referrerpolicy="strict-origin-when-cross-origin">
                     </iframe>
                 </template>
             </div>
