@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="{{ session('theme', \App\Models\Setting::get('theme', 'default')) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="{{ session('theme', \App\Models\Setting::get('theme', 'default')) }}" style="background-color: #0c0c0e;">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,6 +19,10 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <style>
+            [x-cloak] { display: none !important; }
+        </style>
     </head>
     <body class="font-sans antialiased text-white min-h-screen" style="background: var(--gradient-bg); background-attachment: fixed;">
         <div class="px-4 pb-12 sm:px-6 lg:px-8">

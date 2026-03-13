@@ -36,7 +36,7 @@
                         class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all text-lg shadow-2xl"
                     >
                     <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
-                        <div x-show="loading" class="animate-spin h-6 w-6 border-2 border-purple-500 border-t-transparent rounded-full"></div>
+                        <div x-show="loading" x-cloak class="animate-spin h-6 w-6 border-2 border-purple-500 border-t-transparent rounded-full"></div>
                         <i class="bi bi-search text-white/20 text-xl"></i>
                     </div>
                 </div>
@@ -115,7 +115,7 @@
              x-transition:leave-start="opacity-100 transform scale-100"
              x-transition:leave-end="opacity-0 transform scale-95"
              class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-             style="display: none;">
+             x-cloak>
             
             <div class="glass w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 max-h-[90vh] flex flex-col" @click.away="showSeasonModal = false">
                 <div class="p-8 border-b border-white/10 flex justify-between items-center bg-white/5">
@@ -175,7 +175,7 @@
              x-transition:enter-start="opacity-0 transform scale-95"
              x-transition:enter-end="opacity-100 transform scale-100"
              class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
-             style="display: none;">
+             x-cloak>
             
             <div class="glass w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 p-10 text-center">
                 <div class="w-20 h-20 bg-purple-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-purple-400 text-3xl">
@@ -195,13 +195,13 @@
                 </div>
 
                 <div class="space-y-4">
-                    <div x-show="updating" class="text-white/40 text-xs italic" x-text="(mode === 'matching' ? 'Prüfe: ' : 'Aktualisiere: ') + currentUpdateTitle"></div>
-                    <div x-show="!updating && mode === 'matching'" class="p-4 bg-white/5 rounded-2xl text-xs text-white/60 mb-4">
+                     <div x-show="updating" x-cloak class="text-white/40 text-xs italic" x-text="(mode === 'matching' ? 'Prüfe: ' : 'Aktualisiere: ') + currentUpdateTitle"></div>
+                    <div x-show="!updating && mode === 'matching'" x-cloak class="p-4 bg-white/5 rounded-2xl text-xs text-white/60 mb-4">
                         <span class="font-bold text-green-400" x-text="matchedCount"></span> Treffer erzielt, 
                         <span class="font-bold text-rose-400" x-text="failedCount"></span> nicht gefunden.
                     </div>
-                    <button x-show="!updating" @click="showMassUpdateModal = false; window.location.reload()" class="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-purple-500 hover:text-white transition-all shadow-xl uppercase tracking-widest text-xs">Schließen</button>
-                    <button x-show="updating" @click="cancelUpdate()" class="text-white/20 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest transition-colors">Vorgang abbrechen</button>
+                     <button x-show="!updating" x-cloak @click="showMassUpdateModal = false; window.location.reload()" class="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-purple-500 hover:text-white transition-all shadow-xl uppercase tracking-widest text-xs">Schließen</button>
+                    <button x-show="updating" x-cloak @click="cancelUpdate()" class="text-white/20 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest transition-colors">Vorgang abbrechen</button>
                 </div>
             </div>
         </div>

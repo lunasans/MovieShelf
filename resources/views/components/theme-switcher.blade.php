@@ -46,6 +46,7 @@
 
     <!-- Theme Picker Panel -->
     <div x-show="open" 
+         x-cloak
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0 translate-y-10 scale-95"
          x-transition:enter-end="opacity-100 translate-y-0 scale-100"
