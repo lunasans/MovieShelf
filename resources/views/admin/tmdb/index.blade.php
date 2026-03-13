@@ -10,6 +10,10 @@
                     <button @click="type = 'movie'; search()" :class="type === 'movie' ? 'bg-purple-500 text-white shadow-lg' : 'text-white/50 hover:text-white'" class="px-4 py-2 rounded-lg text-xs font-bold transition-all">FILME</button>
                     <button @click="type = 'tv'; search()" :class="type === 'tv' ? 'bg-purple-500 text-white shadow-lg' : 'text-white/50 hover:text-white'" class="px-4 py-2 rounded-lg text-xs font-bold transition-all">SERIEN</button>
                 </div>
+                <button @click="startAutoMatching()" class="glass-button flex items-center gap-2 group border-indigo-500/30 hover:bg-indigo-500/20 text-indigo-400">
+                    <i class="bi bi-magic transition-transform group-hover:scale-110"></i>
+                    Auto-Matching starten
+                </button>
                 <button @click="startMassUpdate()" class="glass-button flex items-center gap-2 group border-purple-500/30 hover:bg-purple-500/20 text-purple-400">
                     <i class="bi bi-arrow-repeat transition-transform group-hover:rotate-180 duration-700"></i>
                     Mass-Update starten
@@ -178,20 +182,24 @@
                     <i class="bi bi-arrow-repeat" :class="updating ? 'animate-spin' : ''"></i>
                 </div>
                 
-                <h2 class="text-2xl font-black text-white mb-2" x-text="updating ? 'Mass-Update läuft...' : 'Update abgeschlossen!'"></h2>
-                <p class="text-white/50 text-sm mb-8" x-text="updating ? 'Bitte lass dieses Fenster offen, während wir die Filmdaten aktualisieren.' : 'Alle Filme wurden erfolgreich aktualisiert.'"></p>
+                <h2 class="text-2xl font-black text-white mb-2" x-text="updating ? (mode === 'matching' ? 'Auto-Matching läuft...' : 'Mass-Update läuft...') : 'Vorgang abgeschlossen!'"></h2>
+                <p class="text-white/50 text-sm mb-8" x-text="updating ? 'Bitte lass dieses Fenster offen.' : (mode === 'matching' ? 'Das Auto-Matching wurde beendet.' : 'Alle Filme wurden erfolgreich aktualisiert.')"></p>
 
                 <div class="mb-4 flex justify-between items-end">
                     <span class="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]" x-text="updateCount + ' von ' + updateTotal + ' verarbeitet'"></span>
-                    <span class="text-sm font-black text-purple-400" x-text="Math.round((updateCount / updateTotal) * 100) + '%'"></span>
+                    <span class="text-sm font-black text-purple-400" x-text="updateTotal > 0 ? Math.round((updateCount / updateTotal) * 100) : 0 + '%'"></span>
                 </div>
 
                 <div class="w-full h-4 bg-white/5 rounded-full overflow-hidden mb-10 border border-white/5 p-1">
-                    <div class="h-full bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full transition-all duration-500" :style="'width: ' + (updateCount / updateTotal * 100) + '%'"></div>
+                    <div class="h-full bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full transition-all duration-500" :style="'width: ' + (updateTotal > 0 ? (updateCount / updateTotal * 100) : 0) + '%'"></div>
                 </div>
 
                 <div class="space-y-4">
-                    <div x-show="updating" class="text-white/40 text-xs italic" x-text="'Aktualisiere: ' + currentUpdateTitle"></div>
+                    <div x-show="updating" class="text-white/40 text-xs italic" x-text="(mode === 'matching' ? 'Prüfe: ' : 'Aktualisiere: ') + currentUpdateTitle"></div>
+                    <div x-show="!updating && mode === 'matching'" class="p-4 bg-white/5 rounded-2xl text-xs text-white/60 mb-4">
+                        <span class="font-bold text-green-400" x-text="matchedCount"></span> Treffer erzielt, 
+                        <span class="font-bold text-rose-400" x-text="failedCount"></span> nicht gefunden.
+                    </div>
                     <button x-show="!updating" @click="showMassUpdateModal = false; window.location.reload()" class="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-purple-500 hover:text-white transition-all shadow-xl uppercase tracking-widest text-xs">Schließen</button>
                     <button x-show="updating" @click="cancelUpdate()" class="text-white/20 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest transition-colors">Vorgang abbrechen</button>
                 </div>
@@ -217,6 +225,9 @@
                 currentUpdateTitle: '',
                 updateQueue: [],
                 shouldCancel: false,
+                mode: 'update',
+                matchedCount: 0,
+                failedCount: 0,
                 search() {
                     if (this.query.length < 3) {
                         if (this.query.includes('themoviedb.org/')) {
@@ -325,8 +336,39 @@
                         }
                     }
                 },
+                async startAutoMatching() {
+                    this.loading = true;
+                    this.error = null;
+                    try {
+                        const res = await fetch('{{ route('admin.tmdb.unlinked-list') }}');
+                        const movies = await res.json();
+                        
+                        if (movies.length === 0) {
+                            this.error = 'Alle Filme scheinen bereits verknüpft zu sein!';
+                            this.loading = false;
+                            return;
+                        }
+
+                        this.updateQueue = movies;
+                        this.updateTotal = movies.length;
+                        this.updateCount = 0;
+                        this.matchedCount = 0;
+                        this.failedCount = 0;
+                        this.shouldCancel = false;
+                        this.mode = 'matching';
+                        this.showMassUpdateModal = true;
+                        this.updating = true;
+                        this.loading = false;
+                        
+                        this.processNextInQueue();
+                    } catch (err) {
+                        this.error = 'Fehler beim Laden der Filmliste.';
+                        this.loading = false;
+                    }
+                },
                 async startMassUpdate() {
                     this.loading = true;
+                    this.error = null;
                     try {
                         const res = await fetch('{{ route('admin.tmdb.update-list') }}');
                         const movies = await res.json();
@@ -341,6 +383,7 @@
                         this.updateTotal = movies.length;
                         this.updateCount = 0;
                         this.shouldCancel = false;
+                        this.mode = 'update';
                         this.showMassUpdateModal = true;
                         this.updating = true;
                         this.loading = false;
@@ -361,7 +404,8 @@
                     this.currentUpdateTitle = movie.title;
 
                     try {
-                        const res = await fetch('{{ route('admin.tmdb.bulk-update') }}', {
+                        const endpoint = this.mode === 'matching' ? '{{ route('admin.tmdb.auto-link') }}' : '{{ route('admin.tmdb.bulk-update') }}';
+                        const res = await fetch(endpoint, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -369,14 +413,21 @@
                             },
                             body: JSON.stringify({ movie_id: movie.id })
                         });
+                        const data = await res.json();
                         
+                        if (this.mode === 'matching') {
+                            if (data.success) this.matchedCount++;
+                            else this.failedCount++;
+                        }
+
                         this.updateCount++;
                         // Delay to avoid rate limiting
-                        setTimeout(() => this.processNextInQueue(), 500);
+                        setTimeout(() => this.processNextInQueue(), 600);
                     } catch (err) {
-                        console.error('Update failed for ' + movie.title);
+                        console.error('Operation failed for ' + movie.title);
+                        if (this.mode === 'matching') this.failedCount++;
                         this.updateCount++;
-                        setTimeout(() => this.processNextInQueue(), 500);
+                        setTimeout(() => this.processNextInQueue(), 600);
                     }
                 },
                 cancelUpdate() {

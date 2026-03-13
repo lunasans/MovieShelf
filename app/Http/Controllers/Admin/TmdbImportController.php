@@ -460,4 +460,63 @@ class TmdbImportController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    /**
+     * Get a list of movies that don't have a TMDb ID.
+     */
+    public function getUnlinkedMovies()
+    {
+        $movies = Movie::whereNull('tmdb_id')
+            ->select('id', 'title', 'year')
+            ->get();
+            
+        return response()->json($movies);
+    }
+
+    /**
+     * Attempt to automatically link a movie to TMDb.
+     */
+    public function autoLinkMovie(Request $request)
+    {
+        $movieId = $request->get('movie_id');
+        $movie = Movie::findOrFail($movieId);
+
+        try {
+            // Search for the movie
+            $search = $this->tmdb->searchMovie($movie->title, $movie->year);
+            
+            if (isset($search['results']) && count($search['results']) > 0) {
+                // Take the first result
+                $tmdbMovie = $search['results'][0];
+                
+                $movie->update([
+                    'tmdb_id' => $tmdbMovie['id'],
+                    'tmdb_type' => 'movie'
+                ]);
+
+                return response()->json([
+                    'success' => true, 
+                    'match' => $tmdbMovie['title'] . ' (' . substr($tmdbMovie['release_date'] ?? '', 0, 4) . ')'
+                ]);
+            }
+
+            // If not found as movie, try TV search
+            $searchTv = $this->tmdb->searchTv($movie->title);
+            if (isset($searchTv['results']) && count($searchTv['results']) > 0) {
+                $tmdbTv = $searchTv['results'][0];
+                $movie->update([
+                    'tmdb_id' => $tmdbTv['id'],
+                    'tmdb_type' => 'tv'
+                ]);
+                return response()->json([
+                    'success' => true, 
+                    'match' => $tmdbTv['name'] . ' (' . substr($tmdbTv['first_air_date'] ?? '', 0, 4) . ') [Serie]'
+                ]);
+            }
+
+            return response()->json(['success' => false, 'message' => 'Kein Treffer bei TMDb gefunden.']);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 }

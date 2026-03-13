@@ -57,6 +57,8 @@ Route::middleware('auth')->group(function () {
         Route::post('tmdb/import', [\App\Http\Controllers\Admin\TmdbImportController::class, 'import'])->name('tmdb.import');
         Route::get('tmdb/update-list', [\App\Http\Controllers\Admin\TmdbImportController::class, 'getMoviesForUpdate'])->name('tmdb.update-list');
         Route::post('tmdb/bulk-update', [\App\Http\Controllers\Admin\TmdbImportController::class, 'bulkUpdate'])->name('tmdb.bulk-update');
+        Route::get('tmdb/unlinked-list', [\App\Http\Controllers\Admin\TmdbImportController::class, 'getUnlinkedMovies'])->name('tmdb.unlinked-list');
+        Route::post('tmdb/auto-link', [\App\Http\Controllers\Admin\TmdbImportController::class, 'autoLinkMovie'])->name('tmdb.auto-link');
 
         // XML Import
         Route::get('import', [\App\Http\Controllers\Admin\XmlImportController::class, 'index'])->name('import.index');
