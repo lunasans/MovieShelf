@@ -63,7 +63,7 @@
 
                     <div>
                         <label for="rating" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Bewertung (TMDb)</label>
-                        <input type="number" step="0.1" name="rating" id="rating" x-model="formData.rating" value="{{ old('rating', $movie->rating) }}"
+                        <input type="number" step="0.1" min="0" name="rating" id="rating" x-model="formData.rating" value="{{ old('rating', $movie->rating ? round($movie->rating, 1) : null) }}"
                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
                     </div>
 
@@ -205,7 +205,7 @@
                     collection_type: '{{ old('collection_type', $movie->collection_type) }}',
                     genre: '{{ str_replace("'", "\'", old('genre', $movie->genre)) }}',
                     runtime: '{{ old('runtime', $movie->runtime) }}',
-                    rating: '{{ old('rating', $movie->rating) }}',
+                    rating: '{{ old('rating', $movie->rating ? round($movie->rating, 1) : null) }}',
                     rating_age: '{{ old('rating_age', $movie->rating_age) }}',
                     trailer_url: '{{ old('trailer_url', $movie->trailer_url) }}',
                     overview: `{!! str_replace("`", "\`", old('overview', $movie->overview)) !!}`
