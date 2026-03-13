@@ -3,69 +3,73 @@
         [x-cloak] { display: none !important; }
     </style>
 
-    <div class="px-8 py-10 min-h-screen" x-data="{ 
-        playingTrailer: null,
-        openTrailer(title, url) {
-            if (!url) return;
-            let videoId = '';
-            const ytRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(ytRegExp);
-            
-            let finalUrl = '';
-            if (match && match[2].length === 11) {
-                videoId = match[2];
-                finalUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1&origin=${window.location.origin}`;
-            } else {
-                // Fallback/Already embed
-                finalUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1&mute=1';
-            }
-            this.playingTrailer = { title: title, url: finalUrl };
-        },
-        nextPageUrl: '{{ $movies->nextPageUrl() }}',
-        isLoading: false,
-        async loadMore() {
-            if (this.isLoading || !this.nextPageUrl) return;
-            this.isLoading = true;
-            
-            try {
-                const response = await fetch(this.nextPageUrl, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                const html = await response.text();
-                
-                // Create a temporary element to parse the HTML
-                const temp = document.createElement('div');
-                temp.innerHTML = html;
-                
-                // Append items to grid
-                const grid = this.$refs.grid;
-                while (temp.firstChild) {
-                    grid.appendChild(temp.firstChild);
+    <script>
+        function trailerGallery() {
+            return {
+                playingTrailer: null,
+                nextPageUrl: '{{ $movies->nextPageUrl() }}',
+                isLoading: false,
+                openTrailer(title, url) {
+                    if (!url) return;
+                    let videoId = '';
+                    const ytRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                    const match = url.match(ytRegExp);
+                    
+                    let finalUrl = '';
+                    if (match && match[2].length === 11) {
+                        videoId = match[2];
+                        finalUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&rel=0&modestbranding=1&origin=${window.location.origin}`;
+                    } else {
+                        // Fallback/Already embed
+                        finalUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1&mute=1';
+                    }
+                    this.playingTrailer = { title: title, url: finalUrl };
+                },
+                async loadMore() {
+                    if (this.isLoading || !this.nextPageUrl) return;
+                    this.isLoading = true;
+                    
+                    try {
+                        const response = await fetch(this.nextPageUrl, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const html = await response.text();
+                        
+                        if (html.trim() === '') {
+                            this.nextPageUrl = null;
+                            return;
+                        }
+
+                        // Create a temporary element to parse the HTML
+                        const temp = document.createElement('div');
+                        temp.innerHTML = html;
+                        
+                        // Append items to grid
+                        const grid = this.$refs.grid;
+                        while (temp.firstChild) {
+                            grid.appendChild(temp.firstChild);
+                        }
+                        
+                        // Update nextPageUrl safely
+                        try {
+                            const url = new URL(this.nextPageUrl);
+                            const page = parseInt(url.searchParams.get('page')) + 1;
+                            url.searchParams.set('page', page);
+                            this.nextPageUrl = url.toString();
+                        } catch (urlErr) {
+                            this.nextPageUrl = null;
+                        }
+                    } catch (e) {
+                        console.error('Failed to load more trailers', e);
+                    } finally {
+                        this.isLoading = false;
+                    }
                 }
-                
-                // Check if there's a next page in the pagination (which we'll keep hidden)
-                // Actually, let's just increment the page or look at the response.
-                // Simple way: the pagination links are still there but hidden.
-                // We can fetch the NEXT next page by incrementing our URL.
-                const url = new URL(this.nextPageUrl);
-                const page = parseInt(url.searchParams.get('page')) + 1;
-                url.searchParams.set('page', page);
-                
-                // We need to know if we hit the end.
-                // If the response was empty or fewer items than expected?
-                // Better: The partial-list will have a "no more" indicator or we check item count.
-                if (html.trim() === '') {
-                    this.nextPageUrl = null;
-                } else {
-                    this.nextPageUrl = url.toString();
-                }
-            } catch (e) {
-                console.error('Failed to load more trailers', e);
-            } finally {
-                this.isLoading = false;
             }
         }
-    }">
+    </script>
+
+    <div class="px-8 py-10 min-h-screen" x-data="trailerGallery()">
         <div class="max-w-7xl mx-auto">
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
@@ -101,14 +105,14 @@
             </div>
 
             <!-- Infinite Scroll Trigger -->
-            <div x-show="nextPageUrl" 
+            <div x-show="$data.nextPageUrl" 
                  x-intersect.margin.500px="loadMore()" 
                  class="mt-20 flex flex-col items-center justify-center gap-4">
-                <div x-show="isLoading" class="flex flex-col items-center gap-4 animate-in fade-in duration-500">
+                <div x-show="$data.isLoading" class="flex flex-col items-center gap-4 animate-in fade-in duration-500">
                     <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
                     <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] italic">Lade weitere Trailer...</span>
                 </div>
-                <button x-show="!isLoading" @click="loadMore()" class="px-8 py-4 glass border border-white/10 rounded-2xl text-xs font-black text-gray-400 hover:text-white hover:border-blue-500/50 transition-all uppercase tracking-widest italic group">
+                <button x-show="!$data.isLoading" @click="loadMore()" class="px-8 py-4 glass border border-white/10 rounded-2xl text-xs font-black text-gray-400 hover:text-white hover:border-blue-500/50 transition-all uppercase tracking-widest italic group">
                     <span>{{ __('Mehr laden') }}</span>
                     <i class="bi bi-chevron-down ml-2 group-hover:translate-y-1 transition-transform inline-block"></i>
                 </button>
