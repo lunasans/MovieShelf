@@ -6,6 +6,10 @@ use App\Models\Actor;
 use App\Services\TmdbService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class ActorController extends Controller
 {
@@ -97,17 +101,45 @@ class ActorController extends Controller
         $actor->increment('view_count');
 
         // Fetch or update details from TMDb if bio or imdb_id is empty and tmdb_id exists
-        if ((empty($actor->bio) || empty($actor->imdb_id)) && $actor->tmdb_id) {
-            $details = $this->tmdb->getPersonDetails($actor->tmdb_id);
+        // Also handle legacy/missing profile images
+        $isLegacyPath = str_starts_with($actor->profile_path ?? '', 'tmdb_');
+        $repairId = $actor->tmdb_id;
+
+        if ($isLegacyPath && !$repairId) {
+            $repairId = (int) str_replace('tmdb_', '', $actor->profile_path);
+            $actor->tmdb_id = $repairId; // Temp set for the request
+        }
+        
+        if (((empty($actor->bio) || empty($actor->imdb_id)) || $isLegacyPath || empty($actor->profile_path)) && $repairId) {
+            $details = $this->tmdb->getPersonDetails($repairId);
             if (!isset($details['error'])) {
-                $actor->update([
+                $updateData = [
+                    'tmdb_id' => $repairId,
                     'imdb_id' => $details['imdb_id'] ?? $actor->imdb_id,
                     'bio' => $details['biography'] ?? $actor->bio,
                     'birthday' => $details['birthday'] ?? $actor->birthday,
                     'deathday' => $details['deathday'] ?? $actor->deathday,
                     'place_of_birth' => $details['place_of_birth'] ?? $actor->place_of_birth,
                     'homepage' => $details['homepage'] ?? $actor->homepage,
-                ]);
+                ];
+
+                // Repair image if legacy or missing
+                if (($isLegacyPath || empty($actor->profile_path)) && !empty($details['profile_path'])) {
+                    try {
+                        $profileUrl = "https://image.tmdb.org/t/p/w185" . $details['profile_path'];
+                        $imageContent = Http::get($profileUrl)->body();
+                        $filename = 'actors/' . Str::random(20) . '.jpg';
+                        Storage::disk('public')->put($filename, $imageContent);
+                        $updateData['profile_path'] = $filename;
+                    } catch (\Exception $e) {
+                        Log::error("Could not download actor profile during repair: " . $e->getMessage());
+                    }
+                } elseif ($isLegacyPath) {
+                    // It was a legacy path but TMDb has no image, remove the broken indicator
+                    $updateData['profile_path'] = null;
+                }
+
+                $actor->update($updateData);
             }
         }
 
