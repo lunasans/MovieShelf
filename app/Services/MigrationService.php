@@ -207,6 +207,11 @@ class MigrationService
         $v1CacheDir = $this->v1Path ? rtrim($this->v1Path, '/') . '/cache/tmdb' : null;
 
         if (!$v1CacheDir || !is_dir($v1CacheDir)) {
+            // Drop-zone within v2
+            $v1CacheDir = database_path('v1_cache');
+        }
+
+        if (!is_dir($v1CacheDir)) {
             // Try robust defaults
             $v1CacheDir = base_path('../dvdprofiler.liste/cache/tmdb');
         }
