@@ -27,12 +27,18 @@ class MigrationController extends Controller
     public function run(Request $request, MigrationService $migrationService)
     {
         $logs = [];
-        $fields = $request->get('fields', []);
+        $modules = $request->get('modules', []);
+        $movieFields = $request->get('movie_fields', []);
         
         try {
-            $migrationService->migrate($request->has('fresh'), $fields, function ($message) use (&$logs) {
-                $logs[] = $message;
-            });
+            $migrationService->migrate(
+                $request->has('fresh'), 
+                $modules, 
+                $movieFields, 
+                function ($message) use (&$logs) {
+                    $logs[] = $message;
+                }
+            );
 
             return back()->with('success', 'Migration erfolgreich abgeschlossen!')->with('migration_logs', $logs);
         } catch (\Exception $e) {

@@ -22,12 +22,17 @@ class MigrationService
 {
     protected $callback;
     protected $connection = 'mysql_v1';
-    protected array $fields = [];
+    protected array $modules = [];
+    protected array $movieFields = [];
 
-    public function migrate($fresh = false, array $fields = [], callable $callback = null)
+    public function migrate($fresh = false, array $modules = [], array $movieFields = [], callable $callback = null)
     {
         $this->callback = $callback;
-        $this->fields = $fields;
+        $this->modules = $modules;
+        $this->movieFields = $movieFields;
+
+        $defaultModules = ['users', 'actors', 'movies', 'movie_actors', 'watched', 'ratings', 'wishlist', 'seasons', 'episodes', 'settings', 'counter', 'logs', 'backup_codes'];
+        $activeModules = !empty($this->modules) ? $this->modules : $defaultModules;
 
         // Check if we have an exported SQLite file
         if (file_exists(database_path('v1_dump.sqlite'))) {
@@ -46,19 +51,19 @@ class MigrationService
                 $this->truncateTables();
             }
 
-            $this->migrateUsers();
-            $this->migrateActors();
-            $this->migrateMovies();
-            $this->migrateMovieActors();
-            $this->migrateUserWatched();
-            $this->migrateUserRatings();
-            $this->migrateUserWishlist();
-            $this->migrateSeasons();
-            $this->migrateEpisodes();
-            $this->migrateSettings();
-            $this->migrateCounter();
-            $this->migrateLogs();
-            $this->migrateBackupCodes();
+            if (in_array('users', $activeModules)) $this->migrateUsers();
+            if (in_array('actors', $activeModules)) $this->migrateActors();
+            if (in_array('movies', $activeModules)) $this->migrateMovies();
+            if (in_array('movie_actors', $activeModules)) $this->migrateMovieActors();
+            if (in_array('watched', $activeModules)) $this->migrateUserWatched();
+            if (in_array('ratings', $activeModules)) $this->migrateUserRatings();
+            if (in_array('wishlist', $activeModules)) $this->migrateUserWishlist();
+            if (in_array('seasons', $activeModules)) $this->migrateSeasons();
+            if (in_array('episodes', $activeModules)) $this->migrateEpisodes();
+            if (in_array('settings', $activeModules)) $this->migrateSettings();
+            if (in_array('counter', $activeModules)) $this->migrateCounter();
+            if (in_array('logs', $activeModules)) $this->migrateLogs();
+            if (in_array('backup_codes', $activeModules)) $this->migrateBackupCodes();
 
             $this->log('Migration erfolgreich abgeschlossen!');
         } finally {
@@ -206,8 +211,8 @@ class MigrationService
                     ];
 
                     // If fields are specified, filter the selectable fields
-                    if (!empty($this->fields)) {
-                        foreach ($this->fields as $field) {
+                    if (!empty($this->movieFields)) {
+                        foreach ($this->movieFields as $field) {
                             if (array_key_exists($field, $selectableFields)) {
                                 $movieData[$field] = $selectableFields[$field];
                             }
