@@ -72,6 +72,9 @@ Route::middleware('auth')->group(function () {
         // Migration v1 -> v2
         Route::get('migration', [\App\Http\Controllers\Admin\MigrationController::class, 'index'])->name('migration.index');
         Route::post('migration/run', [\App\Http\Controllers\Admin\MigrationController::class, 'run'])->name('migration.run');
+
+        // Statistics
+        Route::get('stats', [\App\Http\Controllers\Admin\StatsController::class, 'index'])->name('stats.index');
     });
 });
 // Signatur-Banner
