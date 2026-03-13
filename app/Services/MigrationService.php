@@ -229,18 +229,22 @@ class MigrationService
                         }
                     }
 
+                    $tmdbData = $tmdbJson ? json_decode($tmdbJson, true) : null;
+
                     $movieData = [
                         'title' => $oldDvd->title,
                         'user_id' => $oldDvd->user_id,
-                        'tmdb_id' => $tmdbId,
-                        'tmdb_type' => 'movie', // Default
-                        'tmdb_json' => $tmdbJson ? json_decode($tmdbJson, true) : null,
                     ];
+
+                    $rating = property_exists($oldDvd, 'rating') ? $oldDvd->rating : null;
+                    if ($rating === null && isset($tmdbData['vote_average'])) {
+                        $rating = $tmdbData['vote_average'];
+                    }
 
                     $selectableFields = [
                         'year' => $oldDvd->year,
                         'genre' => $oldDvd->genre,
-                        'rating' => property_exists($oldDvd, 'rating') ? $oldDvd->rating : null,
+                        'rating' => $rating,
                         'cover_id' => $oldDvd->cover_id,
                         'backdrop_id' => property_exists($oldDvd, 'backdrop_id') ? $oldDvd->backdrop_id : null,
                         'collection_type' => $oldDvd->collection_type,
@@ -250,10 +254,13 @@ class MigrationService
                         'director' => property_exists($oldDvd, 'director') ? $oldDvd->director : null,
                         'trailer_url' => $oldDvd->trailer_url,
                         'boxset_parent' => $oldDvd->boxset_parent,
-                        'is_deleted' => $oldDvd->is_deleted || (property_exists($oldDvd, 'deleted') ? $oldDvd->deleted : false),
+                        'is_deleted' => (isset($oldDvd->is_deleted) && $oldDvd->is_deleted) || (property_exists($oldDvd, 'deleted') ? $oldDvd->deleted : false),
                         'view_count' => $oldDvd->view_count,
                         'created_at' => $oldDvd->created_at,
                         'updated_at' => $oldDvd->updated_at,
+                        'tmdb_id' => $tmdbId,
+                        'tmdb_type' => 'movie',
+                        'tmdb_json' => $tmdbData,
                     ];
 
                     // If fields are specified, filter the selectable fields
