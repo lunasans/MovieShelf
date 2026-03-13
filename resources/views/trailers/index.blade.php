@@ -18,7 +18,7 @@
                     let finalUrl = '';
                     if (match && match[2].length === 11) {
                         videoId = match[2];
-                        finalUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&rel=0&enablejsapi=1&origin=` + encodeURIComponent(window.location.origin);
+                        finalUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&rel=0`;
                     } else {
                         // Fallback/Already embed
                         finalUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1&mute=1';
