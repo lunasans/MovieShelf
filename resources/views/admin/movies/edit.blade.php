@@ -210,7 +210,6 @@
                     trailer_url: '{{ old('trailer_url', $movie->trailer_url) }}',
                     overview: `{!! str_replace("`", "\`", old('overview', $movie->overview)) !!}`
                 },
-@verbatim
                 openModal() {
                     this.showModal = true;
                     if (this.results.length === 0) {
@@ -243,7 +242,6 @@
                             this.formData.runtime = data.runtime || (data.episode_run_time ? data.episode_run_time[0] : null);
                             this.formData.rating = data.vote_average;
                             this.formData.overview = data.overview;
-@endverbatim
                             
                             // Extract Trailer
                             if (data.videos && data.videos.results) {
