@@ -63,18 +63,4 @@
         @endforelse
     </div>
 
-    <!-- Stats Hint -->
-    <div class="mt-10 p-6 rounded-3xl glass border-blue-500/10 bg-gradient-to-br from-blue-500/5 to-purple-600/5">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 flex-shrink-0">
-                <i class="bi bi-info-circle-fill text-xl"></i>
-            </div>
-            <div>
-                <h4 class="text-xs font-bold text-white mb-1 uppercase tracking-widest">{{ __('Wussten Sie schon?') }}</h4>
-                <p class="text-[11px] text-gray-400 leading-relaxed">
-                    {{ __('Sie können die Anzahl der hier angezeigten Filme in den Einstellungen im Adminpanel anpassen.') }}
-                </p>
-            </div>
-        </div>
-    </div>
 </div>
