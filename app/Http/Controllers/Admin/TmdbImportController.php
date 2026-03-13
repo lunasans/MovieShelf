@@ -481,36 +481,34 @@ class TmdbImportController extends Controller
         $movie = Movie::findOrFail($movieId);
 
         try {
-            // Search for the movie
-            $search = $this->tmdb->searchMovie($movie->title, $movie->year);
-            
-            if (isset($search['results']) && count($search['results']) > 0) {
-                // Take the first result
-                $tmdbMovie = $search['results'][0];
-                
-                $movie->update([
-                    'tmdb_id' => $tmdbMovie['id'],
-                    'tmdb_type' => 'movie'
-                ]);
+            // Standardize Title for search
+            $cleanTitle = $this->cleanTitle($movie->title);
+            $year = $movie->year;
 
-                return response()->json([
-                    'success' => true, 
-                    'match' => $tmdbMovie['title'] . ' (' . substr($tmdbMovie['release_date'] ?? '', 0, 4) . ')'
-                ]);
+            // 1. Search as Movie with Year
+            $search = $this->tmdb->searchMovie($cleanTitle, $year);
+            if ($this->hasMatch($search)) {
+                return $this->linkMovie($movie, $search['results'][0], 'movie');
             }
 
-            // If not found as movie, try TV search
-            $searchTv = $this->tmdb->searchTv($movie->title);
-            if (isset($searchTv['results']) && count($searchTv['results']) > 0) {
-                $tmdbTv = $searchTv['results'][0];
-                $movie->update([
-                    'tmdb_id' => $tmdbTv['id'],
-                    'tmdb_type' => 'tv'
-                ]);
-                return response()->json([
-                    'success' => true, 
-                    'match' => $tmdbTv['name'] . ' (' . substr($tmdbTv['first_air_date'] ?? '', 0, 4) . ') [Serie]'
-                ]);
+            // 2. Search as Movie WITHOUT Year (sometimes year in DB is slightly off)
+            if ($year) {
+                $search = $this->tmdb->searchMovie($cleanTitle);
+                if ($this->hasMatch($search)) {
+                    return $this->linkMovie($movie, $search['results'][0], 'movie');
+                }
+            }
+
+            // 3. Search as TV Show with Year
+            $searchTv = $this->tmdb->searchTv($cleanTitle, $year);
+            if ($this->hasMatch($searchTv)) {
+                return $this->linkMovie($movie, $searchTv['results'][0], 'tv');
+            }
+
+            // 4. Search as TV Show WITHOUT Year
+            $searchTv = $this->tmdb->searchTv($cleanTitle);
+            if ($this->hasMatch($searchTv)) {
+                return $this->linkMovie($movie, $searchTv['results'][0], 'tv');
             }
 
             return response()->json(['success' => false, 'message' => 'Kein Treffer bei TMDb gefunden.']);
@@ -518,5 +516,37 @@ class TmdbImportController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    protected function cleanTitle(string $title): string
+    {
+        // Remove common suffixes and prefixes that break TMDb search
+        $title = preg_replace('/\s*\(.*?\)\s*/', ' ', $title); // Remove anything in parentheses
+        $title = preg_replace('/\s*\[.*?\]\s*/', ' ', $title); // Remove anything in brackets
+        $title = preg_replace('/\b(DVD|Blu-ray|BluRay|4K|UHD|Remastered|Steelbook)\b/i', '', $title);
+        $title = trim($title);
+        return $title;
+    }
+
+    protected function hasMatch(array $search): bool
+    {
+        return isset($search['results']) && count($search['results']) > 0;
+    }
+
+    protected function linkMovie(Movie $movie, array $tmdbResult, string $type)
+    {
+        $movie->update([
+            'tmdb_id' => $tmdbResult['id'],
+            'tmdb_type' => $type
+        ]);
+
+        $title = $tmdbResult['title'] ?? $tmdbResult['name'];
+        $date = $tmdbResult['release_date'] ?? $tmdbResult['first_air_date'] ?? '';
+        $year = substr($date, 0, 4);
+
+        return response()->json([
+            'success' => true, 
+            'match' => "{$title} ({$year})" . ($type === 'tv' ? ' [Serie]' : '')
+        ]);
     }
 }

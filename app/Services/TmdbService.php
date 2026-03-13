@@ -20,20 +20,26 @@ class TmdbService
     /**
      * Search for movies by title
      */
-    public function searchMovie(string $query, int $page = 1): array
+    public function searchMovie(string $query, ?int $year = null, int $page = 1): array
     {
         if (empty($this->apiKey)) {
             return ['error' => 'TMDb API Key nicht konfiguriert.'];
         }
 
         try {
-            $response = Http::get("{$this->baseUrl}/search/movie", [
+            $params = [
                 'api_key' => $this->apiKey,
                 'query' => $query,
                 'language' => $this->language,
                 'page' => $page,
                 'include_adult' => false,
-            ]);
+            ];
+
+            if ($year) {
+                $params['primary_release_year'] = $year;
+            }
+
+            $response = Http::get("{$this->baseUrl}/search/movie", $params);
 
             if ($response->successful()) {
                 return $response->json();
@@ -102,20 +108,26 @@ class TmdbService
     /**
      * Search for TV shows by title
      */
-    public function searchTv(string $query, int $page = 1): array
+    public function searchTv(string $query, ?int $year = null, int $page = 1): array
     {
         if (empty($this->apiKey)) {
             return ['error' => 'TMDb API Key nicht konfiguriert.'];
         }
 
         try {
-            $response = Http::get("{$this->baseUrl}/search/tv", [
+            $params = [
                 'api_key' => $this->apiKey,
                 'query' => $query,
                 'language' => $this->language,
                 'page' => $page,
                 'include_adult' => false,
-            ]);
+            ];
+
+            if ($year) {
+                $params['first_air_date_year'] = $year;
+            }
+
+            $response = Http::get("{$this->baseUrl}/search/tv", $params);
 
             if ($response->successful()) {
                 return $response->json();
