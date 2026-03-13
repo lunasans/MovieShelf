@@ -25,6 +25,10 @@ class TrailerController extends Controller
             ->orderBy('title', 'asc')
             ->paginate(24);
 
+        if ($request->ajax()) {
+            return view('trailers.partials.movie-card-list', compact('movies'))->render();
+        }
+
         return view('trailers.index', compact('movies'));
     }
 }

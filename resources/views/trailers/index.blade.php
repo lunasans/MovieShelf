@@ -20,6 +20,50 @@
                 finalUrl = url + (url.includes('?') ? '&' : '?') + 'autoplay=1&mute=1';
             }
             this.playingTrailer = { title: title, url: finalUrl };
+        },
+        nextPageUrl: '{{ $movies->nextPageUrl() }}',
+        isLoading: false,
+        async loadMore() {
+            if (this.isLoading || !this.nextPageUrl) return;
+            this.isLoading = true;
+            
+            try {
+                const response = await fetch(this.nextPageUrl, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const html = await response.text();
+                
+                // Create a temporary element to parse the HTML
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                
+                // Append items to grid
+                const grid = this.$refs.grid;
+                while (temp.firstChild) {
+                    grid.appendChild(temp.firstChild);
+                }
+                
+                // Check if there's a next page in the pagination (which we'll keep hidden)
+                // Actually, let's just increment the page or look at the response.
+                // Simple way: the pagination links are still there but hidden.
+                // We can fetch the NEXT next page by incrementing our URL.
+                const url = new URL(this.nextPageUrl);
+                const page = parseInt(url.searchParams.get('page')) + 1;
+                url.searchParams.set('page', page);
+                
+                // We need to know if we hit the end.
+                // If the response was empty or fewer items than expected?
+                // Better: The partial-list will have a "no more" indicator or we check item count.
+                if (html.trim() === '') {
+                    this.nextPageUrl = null;
+                } else {
+                    this.nextPageUrl = url.toString();
+                }
+            } catch (e) {
+                console.error('Failed to load more trailers', e);
+            } finally {
+                this.isLoading = false;
+            }
         }
     }">
         <div class="max-w-7xl mx-auto">
@@ -42,54 +86,9 @@
             </div>
 
             <!-- Trailers Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" x-ref="grid">
                 @forelse($movies as $movie)
-                    <div class="group relative flex flex-col gap-4">
-                        <!-- Preview Card -->
-                        <div @click="openTrailer('{{ addslashes($movie->title) }}', '{{ $movie->trailer_url }}')" 
-                             class="relative aspect-video rounded-3xl overflow-hidden glass border border-white/10 transition-all duration-500 hover:scale-[1.03] hover:border-blue-500/50 shadow-2xl group/card cursor-pointer">
-                            <!-- Backdrop Image -->
-                            @if($movie->backdrop_url)
-                                <img src="{{ $movie->backdrop_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover opacity-60 group-hover/card:scale-110 group-hover/card:opacity-90 transition-all duration-700">
-                            @elseif($movie->cover_url)
-                                <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover blur-sm opacity-40 group-hover/card:scale-110 group-hover/card:opacity-60 transition-all duration-700">
-                            @else
-                                <div class="w-full h-full bg-gradient-to-br from-gray-800 to-gray-950 flex items-center justify-center">
-                                    <i class="bi bi-film text-4xl text-white/10"></i>
-                                </div>
-                            @endif
-
-                            <!-- Play Overlay -->
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 bg-black/40 backdrop-blur-[2px]">
-                                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-[0_0_30px_rgba(37,99,235,0.6)] transform translate-y-4 group-hover/card:translate-y-0 transition-all duration-500 hover:scale-110">
-                                    <i class="bi bi-play-fill text-3xl"></i>
-                                </div>
-                            </div>
-
-                            <!-- Info Badge -->
-                            <div class="absolute bottom-4 right-4 flex items-center gap-2">
-                                @if($movie->rating)
-                                    <div class="px-2 py-1 bg-yellow-500/80 backdrop-blur-md rounded-lg text-[10px] font-black text-black border border-white/10 shadow-lg">
-                                        {{ number_format($movie->rating, 1) }}
-                                    </div>
-                                @endif
-                                <div class="px-3 py-1 glass rounded-xl text-[10px] font-black text-white italic uppercase tracking-widest border border-white/10 shadow-lg">
-                                    {{ $movie->year }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Info Section -->
-                        <div class="px-2">
-                            <h3 class="text-white font-black text-lg leading-tight tracking-tight mb-1 truncate group-hover:text-blue-400 transition-colors uppercase">
-                                {{ $movie->title }}
-                            </h3>
-                            <div @click.stop="window.location.href = '{{ route('dashboard', ['movie' => $movie->id]) }}'" class="flex items-center gap-2 text-[10px] font-black text-blue-400 uppercase tracking-widest cursor-pointer hover:text-blue-300 transition-colors italic w-fit group/btn">
-                                <span>{{ __('Details ansehen') }}</span>
-                                <i class="bi bi-arrow-right group-hover/btn:translate-x-1 transition-transform"></i>
-                            </div>
-                        </div>
-                    </div>
+                    @include('trailers.partials.movie-card', ['movie' => $movie])
                 @empty
                     <div class="col-span-full py-20 text-center glass rounded-[3rem] border border-dashed border-white/10">
                         <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -101,8 +100,22 @@
                 @endforelse
             </div>
 
-            <!-- Pagination -->
-            <div class="mt-20">
+            <!-- Infinite Scroll Trigger -->
+            <div x-show="nextPageUrl" 
+                 x-intersect.margin.500px="loadMore()" 
+                 class="mt-20 flex flex-col items-center justify-center gap-4">
+                <div x-show="isLoading" class="flex flex-col items-center gap-4 animate-in fade-in duration-500">
+                    <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+                    <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] italic">Lade weitere Trailer...</span>
+                </div>
+                <button x-show="!isLoading" @click="loadMore()" class="px-8 py-4 glass border border-white/10 rounded-2xl text-xs font-black text-gray-400 hover:text-white hover:border-blue-500/50 transition-all uppercase tracking-widest italic group">
+                    <span>{{ __('Mehr laden') }}</span>
+                    <i class="bi bi-chevron-down ml-2 group-hover:translate-y-1 transition-transform inline-block"></i>
+                </button>
+            </div>
+
+            <!-- Legacy Pagination (Hidden, but useful for SEO/No-JS) -->
+            <div class="hidden">
                 {{ $movies->links() }}
             </div>
         </div>
