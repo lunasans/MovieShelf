@@ -98,7 +98,7 @@
                         </h4>
                         <div class="flex items-end justify-between">
                             <div class="text-4xl font-black text-white">{{ $stats['missingTmdbCount'] }}</div>
-                            <a href="{{ route('admin.tmdb.index') }}" class="text-[10px] font-black text-white/30 hover:text-white uppercase tracking-widest underline decoration-rose-500/40 underline-offset-4 transition-all">Jetzt verknüpfen</a>
+                            <a href="{{ route('admin.movies.index', ['filter' => 'missing_tmdb']) }}" class="text-[10px] font-black text-white/30 hover:text-white uppercase tracking-widest underline decoration-rose-500/40 underline-offset-4 transition-all">Details ansehen</a>
                         </div>
                         <p class="text-[10px] text-white/20 mt-2 font-bold italic">Diese Filme haben noch keine TMDb ID-Verknüpfung.</p>
                     </div>
@@ -111,7 +111,7 @@
                         </h4>
                         <div class="flex items-end justify-between">
                             <div class="text-4xl font-black text-white">{{ $stats['missingCoverCount'] }}</div>
-                            <a href="{{ route('admin.movies.index') }}" class="text-[10px] font-black text-white/30 hover:text-white uppercase tracking-widest underline decoration-amber-500/40 underline-offset-4 transition-all">Liste prüfen</a>
+                            <a href="{{ route('admin.movies.index', ['filter' => 'missing_cover']) }}" class="text-[10px] font-black text-white/30 hover:text-white uppercase tracking-widest underline decoration-amber-500/40 underline-offset-4 transition-all">Details ansehen</a>
                         </div>
                         <p class="text-[10px] text-white/20 mt-2 font-bold italic">Filme ohne hinterlegte Poster-Datei.</p>
                     </div>

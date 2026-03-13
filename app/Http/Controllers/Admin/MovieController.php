@@ -19,6 +19,14 @@ class MovieController extends Controller
             $query->where('title', 'like', '%' . $request->q . '%');
         }
 
+        if ($request->filter === 'missing_tmdb') {
+            $query->whereNull('tmdb_id');
+        }
+
+        if ($request->filter === 'missing_cover') {
+            $query->whereNull('cover_id');
+        }
+
         $movies = $query->orderBy('title')->paginate(20);
 
         return view('admin.movies.index', compact('movies'));

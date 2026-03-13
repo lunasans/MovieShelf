@@ -15,15 +15,39 @@
                 </a>
             </div>
 
-            <form action="{{ route('admin.movies.index') }}" method="GET" class="relative w-full md:w-96 group">
-                <i class="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors"></i>
-                <input type="text" 
-                       name="q" 
-                       value="{{ request('q') }}"
-                       placeholder="Filme suchen..." 
-                       class="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-11 pr-4 text-sm text-gray-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all">
-            </form>
+            <div class="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                <form action="{{ route('admin.movies.index') }}" method="GET" class="relative w-full md:w-96 group">
+                    <i class="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors"></i>
+                    <input type="text" 
+                           name="q" 
+                           value="{{ request('q') }}"
+                           placeholder="Filme suchen..." 
+                           class="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-11 pr-4 text-sm text-gray-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all">
+                    @if(request('filter'))
+                        <input type="hidden" name="filter" value="{{ request('filter') }}">
+                    @endif
+                </form>
+
+                @if(request('filter') || request('q'))
+                    <a href="{{ route('admin.movies.index') }}" class="text-xs font-black text-rose-500 uppercase tracking-widest hover:text-rose-400 transition-colors flex items-center gap-1">
+                        <i class="bi bi-x-circle"></i>
+                        Filter löschen
+                    </a>
+                @endif
+            </div>
         </div>
+
+        @if(request('filter') === 'missing_tmdb')
+            <div class="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span class="text-xs font-bold font-black uppercase tracking-widest">Filter aktiv: Fehlende TMDb-Verknüpfung</span>
+            </div>
+        @elseif(request('filter') === 'missing_cover')
+            <div class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center gap-3 text-amber-400">
+                <i class="bi bi-image"></i>
+                <span class="text-xs font-bold font-black uppercase tracking-widest">Filter aktiv: Fehlende Cover</span>
+            </div>
+        @endif
 
         <!-- Movies Table -->
         <div class="glass rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
@@ -48,8 +72,16 @@
                                             <i class="bi bi-film text-gray-700"></i>
                                         @endif
                                     </div>
-                                    <div class="min-w-0">
-                                        <div class="text-sm font-bold text-white truncate">{{ $movie->title }}</div>
+                                     <div class="min-w-0">
+                                        <div class="text-sm font-bold text-white truncate flex items-center gap-2">
+                                            {{ $movie->title }}
+                                            @if(!$movie->tmdb_id)
+                                                <i class="bi bi-link-45deg text-rose-500" title="Keine TMDb Verknüpfung"></i>
+                                            @endif
+                                            @if(!$movie->cover_id)
+                                                <i class="bi bi-image text-amber-500" title="Kein Cover"></i>
+                                            @endif
+                                        </div>
                                         <div class="text-[10px] text-gray-500 uppercase mt-0.5 truncate">{{ $movie->boxsetChildren->count() > 0 ? $movie->boxsetChildren->count() . ' Filme im Set' : 'Einzelfilm' }}</div>
                                     </div>
                                 </div>
