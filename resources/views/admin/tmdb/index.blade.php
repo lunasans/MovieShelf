@@ -10,6 +10,10 @@
                     <button @click="type = 'movie'; search()" :class="type === 'movie' ? 'bg-purple-500 text-white shadow-lg' : 'text-white/50 hover:text-white'" class="px-4 py-2 rounded-lg text-xs font-bold transition-all">FILME</button>
                     <button @click="type = 'tv'; search()" :class="type === 'tv' ? 'bg-purple-500 text-white shadow-lg' : 'text-white/50 hover:text-white'" class="px-4 py-2 rounded-lg text-xs font-bold transition-all">SERIEN</button>
                 </div>
+                <button @click="startMassUpdate()" class="glass-button flex items-center gap-2 group border-purple-500/30 hover:bg-purple-500/20 text-purple-400">
+                    <i class="bi bi-arrow-repeat transition-transform group-hover:rotate-180 duration-700"></i>
+                    Mass-Update starten
+                </button>
                 <a href="{{ route('admin.movies.index') }}" class="glass-button flex items-center gap-2 group">
                     <i class="bi bi-arrow-left transition-transform group-hover:-translate-x-1"></i>
                     Zurück
@@ -160,6 +164,39 @@
                 </div>
             </div>
         </div>
+
+        <!-- Mass Update Progress Modal -->
+        <div x-show="showMassUpdateModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+             style="display: none;">
+            
+            <div class="glass w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 p-10 text-center">
+                <div class="w-20 h-20 bg-purple-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-purple-400 text-3xl">
+                    <i class="bi bi-arrow-repeat" :class="updating ? 'animate-spin' : ''"></i>
+                </div>
+                
+                <h2 class="text-2xl font-black text-white mb-2" x-text="updating ? 'Mass-Update läuft...' : 'Update abgeschlossen!'"></h2>
+                <p class="text-white/50 text-sm mb-8" x-text="updating ? 'Bitte lass dieses Fenster offen, während wir die Filmdaten aktualisieren.' : 'Alle Filme wurden erfolgreich aktualisiert.'"></p>
+
+                <div class="mb-4 flex justify-between items-end">
+                    <span class="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]" x-text="updateCount + ' von ' + updateTotal + ' verarbeitet'"></span>
+                    <span class="text-sm font-black text-purple-400" x-text="Math.round((updateCount / updateTotal) * 100) + '%'"></span>
+                </div>
+
+                <div class="w-full h-4 bg-white/5 rounded-full overflow-hidden mb-10 border border-white/5 p-1">
+                    <div class="h-full bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full transition-all duration-500" :style="'width: ' + (updateCount / updateTotal * 100) + '%'"></div>
+                </div>
+
+                <div class="space-y-4">
+                    <div x-show="updating" class="text-white/40 text-xs italic" x-text="'Aktualisiere: ' + currentUpdateTitle"></div>
+                    <button x-show="!updating" @click="showMassUpdateModal = false; window.location.reload()" class="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-purple-500 hover:text-white transition-all shadow-xl uppercase tracking-widest text-xs">Schließen</button>
+                    <button x-show="updating" @click="cancelUpdate()" class="text-white/20 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest transition-colors">Vorgang abbrechen</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -173,6 +210,13 @@
                 showSeasonModal: false,
                 activeSeries: null,
                 selectedSeasons: [],
+                showMassUpdateModal: false,
+                updating: false,
+                updateTotal: 0,
+                updateCount: 0,
+                currentUpdateTitle: '',
+                updateQueue: [],
+                shouldCancel: false,
                 search() {
                     if (this.query.length < 3) {
                         if (this.query.includes('themoviedb.org/')) {
@@ -280,6 +324,67 @@
                             form.submit();
                         }
                     }
+                }
+                    }
+                },
+                async startMassUpdate() {
+                    this.loading = true;
+                    try {
+                        const res = await fetch('{{ route('admin.tmdb.update-list') }}');
+                        const movies = await res.json();
+                        
+                        if (movies.length === 0) {
+                            alert('Keine Filme mit TMDb-ID zum Aktualisieren gefunden.');
+                            this.loading = false;
+                            return;
+                        }
+
+                        this.updateQueue = movies;
+                        this.updateTotal = movies.length;
+                        this.updateCount = 0;
+                        this.shouldCancel = false;
+                        this.showMassUpdateModal = true;
+                        this.updating = true;
+                        this.loading = false;
+                        
+                        this.processNextInQueue();
+                    } catch (err) {
+                        alert('Fehler beim Laden der Filmliste.');
+                        this.loading = false;
+                    }
+                },
+                async processNextInQueue() {
+                    if (this.updateQueue.length === 0 || this.shouldCancel) {
+                        this.updating = false;
+                        return;
+                    }
+
+                    const movie = this.updateQueue.shift();
+                    this.currentUpdateTitle = movie.title;
+
+                    try {
+                        const res = await fetch('{{ route('admin.tmdb.bulk-update') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ movie_id: movie.id })
+                        });
+                        
+                        this.updateCount++;
+                        // Delay to avoid rate limiting
+                        setTimeout(() => this.processNextInQueue(), 500);
+                    } catch (err) {
+                        console.error('Update failed for ' + movie.title);
+                        this.updateCount++;
+                        setTimeout(() => this.processNextInQueue(), 500);
+                    }
+                },
+                cancelUpdate() {
+                    this.shouldCancel = true;
+                    this.updating = false;
+                    this.showMassUpdateModal = false;
                 }
             }));
         });

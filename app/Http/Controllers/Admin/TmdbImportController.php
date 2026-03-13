@@ -95,6 +95,8 @@ class TmdbImportController extends Controller
                 'collection_type' => 'Blu-ray', // Default
                 'rating_age' => $this->extractRating($details),
                 'user_id' => auth()->id(),
+                'tmdb_id' => $tmdbId,
+                'tmdb_type' => 'movie',
             ]);
 
             // Handle Images (Poster & Backdrop)
@@ -237,6 +239,8 @@ class TmdbImportController extends Controller
                 'collection_type' => 'Serie',
                 'rating_age' => $this->extractRating($details),
                 'user_id' => auth()->id(),
+                'tmdb_id' => $tmdbId,
+                'tmdb_type' => 'tv',
             ]);
 
             // Images
@@ -352,5 +356,108 @@ class TmdbImportController extends Controller
             return $details['created_by'][0]['name'];
         }
         return null;
+    }
+
+    /**
+     * Get a list of movies that have a TMDb ID and can be updated.
+     */
+    public function getMoviesForUpdate()
+    {
+        $movies = Movie::whereNotNull('tmdb_id')
+            ->select('id', 'title', 'tmdb_id', 'tmdb_type')
+            ->get();
+            
+        return response()->json($movies);
+    }
+
+    /**
+     * Update a single movie's metadata from TMDb.
+     */
+    public function bulkUpdate(Request $request)
+    {
+        $movieId = $request->get('movie_id');
+        $movie = Movie::findOrFail($movieId);
+
+        if (!$movie->tmdb_id) {
+            return response()->json(['error' => 'Keine TMDb ID für diesen Film vorhanden.'], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            if ($movie->tmdb_type === 'tv') {
+                $details = $this->tmdb->getTvDetails($movie->tmdb_id);
+                if (isset($details['error'])) throw new \Exception($details['error']);
+
+                $movie->update([
+                    'title' => $details['name'],
+                    'year' => isset($details['first_air_date']) ? (int)substr($details['first_air_date'], 0, 4) : $movie->year,
+                    'rating' => $details['vote_average'] ?? $movie->rating,
+                    'genre' => implode(', ', array_column($details['genres'], 'name')),
+                    'runtime' => $details['episode_run_time'][0] ?? $movie->runtime,
+                    'overview' => $details['overview'] ?? $movie->overview,
+                    'director' => $this->extractCreator($details),
+                    'rating_age' => $this->extractRating($details) ?? $movie->rating_age,
+                ]);
+
+                $this->handleActors($movie, $details);
+            } else {
+                $details = $this->tmdb->getMovieDetails($movie->tmdb_id);
+                if (isset($details['error'])) throw new \Exception($details['error']);
+
+                $movie->update([
+                    'title' => $details['title'],
+                    'year' => isset($details['release_date']) ? (int)substr($details['release_date'], 0, 4) : $movie->year,
+                    'rating' => $details['vote_average'] ?? $movie->rating,
+                    'genre' => implode(', ', array_column($details['genres'], 'name')),
+                    'runtime' => $details['runtime'] ?? $movie->runtime,
+                    'overview' => $details['overview'] ?? $movie->overview,
+                    'director' => $this->extractDirector($details),
+                    'trailer_url' => $this->extractTrailer($details) ?? $movie->trailer_url,
+                    'rating_age' => $this->extractRating($details) ?? $movie->rating_age,
+                ]);
+
+                // Handle Actors (Top 10)
+                if (isset($details['credits']['cast'])) {
+                    $cast = array_slice($details['credits']['cast'], 0, 10);
+                    $actorIds = [];
+                    foreach ($cast as $person) {
+                        $nameParts = explode(' ', $person['name'], 2);
+                        $firstName = $nameParts[0];
+                        $lastName = $nameParts[1] ?? '';
+
+                        $actor = Actor::updateOrCreate(
+                            ['tmdb_id' => $person['id']],
+                            ['first_name' => $firstName, 'last_name' => $lastName]
+                        );
+
+                        // Handle Profile Image
+                        if (!empty($person['profile_path']) && empty($actor->profile_path)) {
+                            try {
+                                $profileUrl = "https://image.tmdb.org/t/p/w185" . $person['profile_path'];
+                                $imageContent = Http::get($profileUrl)->body();
+                                $filename = 'actors/' . Str::random(20) . '.jpg';
+                                Storage::disk('public')->put($filename, $imageContent);
+                                $actor->update(['profile_path' => $filename]);
+                            } catch (\Exception $e) {}
+                        }
+                        
+                        $actorIds[$actor->id] = [
+                            'role' => $person['character'],
+                            'is_main_role' => $person['order'] < 3,
+                            'sort_order' => $person['order']
+                        ];
+                    }
+                    $movie->actors()->sync($actorIds);
+                }
+            }
+
+            DB::commit();
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

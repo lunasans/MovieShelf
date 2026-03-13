@@ -27,6 +27,8 @@ class Movie extends Model
         'user_id',
         'is_deleted',
         'view_count',
+        'tmdb_id',
+        'tmdb_type',
     ];
 
     protected $casts = [
