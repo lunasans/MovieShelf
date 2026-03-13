@@ -38,6 +38,10 @@ class MovieController extends Controller
 
         $defaultViewMode = \App\Models\Setting::get('default_view_mode', 'grid');
 
+        if ($request->ajax()) {
+            return view('movies.partials.movie-list-ajax', compact('movies'))->render();
+        }
+
         return view('dashboard', compact('movies', 'collectionTypes', 'latestMovies', 'defaultViewMode'));
     }
 

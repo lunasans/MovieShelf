@@ -117,6 +117,48 @@
 
                     new Chart(canvas, config);
                 });
+            },
+            nextMoviesPageUrl: '{{ $movies->nextPageUrl() }}',
+            isMoviesLoading: false,
+            async loadMoreMovies() {
+                if (this.isMoviesLoading || !this.nextMoviesPageUrl) return;
+                this.isMoviesLoading = true;
+                
+                try {
+                    const response = await fetch(this.nextMoviesPageUrl, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const html = await response.text();
+                    
+                    if (html.trim() === '') {
+                        this.nextMoviesPageUrl = null;
+                        return;
+                    }
+
+                    // Create a temporary element to parse the HTML
+                    const temp = document.createElement('div');
+                    temp.innerHTML = html;
+                    
+                    // Append items to list
+                    const grid = this.$refs.movieGrid;
+                    while (temp.firstChild) {
+                        grid.appendChild(temp.firstChild);
+                    }
+                    
+                    // Update nextMoviesPageUrl safely
+                    try {
+                        const url = new URL(this.nextMoviesPageUrl);
+                        const page = parseInt(url.searchParams.get('page')) + 1;
+                        url.searchParams.set('page', page);
+                        this.nextMoviesPageUrl = url.toString();
+                    } catch (urlErr) {
+                        this.nextMoviesPageUrl = null;
+                    }
+                } catch (e) {
+                    console.error('Failed to load more movies', e);
+                } finally {
+                    this.isMoviesLoading = false;
+                }
             }
          }"
          x-init="() => {
@@ -190,7 +232,7 @@
             </div>
 
             <!-- Film Grid/List -->
-            <div :class="viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4' : 'flex flex-col gap-3'">
+            <div x-ref="movieGrid" :class="viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4' : 'flex flex-col gap-3'">
                 @forelse ($movies as $movie)
                     <template x-if="viewMode === 'grid'">
                         @include('movies.partials.grid-item', ['movie' => $movie])
@@ -207,8 +249,22 @@
                 @endforelse
             </div>
 
-            <!-- Pagination -->
-            <div class="mt-12">
+            <!-- Infinite Scroll Trigger -->
+            <div x-show="nextMoviesPageUrl" 
+                 x-intersect.margin.800px="loadMoreMovies()" 
+                 class="mt-12 flex flex-col items-center justify-center gap-4">
+                <div x-show="isMoviesLoading" class="flex flex-col items-center gap-2 animate-in fade-in duration-500">
+                    <div class="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+                    <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic tracking-[0.2em]">{{ __('Lade weitere Filme...') }}</span>
+                </div>
+                <button x-show="!isMoviesLoading" @click="loadMoreMovies()" class="px-8 py-3 glass border border-white/10 rounded-2xl text-[10px] font-black text-gray-500 hover:text-white hover:border-blue-500/50 transition-all uppercase tracking-[0.2em] italic group">
+                    <span>{{ __('Mehr Filme laden') }}</span>
+                    <i class="bi bi-chevron-down ml-2 group-hover:translate-y-1 transition-transform inline-block"></i>
+                </button>
+            </div>
+
+            <!-- Legacy Pagination (Hidden) -->
+            <div class="hidden">
                 {{ $movies->links() }}
             </div>
         </section>
