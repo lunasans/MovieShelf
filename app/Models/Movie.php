@@ -77,10 +77,18 @@ class Movie extends Model
     {
         // 1. Try parent's cover if exists
         if ($this->cover_id) {
-            $path = (str_contains($this->cover_id, '/') || str_contains($this->cover_id, '.'))
-                ? $this->cover_id
-                : 'covers/' . $this->cover_id . 'f.jpg';
+            // Direct URL
+            if (str_starts_with($this->cover_id, 'http')) {
+                return $this->cover_id;
+            }
+            
+            // TMDb Path
+            if (str_starts_with($this->cover_id, '/')) {
+                return 'https://image.tmdb.org/t/p/w500' . $this->cover_id;
+            }
 
+            // Legacy local cover format (v1.5)
+            $path = 'covers/' . $this->cover_id . 'f.jpg';
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
                 return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
             }
@@ -99,19 +107,27 @@ class Movie extends Model
 
     public function getBackdropUrlAttribute()
     {
-        // 1. Specific backdrop_id (TMDb)
+        // 1. Specific backdrop_id
         if ($this->backdrop_id) {
-            $path = (str_contains($this->backdrop_id, '/') || str_contains($this->backdrop_id, '.'))
-                ? $this->backdrop_id
-                : 'backdrops/' . $this->backdrop_id . '.jpg';
+            // Direct URL
+            if (str_starts_with($this->backdrop_id, 'http')) {
+                return $this->backdrop_id;
+            }
+            
+            // TMDb Path
+            if (str_starts_with($this->backdrop_id, '/')) {
+                return 'https://image.tmdb.org/t/p/w1280' . $this->backdrop_id;
+            }
 
+            // Legacy local backdrop format
+            $path = 'backdrops/' . $this->backdrop_id . '.jpg';
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
                 return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
             }
         }
 
         // 2. Fallback for v1.5 movies: check 'b' version of the cover
-        if ($this->cover_id && !str_contains($this->cover_id, '/') && !str_contains($this->cover_id, '.')) {
+        if ($this->cover_id && !str_contains($this->cover_id, '/') && !str_starts_with($this->cover_id, 'http')) {
             $path = 'covers/' . $this->cover_id . 'b.jpg';
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
                 return \Illuminate\Support\Facades\Storage::disk('public')->url($path);

@@ -77,6 +77,34 @@ class MovieController extends Controller
             'backdrop_id' => 'nullable|string',
         ]);
 
+        // Download cover from TMDb if it's a direct path
+        if (!empty($validated['cover_id']) && str_starts_with($validated['cover_id'], '/')) {
+            try {
+                $coverContents = file_get_contents('https://image.tmdb.org/t/p/w500' . $validated['cover_id']);
+                if ($coverContents) {
+                    $filename = 'tmdb_' . ltrim($validated['cover_id'], '/');
+                    \Illuminate\Support\Facades\Storage::disk('public')->put('covers/' . $filename, $coverContents);
+                    $validated['cover_id'] = 'covers/' . $filename;
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to download TMDb cover: ' . $e->getMessage());
+            }
+        }
+
+        // Download backdrop from TMDb if it's a direct path
+        if (!empty($validated['backdrop_id']) && str_starts_with($validated['backdrop_id'], '/')) {
+            try {
+                $backdropContents = file_get_contents('https://image.tmdb.org/t/p/w1280' . $validated['backdrop_id']);
+                if ($backdropContents) {
+                    $filename = 'tmdb_backdrop_' . ltrim($validated['backdrop_id'], '/');
+                    \Illuminate\Support\Facades\Storage::disk('public')->put('backdrops/' . $filename, $backdropContents);
+                    $validated['backdrop_id'] = 'backdrops/' . $filename;
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to download TMDb backdrop: ' . $e->getMessage());
+            }
+        }
+
         $movie->update($validated);
 
         return redirect()->route('admin.movies.index')->with('success', 'Film "' . $movie->title . '" wurde erfolgreich aktualisiert.');
