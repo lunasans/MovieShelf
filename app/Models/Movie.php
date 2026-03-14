@@ -87,6 +87,13 @@ class Movie extends Model
                 return 'https://image.tmdb.org/t/p/w500' . $this->cover_id;
             }
 
+            // Local file (v2 local TMDb download or explicit path)
+            if (str_contains($this->cover_id, '.')) {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($this->cover_id)) {
+                    return \Illuminate\Support\Facades\Storage::disk('public')->url($this->cover_id);
+                }
+            }
+
             // Legacy local cover format (v1.5)
             $path = 'covers/' . $this->cover_id . 'f.jpg';
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
@@ -119,6 +126,13 @@ class Movie extends Model
                 return 'https://image.tmdb.org/t/p/w1280' . $this->backdrop_id;
             }
 
+            // Local file (v2 local TMDb download or explicit path)
+            if (str_contains($this->backdrop_id, '.')) {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($this->backdrop_id)) {
+                    return \Illuminate\Support\Facades\Storage::disk('public')->url($this->backdrop_id);
+                }
+            }
+
             // Legacy local backdrop format
             $path = 'backdrops/' . $this->backdrop_id . '.jpg';
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
@@ -127,7 +141,7 @@ class Movie extends Model
         }
 
         // 2. Fallback for v1.5 movies: check 'b' version of the cover
-        if ($this->cover_id && !str_contains($this->cover_id, '/') && !str_starts_with($this->cover_id, 'http')) {
+        if ($this->cover_id && !str_contains($this->cover_id, '/') && !str_starts_with($this->cover_id, 'http') && !str_contains($this->cover_id, '.')) {
             $path = 'covers/' . $this->cover_id . 'b.jpg';
             if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
                 return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
