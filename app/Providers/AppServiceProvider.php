@@ -19,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        view()->composer(['components.footer', 'layouts.admin', 'layouts.app'], function ($view) {
+        view()->composer(['components.footer', 'layouts.admin', 'layouts.app', 'dashboard'], function ($view) {
             // Retrieve counters (incrementing is now handled by VisitorCounterMiddleware)
             $totalCounter = \App\Models\Counter::firstOrCreate(['page' => 'all']);
             $today = now()->format('Y-m-d');
