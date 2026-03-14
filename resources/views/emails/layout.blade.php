@@ -36,11 +36,10 @@
                                         </table>
                                     </td>
                                 </tr>
-                                {{-- App-Titel --}}
+                                {{-- App-Logo + Titel --}}
                                 <tr>
                                     <td style="padding:30px 40px 20px;text-align:center;">
-                                        <span style="font-size:11px;font-weight:800;letter-spacing:0.3em;text-transform:uppercase;color:#3b82f6;">★ ★ ★</span>
-                                        <h1 style="margin:12px 0 0;font-size:26px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#f1f5f9;line-height:1.2;">{{ config('app.name', 'MovieShelf') }}</h1>
+                                        <img src="{{ url('/img/logo/logo_small.png') }}" alt="{{ config('app.name') }}" style="max-height:48px;display:inline-block;margin-bottom:10px;" />
                                         <p style="margin:6px 0 0;font-size:12px;letter-spacing:0.15em;text-transform:uppercase;color:#475569;">Film-Datenbank</p>
                                     </td>
                                 </tr>
