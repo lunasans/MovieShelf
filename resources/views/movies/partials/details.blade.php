@@ -123,23 +123,7 @@
     </div>
 
     <!-- Quick Stats -->
-    <div class="grid grid-cols-3 gap-4 mb-8">
-        <div class="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center">
-            <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ __('Gesehen') }}</span>
-            <div class="text-xl font-bold text-white" x-text="watchedCount + 'x'">{{ $movie->watchedByUsers()->count() }}x</div>
-        </div>
-        <div class="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center">
-            <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ __('FSK') }}</span>
-            <div class="flex items-center justify-center">
-                @if($movie->rating_age !== null)
-                    <img src="{{ asset('img/fsk/fsk-' . $movie->rating_age . '.svg') }}" 
-                         alt="FSK {{ $movie->rating_age }}" 
-                         class="h-10 w-auto">
-                @else
-                    <div class="text-xl font-bold text-gray-500">0</div>
-                @endif
-            </div>
-        </div>
+    <div class="grid grid-cols-2 gap-4 mb-8">
         <div class="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center">
             <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ __('Medientyp') }}</span>
             <div class="text-lg font-bold text-blue-400 uppercase tracking-tighter">{{ $movie->collection_type }}</div>
