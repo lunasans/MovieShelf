@@ -88,7 +88,7 @@ class SettingController extends Controller
             
             Mail::send('emails.test', [], function ($message) use ($to) {
                 $message->to($to)
-                        ->subject('TMDb Film-Datenbank: Test-Email');
+                        ->subject(config('app.name') . ': Test-Email');
             });
 
             return response()->json(['success' => true, 'message' => 'Die HTML Test-Email wurde erfolgreich versendet an ' . $to]);
