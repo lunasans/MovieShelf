@@ -15,8 +15,8 @@
 
         <!-- Watched Indicator (Top Left) -->
         <div class="absolute top-3 left-3 z-20 transition-all duration-300" x-show="isWatched" x-cloak>
-            <div class="bg-blue-500/80 backdrop-blur-md p-1.5 rounded-lg border border-white/20 shadow-lg">
-                <i class="bi bi-eye-fill text-white text-[10px]"></i>
+            <div class="w-7 h-7 bg-blue-500/80 backdrop-blur-md rounded-full border border-white/20 shadow-lg flex items-center justify-center">
+                <i class="bi bi-eye-fill text-white text-xs"></i>
             </div>
         </div>
 
