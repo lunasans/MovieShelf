@@ -54,6 +54,19 @@ class MovieController extends Controller
     public function details(Movie $movie)
     {
         $movie->load(['actors', 'boxsetChildren', 'parentBoxset', 'seasons.episodes']);
-        return view('movies.partials.details', compact('movie'));
+        
+        // Fetch up to 5 similar movies based on genre
+        $similarMovies = collect();
+        if ($movie->genre) {
+            $firstGenre = trim(explode(',', $movie->genre)[0]);
+            $similarMovies = Movie::where('id', '!=', $movie->id)
+                ->whereNull('boxset_parent')
+                ->where('genre', 'like', '%' . $firstGenre . '%')
+                ->inRandomOrder()
+                ->limit(5)
+                ->get();
+        }
+        
+        return view('movies.partials.details', compact('movie', 'similarMovies'));
     }
 }
