@@ -290,66 +290,71 @@
         @endif
     </div>
 
-    <!-- Actions -->
-    <div class="mt-8 flex gap-3">
+    <!-- Trailer & Actions -->
+    <div class="mt-8">
         @if($movie->trailer_url)
-            <button @click="showTrailer = true" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-rose-600/20 flex items-center justify-center gap-2">
-                <i class="bi bi-youtube text-xl"></i>
-                {{ __('Trailer ansehen') }}
-            </button>
-            
-            <!-- Trailer Modal -->
-            <template x-teleport="body">
-                <div x-show="showTrailer" 
-                     class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0"
-                     x-transition:enter-end="opacity-100"
-                     x-transition:leave="transition ease-in duration-200"
-                     x-transition:leave-start="opacity-100"
-                     x-transition:leave-end="opacity-0">
+            <div class="relative w-full aspect-video rounded-3xl overflow-hidden glass border-white/5 shadow-2xl group/player bg-black mb-4">
+                <!-- Thumbnail Layer -->
+                <div x-show="!showTrailer" 
+                     class="absolute inset-0 cursor-pointer"
+                     @click="showTrailer = true">
+                    @if($movie->backdrop_url)
+                        <img src="{{ $movie->backdrop_url }}" alt="Trailer Thumbnail" class="w-full h-full object-cover opacity-80 group-hover/player:opacity-100 transition-opacity duration-500 group-hover/player:scale-105">
+                    @elseif($movie->cover_url)
+                        <img src="{{ $movie->cover_url }}" alt="Trailer Thumbnail" class="w-full h-full object-cover blur-sm opacity-60 group-hover/player:opacity-80 transition-opacity duration-500 group-hover/player:scale-105">
+                    @else
+                        <div class="w-full h-full bg-gray-900 flex items-center justify-center">
+                            <i class="bi bi-film text-gray-700 text-6xl"></i>
+                        </div>
+                    @endif
                     
-                    <!-- Backdrop -->
-                    <div class="absolute inset-0 bg-black/95 backdrop-blur-2xl" @click="showTrailer = false"></div>
+                    <!-- Play Button Overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/player:bg-transparent transition-colors duration-500">
+                        <div class="w-16 h-16 bg-rose-600/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(225,29,72,0.4)] transform group-hover/player:scale-110 transition-transform duration-300">
+                            <i class="bi bi-play-fill text-3xl text-white ml-1"></i>
+                        </div>
+                    </div>
                     
-                    <!-- Modal Content -->
-                    <div class="relative w-full max-w-5xl aspect-video bg-black rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10"
-                         x-show="showTrailer"
-                         x-transition:enter="transition ease-out duration-500 delay-100"
-                         x-transition:enter-start="opacity-0 scale-95 translate-y-8"
-                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                         @keydown.window.escape="showTrailer = false">
-                        
-                        <button @click="showTrailer = false" class="absolute top-6 right-6 z-50 w-12 h-12 bg-white/10 hover:bg-rose-600 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all shadow-lg">
-                            <i class="bi bi-x-lg text-xl"></i>
-                        </button>
-
-                        <div class="w-full h-full">
-                            <template x-if="showTrailer">
-                                <iframe 
-                                    :src="'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&mute=1&rel=0'" 
-                                    class="w-full h-full" 
-                                    frameborder="0" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                    allowfullscreen
-                                    referrerpolicy="strict-origin-when-cross-origin">
-                                </iframe>
-                            </template>
+                    <!-- Title Overlay -->
+                    <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                        <div class="text-white font-bold text-sm tracking-wider uppercase flex items-center gap-2">
+                            <i class="bi bi-youtube text-rose-500 text-lg"></i>
+                            {{ __('Offizieller Trailer') }}
                         </div>
                     </div>
                 </div>
-            </template>
+
+                <!-- Video Player Layer -->
+                <template x-if="showTrailer">
+                    <iframe 
+                        :src="'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&mute=0&rel=0'" 
+                        class="w-full h-full absolute inset-0 z-10" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </template>
+            </div>
         @else
-            <button class="flex-1 bg-white/5 cursor-not-allowed text-gray-500 px-6 py-3 rounded-2xl font-bold text-sm border border-white/10 flex items-center justify-center gap-2">
-                <i class="bi bi-slash-circle text-xl"></i>
+            <div class="w-full bg-white/5 text-gray-400 p-6 rounded-3xl font-bold text-sm border border-white/10 flex items-center justify-center gap-3 mb-4">
+                <i class="bi bi-slash-circle text-xl text-gray-500"></i>
                 {{ __('Kein Trailer verfügbar') }}
-            </button>
+            </div>
         @endif
-        <button @click="toggleWatched()" 
-                class="w-14 h-14 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center justify-center transition-all group"
-                :class="isWatched ? 'border-blue-500/50 bg-blue-500/10' : ''">
-            <i class="bi text-xl transition-colors" 
-               :class="isWatched ? 'bi-eye-fill text-blue-400' : 'bi-eye text-gray-400 group-hover:text-blue-400'"></i>
-        </button>
+
+        <!-- Other Actions (Watched Toggle) -->
+        <div class="flex justify-end">
+            <button @click="toggleWatched()" 
+                    class="h-14 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center gap-3 transition-all group shadow-lg"
+                    :class="isWatched ? 'border-blue-500/50 bg-blue-500/10' : ''">
+                <span class="text-xs font-bold uppercase tracking-widest transition-colors"
+                      :class="isWatched ? 'text-blue-400' : 'text-gray-400 group-hover:text-white'">
+                    <span x-show="isWatched">{{ __('Gesehen') }}</span>
+                    <span x-show="!isWatched">{{ __('Als gesehen markieren') }}</span>
+                </span>
+                <i class="bi text-xl transition-colors" 
+                   :class="isWatched ? 'bi-eye-fill text-blue-400' : 'bi-eye text-gray-400 group-hover:text-blue-400'"></i>
+            </button>
+        </div>
     </div>
 </div>
