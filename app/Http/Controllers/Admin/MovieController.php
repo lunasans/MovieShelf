@@ -4,7 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Movie;
+use App\Models\Actor;
+use App\Services\TmdbService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MovieController extends Controller
 {
@@ -59,7 +64,7 @@ class MovieController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Movie $movie)
+    public function update(Request $request, Movie $movie, TmdbService $tmdb)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -113,6 +118,52 @@ class MovieController extends Controller
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Failed to download TMDb backdrop: ' . $e->getMessage());
+            }
+        }
+
+        // Fetch and Sync Actors if TMDb ID is provided
+        if (!empty($validated['tmdb_id'])) {
+            try {
+                $type = $validated['collection_type'] === 'Serie' ? 'tv' : 'movie';
+                $details = $type === 'tv' ? $tmdb->getTvDetails($validated['tmdb_id']) : $tmdb->getMovieDetails($validated['tmdb_id']);
+                
+                if (isset($details['credits']['cast'])) {
+                    $cast = array_slice($details['credits']['cast'], 0, 10);
+                    $actorSyncData = [];
+                    foreach ($cast as $person) {
+                        $nameParts = explode(' ', $person['name'], 2);
+                        $firstName = $nameParts[0];
+                        $lastName = $nameParts[1] ?? '';
+
+                        $actor = Actor::updateOrCreate(
+                            ['tmdb_id' => $person['id']],
+                            ['first_name' => $firstName, 'last_name' => $lastName]
+                        );
+
+                        // Download Profile Image if missing
+                        if (!empty($person['profile_path']) && empty($actor->profile_path)) {
+                            try {
+                                $profileResponse = \Illuminate\Support\Facades\Http::withOptions(['verify' => false])->get('https://image.tmdb.org/t/p/w185' . $person['profile_path']);
+                                if ($profileResponse->successful()) {
+                                    $filename = 'actors/tmdb_' . ltrim($person['profile_path'], '/');
+                                    \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $profileResponse->body());
+                                    $actor->update(['profile_path' => $filename]);
+                                }
+                            } catch (\Exception $e) {
+                                \Illuminate\Support\Facades\Log::error('Failed to download TMDb actor: ' . $e->getMessage());
+                            }
+                        }
+
+                        $actorSyncData[$actor->id] = [
+                            'role' => $person['character'] ?? '',
+                            'is_main_role' => ($person['order'] ?? 99) < 3,
+                            'sort_order' => $person['order'] ?? 99
+                        ];
+                    }
+                    $movie->actors()->sync($actorSyncData);
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to sync actors during update: ' . $e->getMessage());
             }
         }
 
