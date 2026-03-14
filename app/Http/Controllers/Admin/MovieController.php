@@ -77,6 +77,13 @@ class MovieController extends Controller
             'backdrop_id' => 'nullable|string',
         ]);
 
+        \Illuminate\Support\Facades\Log::info('Update Data:', [
+            'original_cover' => $movie->cover_id,
+            'incoming_cover' => $validated['cover_id'] ?? null,
+            'original_backdrop' => $movie->backdrop_id,
+            'incoming_backdrop' => $validated['backdrop_id'] ?? null,
+        ]);
+
         // Download cover from TMDb if it's a direct path
         if (!empty($validated['cover_id']) && str_starts_with($validated['cover_id'], '/')) {
             try {
