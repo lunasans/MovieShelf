@@ -1,59 +1,194 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# MovieShelf - Dein digitales Filmregal
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🎬 Übersicht
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und Präsentation Ihrer DVD/Blu-ray-Sammlung. Das System bietet eine intuitive Benutzeroberfläche mit Glass-Morphism-Design und umfangreiche Funktionen für Film-Enthusiasten.
 
-## Learning Laravel
+## ✨ Hauptfunktionen
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 📥 Import & Datenmanagement
+- **XML-Import** aus collection.xml (kompatibel mit DVD Profiler)
+- **TMDb-Import** - Filme und Serien direkt über TMDb API importieren
+- **Automatischer Datenbankabgleich** mit Update- und Einfügefunktionen
+- **BoxSet-Erkennung** mit gruppierten, aufklappbaren Unterfilmen
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🎭 Film-Details & Präsentation
+- **Umfassende Film-Informationen** mit Schauspielern, Cover und Übersicht
+- **Trailer-Integration** für erweiterte Filminformationen
+- **Responsive Design** für alle Bildschirmgrößen
+- **Listen- und Kachelansicht** mit nahtlosem Umschalten
 
-## Laravel Sponsors
+### 🎭 Schauspieler-Profile
+- **Detaillierte Schauspieler-Profile** mit Biografien und Fotos
+- **Filmografie-Übersicht** für jeden Schauspieler
+- **Verknüpfung Film ↔ Schauspieler** mit Rolleninformationen
+- **Inline-Editing** für schnelle Aktualisierungen
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+###  Benutzer-Features
+- **Persönliche Bewertungen** für Filme
+- **"Gesehen"-Status** zum Tracking
+- **Wunschliste** für zukünftige Filme
+- **Aktivitäts-Log** zur Nachverfolgung
 
-### Premium Partners
+### 📊 Erweiterte Features
+- **Statistikseite** mit interaktiven Diagrammen (Chart.js)
+- **Admin-Panel** mit umfangreichen Verwaltungsfunktionen
+- **Besucherzähler** für Nutzungsstatistiken
+- **Foren-Signaturbanner** - Dynamische Banner mit neuesten Filmen
+- **2FA-Authentifizierung** für erhöhte Sicherheit
+- **DSGVO-konformes Design** mit Impressum und Datenschutz
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🛠️ Technische Details
 
-## Contributing
+### Systemanforderungen
+- PHP 8.2+
+- Composer
+- Node.js & NPM
+- MySQL/MariaDB oder SQLite
+- Webserver (Apache/Nginx)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Verwendete Technologien
+- **Backend**: Laravel Framework (PHP)
+- **Frontend**: Blade Templates, Tailwind CSS (via Vite), JavaScript
+- **UI-Bibliotheken**: 
+  - Bootstrap Icons
+  - Fancybox für Lightbox-Funktionen
+  - Chart.js für Statistiken
+- **Datenbank**: MySQL/MariaDB oder SQLite
+- **APIs**: TMDb API für Film-Metadaten
 
-## Code of Conduct
+## 📁 Projektstruktur
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```text
+movieshelf/
+├── app/                    # Laravel Core (Controller, Models, etc.)
+├── bootstrap/              # System-Initialisierung
+├── config/                 # Konfigurationsdateien
+├── database/               # Migrationen und Seeder
+├── public/                 # Öffentliches Verzeichnis (Assets, index.php)
+├── resources/              # Ansichten (Blade) und unkompilierte Assets
+│   ├── css/               # Tailwind CSS
+│   ├── js/                # JavaScript
+│   └── views/             # Blade Templates
+├── routes/                 # Web- und API-Routen
+├── storage/                # Logs, Caches, hochgeladene Dateien
+├── tests/                  # Automatisierte Tests
+└── README.md               # Diese Datei
+```
 
-## Security Vulnerabilities
+## 🚀 Installation
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 1. Repository klonen & Abhängigkeiten installieren
+```bash
+git clone https://github.com/lunasans/MovieShelf.git  
+cd MovieShelf
+composer install
+npm install
+```
 
-## License
+### 2. Konfiguration & Datenbank
+- Kopieren Sie die `.env.example` zu `.env`:
+  ```bash
+  cp .env.example .env
+  ```
+- Generieren Sie den Application-Key:
+  ```bash
+  php artisan key:generate
+  ```
+- Konfigurieren Sie in der `.env` Datei Ihre Datenbankverbindung (z.B. SQLite oder MySQL).
+- Führen Sie die Datenbank-Migrationen aus:
+  ```bash
+  php artisan migrate
+  ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 3. Assets kompilieren
+```bash
+npm run build
+```
+
+### 4. Server starten
+Wenn Sie keinen lokalen Webserver (wie Apache/Nginx oder Laravel Valet) nutzen, können Sie den eingebauten Server verwenden:
+```bash
+php artisan serve
+```
+
+### 5. XML-Import (Optional)
+- Exportieren Sie Ihre Sammlung aus DVD Profiler als `collection.xml`
+- Nutzen Sie die Import-Funktion im Admin-Panel zur Migration der Sammlung.
+
+## 🎨 Features im Detail
+
+### Glass-Morphism Design
+Das moderne Interface nutzt Glasmorphismus-Effekte für eine elegante und zeitgemäße Benutzeroberfläche mit:
+- Transparente Hintergründe mit Blur-Effekten
+- Smooth Animationen und Hover-Effekte
+- Responsive Grid-Layout
+- Dunkler Modus verfügbar
+
+### Erweiterte Suchfunktionen
+- Volltext-Suche durch alle Film-Metadaten
+- Filter nach Genre, Jahr, Bewertung
+- Sortierung nach verschiedenen Kriterien
+- Schnelle Navigation durch große Sammlungen
+
+### Admin-Funktionen
+- **Benutzer-Authentifizierung** mit 2FA-Unterstützung
+- **Schauspieler-Verwaltung** mit Profil-Editor
+- **Film-Verwaltung** mit TMDb-Import
+- **Batch-Import** von XML-Dateien
+- **Datenbank-Wartungstools**
+- **Statistik-Dashboard**
+- **GitHub-basierte System-Updates**
+
+## 📊 Screenshots
+
+Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
+- **Hauptansicht**: Übersichtliche Film-Grid mit Cover-Bildern
+- **Detail-Panel**: Ausführliche Informationen zu jedem Film
+- **Statistiken**: Interaktive Diagramme Ihrer Sammlung
+- **Admin-Panel**: Verwaltungstools für Power-User
+
+## 🔒 Datenschutz & Sicherheit
+
+- **DSGVO-konform**: Vollständige Datenschutzerklärung und Impressum
+- **Keine externe Datenübertragung**: Alle Daten bleiben auf Ihrem Server
+- **2FA-Authentifizierung**: Zwei-Faktor-Authentifizierung mit Backup-Codes
+- **Sichere Sessions**: IP-Subnet-Validierung und User-Agent-Checks
+- **Content Security Policy**: Schutz vor XSS-Angriffen
+- **CSRF-Protection**: Schutz vor Cross-Site-Request-Forgery
+- **Prepared Statements**: SQL-Injection-Schutz
+- **Password Hashing**: Bcrypt-Verschlüsselung
+
+## 🤝 Mitwirken
+
+Beiträge sind willkommen! Bitte:
+1. Forken Sie das Repository
+2. Erstellen Sie einen Feature-Branch
+3. Committen Sie Ihre Änderungen
+4. Erstellen Sie einen Pull Request
+
+## 📝 Lizenz
+
+Dieses Projekt ist für den privaten Gebrauch konzipiert. Weitere Details finden Sie in der LICENSE-Datei.
+
+## 👤 Autor
+
+**René Neuhaus**  
+GitHub: [@lunasans](https://github.com/lunasans)
+
+## 🐛 Support & Feedback
+
+Bei Fragen, Problemen oder Verbesserungsvorschlägen:
+- Erstellen Sie ein [GitHub Issue](https://github.com/lunasans/MovieShelf/issues)
+- Nutzen Sie die Diskussionsfunktion im Repository
+
+
+**Version**: 2.0.0 - Laravel Framework Edition
+**Letztes Update**: März 2026  
+**Status**: Aktiv entwickelt
+
+*Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
