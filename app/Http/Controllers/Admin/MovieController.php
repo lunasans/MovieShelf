@@ -72,6 +72,9 @@ class MovieController extends Controller
             'created_at' => 'nullable|date',
             'trailer_url' => 'nullable|url',
             'overview' => 'nullable|string',
+            'tmdb_id' => 'nullable|integer',
+            'cover_id' => 'nullable|string',
+            'backdrop_id' => 'nullable|string',
         ]);
 
         $movie->update($validated);

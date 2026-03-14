@@ -37,7 +37,7 @@
                     @endif
 
                     <!-- New Badge -->
-                    <div class="absolute top-2 @if($lat->rating) left-2 @else left-2 @endif z-20">
+                    <div class="absolute top-2 left-2 z-20">
                         <span class="bg-blue-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded shadow-lg uppercase tracking-tighter">
                             NEW
                         </span>

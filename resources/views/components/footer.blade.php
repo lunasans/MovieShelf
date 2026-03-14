@@ -97,12 +97,12 @@
 
             <div class="max-w-md flex {{ $compact ? 'flex-row' : 'flex-col' }} items-center {{ $compact ? 'gap-4' : 'gap-2' }}">
                 <span class="text-[8px] font-bold text-gray-600 uppercase tracking-widest {{ $compact ? 'hidden' : '' }}">Powered by</span>
-                <a href="https://www.themoviedb.org" target="_blank" class="opacity-40 hover:opacity-100 transition-opacity">
+                <a href="https://www.themoviedb.org" target="_blank" class="opacity-70 hover:opacity-100 transition-opacity">
                     <img src="{{ asset('img/svg/tmdb_logo.svg') }}" 
-                         alt="TMDB Logo" class="h-3 w-auto grayscale brightness-200">
+                         alt="TMDB Logo" class="h-4 w-auto grayscale brightness-200">
                 </a>
-                <p class="text-[8px] text-gray-600 leading-tight italic max-w-[100px] text-right {{ $compact ? '' : 'max-w-xs' }}">
-                    {{ $compact ? 'TMDB APIs' : 'This website uses TMDB and the TMDB APIs but is not endorsed or certified by TMDB.' }}
+                <p class="text-[9px] text-gray-400 font-medium leading-relaxed {{ $compact ? 'text-right max-w-[120px]' : 'text-center max-w-[280px] mt-1' }}">
+                    {{ $compact ? 'TMDB API' : 'This product uses the TMDB API but is not endorsed or certified by TMDB.' }}
                 </p>
             </div>
         </div>

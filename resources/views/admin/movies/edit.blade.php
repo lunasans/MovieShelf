@@ -17,6 +17,10 @@
         <form action="{{ route('admin.movies.update', $movie) }}" method="POST" class="space-y-8">
             @csrf
             @method('PUT')
+            
+            <input type="hidden" name="tmdb_id" x-model="formData.tmdb_id" value="{{ old('tmdb_id', $movie->tmdb_id) }}">
+            <input type="hidden" name="cover_id" x-model="formData.cover_id" value="{{ old('cover_id', $movie->cover_id) }}">
+            <input type="hidden" name="backdrop_id" x-model="formData.backdrop_id" value="{{ old('backdrop_id', $movie->backdrop_id) }}">
 
             <!-- General Info -->
             <div class="glass p-8 rounded-3xl border-white/5">
@@ -208,7 +212,10 @@
                     rating: '{{ old('rating', $movie->rating ? round($movie->rating, 1) : null) }}',
                     rating_age: '{{ old('rating_age', $movie->rating_age) }}',
                     trailer_url: '{{ old('trailer_url', $movie->trailer_url) }}',
-                    overview: `{!! str_replace("`", "\`", old('overview', $movie->overview)) !!}`
+                    overview: `{!! str_replace("`", "\`", old('overview', $movie->overview)) !!}`,
+                    tmdb_id: '{{ old('tmdb_id', $movie->tmdb_id) }}',
+                    cover_id: '{{ old('cover_id', $movie->cover_id) }}',
+                    backdrop_id: '{{ old('backdrop_id', $movie->backdrop_id) }}'
                 },
                 openModal() {
                     this.showModal = true;
@@ -242,6 +249,14 @@
                             this.formData.runtime = data.runtime || (data.episode_run_time ? data.episode_run_time[0] : null);
                             this.formData.rating = data.vote_average ? Math.round(data.vote_average * 10) / 10 : null;
                             this.formData.overview = data.overview;
+                            this.formData.tmdb_id = data.id;
+                            
+                            if (data.poster_path) {
+                                this.formData.cover_id = data.poster_path;
+                            }
+                            if (data.backdrop_path) {
+                                this.formData.backdrop_id = data.backdrop_path;
+                            }
                             
                             // Extract Trailer
                             if (data.videos && data.videos.results) {

@@ -140,7 +140,7 @@ Das moderne Interface nutzt Glasmorphismus-Effekte für eine elegante und zeitge
 - **Schauspieler-Verwaltung** mit Profil-Editor
 - **Film-Verwaltung** mit TMDb-Import
 - **Batch-Import** von XML-Dateien
-- **Datenbank-Wartungstools**
+- **Film-Metadaten Verwaltung** (z.B. fehlende Cover & TMDb-IDs)
 - **Statistik-Dashboard**
 - **GitHub-basierte System-Updates**
 
