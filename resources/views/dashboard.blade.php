@@ -226,7 +226,7 @@
                     </span>
                 </h2>
                 <div class="flex flex-col items-end">
-                    <span class="text-white font-black text-lg leading-none">{{ $movies->total() }}</span>
+                    <span class="text-white font-black text-lg leading-none">{{ $footerStats['total_films'] }}</span>
                     <span class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">{{ __('Gesamt') }}</span>
                 </div>
             </div>
