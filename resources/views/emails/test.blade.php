@@ -1,31 +1,93 @@
 @extends('emails.layout')
 
 @section('content')
-    <div style="text-align: center;">
-        <div style="width: 64px; height: 64px; background: rgba(16, 185, 129, 0.1); border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px;">
-            <svg style="width: 32px; height: 32px; color: #10b981;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-        </div>
-        <h2 style="margin: 0 0 16px 0; color: #ffffff; font-size: 24px; font-weight: 700;">Verbindung erfolgreich!</h2>
-        <p style="margin: 0 0 32px 0; color: #94a3b8;">Herzlichen Glückwunsch! Wenn du diese E-Mail liest, sind deine SMTP-Einstellungen korrekt konfiguriert und die Film-Datenbank ist bereit für den E-Mail-Versand.</p>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+        {{-- Status-Badge --}}
+        <tr>
+            <td align="center" style="padding-bottom:28px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                        <td style="background-color:#052e16;border:1px solid #166534;border-radius:100px;padding:8px 20px;">
+                            <span style="font-size:11px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#4ade80;">● Verbindung steht</span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
         
-        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 24px; text-align: left; border: 1px solid rgba(255, 255, 255, 0.1);">
-            <h4 style="margin: 0 0 12px 0; color: #3b82f6; text-transform: uppercase; font-size: 11px; letter-spacing: 0.1em; font-weight: 800;">Details der Konfiguration</h4>
-            <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
-                <tr>
-                    <td style="padding: 8px 0; color: #64748b; width: 120px;">Zeitpunkt:</td>
-                    <td style="padding: 8px 0; color: #f8fafc; font-family: monospace;">{{ date('d.m.Y H:i:s') }}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px 0; color: #64748b;">Mailer:</td>
-                    <td style="padding: 8px 0; color: #f8fafc; font-family: monospace;">{{ config('mail.default') }}</td>
-                </tr>
-            </table>
-        </div>
+        {{-- Hauptnachricht --}}
+        <tr>
+            <td align="center" style="padding-bottom:32px;">
+                <h2 style="margin:0 0 12px;font-size:22px;font-weight:700;color:#f1f5f9;line-height:1.3;">Dein Mail-Server funktioniert</h2>
+                <p style="margin:0;font-size:15px;color:#94a3b8;line-height:1.6;max-width:440px;">
+                    Diese Test-E-Mail bestätigt, dass deine SMTP-Konfiguration korrekt ist. Ab jetzt kann deine Film-Datenbank E-Mails versenden.
+                </p>
+            </td>
+        </tr>
 
-        <div class="hr"></div>
-        
-        <p style="font-size: 14px; color: #64748b; margin-bottom: 0;">Viel Spaß mit deiner Sammlung!</p>
-    </div>
+        {{-- Trennlinie --}}
+        <tr>
+            <td style="padding-bottom:28px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                        <td style="height:1px;background-color:#1e293b;"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        {{-- Konfigurationsdetails --}}
+        <tr>
+            <td style="padding-bottom:28px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#0d1117;border:1px solid #1e293b;border-radius:12px;">
+                    <tr>
+                        <td style="padding:20px 24px 8px;">
+                            <span style="font-size:10px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:#3b82f6;">Verbindungs-Info</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0 24px;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td style="padding:10px 0;border-bottom:1px solid #1e293b;">
+                                        <span style="font-size:12px;color:#64748b;">Gesendet am</span>
+                                    </td>
+                                    <td style="padding:10px 0;border-bottom:1px solid #1e293b;text-align:right;">
+                                        <span style="font-size:13px;color:#e2e8f0;font-family:monospace;">{{ date('d.m.Y') }} um {{ date('H:i') }} Uhr</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px 0;border-bottom:1px solid #1e293b;">
+                                        <span style="font-size:12px;color:#64748b;">Mailer</span>
+                                    </td>
+                                    <td style="padding:10px 0;border-bottom:1px solid #1e293b;text-align:right;">
+                                        <span style="font-size:13px;color:#e2e8f0;font-family:monospace;">{{ strtoupper(config('mail.default', 'smtp')) }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px 0;">
+                                        <span style="font-size:12px;color:#64748b;">Server</span>
+                                    </td>
+                                    <td style="padding:10px 0;text-align:right;">
+                                        <span style="font-size:13px;color:#e2e8f0;font-family:monospace;">{{ config('mail.mailers.smtp.host', '–') }}:{{ config('mail.mailers.smtp.port', '–') }}</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr><td style="height:12px;"></td></tr>
+                </table>
+            </td>
+        </tr>
+
+        {{-- Hinweis --}}
+        <tr>
+            <td align="center">
+                <p style="margin:0;font-size:13px;color:#475569;line-height:1.5;">
+                    Du erhältst diese Nachricht, weil in deinem Admin-Panel auf<br>
+                    <span style="color:#94a3b8;">„Test-Mail senden"</span> geklickt wurde.
+                </p>
+            </td>
+        </tr>
+    </table>
 @endsection
