@@ -249,9 +249,8 @@
                 @endforelse
             </div>
 
-            <!-- Infinite Scroll Trigger -->
+            <!-- Manual Load More Trigger -->
             <div x-show="nextMoviesPageUrl" 
-                 x-intersect.margin.800px="loadMoreMovies()" 
                  class="mt-12 flex flex-col items-center justify-center gap-4">
                 <div x-show="isMoviesLoading" class="flex flex-col items-center gap-2 animate-in fade-in duration-500">
                     <div class="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
