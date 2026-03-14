@@ -87,11 +87,13 @@ class MovieController extends Controller
         // Download cover from TMDb if it's a direct path
         if (!empty($validated['cover_id']) && str_starts_with($validated['cover_id'], '/')) {
             try {
-                $coverContents = file_get_contents('https://image.tmdb.org/t/p/w500' . $validated['cover_id']);
-                if ($coverContents) {
+                $response = \Illuminate\Support\Facades\Http::withOptions(['verify' => false])->get('https://image.tmdb.org/t/p/w500' . $validated['cover_id']);
+                if ($response->successful()) {
                     $filename = 'tmdb_' . ltrim($validated['cover_id'], '/');
-                    \Illuminate\Support\Facades\Storage::disk('public')->put('covers/' . $filename, $coverContents);
+                    \Illuminate\Support\Facades\Storage::disk('public')->put('covers/' . $filename, $response->body());
                     $validated['cover_id'] = 'covers/' . $filename;
+                } else {
+                    \Illuminate\Support\Facades\Log::error('TMDb Cover Download Failed: HTTP ' . $response->status());
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Failed to download TMDb cover: ' . $e->getMessage());
@@ -101,11 +103,13 @@ class MovieController extends Controller
         // Download backdrop from TMDb if it's a direct path
         if (!empty($validated['backdrop_id']) && str_starts_with($validated['backdrop_id'], '/')) {
             try {
-                $backdropContents = file_get_contents('https://image.tmdb.org/t/p/w1280' . $validated['backdrop_id']);
-                if ($backdropContents) {
+                $response = \Illuminate\Support\Facades\Http::withOptions(['verify' => false])->get('https://image.tmdb.org/t/p/w1280' . $validated['backdrop_id']);
+                if ($response->successful()) {
                     $filename = 'tmdb_backdrop_' . ltrim($validated['backdrop_id'], '/');
-                    \Illuminate\Support\Facades\Storage::disk('public')->put('backdrops/' . $filename, $backdropContents);
+                    \Illuminate\Support\Facades\Storage::disk('public')->put('backdrops/' . $filename, $response->body());
                     $validated['backdrop_id'] = 'backdrops/' . $filename;
+                } else {
+                    \Illuminate\Support\Facades\Log::error('TMDb Backdrop Download Failed: HTTP ' . $response->status());
                 }
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error('Failed to download TMDb backdrop: ' . $e->getMessage());
