@@ -125,13 +125,28 @@ class TmdbImportController extends Controller
                     $firstName = $nameParts[0];
                     $lastName = $nameParts[1] ?? '';
 
-                    $actor = Actor::updateOrCreate(
-                        ['tmdb_id' => $person['id']],
-                        [
-                            'first_name' => $firstName,
-                            'last_name' => $lastName,
-                        ]
-                    );
+                $actor = Actor::where('tmdb_id', $person['id'])->first();
+
+                // Fallback: Check by name if no tmdb_id match (for legacy v1.5 imports)
+                if (!$actor) {
+                    $actor = \App\Models\Actor::where('first_name', $firstName)
+                                  ->where('last_name', $lastName)
+                                  ->first();
+                }
+
+                if ($actor) {
+                    // Update existing actor
+                    if (!$actor->tmdb_id) {
+                        $actor->update(['tmdb_id' => $person['id']]);
+                    }
+                } else {
+                    // Create entirely new actor
+                    $actor = \App\Models\Actor::create([
+                        'tmdb_id' => $person['id'],
+                        'first_name' => $firstName,
+                        'last_name' => $lastName,
+                    ]);
+                }
 
                     // Handle Profile Image
                     if (!empty($person['profile_path']) && empty($actor->profile_path)) {
@@ -323,13 +338,25 @@ class TmdbImportController extends Controller
                 $firstName = $nameParts[0];
                 $lastName = $nameParts[1] ?? '';
 
-                $actor = Actor::updateOrCreate(
-                    ['tmdb_id' => $person['id']],
-                    [
+                $actor = \App\Models\Actor::where('tmdb_id', $person['id'])->first();
+
+                if (!$actor) {
+                    $actor = \App\Models\Actor::where('first_name', $firstName)
+                                  ->where('last_name', $lastName)
+                                  ->first();
+                }
+
+                if ($actor) {
+                    if (!$actor->tmdb_id) {
+                        $actor->update(['tmdb_id' => $person['id']]);
+                    }
+                } else {
+                    $actor = \App\Models\Actor::create([
+                        'tmdb_id' => $person['id'],
                         'first_name' => $firstName,
                         'last_name' => $lastName,
-                    ]
-                );
+                    ]);
+                }
 
                 if (!empty($person['profile_path']) && empty($actor->profile_path)) {
                     try {
@@ -430,10 +457,25 @@ class TmdbImportController extends Controller
                         $firstName = $nameParts[0];
                         $lastName = $nameParts[1] ?? '';
 
-                        $actor = Actor::updateOrCreate(
-                            ['tmdb_id' => $person['id']],
-                            ['first_name' => $firstName, 'last_name' => $lastName]
-                        );
+                        $actor = \App\Models\Actor::where('tmdb_id', $person['id'])->first();
+
+                        if (!$actor) {
+                            $actor = \App\Models\Actor::where('first_name', $firstName)
+                                          ->where('last_name', $lastName)
+                                          ->first();
+                        }
+
+                        if ($actor) {
+                            if (!$actor->tmdb_id) {
+                                $actor->update(['tmdb_id' => $person['id']]);
+                            }
+                        } else {
+                            $actor = \App\Models\Actor::create([
+                                'tmdb_id' => $person['id'],
+                                'first_name' => $firstName,
+                                'last_name' => $lastName,
+                            ]);
+                        }
 
                         // Handle Profile Image
                         if (!empty($person['profile_path']) && empty($actor->profile_path)) {

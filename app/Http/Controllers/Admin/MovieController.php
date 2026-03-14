@@ -135,10 +135,28 @@ class MovieController extends Controller
                         $firstName = $nameParts[0];
                         $lastName = $nameParts[1] ?? '';
 
-                        $actor = Actor::updateOrCreate(
-                            ['tmdb_id' => $person['id']],
-                            ['first_name' => $firstName, 'last_name' => $lastName]
-                        );
+                        $actor = Actor::where('tmdb_id', $person['id'])->first();
+                        
+                        // Fallback: Check by name if no tmdb_id match (for legacy v1.5 imports)
+                        if (!$actor) {
+                            $actor = Actor::where('first_name', $firstName)
+                                          ->where('last_name', $lastName)
+                                          ->first();
+                        }
+
+                        if ($actor) {
+                            // Update existing actor if a newly matched one by name, or if tmdb_id just needs syncing
+                            if (!$actor->tmdb_id) {
+                                $actor->update(['tmdb_id' => $person['id']]);
+                            }
+                        } else {
+                            // Create entirely new actor
+                            $actor = Actor::create([
+                                'tmdb_id' => $person['id'],
+                                'first_name' => $firstName,
+                                'last_name' => $lastName,
+                            ]);
+                        }
 
                         // Download Profile Image if missing
                         if (!empty($person['profile_path']) && empty($actor->profile_path)) {
