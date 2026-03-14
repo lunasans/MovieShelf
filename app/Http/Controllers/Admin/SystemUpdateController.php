@@ -87,6 +87,17 @@ class SystemUpdateController extends Controller
             $migrate = $this->runCommand('php artisan migrate --force');
             Log::info('Migration Output: ' . $migrate);
             
+            try {
+                $npmInstall = $this->runCommand('npm install');
+                Log::info('NPM Install Output: ' . $npmInstall);
+                
+                $npmBuild = $this->runCommand('npm run build');
+                Log::info('NPM Build Output: ' . $npmBuild);
+            } catch (\Exception $e) {
+                Log::error('NPM Build failed: ' . $e->getMessage());
+                return redirect()->route('admin.update.index')->with('warning', 'System aktualisiert, aber Frontend-Build (npm) schlug fehl: ' . $e->getMessage());
+            }
+            
             return redirect()->route('admin.update.index')->with('success', 'System erfolgreich aktualisiert. Lokale Anpassungen wurden beibehalten.');
         } catch (\Exception $e) {
             Log::error('Update failed: ' . $e->getMessage());
