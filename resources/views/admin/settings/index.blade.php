@@ -318,6 +318,8 @@
                                 <i class="bi bi-send" :class="sending ? 'animate-pulse' : ''"></i>
                                 <span x-text="sending ? 'Sende...' : 'Test-Mail senden'"></span>
                             </button>
+                            <p x-show="success" x-text="success" class="text-[10px] text-emerald-400 mt-2 font-bold text-right" style="display:none"></p>
+                            <p x-show="error" x-text="error" class="text-[10px] text-rose-400 mt-2 font-bold text-right" style="display:none"></p>
                         </div>
                     </div>
 
@@ -383,8 +385,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
                 </div>
             </div>
 
