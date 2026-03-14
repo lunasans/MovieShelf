@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
         
         Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+        Route::post('settings/test-mail', [\App\Http\Controllers\Admin\SettingController::class, 'testMail'])->name('settings.test-mail');
 
         // TMDb Import
         Route::get('tmdb', [\App\Http\Controllers\Admin\TmdbImportController::class, 'index'])->name('tmdb.index');

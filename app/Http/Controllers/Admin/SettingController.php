@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Models\ActivityLog;
 
 class SettingController extends Controller
 {
@@ -35,6 +38,14 @@ class SettingController extends Controller
             'signature_show_title' => 'nullable|string',
             'signature_show_year' => 'nullable|string',
             'signature_show_rating' => 'nullable|string',
+            'mail_mailer' => 'required|string|in:smtp,log,sendmail',
+            'mail_host' => 'nullable|string|max:255',
+            'mail_port' => 'nullable|integer|min:1|max:65535',
+            'mail_username' => 'nullable|string|max:255',
+            'mail_password' => 'nullable|string|max:255',
+            'mail_encryption' => 'nullable|string|in:tls,ssl,none',
+            'mail_from_address' => 'nullable|email|max:255',
+            'mail_from_name' => 'nullable|string|max:255',
         ]);
 
         // Handle checkboxes
@@ -53,10 +64,37 @@ class SettingController extends Controller
                 $group = 'impressum';
             } elseif (str_starts_with($key, 'signature_')) {
                 $group = 'signature';
+            } elseif (str_starts_with($key, 'mail_')) {
+                $group = 'mail';
             }
             Setting::set($key, (string)$value, $group);
         }
 
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'SETTINGS_UPDATE',
+            'details' => json_encode(['updated_fields' => array_keys($validated)]),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
         return redirect()->route('admin.settings.index')->with('success', 'Einstellungen wurden gespeichert.');
+    }
+
+    public function testMail(Request $request)
+    {
+        try {
+            $to = $request->get('email', auth()->user()->email);
+            
+            Mail::raw('Dies ist eine Test-Email von deiner Film-Datenbank. Wenn du diese Nachricht erhältst, ist deine Mail-Konfiguration korrekt.', function ($message) use ($to) {
+                $message->to($to)
+                        ->subject('TMDb Film-Datenbank: Test-Email');
+            });
+
+            return response()->json(['success' => true, 'message' => 'Test-Email wurde erfolgreich versendet an ' . $to]);
+        } catch (\Exception $e) {
+            Log::error('Mail Test failed: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Fehler beim Senden der Mail: ' . $e->getMessage()], 500);
+        }
     }
 }
