@@ -15,8 +15,8 @@
         
         <!-- Watched Badge -->
         <div class="absolute top-2 left-2" x-show="isWatched" x-cloak>
-            <div class="w-6 h-6 bg-blue-500/90 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center shadow-md">
-                <i class="bi bi-eye-fill text-white text-[10px]"></i>
+            <div class="w-6 h-6 bg-blue-500/90 backdrop-blur-md rounded-full border border-white/20 shadow-md flex items-center justify-center">
+                <i class="bi bi-eye-fill text-white text-[10px] leading-none m-0 p-0"></i>
             </div>
         </div>
     </div>
