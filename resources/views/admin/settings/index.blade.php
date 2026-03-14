@@ -286,8 +286,8 @@
 
             <!-- Mail-Server -->
             <div x-show="activeTab === 'mail'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="glass p-8 rounded-3xl border-white/10 shadow-2xl space-y-12">
-                    <div class="flex items-center justify-between">
+                <div class="glass p-8 rounded-3xl border-white/10 shadow-2xl">
+                    <div class="flex items-center justify-between gap-4 mb-8">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 flex items-center justify-center text-white text-xl shadow-lg shadow-rose-500/20">
                                 <i class="bi bi-envelope"></i>
@@ -318,92 +318,73 @@
                                 <i class="bi bi-send" :class="sending ? 'animate-pulse' : ''"></i>
                                 <span x-text="sending ? 'Sende...' : 'Test-Mail senden'"></span>
                             </button>
-                            <p x-show="success" x-text="success" class="text-[10px] text-emerald-400 mt-2 font-bold text-right" style="display:none"></p>
-                            <p x-show="error" x-text="error" class="text-[10px] text-rose-400 mt-2 font-bold text-right" style="display:none"></p>
                         </div>
                     </div>
 
-                    <div class="space-y-12 pt-10 border-t border-white/5">
-                        <!-- Server-Verbindung -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
-                            <h3 class="text-xs font-black text-rose-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
-                                <span class="w-8 h-[1px] bg-rose-500/30"></span>
-                                Server-Verbindung
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                                <div class="space-y-3">
-                                    <label for="mail_mailer" class="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Treiber (Mailer)</label>
-                                    <select name="mail_mailer" id="mail_mailer" required
-                                            class="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none ring-0">
-                                        <option value="smtp" {{ ($settings['mail_mailer'] ?? 'smtp') == 'smtp' ? 'selected' : '' }} class="bg-gray-900">SMTP (Empfohlen)</option>
-                                        <option value="log" {{ ($settings['mail_mailer'] ?? 'smtp') == 'log' ? 'selected' : '' }} class="bg-gray-900">Log (Nur Debugging)</option>
-                                        <option value="sendmail" {{ ($settings['mail_mailer'] ?? 'smtp') == 'sendmail' ? 'selected' : '' }} class="bg-gray-900">SendMail</option>
-                                    </select>
-                                </div>
+                            <label for="mail_mailer" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Treiber (Mailer)</label>
+                            <select name="mail_mailer" id="mail_mailer" required
+                                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none">
+                                <option value="smtp" {{ ($settings['mail_mailer'] ?? 'smtp') == 'smtp' ? 'selected' : '' }} class="bg-gray-900">SMTP (Empfohlen)</option>
+                                <option value="log" {{ ($settings['mail_mailer'] ?? 'smtp') == 'log' ? 'selected' : '' }} class="bg-gray-900">Log (Nur Debugging)</option>
+                                <option value="sendmail" {{ ($settings['mail_mailer'] ?? 'smtp') == 'sendmail' ? 'selected' : '' }} class="bg-gray-900">SendMail</option>
+                            </select>
+                        </div>
 
-                                <div class="grid grid-cols-3 gap-6">
-                                    <div class="col-span-2 space-y-3">
-                                        <label for="mail_host" class="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">SMTP Host</label>
-                                        <input type="text" name="mail_host" id="mail_host" value="{{ old('mail_host', $settings['mail_host'] ?? '') }}"
-                                               placeholder="smtp.example.com"
-                                               class="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-white focus:outline-none focus:border-rose-500/50 transition-all">
-                                    </div>
-                                    <div class="space-y-3">
-                                        <label for="mail_port" class="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Port</label>
-                                        <input type="number" name="mail_port" id="mail_port" value="{{ old('mail_port', $settings['mail_port'] ?? '587') }}"
-                                               placeholder="587"
-                                               class="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-white focus:outline-none focus:border-rose-500/50 transition-all">
-                                    </div>
-                                </div>
-
-                                <div class="space-y-3">
-                                    <label for="mail_username" class="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Benutzername</label>
-                                    <input type="text" name="mail_username" id="mail_username" value="{{ old('mail_username', $settings['mail_username'] ?? '') }}"
-                                           placeholder="user@example.com"
-                                           class="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-white focus:outline-none focus:border-rose-500/50 transition-all">
-                                </div>
-
-                                <div class="space-y-3">
-                                    <label for="mail_password" class="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Passwort</label>
-                                    <input type="password" name="mail_password" id="mail_password" value="{{ old('mail_password', $settings['mail_password'] ?? '') }}"
-                                           placeholder="••••••••"
-                                           class="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-white focus:outline-none focus:border-rose-500/50 transition-all">
-                                </div>
-
-                                <div class="space-y-3">
-                                    <label for="mail_encryption" class="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Verschlüsselung</label>
-                                    <select name="mail_encryption" id="mail_encryption"
-                                            class="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none">
-                                        <option value="tls" {{ ($settings['mail_encryption'] ?? 'tls') == 'tls' ? 'selected' : '' }} class="bg-gray-900">TLS (StartTLS)</option>
-                                        <option value="ssl" {{ ($settings['mail_encryption'] ?? 'tls') == 'ssl' ? 'selected' : '' }} class="bg-gray-900">SSL</option>
-                                        <option value="none" {{ ($settings['mail_encryption'] ?? 'tls') == 'none' ? 'selected' : '' }} class="bg-gray-900">Keine</option>
-                                    </select>
-                                </div>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-2">
+                                <label for="mail_host" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">SMTP Host</label>
+                                <input type="text" name="mail_host" id="mail_host" value="{{ old('mail_host', $settings['mail_host'] ?? '') }}"
+                                       placeholder="smtp.example.com"
+                                       class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                            </div>
+                            <div>
+                                <label for="mail_port" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Port</label>
+                                <input type="number" name="mail_port" id="mail_port" value="{{ old('mail_port', $settings['mail_port'] ?? '587') }}"
+                                       class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-rose-500/50 transition-all">
                             </div>
                         </div>
 
-                        <!-- Absender-Details -->
                         <div>
-                            <h3 class="text-xs font-black text-rose-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
-                                <span class="w-8 h-[1px] bg-rose-500/30"></span>
-                                Absender-Details
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                                <div class="space-y-3">
-                                    <label for="mail_from_address" class="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Absender-Email (From)</label>
-                                    <input type="email" name="mail_from_address" id="mail_from_address" value="{{ old('mail_from_address', $settings['mail_from_address'] ?? '') }}"
-                                           placeholder="no-reply@deinedomain.de"
-                                           class="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-white focus:outline-none focus:border-rose-500/50 transition-all">
-                                </div>
+                            <label for="mail_username" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Benutzername</label>
+                            <input type="text" name="mail_username" id="mail_username" value="{{ old('mail_username', $settings['mail_username'] ?? '') }}"
+                                   class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        </div>
 
-                                <div class="space-y-3">
-                                    <label for="mail_from_name" class="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.15em] ml-1">Absender-Name</label>
-                                    <input type="text" name="mail_from_name" id="mail_from_name" value="{{ old('mail_from_name', $settings['mail_from_name'] ?? 'MovieShelf') }}"
-                                           class="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-white focus:outline-none focus:border-rose-500/50 transition-all">
-                                </div>
+                        <div>
+                            <label for="mail_password" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Passwort</label>
+                            <input type="password" name="mail_password" id="mail_password" value="{{ old('mail_password', $settings['mail_password'] ?? '') }}"
+                                   class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        </div>
+
+                        <div>
+                            <label for="mail_encryption" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Verschlüsselung</label>
+                            <select name="mail_encryption" id="mail_encryption"
+                                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none">
+                                <option value="tls" {{ ($settings['mail_encryption'] ?? 'tls') == 'tls' ? 'selected' : '' }} class="bg-gray-900">TLS (StartTLS)</option>
+                                <option value="ssl" {{ ($settings['mail_encryption'] ?? 'tls') == 'ssl' ? 'selected' : '' }} class="bg-gray-900">SSL</option>
+                                <option value="none" {{ ($settings['mail_encryption'] ?? 'tls') == 'none' ? 'selected' : '' }} class="bg-gray-900">Keine</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-white/5 mt-4">
+                            <div>
+                                <label for="mail_from_address" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Absender-Email (From)</label>
+                                <input type="email" name="mail_from_address" id="mail_from_address" value="{{ old('mail_from_address', $settings['mail_from_address'] ?? '') }}"
+                                       placeholder="no-reply@deinedomain.de"
+                                       class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                            </div>
+
+                            <div>
+                                <label for="mail_from_name" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Absender-Name</label>
+                                <input type="text" name="mail_from_name" id="mail_from_name" value="{{ old('mail_from_name', $settings['mail_from_name'] ?? 'MovieShelf') }}"
+                                       class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-rose-500/50 transition-all">
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
                 </div>
             </div>
 
