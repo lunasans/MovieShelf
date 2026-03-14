@@ -40,11 +40,11 @@
                                 <tr>
                                     <td style="padding:28px 40px 24px;text-align:center;">
                                         @php
-                                            $logoPath = public_path('img/logo/logo_small.png');
+                                            $logoPath = public_path('img/logo/logo.png');
                                             $logoData = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : null;
                                         @endphp
                                         @if($logoData)
-                                            <img src="data:image/png;base64,{{ $logoData }}" alt="{{ config('app.name') }}" style="max-height:44px;display:inline-block;" />
+                                            <img src="data:image/png;base64,{{ $logoData }}" alt="{{ config('app.name') }}" style="max-height:80px;max-width:100%;display:inline-block;" />
                                         @else
                                             <span style="font-size:22px;font-weight:800;color:#1f2937;letter-spacing:0.05em;text-transform:uppercase;">{{ config('app.name') }}</span>
                                         @endif
