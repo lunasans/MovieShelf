@@ -121,8 +121,8 @@
                             @foreach($movies as $movie)
                                 <a href="{{ route('dashboard', ['movie' => $movie->id]) }}" class="group flex flex-col gap-4">
                                     <div class="relative aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 transition-all duration-500 hover:scale-[1.05] hover:shadow-blue-500/30 hover:border-blue-500/50 shadow-2xl">
-                                        @if($movie->cover_id)
-                                            <img src="{{ asset('storage/' . $movie->cover_id) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                                        @if($movie->cover_url)
+                                            <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
                                             <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity"></div>
                                         @else
                                             <div class="w-full h-full bg-gray-900 flex items-center justify-center">
