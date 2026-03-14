@@ -197,27 +197,39 @@ class TmdbImportController extends Controller
 
     protected function extractRating(array $details): ?int
     {
-        // Für Filme
+        // 1. Check for German rating (DE)
         if (isset($details['release_dates']['results'])) {
             foreach ($details['release_dates']['results'] as $result) {
                 if ($result['iso_3166_1'] === 'DE') {
                     foreach ($result['release_dates'] as $release) {
                         if (!empty($release['certification'])) {
-                            return (int)$release['certification'];
+                            return (int)preg_replace('/[^0-9]/', '', $release['certification']);
                         }
                     }
                 }
             }
         }
 
-        // Für Serien
+        // 2. Check for German TV rating (DE)
         if (isset($details['content_ratings']['results'])) {
             foreach ($details['content_ratings']['results'] as $result) {
                 if ($result['iso_3166_1'] === 'DE') {
                     if (!empty($result['rating'])) {
-                        return (int)$result['rating'];
+                        return (int)preg_replace('/[^0-9]/', '', $result['rating']);
                     }
                 }
+            }
+        }
+
+        // 3. Fallback: Check for US rating as a generic indicator for series if DE is missing
+        if (isset($details['content_ratings']['results'])) {
+            $usRating = collect($details['content_ratings']['results'])->firstWhere('iso_3166_1', 'US');
+            if ($usRating && !empty($usRating['rating'])) {
+                // Map common US TV ratings to FSK approximations if possible, but keeping it simple for now
+                if (is_numeric($usRating['rating'])) return (int)$usRating['rating'];
+                
+                $map = ['TV-Y' => 0, 'TV-Y7' => 6, 'TV-G' => 0, 'TV-PG' => 6, 'TV-14' => 12, 'TV-MA' => 16];
+                return $map[$usRating['rating']] ?? null;
             }
         }
 

@@ -247,7 +247,7 @@
                             this.formData.year = (data.release_date || data.first_air_date || '').substring(0, 4);
                             this.formData.genre = (data.genres || []).map(g => g.name).join(', ');
                             this.formData.runtime = data.runtime || (data.episode_run_time ? data.episode_run_time[0] : null);
-                            this.formData.rating = data.vote_average ? Math.round(data.vote_average * 10) / 10 : null;
+                            this.formData.rating = (data.vote_average !== undefined && data.vote_average !== null) ? Math.round(data.vote_average * 10) / 10 : null;
                             this.formData.overview = data.overview;
                             this.formData.tmdb_id = data.id;
                             
@@ -267,18 +267,23 @@
                             }
 
                             // Extract Rating (FSK)
-                            let rating = null;
+                            let fskRating = null;
                             if (data.release_dates && data.release_dates.results) {
                                 const de = data.release_dates.results.find(r => r.iso_3166_1 === 'DE');
                                 if (de && de.release_dates) {
                                     const cert = de.release_dates.find(rd => rd.certification);
-                                    if (cert) rating = cert.certification;
+                                    if (cert) fskRating = cert.certification;
                                 }
                             } else if (data.content_ratings && data.content_ratings.results) {
                                 const de = data.content_ratings.results.find(r => r.iso_3166_1 === 'DE');
-                                if (de) rating = de.rating;
+                                if (de) fskRating = de.rating;
                             }
-                            if (rating) this.formData.rating_age = rating;
+                            
+                            if (fskRating) {
+                                // Extract digits (e.g. "FSK 12" -> "12")
+                                const digits = fskRating.toString().replace(/[^0-9]/g, '');
+                                if (digits) this.formData.rating_age = digits;
+                            }
 
                             this.showModal = false;
                             this.loading = false;
