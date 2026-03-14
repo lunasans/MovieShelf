@@ -86,15 +86,24 @@ class SettingController extends Controller
         try {
             $to = $request->get('email', auth()->user()->email);
             
-            Mail::raw('Dies ist eine Test-Email von deiner Film-Datenbank. Wenn du diese Nachricht erhältst, ist deine Mail-Konfiguration korrekt.', function ($message) use ($to) {
+            Mail::send('emails.test', [], function ($message) use ($to) {
                 $message->to($to)
                         ->subject('TMDb Film-Datenbank: Test-Email');
             });
 
-            return response()->json(['success' => true, 'message' => 'Test-Email wurde erfolgreich versendet an ' . $to]);
+            return response()->json(['success' => true, 'message' => 'Die HTML Test-Email wurde erfolgreich versendet an ' . $to]);
         } catch (\Exception $e) {
             Log::error('Mail Test failed: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Fehler beim Senden der Mail: ' . $e->getMessage()], 500);
+            
+            // Provide a more user-friendly error message
+            $errorMessage = $e->getMessage();
+            if (str_contains($errorMessage, 'authentication failed')) {
+                $errorMessage = 'Authentifizierung fehlgeschlagen. Bitte prüfe Benutzername und Passwort.';
+            } elseif (str_contains($errorMessage, 'Connection could not be established')) {
+                $errorMessage = 'Verbindung zum SMTP-Server fehlgeschlagen. Bitte prüfe Host und Port.';
+            }
+
+            return response()->json(['success' => false, 'message' => 'Fehler: ' . $errorMessage], 500);
         }
     }
 }
