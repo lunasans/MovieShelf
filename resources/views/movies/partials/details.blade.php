@@ -116,28 +116,16 @@
                                 <span class="text-white truncate max-w-[200px]">{{ $movie->director }}</span>
                             </div>
                         @endif
+                        <div class="flex items-center gap-2">
+                            <i class="bi bi-calendar-plus text-emerald-400"></i>
+                            <span class="text-white">{{ $movie->created_at->format('d.m.Y') }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="grid grid-cols-2 gap-4 mb-8">
-        <div class="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center">
-            <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ __('Medientyp') }}</span>
-            <div class="text-lg font-bold text-blue-400 uppercase tracking-tighter">{{ $movie->collection_type }}</div>
-        </div>
-
-        @if($movie->parentBoxset)
-            <div @click="fetchDetails({{ $movie->parentBoxset->id }})" class="glass p-4 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-white/5 transition-all group/parent">
-                <span class="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">{{ __('Boxset') }}</span>
-                <div class="text-xs font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">
-                    {{ $movie->parentBoxset->title }}
-                </div>
-            </div>
-        @endif
-    </div>
 
     <!-- Main Content -->
     <div class="space-y-8">
