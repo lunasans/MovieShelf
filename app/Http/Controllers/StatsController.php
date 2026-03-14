@@ -11,8 +11,8 @@ class StatsController extends Controller
 {
     public function index()
     {
-        $totalFilms = Movie::where('is_deleted', false)->count();
-        $totalRuntime = Movie::where('is_deleted', false)->sum('runtime');
+        $totalFilms = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')->count();
+        $totalRuntime = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')->sum('runtime');
         $avgRuntime = $totalFilms > 0 ? round($totalRuntime / $totalFilms) : 0;
         $hours = round($totalRuntime / 60);
         $days = round($hours / 24);
@@ -25,7 +25,7 @@ class StatsController extends Controller
         $watchedPercentage = $totalFilms > 0 ? round(($watchedFilms * 100) / $totalFilms, 1) : 0;
 
         // Year Stats
-        $yearStats = Movie::where('is_deleted', false)
+        $yearStats = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')
             ->where('year', '>', 0)
             ->select(
                 DB::raw('ROUND(AVG(year)) as avg_year'),
@@ -34,7 +34,7 @@ class StatsController extends Controller
             )->first();
 
         // Collection Types
-        $collections = Movie::where('is_deleted', false)
+        $collections = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')
             ->whereNotNull('collection_type')
             ->select('collection_type', DB::raw('count(*) as count'))
             ->groupBy('collection_type')
@@ -46,7 +46,7 @@ class StatsController extends Controller
             });
 
         // Ratings (FSK)
-        $ratings = Movie::where('is_deleted', false)
+        $ratings = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')
             ->whereNotNull('rating_age')
             ->select('rating_age', DB::raw('count(*) as count'))
             ->groupBy('rating_age')
@@ -54,7 +54,7 @@ class StatsController extends Controller
             ->get();
 
         // Top Genres (Split by comma)
-        $allGenreStrings = Movie::where('is_deleted', false)
+        $allGenreStrings = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')
             ->whereNotNull('genre')
             ->where('genre', '!=', '')
             ->pluck('genre');
@@ -75,7 +75,7 @@ class StatsController extends Controller
             ->map(fn($count, $name) => (object)['genre' => $name, 'count' => $count]);
 
         // Year Distribution (Timeline)
-        $yearDistribution = Movie::where('is_deleted', false)
+        $yearDistribution = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')
             ->where('year', '>=', 1970)
             ->where('year', '<=', date('Y'))
             ->select('year', DB::raw('count(*) as count'))
@@ -85,7 +85,7 @@ class StatsController extends Controller
             ->pluck('count', 'year');
 
         // Decades
-        $decades = Movie::where('is_deleted', false)
+        $decades = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')
             ->where('year', '>', 0)
             ->select(
                 DB::raw("(CAST(year / 10 AS UNSIGNED) * 10) as decade"),

@@ -88,7 +88,7 @@ class SignatureController extends Controller
         }
 
         $films = $query->limit($filmCount)->get();
-        $totalFilms = Movie::where('is_deleted', false)->count();
+        $totalFilms = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')->count();
 
         // Font Pfad
         $fontPath = public_path('fonts/Roboto-Medium.ttf');

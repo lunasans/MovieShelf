@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
 
             $stats = \Illuminate\Support\Facades\Cache::remember('footer_stats', 300, function () use ($totalCounter, $dailyCounter) {
                 return [
-                    'total_films' => \App\Models\Movie::where('is_deleted', false)->count(),
+                    'total_films' => \App\Models\Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')->count(),
                     'total_actors' => \App\Models\Actor::count(),
                     'total_genres' => \App\Models\Movie::where('is_deleted', false)->distinct('genre')->count('genre'),
                     'total_visits' => $totalCounter->visits,
