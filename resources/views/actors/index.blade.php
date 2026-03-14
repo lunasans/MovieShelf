@@ -74,8 +74,8 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                             @foreach($groupActors as $actor)
                                 <a href="{{ route('dashboard', ['actor' => $actor->id]) }}" class="group relative aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 transition-all duration-500 hover:scale-[1.05] hover:border-blue-500/50 shadow-2xl">
-                                    @if($actor->profile_path)
-                                        <img src="{{ asset('storage/' . $actor->profile_path) }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                                    @if($actor->profile_url)
+                                        <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
                                     @else
                                         <div class="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
                                             <i class="bi bi-person-fill text-6xl text-white/5"></i>

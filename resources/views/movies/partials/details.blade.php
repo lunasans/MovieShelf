@@ -180,8 +180,8 @@
                 @forelse($movie->actors->take(12) as $actor)
                     <div @click="fetchActor({{ $actor->id }})" class="flex items-center gap-3 group/actor cursor-pointer">
                         <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover/actor:border-blue-500/50 transition-colors shadow-lg overflow-hidden">
-                            @if($actor->profile_path)
-                                <img src="{{ asset('storage/' . $actor->profile_path) }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover">
+                            @if($actor->profile_url)
+                                <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover">
                             @else
                                 <i class="bi bi-person text-lg text-gray-500 group-hover/actor:text-blue-400 transition-colors"></i>
                             @endif

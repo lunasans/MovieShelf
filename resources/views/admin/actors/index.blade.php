@@ -38,8 +38,8 @@
                         <tr class="hover:bg-white/[0.02] transition-colors group">
                             <td class="px-6 py-4">
                                 <div class="w-10 h-10 rounded-full bg-gray-800 border border-white/5 overflow-hidden flex items-center justify-center">
-                                    @if($actor->photo_path)
-                                        <img src="/{{ $actor->photo_path }}" alt="{{ $actor->first_name }}" class="w-full h-full object-cover">
+                                    @if($actor->profile_url)
+                                        <img src="{{ $actor->profile_url }}" alt="{{ $actor->first_name }}" class="w-full h-full object-cover">
                                     @else
                                         <i class="bi bi-person text-gray-600"></i>
                                     @endif

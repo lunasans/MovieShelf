@@ -11,8 +11,8 @@
                     <div class="relative group mb-10 w-full max-w-[350px]">
                         <div class="absolute -inset-4 bg-blue-500/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                         <div class="relative aspect-[2/3] rounded-[2rem] overflow-hidden glass border border-white/20 shadow-2xl skew-y-1 transform transition-transform duration-700 hover:skew-y-0">
-                            @if($actor->profile_path)
-                                <img src="{{ asset('storage/' . $actor->profile_path) }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover">
+                            @if($actor->profile_url)
+                                <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover">
                             @else
                                 <div class="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
                                     <i class="bi bi-person-fill text-9xl text-white/5"></i>

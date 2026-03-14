@@ -158,11 +158,30 @@
                     </h3>
                     <div class="space-y-6">
                         @forelse($stats['recentActivity'] as $log)
+                            @php
+                                $details = json_decode($log->details, true);
+                                $actionInfo = match($log->action) {
+                                    'MOVIE_IMPORT' => ['label' => 'Film importiert', 'icon' => 'bi-plus-circle', 'color' => 'text-emerald-400'],
+                                    'SERIES_IMPORT' => ['label' => 'Serie importiert', 'icon' => 'bi-plus-circle', 'color' => 'text-emerald-400'],
+                                    'MOVIE_UPDATE' => ['label' => 'Film aktualisiert', 'icon' => 'bi-pencil', 'color' => 'text-blue-400'],
+                                    'MOVIE_DELETE' => ['label' => 'Film gelöscht', 'icon' => 'bi-trash', 'color' => 'text-rose-400'],
+                                    default => ['label' => $log->action, 'icon' => 'bi-info-circle', 'color' => 'text-indigo-400']
+                                };
+                            @endphp
                             <div class="relative pl-6 border-l border-white/10 group">
                                 <div class="absolute left-[-5px] top-1 w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] group-hover:scale-125 transition-transform"></div>
                                 <div class="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">{{ $log->created_at->diffForHumans() }}</div>
-                                <div class="text-xs font-bold text-white/90 leading-tight">{{ $log->action }}</div>
-                                <div class="text-[9px] text-white/20 mt-1 truncate">{{ $log->details }}</div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i class="bi {{ $actionInfo['icon'] }} {{ $actionInfo['color'] }} text-[10px]"></i>
+                                    <div class="text-xs font-bold text-white/90 leading-tight">{{ $actionInfo['label'] }}</div>
+                                </div>
+                                <div class="text-[9px] text-white/40 font-bold truncate italic">
+                                    @if(isset($details['title']))
+                                        {{ $details['title'] }}
+                                    @else
+                                        {{ $log->details }}
+                                    @endif
+                                </div>
                             </div>
                         @empty
                             <div class="text-center py-4 text-white/20 text-xs italic">Keine Aktivitäten gefunden.</div>
@@ -180,8 +199,8 @@
                         @foreach($stats['latestMovies'] as $movie)
                             <a href="{{ route('movies.show', $movie->id) }}" class="flex items-center gap-4 p-2 rounded-2xl hover:bg-white/5 transition-all group">
                                 <div class="w-10 h-14 bg-white/5 rounded-xl overflow-hidden border border-white/10 flex-shrink-0">
-                                    @if($movie->cover_id)
-                                        <img src="{{ Storage::url($movie->cover_id) }}" class="w-full h-full object-cover">
+                                    @if($movie->cover_url)
+                                        <img src="{{ $movie->cover_url }}" class="w-full h-full object-cover">
                                     @else
                                         <div class="flex items-center justify-center h-full text-white/10 text-xs">
                                             <i class="bi bi-film"></i>

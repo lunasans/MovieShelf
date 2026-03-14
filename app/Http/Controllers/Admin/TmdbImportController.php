@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\TmdbService;
 use App\Models\Movie;
 use App\Models\Actor;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -172,6 +173,20 @@ class TmdbImportController extends Controller
             }
 
             DB::commit();
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'MOVIE_IMPORT',
+                'details' => json_encode([
+                    'movie_id' => $movie->id,
+                    'title' => $movie->title,
+                    'media_type' => 'movie',
+                    'tmdb_id' => $tmdbId,
+                ]),
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
             return redirect()->route('admin.movies.index')->with('success', "Filme '{$movie->title}' wurde erfolgreich importiert.");
 
         } catch (\Exception $e) {
@@ -302,6 +317,20 @@ class TmdbImportController extends Controller
             }
 
             DB::commit();
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'SERIES_IMPORT',
+                'details' => json_encode([
+                    'movie_id' => $movie->id,
+                    'title' => $movie->title,
+                    'media_type' => 'tv',
+                    'tmdb_id' => $tmdbId,
+                ]),
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
             return redirect()->route('admin.movies.index')->with('success', "Serie '{$movie->title}' wurde erfolgreich importiert.");
 
         } catch (\Exception $e) {
