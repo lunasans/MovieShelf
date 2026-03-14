@@ -26,21 +26,20 @@
                         @endif
                     </div>
                     
-                    <!-- Rating Badge -->
-                    @if($lat->rating)
-                        <div class="absolute top-2 right-2 z-20">
-                            <div class="flex items-center gap-1 bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 shadow-lg">
-                                <i class="bi bi-star-fill text-yellow-400 text-[8px]"></i>
-                                <span class="text-[10px] font-black text-white">{{ number_format($lat->rating, 1) }}</span>
-                            </div>
-                        </div>
-                    @endif
-
-                    <!-- New Badge -->
-                    <div class="absolute top-2 left-2 z-20">
-                        <span class="bg-blue-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded shadow-lg uppercase tracking-tighter">
+                    <!-- Top Badges Flex Container -->
+                    <div class="absolute top-2 left-2 right-2 z-20 flex flex-wrap justify-between items-start gap-1">
+                        <!-- New Badge -->
+                        <span class="bg-blue-600 text-white text-[7px] font-black px-1.5 py-0.5 rounded shadow-lg uppercase tracking-tighter shrink-0 block">
                             NEW
                         </span>
+
+                        <!-- Rating Badge -->
+                        @if($lat->rating)
+                            <div class="flex items-center gap-0.5 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-md border border-white/10 shadow-lg shrink-0">
+                                <i class="bi bi-star-fill text-yellow-400 text-[8px]"></i>
+                                <span class="text-[9px] font-black text-white">{{ number_format($lat->rating, 1) }}</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 
