@@ -126,6 +126,34 @@
         </div>
     </div>
 
+    <!-- Related Movies -->
+    @if(isset($similarMovies) && $similarMovies->count() > 0)
+        <div class="mb-8 pl-2">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <i class="bi bi-collection-play text-blue-400"></i>
+                {{ __('Ähnliche Filme') }}
+            </h3>
+            <div class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar">
+                @foreach($similarMovies as $similar)
+                    <div @click="fetchDetails({{ $similar->id }})" class="w-24 shrink-0 snap-start cursor-pointer group/similar">
+                        <div class="w-full aspect-[2/3] bg-gray-900 rounded-xl overflow-hidden glass border border-white/5 group-hover/similar:border-blue-500/30 transition-all shadow-lg mb-2 relative">
+                            @if($similar->cover_url)
+                                <img src="{{ $similar->cover_url }}" alt="{{ $similar->title }}" class="w-full h-full object-cover group-hover/similar:scale-110 transition-transform duration-500">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <i class="bi bi-film text-gray-700 text-2xl"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="text-[10px] font-bold text-gray-400 truncate group-hover/similar:text-blue-400 transition-colors">
+                            {{ $similar->title }}
+                        </div>
+                        <div class="text-[9px] text-gray-600 uppercase">{{ $similar->year }}</div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     <!-- Main Content -->
     <div class="space-y-8">
