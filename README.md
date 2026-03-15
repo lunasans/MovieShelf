@@ -1,3 +1,6 @@
+![Logo](https://neuhaus.ovh/img/logo/logo.png))
+
+
 # MovieShelf - Dein digitales Filmregal
 
 
