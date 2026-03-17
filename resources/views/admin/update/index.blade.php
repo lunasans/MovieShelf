@@ -33,7 +33,7 @@
                 <div class="grid grid-cols-2 gap-8 mt-12">
                     <div class="space-y-1">
                         <div class="text-[10px] font-black text-white/30 uppercase tracking-widest">Installierte Version</div>
-                        <div class="text-2xl font-black text-white tracking-tight">{{ $currentBranch }} ({{ $currentCommit }})</div>
+                        <div class="text-2xl font-black text-white tracking-tight">v{{ config('app.version') }} <span class="text-white/20 text-sm">({{ $currentBranch }} / {{ $currentCommit }})</span></div>
                     </div>
                     <div class="space-y-1">
                         <div class="text-[10px] font-black text-white/30 uppercase tracking-widest">Letzte Prüfung</div>
