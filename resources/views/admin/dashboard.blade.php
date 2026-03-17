@@ -218,31 +218,5 @@
             </div>
         </div>
 
-        <!-- Decade Distribution - Full Width -->
-        <div class="glass p-8 rounded-[2.5rem] border-white/5 relative overflow-hidden">
-             <div class="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none"></div>
-            <h3 class="text-lg font-black text-white mb-8 flex items-center gap-3">
-                <i class="bi bi-calendar-range text-emerald-400"></i>
-                Die Zeitreise <span class="text-emerald-500/40 font-light ml-2 uppercase text-[10px] tracking-[0.4em]">Decades</span>
-            </h3>
-            <div class="flex items-end gap-3 h-48 px-4">
-                @php
-                    $maxDecadeCount = $stats['decades']->max('count') ?: 1;
-                @endphp
-                @foreach($stats['decades'] as $decade)
-                    @php
-                        $height = ($decade->count / $maxDecadeCount) * 100;
-                    @endphp
-                    <div class="flex-1 flex flex-col items-center gap-3 group">
-                        <div class="text-[10px] text-emerald-400 font-black opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">{{ $decade->count }}</div>
-                        <div class="w-full bg-gradient-to-t from-emerald-500/10 to-emerald-500/40 rounded-t-xl group-hover:from-emerald-500/20 group-hover:to-emerald-500/60 transition-all cursor-help relative shadow-lg shadow-emerald-500/5" style="height: {{ $height }}%" title="{{ $decade->count }} Filme">
-                            <div class="absolute inset-x-0 top-0 h-1 bg-emerald-400 opacity-50 rounded-full"></div>
-                        </div>
-                        <div class="text-[9px] font-black text-white/40 uppercase tracking-widest">{{ $decade->decade }}s</div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-
     </div>
 </x-admin-layout>

@@ -31,14 +31,6 @@ class AdminController extends Controller
                 ->orderBy('count', 'desc')
                 ->limit(10)
                 ->get(),
-            'decades' => Movie::where('is_deleted', false)
-                ->where('year', '>', 0)
-                ->selectRaw(
-                    ($this->getDatabaseDriver() === 'sqlite' ? '(year / 10) * 10' : 'FLOOR(year / 10) * 10') . ' as decade, count(*) as count'
-                )
-                ->groupBy('decade')
-                ->orderBy('decade', 'asc')
-                ->get(),
             'topActors' => Actor::withCount('movies')
                 ->orderBy('movies_count', 'desc')
                 ->limit(5)
