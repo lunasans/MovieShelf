@@ -9,17 +9,14 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-Route::get('/dashboard', [MovieController::class, 'index'])
-    ->name('dashboard');
+Route::get('/movies/random', [MovieController::class, 'random'])
+    ->name('movies.random');
 
 Route::get('/movies/{movie}', [MovieController::class, 'show'])
     ->name('movies.show');
 
 Route::get('/movies/{movie}/details', [MovieController::class, 'details'])
     ->name('movies.details');
-
-Route::get('/movies/random', [MovieController::class, 'random'])
-    ->name('movies.random');
 
 Route::get('/actors', [\App\Http\Controllers\ActorController::class, 'index'])->name('actors.index');
 Route::get('/actors/{actor}', [\App\Http\Controllers\ActorController::class, 'show'])->name('actors.show');

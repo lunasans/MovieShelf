@@ -87,6 +87,9 @@ class SystemUpdateController extends Controller
             $migrate = $this->runCommand('php artisan migrate --force');
             Log::info('Migration Output: ' . $migrate);
             
+            $configClear = $this->runCommand('php artisan config:clear');
+            Log::info('Config Clear Output: ' . $configClear);
+            
             try {
                 $npmInstall = $this->runCommand('npm install');
                 Log::info('NPM Install Output: ' . $npmInstall);
