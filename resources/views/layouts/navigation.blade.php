@@ -15,16 +15,16 @@
             </a>
             <a href="{{ route('actors.index') }}" 
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('actors.index') ? 'bg-white/10' : '' }}">
-                <i class="bi bi-people-fill mr-2"></i> {{ __('Schauspieler') }}
+                <i class="bi bi-people-fill mr-2"></i> {{ __('Actors') }}
             </a>
             <a href="{{ route('movies.trailers') }}" 
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('movies.trailers') ? 'bg-white/10' : '' }}">
-                <i class="bi bi-play-circle mr-2"></i> {{ __('Trailer') }}
+                <i class="bi bi-play-circle mr-2"></i> {{ __('Trailers') }}
             </a>
             <a href="{{ route('dashboard', ['stats' => 1]) }}" 
                 @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('stats-open') } else { window.location.href = $el.href }"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('statistics') ? 'bg-white/10' : '' }}">
-                <i class="bi bi-bar-chart-fill mr-2"></i> {{ __('Statistik') }}
+                <i class="bi bi-bar-chart-fill mr-2"></i> {{ __('Statistics') }}
             </a>
         </div>
 
@@ -39,6 +39,21 @@
             </form>
 
             <div class="flex items-center gap-4">
+                <!-- Language Switcher -->
+                <div class="flex items-center gap-2 px-2 border-r border-white/10 mr-2">
+                    <a href="{{ route('lang.switch', 'de') }}" 
+                       class="text-[10px] font-black transition-all {{ app()->getLocale() == 'de' ? 'text-blue-400 scale-110' : 'text-gray-500 hover:text-white' }}"
+                       title="Deutsch">
+                        DE
+                    </a>
+                    <span class="text-white/10 text-[10px]">|</span>
+                    <a href="{{ route('lang.switch', 'en') }}" 
+                       class="text-[10px] font-black transition-all {{ app()->getLocale() == 'en' ? 'text-blue-400 scale-110' : 'text-gray-500 hover:text-white' }}"
+                       title="English">
+                        EN
+                    </a>
+                </div>
+
                 <!-- Auth Section -->
                 @auth
                     <!-- User Dropdown -->
@@ -72,7 +87,7 @@
                 @else
                     <a href="{{ route('login') }}" class="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all font-bold text-sm shadow-lg shadow-blue-900/40">
                         <i class="bi bi-box-arrow-in-right"></i>
-                        {{ __('Login') }}
+                        {{ __('Log in') }}
                     </a>
                 @endauth
 
@@ -95,15 +110,15 @@
              {{ __('Start') }}
         </x-responsive-nav-link>
         <a href="{{ route('actors.index') }}" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('actors.index') ? 'bg-white/10' : '' }}">
-            {{ __('Schauspieler') }}
+            {{ __('Actors') }}
         </a>
-        <a href="#" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors">
-            {{ __('Trailer') }}
+        <a href="{{ route('movies.trailers') }}" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('movies.trailers') ? 'bg-white/10' : '' }}">
+            {{ __('Trailers') }}
         </a>
         <a href="{{ route('dashboard', ['stats' => 1]) }}" 
             @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('stats-open'); open = false } else { window.location.href = $el.href }"
             class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('statistics') ? 'bg-white/10' : '' }}">
-            {{ __('Statistik') }}
+            {{ __('Statistics') }}
         </a>
         
         <!-- Mobile Search -->

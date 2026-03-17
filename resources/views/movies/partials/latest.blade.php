@@ -4,11 +4,11 @@
             <div class="h-10 w-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
                 <i class="bi bi-stars"></i>
             </div>
-            <span>{{ __('Neu hinzugefügt') }}</span>
+            <span>{{ __('Newest added') }}</span>
         </h2>
         <div class="flex flex-col items-end">
             <span class="text-white font-black text-lg leading-none">{{ $latestMovies->count() }}</span>
-            <span class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">{{ __('Filme') }}</span>
+            <span class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">{{ __('Movies') }}</span>
         </div>
     </div>
 
@@ -57,7 +57,7 @@
         @empty
             <div class="col-span-full py-12 text-center glass rounded-3xl border-dashed">
                 <i class="bi bi-inbox text-4xl text-gray-700 mb-4 block"></i>
-                <p class="text-gray-500 text-sm">{{ __('Keine neuen Filme gefunden.') }}</p>
+                <p class="text-gray-500 text-sm">{{ __('No new movies found.') }}</p>
             </div>
         @endforelse
     </div>

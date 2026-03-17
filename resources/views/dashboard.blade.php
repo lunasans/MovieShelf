@@ -22,7 +22,7 @@
                         this.loading = false;
                     })
                     .catch(err => {
-                        this.error = 'Fehler beim Laden der Details.';
+                        this.error = "{{ __('Error loading details.') }}";
                         this.loading = false;
                     });
             },
@@ -37,7 +37,7 @@
                         this.loading = false;
                     })
                     .catch(err => {
-                        this.error = 'Fehler beim Laden des Profils.';
+                        this.error = "{{ __('Error loading profile.') }}";
                         this.loading = false;
                     });
             },
@@ -58,7 +58,7 @@
                         this.$nextTick(() => this.initCharts());
                     })
                     .catch(err => {
-                        this.error = 'Fehler beim Laden der Statistik.';
+                        this.error = "{{ __('Error loading statistics.') }}";
                         this.loading = false;
                     });
             },
@@ -78,7 +78,7 @@
                         this.loading = false;
                     })
                     .catch(err => {
-                        this.error = 'Fehler beim Laden des Impressums.';
+                        this.error = "{{ __('Error loading imprint.') }}";
                         this.loading = false;
                     });
             },
@@ -98,11 +98,11 @@
                     if (data.id) {
                         this.fetchDetails(data.id, data.backdrop_url);
                     } else {
-                        this.error = 'Keine Filme gefunden.';
+                        this.error = "{{ __('No movies found.') }}";
                     }
                 } catch (e) {
                     console.error('Random fetch failed', e);
-                    this.error = 'Fehler beim Laden.';
+                    this.error = "{{ __('Error loading.') }}";
                 } finally {
                     this.loading = false;
                 }
@@ -214,7 +214,7 @@
                     <div class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
                         <a href="{{ route('dashboard') }}" 
                             class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {{ !request('type') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
-                            {{ __('Alle') }}
+                            {{ __('All') }}
                         </a>
                         @foreach($collectionTypes as $type)
                             <a href="{{ route('dashboard', ['type' => $type, 'q' => request('q')]) }}" 
@@ -229,7 +229,7 @@
                     <button 
                         @click="fetchRandom()"
                         class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl shadow-lg shadow-purple-900/40 transition-all font-bold text-xs group active:scale-95"
-                        title="{{ __('Zufälliger Film') }}"
+                        title="{{ __('Random Movie') }}"
                     >
                         <i class="bi bi-dice-5 text-lg group-hover:rotate-45 transition-transform duration-500"></i>
                         <span class="hidden sm:inline uppercase tracking-widest">{{ __('Lucky Dip') }}</span>
@@ -262,7 +262,7 @@
                     </div>
                     <span>
                         @if(request('q'))
-                            {{ __('Suche: :query', ['query' => request('q')]) }}
+                            {{ __('Search: :query', ['query' => request('q')]) }}
                         @else
                             {{ request('type') ?? __('Mediathek') }}
                         @endif
@@ -270,7 +270,7 @@
                 </h2>
                 <div class="flex flex-col items-end">
                     <span class="text-white font-black text-lg leading-none">{{ $footerStats['total_films'] }}</span>
-                    <span class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">{{ __('Gesamt') }}</span>
+                    <span class="text-gray-500 text-[10px] uppercase font-bold tracking-widest">{{ __('Total') }}</span>
                 </div>
             </div>
 
@@ -286,8 +286,8 @@
                 @empty
                     <div class="col-span-full py-20 text-center glass rounded-2xl border-dashed">
                         <i class="bi bi-search text-6xl text-gray-800 mb-4 block"></i>
-                        <h3 class="text-xl font-bold text-white">{{ __('Keine Filme gefunden') }}</h3>
-                        <p class="text-gray-500 mt-2">{{ __('Passen Sie Ihre Suche oder Filter an.') }}</p>
+                        <h3 class="text-xl font-bold text-white">{{ __('No movies found.') }}</h3>
+                        <p class="text-gray-500 mt-2">{{ __('Adjust your search or filters.') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -297,10 +297,10 @@
                  class="mt-12 flex flex-col items-center justify-center gap-4">
                 <div x-show="isMoviesLoading" class="flex flex-col items-center gap-2 animate-in fade-in duration-500">
                     <div class="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-                    <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic tracking-[0.2em]">{{ __('Lade weitere Filme...') }}</span>
+                    <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest italic tracking-[0.2em]">{{ __('Loading more movies...') }}</span>
                 </div>
                 <button x-show="!isMoviesLoading" @click="loadMoreMovies()" class="px-8 py-3 glass border border-white/10 rounded-2xl text-[10px] font-black text-gray-500 hover:text-white hover:border-blue-500/50 transition-all uppercase tracking-[0.2em] italic group">
-                    <span>{{ __('Mehr Filme laden') }}</span>
+                    <span>{{ __('Load more movies') }}</span>
                     <i class="bi bi-chevron-down ml-2 group-hover:translate-y-1 transition-transform inline-block"></i>
                 </button>
             </div>
@@ -317,7 +317,7 @@
             <div x-show="loading" class="absolute inset-0 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm z-50 rounded-2xl">
                 <div class="flex flex-col items-center gap-4">
                     <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-                    <span class="text-sm font-medium text-gray-400 tracking-widest uppercase italic">{{ __('Lade Details...') }}</span>
+                    <span class="text-sm font-medium text-gray-400 tracking-widest uppercase italic">{{ __('Loading details...') }}</span>
                 </div>
             </div>
 
@@ -325,7 +325,7 @@
             <div x-show="error" class="h-full flex flex-col items-center justify-center p-8 text-center">
                 <i class="bi bi-exclamation-triangle text-4xl text-red-500 mb-4"></i>
                 <p x-text="error" class="text-white font-medium"></p>
-                <button @click="error = null" class="mt-4 text-sm text-blue-400 hover:underline">{{ __('Schließen') }}</button>
+                <button @click="error = null" class="mt-4 text-sm text-blue-400 hover:underline">{{ __('Close') }}</button>
             </div>
 
             <!-- Content Area: Show Latest Movies when no movie is selected -->

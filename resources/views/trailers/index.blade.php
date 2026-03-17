@@ -75,15 +75,15 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
                     <h1 class="text-4xl font-black text-white tracking-tighter mb-2">
-                        Trailer <span class="text-blue-500">Galerie</span>
+                        {!! __('Trailer <span class="text-blue-500">Gallery</span>') !!}
                     </h1>
-                    <p class="text-gray-400 font-medium italic opacity-80">{{ __('Entdecke Trailer aus deiner Sammlung') }}</p>
+                    <p class="text-gray-400 font-medium italic opacity-80">{{ __('Discover trailers from your collection') }}</p>
                 </div>
 
                 <!-- Search Form -->
                 <form action="{{ route('movies.trailers') }}" method="GET" class="relative w-full max-w-md">
                     <input type="text" name="q" value="{{ request('q') }}" 
-                        placeholder="{{ __('Nach Trailern suchen...') }}" 
+                        placeholder="{{ __('Search for trailers...') }}" 
                         class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pl-14 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-white transition-all outline-none placeholder:text-gray-500 glass">
                     <i class="bi bi-search absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 text-xl"></i>
                 </form>
@@ -98,8 +98,8 @@
                         <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                             <i class="bi bi-play-circle text-5xl text-gray-700"></i>
                         </div>
-                        <h3 class="text-xl font-black text-gray-500 uppercase tracking-widest italic">{{ __('Keine Trailer gefunden') }}</h3>
-                        <p class="text-gray-600 font-medium mt-2">{{ __('Probiere es mit einem anderen Suchbegriff.') }}</p>
+                        <h3 class="text-xl font-black text-gray-500 uppercase tracking-widest italic">{{ __('No trailers found') }}</h3>
+                        <p class="text-gray-600 font-medium mt-2">{{ __('Try another search term.') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -110,10 +110,10 @@
                  class="mt-20 flex flex-col items-center justify-center gap-4">
                 <div x-show="$data.isLoading" class="flex flex-col items-center gap-4 animate-in fade-in duration-500">
                     <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-                    <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] italic">Lade weitere Trailer...</span>
+                    <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] italic">{{ __('Loading more trailers...') }}</span>
                 </div>
                 <button x-show="!$data.isLoading" @click="loadMore()" class="px-8 py-4 glass border border-white/10 rounded-2xl text-xs font-black text-gray-400 hover:text-white hover:border-blue-500/50 transition-all uppercase tracking-widest italic group">
-                    <span>{{ __('Mehr laden') }}</span>
+                    <span>{{ __('Load more') }}</span>
                     <i class="bi bi-chevron-down ml-2 group-hover:translate-y-1 transition-transform inline-block"></i>
                 </button>
             </div>

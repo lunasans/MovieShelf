@@ -5,15 +5,15 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div>
                     <h1 class="text-4xl font-black text-white tracking-tighter mb-2 uppercase">
-                        Unsere <span class="text-blue-500">Stars</span>
+                        {!! __('Our <span class="text-blue-500">Stars</span>') !!}
                     </h1>
                     <div class="flex items-center gap-3">
                         <span class="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-[10px] font-black text-blue-400 uppercase tracking-widest">
-                            <i class="bi bi-people-fill mr-1"></i> {{ number_format($filteredActorsCount) }} / {{ number_format($totalActors) }} Darsteller
+                            <i class="bi bi-people-fill mr-1"></i> {{ number_format($filteredActorsCount) }} / {{ number_format($totalActors) }} {{ __('Actors') }}
                         </span>
                         @if($letter)
                             <a href="{{ route('actors.index', ['q' => request('q')]) }}" class="px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded-full text-[10px] font-black text-rose-400 uppercase tracking-widest hover:bg-rose-500/20 transition-all flex items-center gap-2">
-                                <i class="bi bi-funnel-fill"></i> Buchstabe: {{ $letter }} <i class="bi bi-x-lg"></i>
+                                <i class="bi bi-funnel-fill"></i> {{ __('Letter: :letter', ['letter' => $letter]) }} <i class="bi bi-x-lg"></i>
                             </a>
                         @endif
                     </div>
@@ -23,7 +23,7 @@
                 <form action="{{ route('actors.index') }}" method="GET" class="relative w-full max-w-md">
                     @if($letter) <input type="hidden" name="letter" value="{{ $letter }}"> @endif
                     <input type="text" name="q" value="{{ request('q') }}" 
-                        placeholder="Schauspieler suchen..." 
+                        placeholder="{{ __('Search actors...') }}" 
                         class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pl-14 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-white transition-all outline-none placeholder:text-gray-500 glass">
                     <i class="bi bi-search absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 text-xl"></i>
                 </form>
@@ -34,7 +34,7 @@
                 <div class="flex items-center justify-between gap-2 min-w-max px-2">
                     <a href="{{ route('actors.index', ['q' => request('q')]) }}" 
                        class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all {{ !$letter ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-gray-500 hover:text-white hover:bg-white/5' }}">
-                        Alle
+                        {{ __('All') }}
                     </a>
                     
                     <div class="h-4 w-[1px] bg-white/10 mx-2"></div>
@@ -67,7 +67,7 @@
                             </div>
                             <div class="flex-1 h-[1px] bg-gradient-to-r from-white/20 to-transparent"></div>
                             <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] italic">
-                                {{ $groupActors->count() }} Darsteller
+                                {{ $groupActors->count() }} {{ __('Actors') }}
                             </span>
                         </div>
 
@@ -92,7 +92,7 @@
                                         </h3>
                                         <div class="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
                                             <span class="text-[8px] font-black uppercase tracking-[0.2em] text-blue-400 italic">
-                                                {{ $actor->movies_count }} {{ Str::plural('Film', $actor->movies_count) }}
+                                                {{ $actor->movies_count }} {{ $actor->movies_count == 1 ? __('Film') : __('Films') }}
                                             </span>
                                         </div>
                                     </div>
@@ -103,8 +103,8 @@
                 @empty
                     <div class="py-20 text-center glass rounded-3xl border border-dashed border-white/10 animate-in fade-in duration-1000">
                         <i class="bi bi-people text-6xl text-gray-700 mb-4 block"></i>
-                        <h3 class="text-xl font-black text-white uppercase tracking-tighter">Keine Schauspieler gefunden</h3>
-                        <p class="text-gray-500 mt-2 font-medium italic">Probiere es mit einem anderen Buchstaben oder Suchbegriff.</p>
+                        <h3 class="text-xl font-black text-white uppercase tracking-tighter">{{ __('No actors found.') }}</h3>
+                        <p class="text-gray-500 mt-2 font-medium italic">{{ __('Try another letter or search term.') }}</p>
                     </div>
                 @endforelse
             </div>

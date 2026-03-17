@@ -15,6 +15,13 @@ Route::get('/dashboard', [MovieController::class, 'index'])
 Route::get('/movies/random', [MovieController::class, 'random'])
     ->name('movies.random');
 
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['de', 'en'])) {
+        session(['locale' => $locale]);
+    }
+    return back();
+})->name('lang.switch');
+
 Route::get('/movies/{movie}', [MovieController::class, 'show'])
     ->name('movies.show');
 

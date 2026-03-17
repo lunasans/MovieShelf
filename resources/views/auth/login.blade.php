@@ -10,10 +10,10 @@
                     <i class="bi bi-person-fill-lock text-4xl text-white"></i>
                 </div>
                 <h1 class="text-3xl font-black text-white tracking-tight text-center">
-                    {{ __('Anmelden') }}
+                    {{ __('Log in') }}
                 </h1>
                 <p class="mt-3 text-gray-400 text-sm text-center font-medium max-w-[280px]">
-                    {{ __('Willkommen zurück! Bitte melde dich an, um fortzufahren.') }}
+                    {{ __('Welcome back! Please log in to continue.') }}
                 </p>
             </div>
 
@@ -51,12 +51,12 @@
                     <div class="flex items-center justify-between px-1">
                         <label for="remember_me" class="inline-flex items-center cursor-pointer group">
                             <input id="remember_me" type="checkbox" class="rounded-lg border-white/10 bg-white/5 text-blue-600 focus:ring-blue-500/50" name="remember">
-                            <span class="ms-2 text-xs font-bold text-gray-500 group-hover:text-gray-400 transition-colors uppercase tracking-widest">{{ __('Angemeldet bleiben') }}</span>
+                            <span class="ms-2 text-xs font-bold text-gray-500 group-hover:text-gray-400 transition-colors uppercase tracking-widest">{{ __('Remember me') }}</span>
                         </label>
 
                         @if (Route::has('password.request'))
                             <a class="text-xs font-bold text-gray-500 hover:text-white transition-colors uppercase tracking-widest underline underline-offset-4 decoration-white/10 hover:decoration-white/30" href="{{ route('password.request') }}">
-                                {{ __('Vergessen?') }}
+                                {{ __('Forgot?') }}
                             </a>
                         @endif
                     </div>

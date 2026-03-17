@@ -43,7 +43,7 @@
                     <i class="bi bi-collection"></i>
                 </div>
                 <div class="text-sm font-black text-white leading-none">{{ number_format($footerStats['total_films']) }}</div>
-                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Filme</div>
+                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">{{ __('Movie') == 'Movie' ? 'Movies' : 'Filme' }}</div>
             </div>
 
             <div class="glass py-4 px-6 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-white/[0.03] transition-all group">
@@ -51,7 +51,7 @@
                     <i class="bi bi-people"></i>
                 </div>
                 <div class="text-sm font-black text-white leading-none">{{ number_format($footerStats['total_actors']) }}</div>
-                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Darsteller</div>
+                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">{{ __('Actors') }}</div>
             </div>
 
             <div class="glass py-4 px-6 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-white/[0.03] transition-all group">
@@ -68,12 +68,12 @@
                 </div>
                 <div class="flex flex-col items-center">
                     <div class="text-sm font-black text-white leading-none">{{ number_format($footerStats['daily_visits']) }}</div>
-                    <div class="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">Heute</div>
+                    <div class="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">{{ __('Today') }}</div>
                 </div>
                 <div class="w-full h-px bg-white/5 my-1"></div>
                 <div class="flex items-center gap-2">
                     <div class="text-[10px] font-bold text-gray-500 leading-none">{{ number_format($footerStats['total_visits']) }}</div>
-                    <div class="text-[8px] font-bold text-gray-700 uppercase tracking-tighter">Gesamt</div>
+                    <div class="text-[8px] font-bold text-gray-700 uppercase tracking-tighter">{{ __('Total') }}</div>
                 </div>
             </div>
         </div>
@@ -91,8 +91,8 @@
             </div>
 
             <p class="text-[10px] font-bold text-gray-600 uppercase tracking-widest leading-relaxed">
-                &copy; {{ date('Y') }} René Neuhaus.<span class="{{ $compact ? 'hidden md:inline' : '' }}"> Alle Rechte vorbehalten.</span><br class="{{ $compact ? 'hidden' : '' }}">
-                <span class="{{ $compact ? 'hidden md:inline' : '' }}">Handgefertigt mit <i class="bi bi-heart-fill text-rose-500 mx-1"></i> und Laravel.</span>
+                &copy; {{ date('Y') }} René Neuhaus.<span class="{{ $compact ? 'hidden md:inline' : '' }}"> {{ __('All rights reserved.') }}</span><br class="{{ $compact ? 'hidden' : '' }}">
+                <span class="{{ $compact ? 'hidden md:inline' : '' }}">{{ __('Hand-crafted with') }} <i class="bi bi-heart-fill text-rose-500 mx-1"></i> {{ __('and') }} Laravel.</span>
             </p>
 
             <div class="max-w-md flex {{ $compact ? 'flex-row' : 'flex-col' }} items-center {{ $compact ? 'gap-4' : 'gap-2' }}">
