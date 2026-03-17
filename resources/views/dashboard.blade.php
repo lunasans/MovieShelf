@@ -1,210 +1,216 @@
 <x-app-layout>
-    <div class="layout transition-all duration-500 ease-in-out" 
-         :class="{ 'layout-stats-active': isStatsView }"
-         x-data="{ 
-            selectedMovie: null, 
-            isStatsView: false,
-            loading: false,
-            error: null,
-            fetchDetails(id, backdropUrl = null) {
-                this.isStatsView = false;
-                this.loading = true;
-                this.error = null;
-                
-                if (backdropUrl) {
-                    window.dispatchEvent(new CustomEvent('change-background', { detail: backdropUrl }));
-                }
-
-                fetch(`/movies/${id}/details`)
-                    .then(res => res.text())
-                    .then(html => {
-                        this.selectedMovie = html;
-                        this.loading = false;
-                    })
-                    .catch(err => {
-                        this.error = "{{ __('Error loading details.') }}";
-                        this.loading = false;
-                    });
-            },
-            fetchActor(id) {
-                this.isStatsView = false;
-                this.loading = true;
-                this.error = null;
-                fetch(`/actors/${id}/details`)
-                    .then(res => res.text())
-                    .then(html => {
-                        this.selectedMovie = html; // Reusing the same container for simplicity
-                        this.loading = false;
-                    })
-                    .catch(err => {
-                        this.error = "{{ __('Error loading profile.') }}";
-                        this.loading = false;
-                    });
-            },
-            fetchStats() {
-                this.isStatsView = true;
-                this.loading = true;
-                this.error = null;
-                window.dispatchEvent(new CustomEvent('change-background', { detail: '' }));
-                fetch('{{ route('statistics') }}', {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(res => res.text())
-                    .then(html => {
-                        this.selectedMovie = html;
-                        this.loading = false;
-                        this.$nextTick(() => this.initCharts());
-                    })
-                    .catch(err => {
-                        this.error = "{{ __('Error loading statistics.') }}";
-                        this.loading = false;
-                    });
-            },
-            fetchImpressum() {
-                this.isStatsView = true; // Use wide layout like statistics
-                this.loading = true;
-                this.error = null;
-                window.dispatchEvent(new CustomEvent('change-background', { detail: '' }));
-                fetch('{{ route('impressum') }}', {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(res => res.text())
-                    .then(html => {
-                        this.selectedMovie = html;
-                        this.loading = false;
-                    })
-                    .catch(err => {
-                        this.error = "{{ __('Error loading imprint.') }}";
-                        this.loading = false;
-                    });
-            },
-            async fetchRandom() {
-                this.loading = true;
-                this.error = null;
-                
-                const type = new URLSearchParams(window.location.search).get('type') || '';
-                const q = new URLSearchParams(window.location.search).get('q') || '';
-                
-                try {
-                    const response = await fetch(`/movies/random?type=${encodeURIComponent(type)}&q=${encodeURIComponent(q)}`, {
-                        headers: { 'Accept': 'application/json' }
-                    });
-                    const data = await response.json();
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('dashboard', () => ({
+                selectedMovie: null, 
+                isStatsView: false,
+                loading: false,
+                error: null,
+                fetchDetails(id, backdropUrl = null) {
+                    this.isStatsView = false;
+                    this.loading = true;
+                    this.error = null;
                     
-                    if (data.id) {
-                        this.fetchDetails(data.id, data.backdrop_url);
-                    } else {
-                        this.error = "{{ __('No movies found.') }}";
+                    if (backdropUrl) {
+                        window.dispatchEvent(new CustomEvent('change-background', { detail: backdropUrl }));
                     }
-                } catch (e) {
-                    console.error('Random fetch failed', e);
-                    this.error = "{{ __('Error loading.') }}";
-                } finally {
-                    this.loading = false;
-                }
-            },
-            viewMode: localStorage.getItem('movieViewMode') || '{{ $defaultViewMode }}',
-            toggleView(mode) {
-                this.viewMode = mode;
-                localStorage.setItem('movieViewMode', mode);
-            },
-            initCharts() {
-                const chartOptions = {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10, weight: 'bold' } } },
-                        x: { grid: { display: false }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10, weight: 'bold' } } }
+
+                    fetch(`/movies/${id}/details`)
+                        .then(res => res.text())
+                        .then(html => {
+                            this.selectedMovie = html;
+                            this.loading = false;
+                        })
+                        .catch(err => {
+                            this.error = "{{ __('Error loading details.') }}";
+                            this.loading = false;
+                        });
+                },
+                fetchActor(id) {
+                    this.isStatsView = false;
+                    this.loading = true;
+                    this.error = null;
+                    fetch(`/actors/${id}/details`)
+                        .then(res => res.text())
+                        .then(html => {
+                            this.selectedMovie = html; // Reusing the same container for simplicity
+                            this.loading = false;
+                        })
+                        .catch(err => {
+                            this.error = "{{ __('Error loading profile.') }}";
+                            this.loading = false;
+                        });
+                },
+                fetchStats() {
+                    this.isStatsView = true;
+                    this.loading = true;
+                    this.error = null;
+                    window.dispatchEvent(new CustomEvent('change-background', { detail: '' }));
+                    fetch('{{ route('statistics') }}', {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(res => res.text())
+                        .then(html => {
+                            this.selectedMovie = html;
+                            this.loading = false;
+                            this.$nextTick(() => this.initCharts());
+                        })
+                        .catch(err => {
+                            this.error = "{{ __('Error loading statistics.') }}";
+                            this.loading = false;
+                        });
+                },
+                fetchImpressum() {
+                    this.isStatsView = true; // Use wide layout like statistics
+                    this.loading = true;
+                    this.error = null;
+                    window.dispatchEvent(new CustomEvent('change-background', { detail: '' }));
+                    fetch('{{ route('impressum') }}', {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(res => res.text())
+                        .then(html => {
+                            this.selectedMovie = html;
+                            this.loading = false;
+                        })
+                        .catch(err => {
+                            this.error = "{{ __('Error loading imprint.') }}";
+                            this.loading = false;
+                        });
+                },
+                async fetchRandom() {
+                    this.loading = true;
+                    this.error = null;
+                    
+                    const type = new URLSearchParams(window.location.search).get('type') || '';
+                    const q = new URLSearchParams(window.location.search).get('q') || '';
+                    
+                    try {
+                        const response = await fetch(`/movies/random?type=${encodeURIComponent(type)}&q=${encodeURIComponent(q)}`, {
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        const data = await response.json();
+                        
+                        if (data.id) {
+                            this.fetchDetails(data.id, data.backdrop_url);
+                        } else {
+                            this.error = "{{ __('No movies found.') }}";
+                        }
+                    } catch (e) {
+                        console.error('Random fetch failed', e);
+                        this.error = "{{ __('Error loading.') }}";
+                    } finally {
+                        this.loading = false;
                     }
-                };
-
-                document.querySelectorAll('canvas[data-chart-type]').forEach(canvas => {
-                    const type = canvas.getAttribute('data-chart-type');
-                    const labels = JSON.parse(canvas.getAttribute('data-labels'));
-                    const values = JSON.parse(canvas.getAttribute('data-values'));
-
-                    let config = {
-                        type: type,
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                data: values,
-                                backgroundColor: type === 'line' ? 'rgba(96, 165, 250, 0.1)' : ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#a855f7'],
-                                borderColor: type === 'line' ? '#60a5fa' : 'transparent',
-                                borderWidth: type === 'line' ? 3 : 0,
-                                fill: type === 'line',
-                                tension: type === 'line' ? 0.4 : 0,
-                                borderRadius: type === 'bar' ? 8 : 0,
-                            }]
-                        },
-                        options: (type === 'doughnut' || type === 'polarArea') 
-                            ? { ...chartOptions, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#fff' } } } }
-                            : chartOptions
+                },
+                viewMode: localStorage.getItem('movieViewMode') || '{{ $defaultViewMode }}',
+                toggleView(mode) {
+                    this.viewMode = mode;
+                    localStorage.setItem('movieViewMode', mode);
+                },
+                initCharts() {
+                    const chartOptions = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10, weight: 'bold' } } },
+                            x: { grid: { display: false }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10, weight: 'bold' } } }
+                        }
                     };
 
-                    new Chart(canvas, config);
-                });
-            },
-            nextMoviesPageUrl: '{{ $movies->nextPageUrl() }}',
-            isMoviesLoading: false,
-            async loadMoreMovies() {
-                if (this.isMoviesLoading || !this.nextMoviesPageUrl) return;
-                this.isMoviesLoading = true;
-                
-                try {
-                    const response = await fetch(this.nextMoviesPageUrl, {
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    document.querySelectorAll('canvas[data-chart-type]').forEach(canvas => {
+                        const type = canvas.getAttribute('data-chart-type');
+                        const labels = JSON.parse(canvas.getAttribute('data-labels'));
+                        const values = JSON.parse(canvas.getAttribute('data-values'));
+
+                        let config = {
+                            type: type,
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    data: values,
+                                    backgroundColor: type === 'line' ? 'rgba(96, 165, 250, 0.1)' : ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#a855f7'],
+                                    borderColor: type === 'line' ? '#60a5fa' : 'transparent',
+                                    borderWidth: type === 'line' ? 3 : 0,
+                                    fill: type === 'line',
+                                    tension: type === 'line' ? 0.4 : 0,
+                                    borderRadius: type === 'bar' ? 8 : 0,
+                                }]
+                            },
+                            options: (type === 'doughnut' || type === 'polarArea') 
+                                ? { ...chartOptions, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#fff' } } } }
+                                : chartOptions
+                        };
+
+                        new Chart(canvas, config);
                     });
-                    const html = await response.text();
+                },
+                nextMoviesPageUrl: '{{ $movies->nextPageUrl() }}',
+                isMoviesLoading: false,
+                async loadMoreMovies() {
+                    if (this.isMoviesLoading || !this.nextMoviesPageUrl) return;
+                    this.isMoviesLoading = true;
                     
-                    if (html.trim() === '') {
-                        this.nextMoviesPageUrl = null;
-                        return;
-                    }
-
-                    // Create a temporary element to parse the HTML
-                    const temp = document.createElement('div');
-                    temp.innerHTML = html;
-                    
-                    // Append items to list
-                    const grid = this.$refs.movieGrid;
-                    while (temp.firstChild) {
-                        grid.appendChild(temp.firstChild);
-                    }
-                    
-                    // Update nextMoviesPageUrl safely
                     try {
-                        const url = new URL(this.nextMoviesPageUrl);
-                        const page = parseInt(url.searchParams.get('page')) + 1;
-                        url.searchParams.set('page', page);
-                        this.nextMoviesPageUrl = url.toString();
-                    } catch (urlErr) {
-                        this.nextMoviesPageUrl = null;
-                    }
-                } catch (e) {
-                    console.error('Failed to load more movies', e);
-                } finally {
-                    this.isMoviesLoading = false;
-                }
-            }
-         }"
-         x-init="() => {
-             const urlParams = new URLSearchParams(window.location.search);
-             const movieId = urlParams.get('movie');
-             const actorId = urlParams.get('actor');
-             const showStats = urlParams.get('stats');
-             const showImpressum = urlParams.get('impressum');
+                        const response = await fetch(this.nextMoviesPageUrl, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const html = await response.text();
+                        
+                        if (html.trim() === '') {
+                            this.nextMoviesPageUrl = null;
+                            return;
+                        }
 
-             if (movieId) fetchDetails(movieId);
-             else if (actorId) fetchActor(actorId);
-             else if (showStats) fetchStats();
-             else if (showImpressum) fetchImpressum();
-          }"
+                        // Create a temporary element to parse the HTML
+                        const temp = document.createElement('div');
+                        temp.innerHTML = html;
+                        
+                        // Append items to list
+                        const grid = this.$refs.movieGrid;
+                        while (temp.firstChild) {
+                            grid.appendChild(temp.firstChild);
+                        }
+                        
+                        // Update nextMoviesPageUrl safely
+                        try {
+                            const url = new URL(this.nextMoviesPageUrl);
+                            const page = parseInt(url.searchParams.get('page')) + 1;
+                            url.searchParams.set('page', page);
+                            this.nextMoviesPageUrl = url.toString();
+                        } catch (urlErr) {
+                            this.nextMoviesPageUrl = null;
+                        }
+                    } catch (e) {
+                        console.error('Failed to load more movies', e);
+                    } finally {
+                        this.isMoviesLoading = false;
+                    }
+                },
+                init() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const movieId = urlParams.get('movie');
+                    const actorId = urlParams.get('actor');
+                    const showStats = urlParams.get('stats');
+                    const showImpressum = urlParams.get('impressum');
+
+                    if (movieId) this.fetchDetails(movieId);
+                    else if (actorId) this.fetchActor(actorId);
+                    else if (showStats) this.fetchStats();
+                    else if (showImpressum) this.fetchImpressum();
+                }
+            }));
+        });
+    </script>
+
+    <div class="layout transition-all duration-500 ease-in-out" 
+         :class="{ 'layout-stats-active': isStatsView }"
+         x-data="dashboard"
          @stats-open.window="fetchStats()"
          @impressum-open.window="fetchImpressum()"
     >
