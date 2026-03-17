@@ -1,7 +1,7 @@
 <div class="group cursor-pointer flex items-center gap-6 p-4 rounded-3xl glass border border-white/5 hover:border-blue-500/30 hover:bg-white/5 transition-all duration-300" 
      x-data="{ isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }} }"
      @movie-watched-updated.window="if($event.detail.movieId === {{ $movie->id }}) isWatched = $event.detail.watched"
-     @click="fetchDetails({{ $movie->id }})">
+     @click="fetchDetails({{ $movie->id }}, '{{ $movie->backdrop_url }}')">
     
     <!-- Thumbnail -->
     <div class="relative w-20 aspect-[2/3] rounded-xl overflow-hidden border border-white/10 shrink-0">

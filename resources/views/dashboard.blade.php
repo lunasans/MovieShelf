@@ -6,10 +6,15 @@
             isStatsView: false,
             loading: false,
             error: null,
-            fetchDetails(id) {
+            fetchDetails(id, backdropUrl = null) {
                 this.isStatsView = false;
                 this.loading = true;
                 this.error = null;
+                
+                if (backdropUrl) {
+                    window.dispatchEvent(new CustomEvent('change-background', { detail: backdropUrl }));
+                }
+
                 fetch(`/movies/${id}/details`)
                     .then(res => res.text())
                     .then(html => {
@@ -40,6 +45,7 @@
                 this.isStatsView = true;
                 this.loading = true;
                 this.error = null;
+                window.dispatchEvent(new CustomEvent('change-background', { detail: '' }));
                 fetch('{{ route('statistics') }}', {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'
@@ -60,6 +66,7 @@
                 this.isStatsView = true; // Use wide layout like statistics
                 this.loading = true;
                 this.error = null;
+                window.dispatchEvent(new CustomEvent('change-background', { detail: '' }));
                 fetch('{{ route('impressum') }}', {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'

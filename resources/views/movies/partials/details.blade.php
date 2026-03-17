@@ -135,7 +135,7 @@
             </h3>
             <div class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar">
                 @foreach($similarMovies as $similar)
-                    <div @click="fetchDetails({{ $similar->id }})" class="w-24 shrink-0 snap-start cursor-pointer group/similar">
+                    <div @click="fetchDetails({{ $similar->id }}, '{{ $similar->backdrop_url }}')" class="w-24 shrink-0 snap-start cursor-pointer group/similar">
                         <div class="w-full aspect-[2/3] bg-gray-900 rounded-xl overflow-hidden glass border border-white/5 group-hover/similar:border-blue-500/30 transition-all shadow-lg mb-2 relative">
                             @if($similar->cover_url)
                                 <img src="{{ $similar->cover_url }}" alt="{{ $similar->title }}" class="w-full h-full object-cover group-hover/similar:scale-110 transition-transform duration-500">

@@ -14,7 +14,7 @@
 
     <div class="grid grid-cols-5 gap-2">
         @forelse($latestMovies as $lat)
-            <div class="group cursor-pointer" @click="fetchDetails({{ $lat->id }})">
+            <div class="group cursor-pointer" @click="fetchDetails({{ $lat->id }}, '{{ $lat->backdrop_url }}')">
                 <div class="relative aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 shadow-xl transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-blue-500/30 group-hover:border-blue-500/50">
                     <!-- Movie Cover Placeholder -->
                     <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">

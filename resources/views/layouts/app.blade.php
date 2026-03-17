@@ -24,8 +24,45 @@
             [x-cloak] { display: none !important; }
         </style>
     </head>
-    <body class="font-sans antialiased text-white min-h-screen" style="background: var(--gradient-bg); background-attachment: fixed;">
-        <div class="px-4 pb-12 sm:px-6 lg:px-8">
+    <body class="font-sans antialiased text-white min-h-screen relative" 
+          style="background: #0c0c0e;"
+          x-data="{ 
+            bg1: '', 
+            bg2: '', 
+            activeBg: 1,
+            init() {
+                window.addEventListener('change-background', (e) => {
+                    const url = e.detail;
+                    if (this.activeBg === 1) {
+                        this.bg2 = url;
+                        this.activeBg = 2;
+                    } else {
+                        this.bg1 = url;
+                        this.activeBg = 1;
+                    }
+                });
+            }
+          }">
+        
+        <!-- Dynamic Background Layers -->
+        <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+            <!-- Layer 1 -->
+            <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+                 :class="activeBg === 1 ? 'opacity-40' : 'opacity-0'"
+                 :style="'background-image: url(' + bg1 + '); background-size: cover; background-position: center;'">
+            </div>
+            <!-- Layer 2 -->
+            <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+                 :class="activeBg === 2 ? 'opacity-40' : 'opacity-0'"
+                 :style="'background-image: url(' + bg2 + '); background-size: cover; background-position: center;'">
+            </div>
+            <!-- Glassmorphism Overlay -->
+            <div class="absolute inset-0 bg-gray-950/40 backdrop-blur-[100px]"></div>
+            <!-- Dark Vignette -->
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-[#0c0c0e]/50"></div>
+        </div>
+
+        <div class="px-4 pb-12 sm:px-6 lg:px-8 relative z-10">
             @include('layouts.navigation')
 
             <!-- Page Content -->
