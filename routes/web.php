@@ -9,6 +9,9 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+Route::get('/dashboard', [MovieController::class, 'index'])
+    ->name('dashboard');
+
 Route::get('/movies/random', [MovieController::class, 'random'])
     ->name('movies.random');
 
