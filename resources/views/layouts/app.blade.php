@@ -25,7 +25,7 @@
         </style>
     </head>
     <body class="font-sans antialiased text-white min-h-screen relative" 
-          style="background: #0c0c0e;"
+          style="background: var(--gradient-bg); background-attachment: fixed;"
           x-data="{ 
             bg1: '', 
             bg2: '', 
@@ -45,7 +45,7 @@
           }">
         
         <!-- Dynamic Background Layers -->
-        <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none" x-show="bg1 || bg2" x-transition.opacity.duration.1000ms>
             <!-- Layer 1 -->
             <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out"
                  :class="activeBg === 1 ? 'opacity-40' : 'opacity-0'"
