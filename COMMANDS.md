@@ -36,6 +36,16 @@ Sucht nach doppelten Schauspielern (gleicher Vor- & Nachname) und führt diese z
 php artisan app:merge-duplicate-actors
 ```
 
+### Film-Duplikate finden & bereinigen
+Sucht nach Filmen mit gleichem Titel und gleichem Sammlungstyp.
+```bash
+# Nur anzeigen
+php artisan app:find-duplicate-movies
+
+# Automatisch zusammenführen (behält den Datensatz mit den meisten Infos)
+php artisan app:find-duplicate-movies --merge
+```
+
 ### Benutzerverwaltung
 Erstellt einen neuen Admin-Benutzer oder aktualisiert Passwörter.
 ```bash
