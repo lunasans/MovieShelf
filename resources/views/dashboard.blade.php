@@ -82,6 +82,31 @@
                         this.loading = false;
                     });
             },
+            async fetchRandom() {
+                this.loading = true;
+                this.error = null;
+                
+                const type = new URLSearchParams(window.location.search).get('type') || '';
+                const q = new URLSearchParams(window.location.search).get('q') || '';
+                
+                try {
+                    const response = await fetch(`/movies/random?type=${encodeURIComponent(type)}&q=${encodeURIComponent(q)}`, {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    const data = await response.json();
+                    
+                    if (data.id) {
+                        this.fetchDetails(data.id, data.backdrop_url);
+                    } else {
+                        this.error = 'Keine Filme gefunden.';
+                    }
+                } catch (e) {
+                    console.error('Random fetch failed', e);
+                    this.error = 'Fehler beim Laden.';
+                } finally {
+                    this.loading = false;
+                }
+            },
             viewMode: localStorage.getItem('movieViewMode') || '{{ $defaultViewMode }}',
             toggleView(mode) {
                 this.viewMode = mode;
@@ -199,22 +224,33 @@
                         @endforeach
                     </div>
 
-                <!-- View Mode Toggle -->
-                <div class="flex gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl shrink-0">
+                <!-- Gambling Button / View Mode Toggle -->
+                <div class="flex gap-4 items-center shrink-0">
                     <button 
-                        @click="toggleView('grid')"
-                        class="p-2 rounded-xl transition-all"
-                        :class="viewMode === 'grid' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'"
+                        @click="fetchRandom()"
+                        class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl shadow-lg shadow-purple-900/40 transition-all font-bold text-xs group active:scale-95"
+                        title="{{ __('Zufälliger Film') }}"
                     >
-                        <i class="bi bi-grid-3x3-gap"></i>
+                        <i class="bi bi-dice-5 text-lg group-hover:rotate-45 transition-transform duration-500"></i>
+                        <span class="hidden sm:inline uppercase tracking-widest">{{ __('Lucky Dip') }}</span>
                     </button>
-                    <button 
-                        @click="toggleView('list')"
-                        class="p-2 rounded-xl transition-all"
-                        :class="viewMode === 'list' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'"
-                    >
-                        <i class="bi bi-list-ul"></i>
-                    </button>
+
+                    <div class="flex gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl">
+                        <button 
+                            @click="toggleView('grid')"
+                            class="p-2 rounded-xl transition-all"
+                            :class="viewMode === 'grid' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'"
+                        >
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </button>
+                        <button 
+                            @click="toggleView('list')"
+                            class="p-2 rounded-xl transition-all"
+                            :class="viewMode === 'list' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'"
+                        >
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 

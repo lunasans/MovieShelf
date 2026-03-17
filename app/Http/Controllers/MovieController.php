@@ -69,4 +69,28 @@ class MovieController extends Controller
         
         return view('movies.partials.details', compact('movie', 'similarMovies'));
     }
+
+    public function random(Request $request)
+    {
+        $query = Movie::query()->whereNull('boxset_parent');
+
+        if ($request->filled('q')) {
+            $query->where('title', 'like', '%' . $request->q . '%');
+        }
+
+        if ($request->filled('type')) {
+            $query->where('collection_type', $request->type);
+        }
+
+        $movie = $query->inRandomOrder()->first();
+
+        if (!$movie) {
+            return response()->json(['error' => 'No movies found'], 404);
+        }
+
+        return response()->json([
+            'id' => $movie->id,
+            'backdrop_url' => $movie->backdrop_url
+        ]);
+    }
 }
