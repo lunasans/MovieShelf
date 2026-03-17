@@ -73,13 +73,25 @@ tail -f storage/logs/laravel.log
 
 ---
 
-## 🔄 Automatisches System-Update
+## 🔄 System-Update
+
+### Automatisches Update (Empfohlen)
 MovieShelf verfügt über eine integrierte Update-Funktion im Admin-Panel (**Administration -> System aktualisieren**).
 
-**Dieser Prozess automatisiert folgende Schritte:**
-1. `git stash` (Sichert lokale Code-Änderungen)
-2. `git pull` (Lädt den neuesten Stand von GitHub)
-3. `git stash pop` (Spielt lokale Änderungen zurück)
-4. `php artisan migrate --force` (Stellt DB-Struktur sicher)
-5. `npm install` (Aktualisiert Bibliotheken)
-6. `npm run build` (Baut das Frontend neu)
+### Manuelles Update (Terminal)
+Falls das automatische Update nicht möglich ist, können folgende Befehle nacheinander ausgeführt werden:
+
+```bash
+# 1. Neuesten Code abrufen
+git pull
+
+# 2. Datenbank-Migrationen ausführen
+php artisan migrate --force
+
+# 3. Cache leeren (wichtig für Versionsanzeige & neue Routen)
+php artisan optimize:clear
+
+# 4. Abhängigkeiten aktualisieren & Frontend bauen
+npm install
+npm run build
+```
