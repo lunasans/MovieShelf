@@ -11,6 +11,10 @@ class MigrationController extends Controller
 {
     public function index()
     {
+        if (\App\Models\Setting::get('migration_enabled', '1') == '0') {
+            abort(404);
+        }
+
         $connectionStatus = false;
         $error = null;
 
@@ -26,6 +30,10 @@ class MigrationController extends Controller
 
     public function run(Request $request, MigrationService $migrationService)
     {
+        if (\App\Models\Setting::get('migration_enabled', '1') == '0') {
+            abort(404);
+        }
+
         $logs = [];
         $modules = $request->get('modules', []);
         $movieFields = $request->get('movie_fields', []);

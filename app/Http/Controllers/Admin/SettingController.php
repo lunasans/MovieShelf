@@ -49,7 +49,7 @@ class SettingController extends Controller
         ]);
 
         // Handle checkboxes
-        $checkboxes = ['impressum_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating'];
+        $checkboxes = ['impressum_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating', 'migration_enabled'];
         foreach ($checkboxes as $checkbox) {
             $validated[$checkbox] = $request->has($checkbox) ? '1' : '0';
         }
@@ -62,6 +62,8 @@ class SettingController extends Controller
                 $group = 'ui';
             } elseif (str_starts_with($key, 'impressum_')) {
                 $group = 'impressum';
+            } elseif ($key === 'migration_enabled') {
+                $group = 'general';
             } elseif (str_starts_with($key, 'signature_')) {
                 $group = 'signature';
             } elseif (str_starts_with($key, 'mail_')) {

@@ -96,10 +96,12 @@
                     <span class="font-bold text-sm">System Update</span>
                 </a>
 
+                @if(\App\Models\Setting::get('migration_enabled', '1') == '1')
                 <a href="{{ route('admin.migration.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.migration.index') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
                     <i class="bi bi-database-up"></i>
                     <span class="font-bold text-sm">Daten Migration</span>
                 </a>
+                @endif
 
                 <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.settings.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
                     <i class="bi bi-gear"></i>

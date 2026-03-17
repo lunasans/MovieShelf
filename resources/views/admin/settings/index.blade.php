@@ -97,6 +97,15 @@
                                 <option value="summer" {{ (old('theme', $settings['theme'] ?? 'default') == 'summer') ? 'selected' : '' }} class="bg-gray-900">Summer Breeze</option>
                             </select>
                         </div>
+
+                        <div class="md:col-span-2 border-t border-white/5 pt-8 mt-4">
+                            <div class="flex items-center gap-3 bg-white/5 p-5 rounded-2xl border border-white/10">
+                                <input type="checkbox" name="migration_enabled" id="migration_enabled" value="1" {{ (old('migration_enabled', $settings['migration_enabled'] ?? '1') == '1') ? 'checked' : '' }}
+                                       class="w-5 h-5 rounded border-white/10 bg-white/5 text-blue-600 focus:ring-blue-500/50 transition-all">
+                                <label for="migration_enabled" class="text-sm font-bold text-gray-300 uppercase tracking-widest cursor-pointer">Daten-Migration (v1) aktivieren</label>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-2 px-2 italic">Wenn deaktiviert, wird der Menüpunkt „Daten Migration“ in der Sidebar ausgeblendet.</p>
+                        </div>
                     </div>
                 </div>
             </div>
