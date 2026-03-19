@@ -263,11 +263,19 @@
                                     <div class="p-4 bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
                                         <img src="{{ route('signature') }}?type=1&t={{ time() }}" alt="Banner Type 1" class="max-w-full h-auto rounded-lg shadow-2xl">
                                     </div>
-                                    <div class="mt-3 px-1">
-                                        <label class="text-[9px] text-white/30 uppercase tracking-widest font-black mb-1 block">BBCode für Foren</label>
-                                        <input type="text" readonly value="[url={{ url('/') }}][img]{{ route('signature') }}?type=1[/img][/url]" 
-                                               class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-purple-300 font-mono focus:outline-none focus:border-purple-500/30 transition-all cursor-pointer"
-                                               onclick="this.select(); document.execCommand('copy');">
+                                    <div class="mt-3 px-1 space-y-3">
+                                        <div>
+                                            <label class="text-[9px] text-white/30 uppercase tracking-widest font-black mb-1 block">BBCode für Foren</label>
+                                            <input type="text" readonly value="[url={{ url('/') }}][img]{{ route('signature') }}?type=1[/img][/url]" 
+                                                   class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-purple-300 font-mono focus:outline-none focus:border-purple-500/30 transition-all cursor-pointer"
+                                                   onclick="this.select(); document.execCommand('copy');">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-white/30 uppercase tracking-widest font-black mb-1 block">Markdown</label>
+                                            <input type="text" readonly value="[![Signature]({{ route('signature') }}?type=1)]({{ url('/') }})" 
+                                                   class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-blue-300 font-mono focus:outline-none focus:border-blue-500/30 transition-all cursor-pointer"
+                                                   onclick="this.select(); document.execCommand('copy');">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="space-y-2">
@@ -275,11 +283,19 @@
                                     <div class="p-4 bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
                                         <img src="{{ route('signature') }}?type=2&t={{ time() }}" alt="Banner Type 2" class="max-w-full h-auto rounded-lg shadow-2xl">
                                     </div>
-                                    <div class="mt-3 px-1">
-                                        <label class="text-[9px] text-white/30 uppercase tracking-widest font-black mb-1 block">BBCode für Foren</label>
-                                        <input type="text" readonly value="[url={{ url('/') }}][img]{{ route('signature') }}?type=2[/img][/url]" 
-                                               class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-purple-300 font-mono focus:outline-none focus:border-purple-500/30 transition-all cursor-pointer"
-                                               onclick="this.select(); document.execCommand('copy');">
+                                    <div class="mt-3 px-1 space-y-3">
+                                        <div>
+                                            <label class="text-[9px] text-white/30 uppercase tracking-widest font-black mb-1 block">BBCode für Foren</label>
+                                            <input type="text" readonly value="[url={{ url('/') }}][img]{{ route('signature') }}?type=2[/img][/url]" 
+                                                   class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-purple-300 font-mono focus:outline-none focus:border-purple-500/30 transition-all cursor-pointer"
+                                                   onclick="this.select(); document.execCommand('copy');">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-white/30 uppercase tracking-widest font-black mb-1 block">Markdown</label>
+                                            <input type="text" readonly value="[![Signature]({{ route('signature') }}?type=2)]({{ url('/') }})" 
+                                                   class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-blue-300 font-mono focus:outline-none focus:border-blue-500/30 transition-all cursor-pointer"
+                                                   onclick="this.select(); document.execCommand('copy');">
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="space-y-2">
@@ -287,11 +303,19 @@
                                     <div class="p-4 bg-white/5 rounded-2xl border border-white/10 overflow-hidden">
                                         <img src="{{ route('signature') }}?type=3&t={{ time() }}" alt="Banner Type 3" class="max-w-full h-auto rounded-lg shadow-2xl">
                                     </div>
-                                    <div class="mt-3 px-1">
-                                        <label class="text-[9px] text-white/30 uppercase tracking-widest font-black mb-1 block">BBCode für Foren</label>
-                                        <input type="text" readonly value="[url={{ url('/') }}][img]{{ route('signature') }}?type=3[/img][/url]" 
-                                               class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-purple-300 font-mono focus:outline-none focus:border-purple-500/30 transition-all cursor-pointer"
-                                               onclick="this.select(); document.execCommand('copy');">
+                                    <div class="mt-3 px-1 space-y-3">
+                                        <div>
+                                            <label class="text-[9px] text-white/30 uppercase tracking-widest font-black mb-1 block">BBCode für Foren</label>
+                                            <input type="text" readonly value="[url={{ url('/') }}][img]{{ route('signature') }}?type=3[/img][/url]" 
+                                                   class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-purple-300 font-mono focus:outline-none focus:border-purple-500/30 transition-all cursor-pointer"
+                                                   onclick="this.select(); document.execCommand('copy');">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-white/30 uppercase tracking-widest font-black mb-1 block">Markdown</label>
+                                            <input type="text" readonly value="[![Signature]({{ route('signature') }}?type=3)]({{ url('/') }})" 
+                                                   class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-blue-300 font-mono focus:outline-none focus:border-blue-500/30 transition-all cursor-pointer"
+                                                   onclick="this.select(); document.execCommand('copy');">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
