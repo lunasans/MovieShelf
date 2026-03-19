@@ -165,19 +165,24 @@ class SignatureController extends Controller
         $this->drawText($img, 10, $statsBoxX, $statsBoxY + 54, $text_dark, $fontPath, "Filme gesamt:", true, $statsBoxWidth);
         $this->drawText($img, 22, $statsBoxX, $statsBoxY + 95, $accent, $fontPath, (string)$totalFilms, true, $statsBoxWidth);
 
-        $coverWidth = 75;
-        $coverHeight = 110;
+        $coverWidth = 57;
+        $coverHeight = 83;
         $startX = $statsBoxX + $statsBoxWidth + 18;
-        $startY = 20;
+        $startY = 35;
         $gap = 6;
 
-        foreach ($films as $i => $film) {
-            $x = $startX + ($i * ($coverWidth + $gap));
-            if ($x + $coverWidth > 800 - 15) break;
+        $count = 0;
+        foreach ($films as $film) {
             $cover = $this->loadCover($film->cover_id, $coverWidth, $coverHeight);
             if ($cover) {
+                $x = $startX + ($count * ($coverWidth + $gap));
+                if ($x + $coverWidth > 800 - 15) {
+                    \imagedestroy($cover);
+                    break;
+                }
                 \imagecopy($img, $cover, (int)$x, $startY, 0, 0, $coverWidth, $coverHeight);
                 \imagedestroy($cover);
+                $count++;
             }
         }
     }
@@ -202,13 +207,18 @@ class SignatureController extends Controller
         $startY = 52;
         $gap = 8;
 
-        foreach ($films as $i => $film) {
-            $x = $startX + ($i * ($coverWidth + $gap));
-            if ($x + $coverWidth > 800 - 25) break;
+        $count = 0;
+        foreach ($films as $film) {
             $cover = $this->loadCover($film->cover_id, $coverWidth, $coverHeight);
             if ($cover) {
+                $x = $startX + ($count * ($coverWidth + $gap));
+                if ($x + $coverWidth > 800 - 25) {
+                    \imagedestroy($cover);
+                    break;
+                }
                 \imagecopy($img, $cover, (int)$x, $startY, 0, 0, $coverWidth, $coverHeight);
                 \imagedestroy($cover);
+                $count++;
             }
         }
     }
@@ -221,11 +231,15 @@ class SignatureController extends Controller
         $startY = 20;
         $gap = 10;
 
-        foreach ($films as $i => $film) {
-            $x = $startX + ($i * ($coverWidth + $gap));
-            if ($x + $coverWidth > 800 - 20) break;
+        $count = 0;
+        foreach ($films as $film) {
             $cover = $this->loadCover($film->cover_id, $coverWidth, $coverHeight);
             if ($cover) {
+                $x = $startX + ($count * ($coverWidth + $gap));
+                if ($x + $coverWidth > 800 - 20) {
+                    \imagedestroy($cover);
+                    break;
+                }
                 \imagecopy($img, $cover, (int)$x, $startY, 0, 0, $coverWidth, $coverHeight);
                 \imagedestroy($cover);
 
@@ -236,6 +250,7 @@ class SignatureController extends Controller
                 if ($showYear) {
                     $this->drawText($img, 7, $x + 18, $startY + $coverHeight + 26, $text_muted, $fontPath, (string)$film->year);
                 }
+                $count++;
             }
         }
     }
