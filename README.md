@@ -9,7 +9,9 @@ Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit e
 
 # Banner
 [![Signature](https://neuhaus.ovh/signature?type=1)](https://neuhaus.ovh)
+
 [![Signature](https://neuhaus.ovh/signature?type=2)](https://neuhaus.ovh)
+
 [![Signature](https://neuhaus.ovh/signature?type=3)](https://neuhaus.ovh)
 
 ## 🎬 Übersicht
