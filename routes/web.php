@@ -28,6 +28,9 @@ Route::get('/movies/{movie}', [MovieController::class, 'show'])
 Route::get('/movies/{movie}/details', [MovieController::class, 'details'])
     ->name('movies.details');
 
+Route::get('/movies/{movie}/boxset', [MovieController::class, 'boxset'])
+    ->name('movies.boxset');
+
 Route::get('/actors', [\App\Http\Controllers\ActorController::class, 'index'])->name('actors.index');
 Route::get('/actors/{actor}', [\App\Http\Controllers\ActorController::class, 'show'])->name('actors.show');
 Route::get('/actors/{actor}/details', [\App\Http\Controllers\ActorController::class, 'details'])->name('actors.details');

@@ -98,6 +98,16 @@
                             </select>
                         </div>
 
+                        <div>
+                            <label for="boxset_quick_view_style" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Boxset Quick-View Stil</label>
+                            <select name="boxset_quick_view_style" id="boxset_quick_view_style" required
+                                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all appearance-none">
+                                <option value="island" {{ (old('boxset_quick_view_style', $settings['boxset_quick_view_style'] ?? 'island') == 'island') ? 'selected' : '' }} class="bg-gray-900">Floating Island (Modern)</option>
+                                <option value="modal" {{ (old('boxset_quick_view_style', $settings['boxset_quick_view_style'] ?? 'island') == 'modal') ? 'selected' : '' }} class="bg-gray-900">Modal (Klassisch v1.5)</option>
+                            </select>
+                            <p class="text-[10px] text-gray-500 mt-2">Wähle, wie Boxsets in der Filmliste schnell angezeigt werden sollen.</p>
+                        </div>
+
                         <div class="md:col-span-2 border-t border-white/5 pt-8 mt-4">
                             <div class="flex items-center gap-3 bg-white/5 p-5 rounded-2xl border border-white/10">
                                 <input type="checkbox" name="migration_enabled" id="migration_enabled" value="1" {{ (old('migration_enabled', $settings['migration_enabled'] ?? '1') == '1') ? 'checked' : '' }}

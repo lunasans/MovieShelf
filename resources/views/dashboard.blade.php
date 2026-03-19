@@ -203,6 +203,32 @@
                     else if (actorId) this.fetchActor(actorId);
                     else if (showStats) this.fetchStats();
                     else if (showImpressum) this.fetchImpressum();
+                },
+                
+                // Boxset Modal State
+                boxsetOpen: false,
+                boxsetMovie: null,
+                boxsetChildren: [],
+                boxsetLoading: false,
+                async openBoxset(id, title) {
+                    this.boxsetOpen = true;
+                    this.boxsetMovie = { id, title };
+                    this.boxsetLoading = true;
+                    this.boxsetChildren = [];
+                    
+                    try {
+                        const response = await fetch(`/movies/${id}/boxset`);
+                        const data = await response.json();
+                        this.boxsetChildren = data.children;
+                    } catch (e) {
+                        console.error('Failed to load boxset children', e);
+                    } finally {
+                        this.boxsetLoading = false;
+                    }
+                },
+                selectBoxsetChild(child) {
+                    this.boxsetOpen = false;
+                    this.fetchDetails(child.id);
                 }
             }));
         });
@@ -213,6 +239,7 @@
          x-data="dashboard"
          @stats-open.window="fetchStats()"
          @impressum-open.window="fetchImpressum()"
+         @open-boxset.window="openBoxset($event.detail.id, $event.detail.title)"
     >
         <!-- Film-Liste Area (Left Column) -->
         <section class="film-list-area shadow-2xl">
@@ -344,6 +371,12 @@
             <!-- Dynamic Detail Content -->
             <div x-show="selectedMovie && !loading" x-html="selectedMovie" class="h-full"></div>
         </aside>
+
+        @if(\App\Models\Setting::get('boxset_quick_view_style', 'island') === 'modal')
+            @include('movies.partials.boxset-modal')
+        @else
+            @include('movies.partials.boxset-popover')
+        @endif
     </div>
 
     <!-- Custom CSS for no-scrollbar -->

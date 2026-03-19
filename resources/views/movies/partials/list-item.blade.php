@@ -36,6 +36,14 @@
                         <span class="w-1 h-1 bg-blue-500 rounded-full opacity-40"></span>
                         <span class="text-[10px] text-blue-400 font-black uppercase tracking-widest">{{ $movie->collection_type }}</span>
                     @endif
+                    @if($movie->boxset_children_count > 0)
+                        <span class="w-1 h-1 bg-indigo-500 rounded-full opacity-40"></span>
+                        <button @click.stop="$dispatch('open-boxset', { id: {{ $movie->id }}, title: '{{ addslashes($movie->title) }}' })" 
+                                class="text-[10px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300 transition-colors flex items-center gap-1">
+                            <i class="bi bi-collection-play-fill"></i>
+                            <span>{{ __('BoxSet (:count)', ['count' => $movie->boxset_children_count]) }}</span>
+                        </button>
+                    @endif
                 </div>
             </div>
 

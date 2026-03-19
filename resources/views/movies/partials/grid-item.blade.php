@@ -20,6 +20,17 @@
             </div>
         </div>
 
+        <!-- Boxset Badge (Top Left, below Watched) -->
+        @if($movie->boxset_children_count > 0)
+        <div class="absolute top-[3.75rem] left-3 z-20 group/boxset" 
+             @click.stop="$dispatch('open-boxset', { id: {{ $movie->id }}, title: '{{ addslashes($movie->title) }}' })">
+            <div class="bg-indigo-600/90 hover:bg-indigo-500 backdrop-blur-md px-2 py-1 rounded-lg border border-white/20 flex items-center gap-1 shadow-xl transition-all duration-300 transform hover:scale-110">
+                <i class="bi bi-collection-play-fill text-[11px] text-white"></i>
+                <span class="text-[11px] font-black text-white">{{ $movie->boxset_children_count }}</span>
+            </div>
+        </div>
+        @endif
+
         <!-- Rating & Collection Badge -->
         <div class="absolute top-3 right-3 z-20 flex flex-col gap-2 transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
             <div class="bg-blue-600 px-2 py-1 rounded-lg border border-white/20 flex items-center gap-1 shadow-xl">

@@ -26,6 +26,7 @@ class SettingController extends Controller
             'items_per_page' => 'required|integer|min:5|max:100',
             'latest_films_count' => 'required|integer|min:5|max:50',
             'default_view_mode' => 'required|string|in:grid,list',
+            'boxset_quick_view_style' => 'required|string|in:island,modal',
             'theme' => 'required|string|max:50',
             'tmdb_api_key' => 'nullable|string|max:255',
             'impressum_name' => 'nullable|string|max:255',

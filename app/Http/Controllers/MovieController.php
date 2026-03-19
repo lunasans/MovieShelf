@@ -23,7 +23,7 @@ class MovieController extends Controller
             $query->where('collection_type', $request->type);
         }
 
-        $movies = $query->orderBy('title')->paginate(20)->withQueryString();
+        $movies = $query->withCount('boxsetChildren')->orderBy('title')->paginate(20)->withQueryString();
         
         $collectionTypes = Movie::distinct()
             ->whereNotNull('collection_type')
@@ -32,6 +32,7 @@ class MovieController extends Controller
 
         $latestCount = (int)\App\Models\Setting::where('key', 'latest_films_count')->value('value') ?: 15;
         $latestMovies = Movie::whereNull('boxset_parent')
+            ->withCount('boxsetChildren')
             ->orderBy('created_at', 'desc')
             ->limit($latestCount)
             ->get();
@@ -91,6 +92,24 @@ class MovieController extends Controller
         return response()->json([
             'id' => $movie->id,
             'backdrop_url' => $movie->backdrop_url
+        ]);
+    }
+
+    public function boxset(Movie $movie)
+    {
+        $movie->load('boxsetChildren');
+
+        return response()->json([
+            'parent_title' => $movie->title,
+            'children' => $movie->boxsetChildren->map(function ($child) {
+                return [
+                    'id' => $child->id,
+                    'title' => $child->title,
+                    'year' => $child->year,
+                    'cover_url' => $child->cover_url,
+                    'details_url' => route('movies.show', $child->id),
+                ];
+            })
         ]);
     }
 }
