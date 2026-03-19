@@ -216,7 +216,7 @@
     >
         <!-- Film-Liste Area (Left Column) -->
         <section class="film-list-area shadow-2xl">
-                <div class="h-[46px] flex items-center justify-between mb-8 gap-4 flex-wrap">
+                <div class="flex items-center justify-between mb-8 gap-4 flex-wrap min-h-[46px]">
                     <div class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
                         <a href="{{ route('dashboard') }}" 
                             class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {{ !request('type') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
@@ -261,7 +261,7 @@
             </div>
 
             <!-- List Area Header -->
-            <div class="h-10 flex items-center justify-between mb-8 px-2">
+            <div class="flex items-center justify-between mb-8 px-2 gap-4 flex-wrap min-h-[40px]">
                 <h2 class="text-xl font-black text-white flex items-center gap-4">
                     <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                         <i class="bi bi-collection-play"></i>
