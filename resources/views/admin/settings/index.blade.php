@@ -222,7 +222,7 @@
                                     class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-purple-500/50 transition-all appearance-none">
                                 <option value="newest" {{ ($settings['signature_film_source'] ?? 'newest') == 'newest' ? 'selected' : '' }} class="bg-gray-900">Neueste (Hinzugefügt)</option>
                                 <option value="newest_release" {{ ($settings['signature_film_source'] ?? 'newest_release') == 'newest_release' ? 'selected' : '' }} class="bg-gray-900">Neueste (Erscheinungsjahr)</option>
-                                <option value="random" {{ ($settings['signature_film_source'] ?? 'random') == 'newest' ? 'selected' : '' }} class="bg-gray-900">Zufällig</option>
+                                <option value="random" {{ ($settings['signature_film_source'] ?? 'random') == 'random' ? 'selected' : '' }} class="bg-gray-900">Zufällig</option>
                             </select>
                         </div>
 
