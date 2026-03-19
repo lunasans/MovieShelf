@@ -72,7 +72,7 @@ class SignatureController extends Controller
         $showYear = Setting::get('signature_show_year', '1') === '1';
 
         // Filme laden
-        $query = Movie::query()->where('is_deleted', false);
+        $query = Movie::query()->where('is_deleted', false)->whereNull('boxset_parent');
 
         switch ($filmSource) {
             case 'newest_release':
