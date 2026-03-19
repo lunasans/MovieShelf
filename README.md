@@ -7,6 +7,11 @@
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
 
+# Banner
+[![Signature](https://neuhaus.ovh/signature?type=1)](https://neuhaus.ovh)
+[![Signature](https://neuhaus.ovh/signature?type=2)](https://neuhaus.ovh)
+[![Signature](https://neuhaus.ovh/signature?type=3)](https://neuhaus.ovh)
+
 ## 🎬 Übersicht
 
 MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und Präsentation Ihrer DVD/Blu-ray-Sammlung. Das System bietet eine intuitive Benutzeroberfläche mit Glass-Morphism-Design und umfangreiche Funktionen für Film-Enthusiasten.
