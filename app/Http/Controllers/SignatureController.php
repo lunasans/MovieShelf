@@ -88,7 +88,7 @@ class SignatureController extends Controller
         }
 
         $films = $query->limit($filmCount)->get();
-        $totalFilms = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')->count();
+        $totalFilms = Movie::where('is_deleted', false)->whereNull('boxset_parent')->count();
 
         // Font Pfad
         $fontPath = public_path('fonts/Roboto-Medium.ttf');
@@ -230,7 +230,7 @@ class SignatureController extends Controller
                 \imagedestroy($cover);
 
                 if ($showTitle) {
-                    $title = mb_substr($film->title, 0, 11);
+                    $title = mb_substr($film->title, 0, 16);
                     $this->drawText($img, 8, $x, $startY + $coverHeight + 14, $text_dark, $fontPath, $title);
                 }
                 if ($showYear) {
@@ -244,16 +244,32 @@ class SignatureController extends Controller
     {
         if (empty($coverId)) return null;
         
-        $path = storage_path("app/public/{$coverId}");
-        
-        if (!file_exists($path)) return null;
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $path = null;
+
+        // Versuche verschiedene Pfade (ähnlich wie im Movie Model)
+        if (str_contains($coverId, '.')) {
+            if ($disk->exists($coverId)) {
+                $path = $disk->path($coverId);
+            }
+        }
+
+        if (!$path) {
+            // Legacy local cover format (v1.5)
+            $legacyPath = 'covers/' . $coverId . 'f.jpg';
+            if ($disk->exists($legacyPath)) {
+                $path = $disk->path($legacyPath);
+            }
+        }
+
+        if (!$path || !file_exists($path)) return null;
 
         $info = \getimagesize($path);
         if (!$info) return null;
 
         switch ($info[2]) {
-            case \IMAGETYPE_JPEG: $src = \imagecreatefromjpeg($path); break;
-            case \IMAGETYPE_PNG: $src = \imagecreatefrompng($path); break;
+            case \IMAGETYPE_JPEG: $src = @\imagecreatefromjpeg($path); break;
+            case \IMAGETYPE_PNG: $src = @\imagecreatefrompng($path); break;
             default: return null;
         }
 
