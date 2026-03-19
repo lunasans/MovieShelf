@@ -73,5 +73,9 @@
             <x-footer />
         <x-theme-switcher />
         @stack('scripts')
+
+        @if(\App\Models\Setting::get('cookie_banner_enabled', '1') == '1')
+            @include('partials.cookie-banner')
+        @endif
     </body>
 </html>

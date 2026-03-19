@@ -195,6 +195,30 @@
                                    class="w-5 h-5 rounded border-white/10 bg-white/5 text-blue-600 focus:ring-blue-500/50 transition-all">
                             <label for="impressum_enabled" class="text-sm font-bold text-gray-300 uppercase tracking-widest cursor-pointer">Impressum öffentlich anzeigen</label>
                         </div>
+
+                        <div class="border-t border-white/5 pt-8 mt-4">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white text-lg shadow-lg shadow-cyan-500/20">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <h3 class="text-sm font-black text-white uppercase tracking-wider">Cookie-Banner</h3>
+                            </div>
+
+                            <div class="space-y-6">
+                                <div class="flex items-center gap-3 bg-white/5 p-5 rounded-2xl border border-white/10">
+                                    <input type="checkbox" name="cookie_banner_enabled" id="cookie_banner_enabled" value="1" {{ (old('cookie_banner_enabled', $settings['cookie_banner_enabled'] ?? '1') == '1') ? 'checked' : '' }}
+                                           class="w-5 h-5 rounded border-white/10 bg-white/5 text-cyan-500 focus:ring-cyan-500/50 transition-all">
+                                    <label for="cookie_banner_enabled" class="text-sm font-bold text-gray-300 uppercase tracking-widest cursor-pointer">Cookie-Banner aktivieren</label>
+                                </div>
+
+                                <div>
+                                    <label for="cookie_banner_text" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Banner Text</label>
+                                    <textarea name="cookie_banner_text" id="cookie_banner_text" rows="3" 
+                                              placeholder="Wir verwenden Cookies, um die Benutzererfahrung zu verbessern..."
+                                              class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-cyan-500/50 transition-all">{{ old('cookie_banner_text', $settings['cookie_banner_text'] ?? 'Diese Website verwendet Cookies, um die bestmögliche Erfahrung zu bieten.') }}</textarea>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

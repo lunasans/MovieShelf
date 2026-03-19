@@ -33,6 +33,8 @@ class SettingController extends Controller
             'impressum_email' => 'nullable|email|max:255',
             'impressum_content' => 'nullable|string',
             'impressum_enabled' => 'nullable|string',
+            'cookie_banner_enabled' => 'nullable|string',
+            'cookie_banner_text' => 'nullable|string',
             'signature_enabled' => 'nullable|string',
             'signature_film_count' => 'required|integer|min:1|max:20',
             'signature_film_source' => 'required|string|in:newest,newest_release,random',
@@ -51,7 +53,7 @@ class SettingController extends Controller
         ]);
 
         // Handle checkboxes
-        $checkboxes = ['impressum_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating', 'migration_enabled'];
+        $checkboxes = ['impressum_enabled', 'cookie_banner_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating', 'migration_enabled'];
         foreach ($checkboxes as $checkbox) {
             $validated[$checkbox] = $request->has($checkbox) ? '1' : '0';
         }
