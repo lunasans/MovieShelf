@@ -7,6 +7,7 @@ use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use App\Models\ActivityLog;
 
 class SettingController extends Controller
@@ -70,6 +71,21 @@ class SettingController extends Controller
                 $group = 'mail';
             }
             Setting::set($key, (string)$value, $group);
+        }
+
+        // Clear signature cache if any signature setting was changed
+        $hasSignatureChanges = false;
+        foreach (array_keys($validated) as $key) {
+            if (str_starts_with($key, 'signature_')) {
+                $hasSignatureChanges = true;
+                break;
+            }
+        }
+
+        if ($hasSignatureChanges) {
+            Cache::forget('signature_banner_type_1');
+            Cache::forget('signature_banner_type_2');
+            Cache::forget('signature_banner_type_3');
         }
 
         ActivityLog::create([
