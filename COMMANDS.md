@@ -105,3 +105,38 @@ php artisan optimize:clear
 npm install
 npm run build
 ```
+
+---
+
+## 🐳 Docker Deployment
+
+MovieShelf unterstützt Docker für einfaches Deployment und lokale Entwicklung.
+
+### Container starten
+Baut das Image und startet alle Dienste im Hintergrund.
+```bash
+docker-compose up -d --build
+```
+
+### Befehle im Container ausführen
+Verwenden Sie `docker-compose exec app`, um Artisan- oder Composer-Befehle auszuführen.
+
+**Beispiel: Migrationen ausführen**
+```bash
+docker-compose exec app php artisan migrate --force
+```
+
+**Beispiel: Cache leeren**
+```bash
+docker-compose exec app php artisan optimize:clear
+```
+
+### Logs einsehen
+```bash
+docker-compose logs -f app
+```
+
+### Dienste stoppen
+```bash
+docker-compose down
+```
