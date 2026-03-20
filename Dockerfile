@@ -55,7 +55,7 @@ COPY --from=php_base /var/www/vendor ./vendor
 COPY --from=node_base /var/www/public/build ./public/build
 
 # Final composer steps
-RUN composer dump-autoload --optimize
+RUN composer dump-autoload --optimize --no-scripts
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
