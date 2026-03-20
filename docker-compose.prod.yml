@@ -1,0 +1,53 @@
+services:
+  app:
+    image: ${DOCKERHUB_USERNAME:-tessaa}/movieshelf:latest
+    container_name: movieshelf-app-prod
+    restart: unless-stopped
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+    networks:
+      - movieshelf-network
+    depends_on:
+      - db
+      - redis
+
+  web:
+    image: nginx:alpine
+    container_name: movieshelf-web-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./.docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - movieshelf-network
+
+  db:
+    image: mariadb:10.11
+    container_name: movieshelf-db-prod
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_DATABASE:-movieshelf}
+      MARIADB_USER: ${DB_USERNAME:-movieshelf}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-secret}
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - movieshelf-db-data:/var/lib/mysql
+    networks:
+      - movieshelf-network
+
+  redis:
+    image: redis:alpine
+    container_name: movieshelf-redis-prod
+    restart: unless-stopped
+    networks:
+      - movieshelf-network
+
+networks:
+  movieshelf-network:
+    driver: bridge
+
+volumes:
+  movieshelf-db-data:
+    driver: local

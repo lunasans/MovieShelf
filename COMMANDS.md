@@ -140,3 +140,20 @@ docker-compose logs -f app
 ```bash
 docker-compose down
 ```
+
+---
+
+## 🚀 Production Deployment (Docker Hub)
+
+Für den Einsatz auf einem Server (ohne lokalen Code) wird die Datei `docker-compose.prod.yml` verwendet.
+
+### Starten mit Docker Hub Image
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Update auf die neueste Version
+```bash
+docker-compose -f docker-compose.prod.yml pull
+docker-compose -f docker-compose.prod.yml up -d
+```
