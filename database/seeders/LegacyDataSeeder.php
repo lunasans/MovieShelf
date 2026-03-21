@@ -18,11 +18,11 @@ class LegacyDataSeeder extends Seeder
     {
         // Seed Admin User
         User::updateOrCreate(
-            ['id' => 1],
+            ['email' => 'rene@neuhaus.or.at'],
             [
+                'id' => 1,
                 'name' => 'Admin',
-                'email' => 'rene@neuhaus.or.at',
-                'password' => '$2y$12$1jE8L8MIPr0.1QkPJ782Luv8JXxrCCKdI8fjVvX.N4utGEAh42xbK', // Legacy Hash
+                'password' => Hash::make(config('app.admin_password', 'password')),
                 'email_verified_at' => now(),
             ]
         );
