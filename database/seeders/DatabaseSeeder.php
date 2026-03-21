@@ -15,11 +15,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Beispiel für einen Standard-Admin-User (für lokale Tests)
-        // User::factory()->create([
-        //     'name' => 'Admin',
-        //     'email' => 'admin@example.com',
-        //     'password' => \Illuminate\Support\Facades\Hash::make('password'),
-        // ]);
+        // Default Admin User
+        User::factory()->create([
+            'name' => 'Admin',
+            'email' => 'admin@movieshelf.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('movieshelf'),
+        ]);
     }
 }

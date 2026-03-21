@@ -6,6 +6,21 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+      - APP_KEY=base64:LQP6NYfUthEWqRObcCkfMKvMuOSVjDDnqAyiHxexYko=
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-movieshelf}
+      - DB_USERNAME=${DB_USERNAME:-movieshelf}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - REDIS_HOST=redis
+    command: >
+      sh -c "
+      [ -f database/migrations/2026_03_10_165206_create_movies_table.php ] && mv database/migrations/2026_03_10_165206_create_movies_table.php database/migrations/2026_03_10_165205_create_movies_table.php;
+      [ -f database/migrations/2026_03_10_165207_create_seasons_table.php ] && mv database/migrations/2026_03_10_165207_create_seasons_table.php database/migrations/2026_03_10_165206_create_seasons_table.php;
+      php artisan migrate:fresh --force --seed && exec php-fpm"
+    volumes:
+      - movieshelf-code:/var/www
     networks:
       - movieshelf-network
     depends_on:
@@ -18,8 +33,35 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    depends_on:
+      - app
+    environment:
+      NGINX_CONF: |
+        server {
+            listen 80;
+            index index.php index.html;
+            error_log  /var/log/nginx/error.log;
+            access_log /var/log/nginx/access.log;
+            root /var/www/public;
+
+            location ~ \.php$$ {
+                try_files $$uri =404;
+                fastcgi_split_path_info ^(.+\.php)(/.+)$$;
+                fastcgi_pass app:9000;
+                fastcgi_index index.php;
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME $$document_root$$fastcgi_script_name;
+                fastcgi_param PATH_INFO $$fastcgi_path_info;
+            }
+
+            location / {
+                try_files $$uri $$uri/ /index.php?$$query_string;
+                gzip_static on;
+            }
+        }
+    command: /bin/sh -c "echo \"$$NGINX_CONF\" > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
     volumes:
-      - ./.docker/nginx:/etc/nginx/conf.d:ro
+      - movieshelf-code:/var/www:ro
     networks:
       - movieshelf-network
 
@@ -50,4 +92,6 @@ networks:
 
 volumes:
   movieshelf-db-data:
+    driver: local
+  movieshelf-code:
     driver: local
