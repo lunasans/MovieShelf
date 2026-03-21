@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_backup_codes', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('code', 255);
-            $table->boolean('used')->default(false);
-            $table->timestamp('used_at')->nullable();
-            $table->timestamp('created_at')->useCurrent();
+        if (!Schema::hasTable('user_backup_codes')) {
+            Schema::create('user_backup_codes', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id');
+                $table->string('code', 255);
+                $table->boolean('used')->default(false);
+                $table->timestamp('used_at')->nullable();
+                $table->timestamp('created_at')->useCurrent();
 
-            $table->index('user_id', 'idx_user');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
+                $table->index('user_id', 'idx_user');
+                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            });
+        }
     }
 
     /**

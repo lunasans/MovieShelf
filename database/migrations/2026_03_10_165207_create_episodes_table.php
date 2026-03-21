@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('episodes', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('season_id');
-            $table->integer('episode_number');
-            $table->string('title', 255)->nullable();
-            $table->text('overview')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('episodes')) {
+            Schema::create('episodes', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('season_id');
+                $table->integer('episode_number');
+                $table->string('title', 255)->nullable();
+                $table->text('overview')->nullable();
+                $table->timestamps();
 
-            $table->index('season_id', 'idx_season');
-            $table->index(['season_id', 'episode_number'], 'idx_season_episode');
+                $table->index('season_id', 'idx_season');
+                $table->index(['season_id', 'episode_number'], 'idx_season_episode');
 
-            $table->foreign('season_id')->references('id')->on('seasons')->onDelete('cascade');
-        });
+                $table->foreign('season_id')->references('id')->on('seasons')->onDelete('cascade');
+            });
+        }
     }
 
     /**

@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('movie_user_watched', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('movie_id')->constrained()->onDelete('cascade');
-            $table->timestamps();
+        if (!Schema::hasTable('movie_user_watched')) {
+            Schema::create('movie_user_watched', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('user_id')->constrained()->onDelete('cascade');
+                $table->foreignId('movie_id')->constrained()->onDelete('cascade');
+                $table->timestamps();
 
-            $table->unique(['user_id', 'movie_id']);
-        });
+                $table->unique(['user_id', 'movie_id']);
+            });
+        }
     }
 
     /**

@@ -11,20 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('activity_log', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->string('activity_type', 100);
-            $table->text('description')->nullable();
-            $table->string('ip_address', 45)->nullable();
-            $table->timestamp('created_at')->useCurrent();
+        if (!Schema::hasTable('activity_log')) {
+            Schema::create('activity_log', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id')->nullable();
+                $table->string('activity_type', 100);
+                $table->text('description')->nullable();
+                $table->string('ip_address', 45)->nullable();
+                $table->timestamp('created_at')->useCurrent();
 
-            $table->index('user_id', 'idx_activity_log_user');
-            $table->index('activity_type', 'idx_activity_type');
-            $table->index('created_at', 'idx_created_at');
+                $table->index('user_id', 'idx_activity_log_user');
+                $table->index('activity_type', 'idx_activity_type');
+                $table->index('created_at', 'idx_created_at');
 
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
-        });
+                $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+            });
+        }
     }
 
     /**

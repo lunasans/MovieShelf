@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('github_cache', function (Blueprint $table) {
-            $table->string('key', 255)->primary();
-            $table->text('value');
-            $table->integer('expiration');
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
-        });
+        if (!Schema::hasTable('github_cache')) {
+            Schema::create('github_cache', function (Blueprint $table) {
+                $table->string('key', 255)->primary();
+                $table->text('value');
+                $table->integer('expiration');
+                $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+            });
+        }
     }
 
     /**

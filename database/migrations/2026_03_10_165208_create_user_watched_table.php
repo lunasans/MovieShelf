@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_watched', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('movie_id');
-            $table->timestamp('watched_at')->useCurrent();
-            $table->timestamps();
+        if (!Schema::hasTable('user_watched')) {
+            Schema::create('user_watched', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id');
+                $table->unsignedBigInteger('movie_id');
+                $table->timestamp('watched_at')->useCurrent();
+                $table->timestamps();
 
-            $table->index(['user_id', 'movie_id'], 'idx_user_watched_movie');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('movie_id')->references('id')->on('movies')->onDelete('cascade');
-        });
+                $table->index(['user_id', 'movie_id'], 'idx_user_watched_movie');
+                $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+                $table->foreign('movie_id')->references('id')->on('movies')->onDelete('cascade');
+            });
+        }
     }
 
     /**

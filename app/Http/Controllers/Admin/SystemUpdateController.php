@@ -145,8 +145,8 @@ class SystemUpdateController extends Controller
                 }
             }
 
-            Log::warning("Git command failed (Exit $exitCode): $cmd. Error: " . $error);
-            throw new \Exception("Git error ($exitCode): " . $error);
+            Log::warning("Command failed (Exit $exitCode): $cmd. Error: " . $error);
+            throw new \Exception("Systemfehler ($exitCode): " . $error);
         }
         
         return trim($result->output());

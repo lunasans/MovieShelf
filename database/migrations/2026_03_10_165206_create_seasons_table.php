@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('seasons', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('movie_id');
-            $table->integer('season_number');
-            $table->string('title', 255)->nullable();
-            $table->text('overview')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('seasons')) {
+            Schema::create('seasons', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('movie_id');
+                $table->integer('season_number');
+                $table->string('title', 255)->nullable();
+                $table->text('overview')->nullable();
+                $table->timestamps();
 
-            $table->index('movie_id', 'idx_movie');
-            $table->index(['movie_id', 'season_number'], 'idx_movie_season');
+                $table->index('movie_id', 'idx_movie');
+                $table->index(['movie_id', 'season_number'], 'idx_movie_season');
 
-            $table->foreign('movie_id')->references('id')->on('movies')->onDelete('cascade');
-        });
+                $table->foreign('movie_id')->references('id')->on('movies')->onDelete('cascade');
+            });
+        }
     }
 
     /**

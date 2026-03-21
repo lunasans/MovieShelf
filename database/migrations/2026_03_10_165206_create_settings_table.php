@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
-            $table->string('key', 100)->primary();
-            $table->text('value')->nullable();
-            $table->string('group', 50)->default('general');
-            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+        if (!Schema::hasTable('settings')) {
+            Schema::create('settings', function (Blueprint $table) {
+                $table->string('key', 100)->primary();
+                $table->text('value')->nullable();
+                $table->string('group', 50)->default('general');
+                $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
 
-            $table->index('group', 'idx_group');
-        });
+                $table->index('group', 'idx_group');
+            });
+        }
     }
 
     /**

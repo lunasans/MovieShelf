@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('actors', function (Blueprint $table) {
-            $table->id();
-            $table->string('first_name', 100);
-            $table->string('last_name', 100);
-            $table->integer('birth_year')->nullable();
-            $table->text('bio')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('actors')) {
+            Schema::create('actors', function (Blueprint $table) {
+                $table->id();
+                $table->string('first_name', 100);
+                $table->string('last_name', 100);
+                $table->integer('birth_year')->nullable();
+                $table->text('bio')->nullable();
+                $table->timestamps();
 
-            $table->index(['last_name', 'first_name'], 'idx_name');
-            $table->index('birth_year', 'idx_birth_year');
-            // $table->fullText(['first_name', 'last_name', 'bio'], 'idx_search');
-        });
+                $table->index(['last_name', 'first_name'], 'idx_name');
+                $table->index('birth_year', 'idx_birth_year');
+                // $table->fullText(['first_name', 'last_name', 'bio'], 'idx_search');
+            });
+        }
     }
 
     /**

@@ -11,15 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('counter', function (Blueprint $table) {
-            $table->id();
-            $table->string('page', 255);
-            $table->integer('visits')->default(0);
-            $table->date('last_visit')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('counter')) {
+            Schema::create('counter', function (Blueprint $table) {
+                $table->id();
+                $table->string('page', 255);
+                $table->integer('visits')->default(0);
+                $table->date('last_visit')->nullable();
+                $table->timestamps();
 
-            $table->index('page', 'idx_page');
-        });
+                $table->index('page', 'idx_page');
+            });
+        }
     }
 
     /**
