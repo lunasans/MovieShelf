@@ -40,7 +40,7 @@ class VisitorCounterMiddleware
             // 4. Unique IP per Day check using Cache
             $ip = $request->ip();
             $today = now()->format('Y-m-d');
-            $cacheKey = "visit:{$today}:".md5($ip);
+            $cacheKey = "visit:{$today}:".hash('sha256', (string) $ip);
 
             if (! \Illuminate\Support\Facades\Cache::has($cacheKey)) {
                 // Prevention of double-counting in the SAME request process

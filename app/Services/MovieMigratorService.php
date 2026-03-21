@@ -187,7 +187,7 @@ class MovieMigratorService
             return null;
         }
 
-        $cacheKey = md5($oldDvd->title.($oldDvd->year ?? ''));
+        $cacheKey = hash('sha256', (string) ($oldDvd->title.($oldDvd->year ?? '')));
         $cacheFile = $v1CacheDir.'/'.$cacheKey.'.json';
 
         if (file_exists($cacheFile)) {

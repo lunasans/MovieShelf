@@ -60,6 +60,8 @@ class XmlImportController extends Controller
 
     private function getXmlContentFromRequest($file): string
     {
+        $maxSize = 104857600; // 100 MB limit
+
         if ($file->getClientOriginalExtension() === 'zip') {
             $zip = new ZipArchive;
             $xmlContent = '';
@@ -67,7 +69,12 @@ class XmlImportController extends Controller
                 for ($i = 0; $i < $zip->numFiles; $i++) {
                     $entry = $zip->getNameIndex($i);
                     if (Str::endsWith(strtolower($entry), '.xml')) {
-                        $xmlContent = $zip->getFromName($entry);
+                        $stat = $zip->statIndex($i);
+                        if ($stat['size'] > $maxSize) {
+                            throw new Exception('Die extrahierte XML-Datei ist zu gross (max. 100 MB).');
+                        }
+                        // Limit extraction to max size
+                        $xmlContent = $zip->getFromName($entry, $maxSize);
                         break;
                     }
                 }
@@ -77,7 +84,9 @@ class XmlImportController extends Controller
             return $xmlContent;
         }
 
-        return file_get_contents($file->getRealPath());
+        // Limit file_get_contents to prevent memory exhaustion
+        $content = file_get_contents($file->getRealPath(), false, null, 0, $maxSize);
+        return $content !== false ? $content : '';
     }
 
     protected function processXml(string $xmlContent)
