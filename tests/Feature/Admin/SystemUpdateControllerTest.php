@@ -73,7 +73,7 @@ class SystemUpdateControllerTest extends TestCase
     public function test_index_gracefully_handles_exceptions()
     {
         Process::fake([
-            '*' => Process::result('error', 1, 'fatal error')
+            '*' => Process::result('error', 'fatal error', 1)
         ]);
 
         $response = $this->actingAs($this->admin)->get(route('admin.update.index'));
