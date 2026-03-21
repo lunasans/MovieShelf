@@ -284,7 +284,7 @@ class TmdbImportService
             if ($result['iso_3166_1'] === 'DE') {
                 foreach ($result['release_dates'] as $release) {
                     if (! empty($release['certification'])) {
-                        return (int) preg_replace('/[^0-9]/', '', $release['certification']);
+                        return (int) preg_replace('/\D/', '', $release['certification']);
                     }
                 }
             }
@@ -301,7 +301,7 @@ class TmdbImportService
 
         foreach ($details['content_ratings']['results'] as $result) {
             if ($result['iso_3166_1'] === 'DE' && ! empty($result['rating'])) {
-                return (int) preg_replace('/[^0-9]/', '', $result['rating']);
+                return (int) preg_replace('/\D/', '', $result['rating']);
             }
         }
 

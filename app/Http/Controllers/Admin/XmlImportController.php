@@ -111,7 +111,7 @@ class XmlImportController extends Controller
         $xml = simplexml_load_string($xmlContent, 'SimpleXMLElement', LIBXML_NOCDATA | LIBXML_NONET);
         if ($xml === false) {
             $errors = libxml_get_errors();
-            $msg = count($errors) > 0 ? $errors[0]->message : 'Unbekannter Fehler';
+            $msg = ! empty($errors) ? $errors[0]->message : 'Unbekannter Fehler';
 
             return back()->with('error', 'Ungültige XML-Struktur: '.$msg);
         }

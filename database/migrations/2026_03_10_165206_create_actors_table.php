@@ -22,7 +22,6 @@ return new class extends Migration
 
                 $table->index(['last_name', 'first_name'], 'idx_name');
                 $table->index('birth_year', 'idx_birth_year');
-                // $table->fullText(['first_name', 'last_name', 'bio'], 'idx_search');
             });
         }
     }

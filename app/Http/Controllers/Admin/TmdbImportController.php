@@ -126,15 +126,17 @@ class TmdbImportController extends Controller
 
             $searchMovie = $this->tmdb->searchMovie($cleanTitle, $year);
             if ($this->hasMatch($searchMovie)) {
-                return $this->linkAndRedirect($movie, $searchMovie['results'][0], 'movie');
+                $response = $this->linkAndRedirect($movie, $searchMovie['results'][0], 'movie');
+            } else {
+                $searchTv = $this->tmdb->searchTv($cleanTitle, $year);
+                if ($this->hasMatch($searchTv)) {
+                    $response = $this->linkAndRedirect($movie, $searchTv['results'][0], 'tv');
+                } else {
+                    $response = response()->json(['success' => false, 'message' => 'Kein Treffer bei TMDb gefunden.']);
+                }
             }
 
-            $searchTv = $this->tmdb->searchTv($cleanTitle, $year);
-            if ($this->hasMatch($searchTv)) {
-                return $this->linkAndRedirect($movie, $searchTv['results'][0], 'tv');
-            }
-
-            return response()->json(['success' => false, 'message' => 'Kein Treffer bei TMDb gefunden.']);
+            return $response;
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }

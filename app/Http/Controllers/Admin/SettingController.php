@@ -92,23 +92,14 @@ class SettingController extends Controller
 
     public function getSettingGroup(string $key): string
     {
-        if (str_starts_with($key, 'tmdb_')) {
-            return 'tmdb';
-        }
-        if ($key === 'theme') {
-            return 'ui';
-        }
-        if (str_starts_with($key, 'impressum_')) {
-            return 'impressum';
-        }
-        if (str_starts_with($key, 'signature_')) {
-            return 'signature';
-        }
-        if (str_starts_with($key, 'mail_')) {
-            return 'mail';
-        }
-
-        return 'general';
+        return match (true) {
+            str_starts_with($key, 'tmdb_') => 'tmdb',
+            $key === 'theme' => 'ui',
+            str_starts_with($key, 'impressum_') => 'impressum',
+            str_starts_with($key, 'signature_') => 'signature',
+            str_starts_with($key, 'mail_') => 'mail',
+            default => 'general',
+        };
     }
 
     protected function handleSignatureCache(array $validated)

@@ -148,7 +148,7 @@ class SystemUpdateController extends Controller
             }
 
             Log::warning("Command failed (Exit $exitCode): $cmd. Error: ".$error);
-            throw new \Exception("Systemfehler ($exitCode): ".$error);
+            throw new \App\Exceptions\SystemUpdateException("Systemfehler ($exitCode): ".$error);
         }
 
         return trim($result->output());

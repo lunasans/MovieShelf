@@ -55,7 +55,6 @@ class SignatureController extends Controller
         $glass_bg_top = \imagecolorallocatealpha($img, 240, 245, 255, 15);
         $glass_bg_bottom = \imagecolorallocatealpha($img, 220, 230, 245, 30);
         $glass_border = \imagecolorallocatealpha($img, 200, 210, 230, 50);
-        $glass_shadow = \imagecolorallocatealpha($img, 0, 0, 0, 40);
         $text_dark = \imagecolorallocate($img, 45, 55, 72);
         $text_muted = \imagecolorallocate($img, 161, 161, 170);
         $accent = \imagecolorallocate($img, 102, 126, 234);
@@ -90,7 +89,11 @@ class SignatureController extends Controller
         $fontPath = public_path('fonts/Roboto-Medium.ttf');
 
         // Hintergrund zeichnen
-        $this->drawGlassBackground($img, 0, 0, $width - 1, $height - 1, $glass_bg_top, $glass_bg_bottom, $glass_border);
+        $this->drawGlassBackground($img, [
+            'x' => 0, 'y' => 0, 'w' => $width - 1, 'h' => $height - 1
+        ], [
+            'top' => $glass_bg_top, 'bottom' => $glass_bg_bottom, 'border' => $glass_border
+        ]);
 
         if ($type === 1) {
             $this->renderType1($img, $films, $totalFilms, $fontPath, $text_dark, $accent);
@@ -109,8 +112,10 @@ class SignatureController extends Controller
         return response($imageData)->header('Content-Type', 'image/png');
     }
 
-    private function drawGlassBackground($img, $x, $y, $w, $h, $bg_top, $bg_bottom, $border)
+    private function drawGlassBackground($img, array $rect, array $colors)
     {
+        $x = $rect['x']; $y = $rect['y']; $w = $rect['w']; $h = $rect['h'];
+        $bg_top = $colors['top']; $bg_bottom = $colors['bottom']; $border = $colors['border'];
         $radius = 12;
         for ($i = 0; $i < $h; $i++) {
             $ratio = $i / $h;
@@ -158,8 +163,8 @@ class SignatureController extends Controller
             \imagedestroy($logo);
         }
 
-        $this->drawText($img, 10, $statsBoxX, $statsBoxY + 54, $text_dark, $fontPath, 'Filme gesamt:', true, $statsBoxWidth);
-        $this->drawText($img, 22, $statsBoxX, $statsBoxY + 95, $accent, $fontPath, (string) $totalFilms, true, $statsBoxWidth);
+        $this->drawText($img, 'Filme gesamt:', $fontPath, ['size' => 10, 'x' => $statsBoxX, 'y' => $statsBoxY + 54, 'color' => $text_dark, 'centerX' => true, 'boxW' => $statsBoxWidth]);
+        $this->drawText($img, (string) $totalFilms, $fontPath, ['size' => 22, 'x' => $statsBoxX, 'y' => $statsBoxY + 95, 'color' => $accent, 'centerX' => true, 'boxW' => $statsBoxWidth]);
 
         $coverWidth = 57;
         $coverHeight = 83;
@@ -192,8 +197,8 @@ class SignatureController extends Controller
         if ($logo) {
             \imagecopy($img, $logo, $startX, 11, 0, 0, \imagesx($logo), \imagesy($logo));
             $logoW = \imagesx($logo);
-            $this->drawText($img, 10, $startX + $logoW + 25, $textY, $accent, $fontPath, "{$totalFilms} Filme");
-            $this->drawText($img, 9, $startX + $logoW + 120, $textY, $text_muted, $fontPath, "{$filmCount} Neueste:");
+            $this->drawText($img, "{$totalFilms} Filme", $fontPath, ['size' => 10, 'x' => $startX + $logoW + 25, 'y' => $textY, 'color' => $accent]);
+            $this->drawText($img, "{$filmCount} Neueste:", $fontPath, ['size' => 9, 'x' => $startX + $logoW + 120, 'y' => $textY, 'color' => $text_muted]);
             \imagedestroy($logo);
         }
 
@@ -241,10 +246,10 @@ class SignatureController extends Controller
 
                 if ($showTitle) {
                     $title = mb_substr($film->title, 0, 16);
-                    $this->drawText($img, 8, $x, $startY + $coverHeight + 14, $text_dark, $fontPath, $title);
+                    $this->drawText($img, $title, $fontPath, ['size' => 8, 'x' => $x, 'y' => $startY + $coverHeight + 14, 'color' => $text_dark]);
                 }
                 if ($showYear) {
-                    $this->drawText($img, 7, $x + 18, $startY + $coverHeight + 26, $text_muted, $fontPath, (string) $film->year);
+                    $this->drawText($img, (string) $film->year, $fontPath, ['size' => 7, 'x' => $x + 18, 'y' => $startY + $coverHeight + 26, 'color' => $text_muted]);
                 }
                 $count++;
             }
@@ -253,59 +258,44 @@ class SignatureController extends Controller
 
     private function loadCover($coverId, $targetWidth, $targetHeight)
     {
+        $path = $this->getCoverPath($coverId);
+
+        if (! $path || ! file_exists($path) || ! ($info = \getimagesize($path))) {
+            return null;
+        }
+
+        $src = match ($info[2]) {
+            \IMAGETYPE_JPEG => @\imagecreatefromjpeg($path),
+            \IMAGETYPE_PNG => @\imagecreatefrompng($path),
+            default => null,
+        };
+
+        if ($src) {
+            $dst = \imagecreatetruecolor($targetWidth, $targetHeight);
+            \imagesavealpha($dst, true);
+            \imagefill($dst, 0, 0, \imagecolorallocatealpha($dst, 0, 0, 0, 127));
+            \imagecopyresampled($dst, $src, 0, 0, 0, 0, $targetWidth, $targetHeight, \imagesx($src), \imagesy($src));
+            \imagedestroy($src);
+
+            return $dst;
+        }
+
+        return null;
+    }
+
+    private function getCoverPath($coverId)
+    {
         if (empty($coverId)) {
             return null;
         }
 
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
-        $path = null;
-
-        // Versuche verschiedene Pfade (ähnlich wie im Movie Model)
-        if (str_contains($coverId, '.')) {
-            if ($disk->exists($coverId)) {
-                $path = $disk->path($coverId);
-            }
+        if (str_contains($coverId, '.') && $disk->exists($coverId)) {
+            return $disk->path($coverId);
         }
 
-        if (! $path) {
-            // Legacy local cover format (v1.5)
-            $legacyPath = 'covers/'.$coverId.'f.jpg';
-            if ($disk->exists($legacyPath)) {
-                $path = $disk->path($legacyPath);
-            }
-        }
-
-        if (! $path || ! file_exists($path)) {
-            return null;
-        }
-
-        $info = \getimagesize($path);
-        if (! $info) {
-            return null;
-        }
-
-        switch ($info[2]) {
-            case \IMAGETYPE_JPEG:
-                $src = @\imagecreatefromjpeg($path);
-                break;
-            case \IMAGETYPE_PNG:
-                $src = @\imagecreatefrompng($path);
-                break;
-            default:
-                return null;
-        }
-
-        if (! $src) {
-            return null;
-        }
-
-        $dst = \imagecreatetruecolor($targetWidth, $targetHeight);
-        \imagesavealpha($dst, true);
-        \imagefill($dst, 0, 0, \imagecolorallocatealpha($dst, 0, 0, 0, 127));
-        \imagecopyresampled($dst, $src, 0, 0, 0, 0, $targetWidth, $targetHeight, \imagesx($src), \imagesy($src));
-        \imagedestroy($src);
-
-        return $dst;
+        $legacyPath = 'covers/'.$coverId.'f.jpg';
+        return $disk->exists($legacyPath) ? $disk->path($legacyPath) : null;
     }
 
     private function loadLogo($targetHeight)
@@ -334,8 +324,12 @@ class SignatureController extends Controller
         return $dst;
     }
 
-    private function drawText($img, $size, $x, $y, $color, $font, $text, $centerX = false, $boxW = 0)
+    private function drawText($img, $text, $font, array $args)
     {
+        $size = $args['size']; $x = $args['x']; $y = $args['y'];
+        $color = $args['color']; $centerX = $args['centerX'] ?? false;
+        $boxW = $args['boxW'] ?? 0;
+
         if (\file_exists($font)) {
             if ($centerX && $boxW > 0) {
                 $bbox = \imagettfbbox($size, 0, $font, $text);

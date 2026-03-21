@@ -36,30 +36,20 @@ class Actor extends Model
             return null;
         }
 
-        // Direct URL
+        $url = null;
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
         if (str_starts_with($this->profile_path, 'http')) {
-            return $this->profile_path;
+            $url = $this->profile_path;
+        } elseif (str_starts_with($this->profile_path, '/')) {
+            $url = 'https://image.tmdb.org/t/p/w185'.$this->profile_path;
+        } elseif (str_contains($this->profile_path, '.') && $disk->exists($this->profile_path)) {
+            $url = $disk->url($this->profile_path);
+        } elseif ($disk->exists('actors/'.$this->profile_path)) {
+            $url = $disk->url('actors/'.$this->profile_path);
         }
 
-        // TMDb Path
-        if (str_starts_with($this->profile_path, '/')) {
-            return 'https://image.tmdb.org/t/p/w185'.$this->profile_path;
-        }
-
-        // Local file
-        if (str_contains($this->profile_path, '.')) {
-            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($this->profile_path)) {
-                return \Illuminate\Support\Facades\Storage::disk('public')->url($this->profile_path);
-            }
-        }
-
-        // Default local path
-        $path = 'actors/'.$this->profile_path;
-        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
-        }
-
-        return null;
+        return $url;
     }
 
     public function getFullNameAttribute()

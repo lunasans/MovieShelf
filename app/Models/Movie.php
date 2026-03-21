@@ -118,19 +118,19 @@ class Movie extends Model
             return null;
         }
 
+        $url = null;
+
         if (str_starts_with($id, 'http')) {
-            return $id;
+            $url = $id;
+        } elseif (str_starts_with($id, '/')) {
+            $url = $this->resolveTmdbUrl($id, $type);
+        } elseif (str_contains($id, '.') && Storage::disk('public')->exists($id)) {
+            $url = Storage::disk('public')->url($id);
+        } else {
+            $url = $this->resolveLegacyStorageUrl($id, $type);
         }
 
-        if (str_starts_with($id, '/')) {
-            return $this->resolveTmdbUrl($id, $type);
-        }
-
-        if (str_contains($id, '.') && Storage::disk('public')->exists($id)) {
-            return Storage::disk('public')->url($id);
-        }
-
-        return $this->resolveLegacyStorageUrl($id, $type);
+        return $url;
     }
 
     protected function resolveTmdbUrl($id, $type)
