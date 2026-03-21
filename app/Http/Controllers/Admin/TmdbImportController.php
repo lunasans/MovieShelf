@@ -477,7 +477,7 @@ class TmdbImportController extends Controller
         }
     }
 
-    protected function cleanTitle(string $title): string
+    public function cleanTitle(string $title): string
     {
         // Remove common suffixes and prefixes that break TMDb search
         $title = preg_replace('/\s*\(.*?\)\s*/', ' ', $title); // Remove anything in parentheses

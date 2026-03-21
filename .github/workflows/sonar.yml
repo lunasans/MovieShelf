@@ -16,6 +16,23 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, sqlite3, pdo_sqlite
+          coverage: pcov
+
+      - name: Install Dependencies
+        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Run Tests with Coverage
+        run: ./vendor/bin/phpunit --coverage-clover coverage.xml --log-junit report.xml
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@884b79409bbd464b2a59edc326a4b77dc56b2195 # v3.0.0
         env:
