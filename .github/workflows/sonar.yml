@@ -31,6 +31,11 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
+      - name: Install Node Dependencies & Build Assets
+        run: |
+          npm install
+          npm run build
+
       - name: Prepare Environment
         run: |
           mkdir -p database
