@@ -30,7 +30,7 @@ COPY composer.json composer.lock ./
 RUN composer install --no-scripts --no-autoloader --prefer-dist
 
 # Stage 2: Node Assets
-FROM node:20-alpine AS node_base
+FROM node:25-alpine AS node_base
 
 WORKDIR /var/www
 
