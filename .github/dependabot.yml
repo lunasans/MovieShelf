@@ -36,17 +36,6 @@ updates:
         patterns:
           - "*"
 
-  # Docker Dependencies
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "08:00"
-    labels:
-      - "dependencies"
-      - "docker"
-
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
