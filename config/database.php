@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Str;
 
-const DEFAULT_HOST = '127.0.0.1';
+if (!defined('DEFAULT_HOST')) {
+    define('DEFAULT_HOST', '127.0.0.1');
+}
 
 $mysqlSslCaAttr = PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA;
 

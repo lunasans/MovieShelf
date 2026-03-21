@@ -44,8 +44,9 @@ class VisitorCounterMiddleware
 
             if (! \Illuminate\Support\Facades\Cache::has($cacheKey)) {
                 // Prevention of double-counting in the SAME request process
-                static $alreadyCounted = false;
-                if (! $alreadyCounted) {
+                if (! app()->bound('visitor_counted')) {
+                    app()->instance('visitor_counted', true);
+                    
                     // Increment total visits
                     $totalCounter = Counter::firstOrCreate(['page' => 'all']);
                     $totalCounter->increment('visits');
@@ -57,8 +58,6 @@ class VisitorCounterMiddleware
                     $dailyCounter->increment('visits');
                     $dailyCounter->last_visit = now();
                     $dailyCounter->save();
-
-                    $alreadyCounted = true;
 
                     // Mark as visited for this IP today (expires at end of day)
                     \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->endOfDay());
