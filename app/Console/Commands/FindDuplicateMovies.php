@@ -49,40 +49,53 @@ class FindDuplicateMovies extends Command
 
     private function mergeMovies($movies)
     {
-        // Sort by 'completeness' (TMDB ID, then actors count, then ID)
-        $survivor = $movies->sortByDesc(function ($movie) {
-            return ($movie->tmdb_id ? 10 : 0) + ($movie->actors->count() > 0 ? 5 : 0) + ($movie->id / 1000000);
-        })->first();
-
+        $survivor = $this->identifySurvivor($movies);
         $redundants = $movies->reject(fn($m) => $m->id === $survivor->id);
 
         $this->warn("  Merging into survivor: ID {$survivor->id}");
 
         DB::transaction(function () use ($survivor, $redundants) {
             foreach ($redundants as $redundant) {
-                // Transfer actors
-                foreach ($redundant->actors as $actor) {
-                    if (!$survivor->actors()->where('actor_id', $actor->id)->exists()) {
-                        $survivor->actors()->attach($actor->id, [
-                            'role' => $actor->pivot->role,
-                            'is_main_role' => $actor->pivot->is_main_role,
-                            'sort_order' => $actor->pivot->sort_order,
-                        ]);
-                    }
-                }
-
-                // Transfer watched status
-                foreach ($redundant->watchedByUsers as $user) {
-                    if (!$survivor->watchedByUsers()->where('user_id', $user->id)->exists()) {
-                        $survivor->watchedByUsers()->attach($user->id);
-                    }
-                }
-
-                // Delete the redundant one
+                $this->transferData($redundant, $survivor);
                 $redundant->delete();
             }
         });
         
         $this->info('  Merged successfully.');
+    }
+
+    private function identifySurvivor($movies)
+    {
+        return $movies->sortByDesc(function ($movie) {
+            return ($movie->tmdb_id ? 10 : 0) + ($movie->actors->count() > 0 ? 5 : 0) + ($movie->id / 1000000);
+        })->first();
+    }
+
+    private function transferData(Movie $from, Movie $to)
+    {
+        $this->transferActors($from, $to);
+        $this->transferWatchedStatus($from, $to);
+    }
+
+    private function transferActors(Movie $from, Movie $to)
+    {
+        foreach ($from->actors as $actor) {
+            if (!$to->actors()->where('actor_id', $actor->id)->exists()) {
+                $to->actors()->attach($actor->id, [
+                    'role' => $actor->pivot->role,
+                    'is_main_role' => $actor->pivot->is_main_role,
+                    'sort_order' => $actor->pivot->sort_order,
+                ]);
+            }
+        }
+    }
+
+    private function transferWatchedStatus(Movie $from, Movie $to)
+    {
+        foreach ($from->watchedByUsers as $user) {
+            if (!$to->watchedByUsers()->where('user_id', $user->id)->exists()) {
+                $to->watchedByUsers()->attach($user->id);
+            }
+        }
     }
 }

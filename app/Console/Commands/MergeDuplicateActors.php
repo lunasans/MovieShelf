@@ -26,14 +26,9 @@ class MergeDuplicateActors extends Command
     public function handle()
     {
         $this->info('Searching for duplicate actors...');
+        $this->trimActorNames();
 
-        // 1. Trimming names first to ensure we catch those with accidental spaces
-        \Illuminate\Support\Facades\DB::update("UPDATE actors SET first_name = TRIM(first_name), last_name = TRIM(last_name)");
-
-        $duplicates = \App\Models\Actor::select('first_name', 'last_name')
-            ->groupBy('first_name', 'last_name')
-            ->havingRaw('COUNT(*) > 1')
-            ->get();
+        $duplicates = $this->getDuplicateNames();
 
         if ($duplicates->isEmpty()) {
             $this->info('No duplicates found.');
@@ -43,59 +38,84 @@ class MergeDuplicateActors extends Command
         $this->info('Found ' . $duplicates->count() . ' names with duplicates.');
 
         foreach ($duplicates as $dup) {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($dup) {
-                $actors = \App\Models\Actor::where('first_name', $dup->first_name)
-                    ->where('last_name', $dup->last_name)
-                    ->get();
-
-                // Pick the survivor: Priority to TMDB ID, then profile path, then newest
-                $survivor = $actors->sortByDesc(function($a) {
-                    return ($a->tmdb_id ? 10 : 0) + ($a->profile_path ? 5 : 0) + ($a->id / 1000000);
-                })->first();
-
-                $redundants = $actors->reject(fn($a) => $a->id === $survivor->id);
-
-                $this->warn("Merging duplicates for: {$dup->first_name} {$dup->last_name} (Keeping ID {$survivor->id})");
-
-                foreach ($redundants as $redundant) {
-                    // Fetch relations from redundant
-                    $relations = \Illuminate\Support\Facades\DB::table('film_actor')
-                        ->where('actor_id', $redundant->id)
-                        ->get();
-
-                    foreach ($relations as $rel) {
-                        try {
-                            // Try to update existing relation if exists, otherwise change actor_id
-                            $exists = \Illuminate\Support\Facades\DB::table('film_actor')
-                                ->where('actor_id', $survivor->id)
-                                ->where('film_id', $rel->film_id)
-                                ->exists();
-
-                            if ($exists) {
-                                // Just delete the redundant relation
-                                \Illuminate\Support\Facades\DB::table('film_actor')
-                                    ->where('actor_id', $redundant->id)
-                                    ->where('film_id', $rel->film_id)
-                                    ->delete();
-                            } else {
-                                // Move it to survivor
-                                \Illuminate\Support\Facades\DB::table('film_actor')
-                                    ->where('actor_id', $redundant->id)
-                                    ->where('film_id', $rel->film_id)
-                                    ->update(['actor_id' => $survivor->id]);
-                            }
-                        } catch (\Exception $e) {
-                            $this->error("Failed to move relation for film {$rel->film_id}: " . $e->getMessage());
-                        }
-                    }
-
-                    // Delete redundant record
-                    $redundant->delete();
-                }
-            });
+            $this->mergeDuplicateGroup($dup);
         }
 
         $this->info('Finished merging actors.');
         return 0;
+    }
+
+    private function trimActorNames()
+    {
+        \Illuminate\Support\Facades\DB::update("UPDATE actors SET first_name = TRIM(first_name), last_name = TRIM(last_name)");
+    }
+
+    private function getDuplicateNames()
+    {
+        return \App\Models\Actor::select('first_name', 'last_name')
+            ->groupBy('first_name', 'last_name')
+            ->havingRaw('COUNT(*) > 1')
+            ->get();
+    }
+
+    private function mergeDuplicateGroup($dup)
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($dup) {
+            $actors = \App\Models\Actor::where('first_name', $dup->first_name)
+                ->where('last_name', $dup->last_name)
+                ->get();
+
+            $survivor = $this->identifySurvivor($actors);
+            $redundants = $actors->reject(fn($a) => $a->id === $survivor->id);
+
+            $this->warn("Merging duplicates for: {$dup->first_name} {$dup->last_name} (Keeping ID {$survivor->id})");
+
+            foreach ($redundants as $redundant) {
+                $this->mergeRedundantActor($redundant, $survivor);
+                $redundant->delete();
+            }
+        });
+    }
+
+    private function identifySurvivor($actors)
+    {
+        return $actors->sortByDesc(function($a) {
+            return ($a->tmdb_id ? 10 : 0) + ($a->profile_path ? 5 : 0) + ($a->id / 1000000);
+        })->first();
+    }
+
+    private function mergeRedundantActor($redundant, $survivor)
+    {
+        $relations = \Illuminate\Support\Facades\DB::table('film_actor')
+            ->where('actor_id', $redundant->id)
+            ->get();
+
+        foreach ($relations as $rel) {
+            $this->moveRelation($rel, $redundant->id, $survivor->id);
+        }
+    }
+
+    private function moveRelation($rel, $redundantId, $survivorId)
+    {
+        try {
+            $exists = \Illuminate\Support\Facades\DB::table('film_actor')
+                ->where('actor_id', $survivorId)
+                ->where('film_id', $rel->film_id)
+                ->exists();
+
+            if ($exists) {
+                \Illuminate\Support\Facades\DB::table('film_actor')
+                    ->where('actor_id', $redundantId)
+                    ->where('film_id', $rel->film_id)
+                    ->delete();
+            } else {
+                \Illuminate\Support\Facades\DB::table('film_actor')
+                    ->where('actor_id', $redundantId)
+                    ->where('film_id', $rel->film_id)
+                    ->update(['actor_id' => $survivorId]);
+            }
+        } catch (\Exception $e) {
+            $this->error("Failed to move relation for film {$rel->film_id}: " . $e->getMessage());
+        }
     }
 }

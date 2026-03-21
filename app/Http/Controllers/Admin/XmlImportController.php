@@ -76,7 +76,11 @@ class XmlImportController extends Controller
     protected function processXml(string $xmlContent)
     {
         libxml_use_internal_errors(true);
-        $xml = simplexml_load_string($xmlContent, 'SimpleXMLElement', LIBXML_NOCDATA | LIBXML_NOENT | LIBXML_NONET);
+        // Disable external entities for security
+        if (function_exists('libxml_set_external_entity_loader')) {
+            libxml_set_external_entity_loader(null);
+        }
+        $xml = simplexml_load_string($xmlContent, 'SimpleXMLElement', LIBXML_NOCDATA | LIBXML_NONET);
 
         if ($xml === false) {
             $errors = libxml_get_errors();
