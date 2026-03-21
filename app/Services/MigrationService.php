@@ -57,26 +57,29 @@ class MigrationService
                 $this->truncateTables();
             }
 
-            $moduleMethods = [
-                'users' => 'migrateUsers',
-                'actors' => 'migrateActors',
-                'movies' => 'migrateMovies',
-                'movie_actors' => 'migrateMovieActors',
-                'watched' => 'migrateUserWatched',
-                'ratings' => 'migrateUserRatings',
-                'wishlist' => 'migrateUserWishlist',
-                'seasons' => 'migrateSeasons',
-                'episodes' => 'migrateEpisodes',
-                'settings' => 'migrateSettings',
-                'counter' => 'migrateCounter',
-                'logs' => 'migrateLogs',
-                'backup_codes' => 'migrateBackupCodes',
+            $movieMigrator = new MovieMigratorService($this->callback, $this->connection, $this->movieFields);
+            $systemMigrator = new SystemMigratorService($this->callback, $this->connection);
+            $v1CacheDir = $this->resolveTmdbCacheDir();
+
+            $moduleActions = [
+                'users' => fn () => $this->migrateUsers(),
+                'actors' => fn () => $this->migrateActors(),
+                'movies' => fn () => $movieMigrator->migrateMovies($v1CacheDir),
+                'movie_actors' => fn () => $movieMigrator->migrateMovieActors(),
+                'watched' => fn () => $this->migrateUserWatched(),
+                'ratings' => fn () => $this->migrateUserRatings(),
+                'wishlist' => fn () => $this->migrateUserWishlist(),
+                'seasons' => fn () => $movieMigrator->migrateSeasons(),
+                'episodes' => fn () => $movieMigrator->migrateEpisodes(),
+                'settings' => fn () => $systemMigrator->migrateSettings(),
+                'counter' => fn () => $systemMigrator->migrateCounter(),
+                'logs' => fn () => $systemMigrator->migrateLogs(),
+                'backup_codes' => fn () => $this->migrateBackupCodes(),
             ];
 
             foreach ($activeModules as $module) {
-                if (isset($moduleMethods[$module])) {
-                    $method = $moduleMethods[$module];
-                    $this->$method();
+                if (isset($moduleActions[$module])) {
+                    $moduleActions[$module]();
                 }
             }
 
@@ -148,9 +151,6 @@ class MigrationService
         });
     }
 
-    /**
-     * Prepare user data for migration.
-     */
     protected function prepareUserData($oldUser): array
     {
         $twoFactorConfirmedAt = null;
@@ -199,9 +199,6 @@ class MigrationService
         });
     }
 
-    /**
-     * Prepare actor data for migration.
-     */
     protected function prepareActorData($oldActor): array
     {
         return [
@@ -212,78 +209,6 @@ class MigrationService
             'created_at' => $oldActor->created_at,
             'updated_at' => $oldActor->updated_at,
         ];
-    }
-
-    protected function migrateMovies()
-    {
-        if (! $this->tableExists('dvds')) {
-            $this->log('Tabelle "dvds" nicht gefunden, Überspringe...');
-
-            return;
-        }
-
-        $this->log('Migriere Filme (dvds -> movies)...');
-        $total = DB::connection($this->connection)->table('dvds')->count();
-        $count = 0;
-
-        $tmdbMapping = $this->loadTmdbMapping();
-        $v1CacheDir = $this->resolveTmdbCacheDir();
-
-        DB::connection($this->connection)->table('dvds')->orderBy('id')->chunk(100, function ($oldDvds) use (&$count, $total, $tmdbMapping, $v1CacheDir) {
-            foreach ($oldDvds as $oldDvd) {
-                try {
-                    $tmdbId = $tmdbMapping[$oldDvd->id] ?? null;
-                    if (! $tmdbId && str_starts_with((string) $oldDvd->cover_id, 'tmdb_')) {
-                        $tmdbId = str_replace('tmdb_', '', $oldDvd->cover_id);
-                    }
-
-                    $tmdbData = $this->getTmdbData($oldDvd, $v1CacheDir);
-                    $movieData = $this->prepareMovieData($oldDvd, $tmdbId, $tmdbData);
-
-                    $movie = Movie::firstOrNew(['id' => $oldDvd->id]);
-                    $movie->id = $oldDvd->id;
-                    $movie->timestamps = false;
-                    $movie->forceFill($movieData)->save();
-                } catch (\Exception $e) {
-                    $this->log("Fehler beim Migrieren von Film ID {$oldDvd->id} ({$oldDvd->title}): ".$e->getMessage());
-                }
-                $count++;
-            }
-            $this->log("Fortschritt: {$count}/{$total} Filme migriert.");
-        });
-    }
-
-    protected function migrateMovieActors()
-    {
-        if (! $this->tableExists('film_actor')) {
-            $this->log('Tabelle "film_actor" nicht gefunden, Überspringe...');
-
-            return;
-        }
-
-        $this->log('Migriere Film-Schauspieler Beziehungen...');
-        $total = DB::connection($this->connection)->table('film_actor')->count();
-        $count = 0;
-        DB::table('film_actor')->delete();
-
-        DB::connection($this->connection)->table('film_actor')->orderBy('film_id')->chunk(500, function ($oldLinks) use (&$count, $total) {
-            foreach ($oldLinks as $link) {
-                try {
-                    DB::table('film_actor')->insert([
-                        'film_id' => $link->film_id,
-                        'actor_id' => $link->actor_id,
-                        'role' => $link->role,
-                        'is_main_role' => $link->is_main_role,
-                        'sort_order' => $link->sort_order,
-                        'created_at' => property_exists($link, 'created_at') ? $link->created_at : now(),
-                    ]);
-                } catch (\Exception $e) {
-                    $this->log("Fehler beim Migrieren von Beziehung Film {$link->film_id} <-> Actor {$link->actor_id}: ".$e->getMessage());
-                }
-                $count++;
-            }
-            $this->log("Fortschritt: {$count}/{$total} Beziehungen migriert.");
-        });
     }
 
     protected function migrateUserWatched()
@@ -384,253 +309,6 @@ class MigrationService
         });
     }
 
-    protected function migrateSeasons()
-    {
-        if (! $this->tableExists('seasons')) {
-            $this->log('Tabelle "seasons" nicht gefunden, Überspringe...');
-
-            return;
-        }
-
-        $this->log('Migriere Staffeln...');
-        $total = DB::connection($this->connection)->table('seasons')->count();
-        $count = 0;
-
-        DB::connection($this->connection)->table('seasons')->orderBy('id')->chunk(100, function ($oldSeasons) use (&$count, $total) {
-            foreach ($oldSeasons as $oldSeason) {
-                try {
-                    $seasonData = $this->prepareSeasonData($oldSeason);
-                    $season = Season::firstOrNew(['id' => $oldSeason->id]);
-                    $season->timestamps = false;
-                    $season->forceFill($seasonData)->save();
-                } catch (\Exception $e) {
-                    $this->log("Fehler beim Migrieren von Staffel ID {$oldSeason->id}: ".$e->getMessage());
-                }
-                $count++;
-            }
-            $this->log("Fortschritt: {$count}/{$total} Staffeln migriert.");
-        });
-    }
-
-    /**
-     * Prepare season data for migration.
-     */
-    protected function prepareSeasonData($oldSeason): array
-    {
-        $title = property_exists($oldSeason, 'name') ? $oldSeason->name : ($oldSeason->title ?? "Staffel {$oldSeason->season_number}");
-
-        return [
-            'movie_id' => $oldSeason->series_id,
-            'season_number' => $oldSeason->season_number,
-            'title' => $title,
-            'overview' => property_exists($oldSeason, 'overview') ? $oldSeason->overview : null,
-            'created_at' => $oldSeason->created_at,
-            'updated_at' => $oldSeason->updated_at,
-        ];
-    }
-
-    protected function migrateEpisodes()
-    {
-        if (! $this->tableExists('episodes')) {
-            $this->log('Tabelle "episodes" nicht gefunden, Überspringe...');
-
-            return;
-        }
-
-        $this->log('Migriere Episoden...');
-        $total = DB::connection($this->connection)->table('episodes')->count();
-        $count = 0;
-
-        DB::connection($this->connection)->table('episodes')->orderBy('id')->chunk(200, function ($oldEpisodes) use (&$count, $total) {
-            foreach ($oldEpisodes as $oldEpisode) {
-                try {
-                    $episode = Episode::firstOrNew(['id' => $oldEpisode->id]);
-                    $episode->timestamps = false;
-                    $episode->forceFill([
-                        'season_id' => $oldEpisode->season_id,
-                        'episode_number' => $oldEpisode->episode_number,
-                        'title' => $oldEpisode->title,
-                        'overview' => $oldEpisode->overview,
-                        'created_at' => $oldEpisode->created_at,
-                        'updated_at' => $oldEpisode->updated_at,
-                    ])->save();
-                } catch (\Exception $e) {
-                    $this->log("Fehler beim Migrieren von Episode ID {$oldEpisode->id}: ".$e->getMessage());
-                }
-                $count++;
-            }
-            $this->log("Fortschritt: {$count}/{$total} Episoden migriert.");
-        });
-    }
-
-    protected function migrateSettings()
-    {
-        if (! $this->tableExists('settings')) {
-            $this->log('Tabelle "settings" nicht gefunden, Überspringe...');
-
-            return;
-        }
-
-        $this->log('Migriere Einstellungen...');
-        $oldSettings = DB::connection($this->connection)->table('settings')->get();
-        foreach ($oldSettings as $oldSetting) {
-            try {
-                Setting::updateOrCreate(
-                    ['key' => $oldSetting->key],
-                    [
-                        'value' => $oldSetting->value,
-                        'group' => property_exists($oldSetting, 'group') ? $oldSetting->group : 'general',
-                    ]
-                );
-            } catch (\Exception $e) {
-                $this->log("Fehler beim Migrieren von Einstellung {$oldSetting->key}: ".$e->getMessage());
-            }
-        }
-        $this->log('Einstellungen migriert.');
-    }
-
-    protected function migrateCounter()
-    {
-        if (! $this->tableExists('counter')) {
-            $this->log('Tabelle "counter" nicht gefunden, Überspringe...');
-
-            return;
-        }
-
-        $this->log('Migriere Counter...');
-        try {
-            $oldCounter = DB::connection($this->connection)->table('counter')->first();
-            if ($oldCounter) {
-                $this->migrateTotalVisits($oldCounter);
-                $this->migrateDailyVisits($oldCounter);
-            }
-        } catch (\Exception $e) {
-            $this->log('Fehler beim Migrieren des Counters: '.$e->getMessage());
-        }
-        $this->log('Counter migriert.');
-    }
-
-    /**
-     * Migrate total visits from the old counter.
-     */
-    protected function migrateTotalVisits($oldCounter)
-    {
-        $lastVisit = property_exists($oldCounter, 'last_visit_date')
-            ? $oldCounter->last_visit_date
-            : ($oldCounter->last_visit ?? null);
-
-        Counter::updateOrCreate(
-            ['page' => 'all'],
-            [
-                'visits' => $oldCounter->visits,
-                'last_visit' => $lastVisit,
-                'created_at' => $oldCounter->created_at,
-                'updated_at' => $oldCounter->updated_at,
-            ]
-        );
-    }
-
-    /**
-     * Migrate daily visits from the old counter.
-     */
-    protected function migrateDailyVisits($oldCounter)
-    {
-        $hasDaily = property_exists($oldCounter, 'daily_visits') &&
-                    property_exists($oldCounter, 'last_visit_date') &&
-                    $oldCounter->last_visit_date;
-
-        if ($hasDaily) {
-            $date = $oldCounter->last_visit_date;
-            Counter::updateOrCreate(
-                ['page' => "daily:$date"],
-                [
-                    'visits' => $oldCounter->daily_visits,
-                    'last_visit' => $date.' 23:59:59',
-                    'created_at' => $oldCounter->updated_at,
-                    'updated_at' => $oldCounter->updated_at,
-                ]
-            );
-        }
-    }
-
-    protected function migrateLogs()
-    {
-        $this->migrateActivityLogs();
-        $this->migrateAuditLogs();
-        $this->log('Logs migriert.');
-    }
-
-    protected function migrateActivityLogs()
-    {
-        if (! $this->tableExists('activity_log')) {
-            $this->log('Tabelle "activity_log" nicht gefunden, Überspringe...');
-
-            return;
-        }
-
-        $this->log('Migriere Activity Logs...');
-        $total = DB::connection($this->connection)->table('activity_log')->count();
-        $count = 0;
-        DB::connection($this->connection)->table('activity_log')->orderBy('id')->chunk(500, function ($oldLogs) use (&$count, $total) {
-            foreach ($oldLogs as $log) {
-                try {
-                    ActivityLog::updateOrCreate(
-                        ['id' => $log->id],
-                        [
-                            'user_id' => $log->user_id,
-                            'action' => $log->action,
-                            'details' => $log->details,
-                            'ip_address' => $log->ip_address,
-                            'user_agent' => $log->user_agent,
-                            'created_at' => $log->created_at,
-                        ]
-                    );
-                } catch (\Exception $e) {
-                    // Fail silently for logs to not bloat output
-                }
-                $count++;
-            }
-            if ($count % 1000 == 0) {
-                $this->log("Fortschritt: {$count}/{$total} Activity-Logs migriert.");
-            }
-        });
-    }
-
-    protected function migrateAuditLogs()
-    {
-        if (! $this->tableExists('audit_log')) {
-            $this->log('Tabelle "audit_log" nicht gefunden, Überspringe...');
-
-            return;
-        }
-
-        $this->log('Migriere Audit Logs...');
-        $totalAudit = DB::connection($this->connection)->table('audit_log')->count();
-        $countAudit = 0;
-        DB::connection($this->connection)->table('audit_log')->orderBy('id')->chunk(500, function ($oldAudit) use (&$countAudit, $totalAudit) {
-            foreach ($oldAudit as $log) {
-                try {
-                    AuditLog::updateOrCreate(
-                        ['id' => $log->id],
-                        [
-                            'user_id' => $log->user_id,
-                            'action' => $log->action,
-                            'ip_address' => $log->ip_address,
-                            'user_agent' => $log->user_agent,
-                            'created_at' => $log->created_at,
-                        ]
-                    );
-                } catch (\Exception $e) {
-                    // Fail silently
-                }
-                $countAudit++;
-            }
-            if ($countAudit % 1000 == 0) {
-                $this->log("Fortschritt: {$countAudit}/{$totalAudit} Audit-Logs migriert.");
-            }
-        });
-    }
-
     protected function migrateBackupCodes()
     {
         if (! $this->tableExists('user_backup_codes')) {
@@ -664,27 +342,6 @@ class MigrationService
         });
     }
 
-    protected function loadTmdbMapping(): array
-    {
-        $tmdbMapping = [];
-        if ($this->tableExists('activity_log')) {
-            $this->log('Lade TMDB-Mappings aus activity_log...');
-            $logs = DB::connection($this->connection)
-                ->table('activity_log')
-                ->where('action', 'FILM_UPDATE_TMDB')
-                ->get();
-            foreach ($logs as $log) {
-                $details = json_decode($log->details, true);
-                if (isset($details['film_id']) && isset($details['tmdb_id'])) {
-                    $tmdbMapping[$details['film_id']] = $details['tmdb_id'];
-                }
-            }
-            $this->log(count($tmdbMapping).' TMDB-Mappings geladen.');
-        }
-
-        return $tmdbMapping;
-    }
-
     protected function resolveTmdbCacheDir(): ?string
     {
         $v1CacheDir = $this->v1Path ? rtrim($this->v1Path, '/').'/cache/tmdb' : null;
@@ -710,80 +367,5 @@ class MigrationService
         $this->log('WARNUNG: TMDB-Cache Verzeichnis nicht gefunden! ('.($v1CacheDir ?: 'kein Pfad angegeben').')');
 
         return null;
-    }
-
-    protected function getTmdbData($oldDvd, ?string $v1CacheDir): ?array
-    {
-        if (! $v1CacheDir || ! is_dir($v1CacheDir)) {
-            return null;
-        }
-
-        $cacheKey = md5($oldDvd->title.($oldDvd->year ?? ''));
-        $cacheFile = $v1CacheDir.'/'.$cacheKey.'.json';
-
-        if (file_exists($cacheFile)) {
-            $tmdbJson = file_get_contents($cacheFile);
-            $this->log("Cache-Hit: {$oldDvd->title} ({$cacheKey})");
-
-            return json_decode($tmdbJson, true);
-        }
-
-        return null;
-    }
-
-    protected function prepareMovieData($oldDvd, $tmdbId, ?array $tmdbData): array
-    {
-        $rating = property_exists($oldDvd, 'rating') ? $oldDvd->rating : null;
-        if (($rating === null || $rating == 0) && $tmdbData) {
-            $rating = $tmdbData['vote_average'] ?? $tmdbData['tmdb_rating'] ?? null;
-        }
-
-        $selectableFields = [
-            'year' => $oldDvd->year,
-            'genre' => $oldDvd->genre,
-            'rating' => $rating,
-            'cover_id' => $oldDvd->cover_id,
-            'backdrop_id' => property_exists($oldDvd, 'backdrop_id') ? $oldDvd->backdrop_id : null,
-            'collection_type' => $oldDvd->collection_type,
-            'runtime' => $oldDvd->runtime,
-            'rating_age' => $oldDvd->rating_age,
-            'overview' => $oldDvd->overview,
-            'director' => property_exists($oldDvd, 'director') ? $oldDvd->director : null,
-            'trailer_url' => $oldDvd->trailer_url,
-            'boxset_parent' => $oldDvd->boxset_parent,
-            'is_deleted' => $this->resolveIsDeleted($oldDvd),
-            'view_count' => $oldDvd->view_count,
-            'created_at' => $oldDvd->created_at,
-            'updated_at' => $oldDvd->updated_at,
-            'tmdb_id' => $tmdbId,
-            'tmdb_type' => 'movie',
-            'tmdb_json' => $tmdbData,
-        ];
-
-        $movieData = ['title' => $oldDvd->title, 'user_id' => $oldDvd->user_id];
-
-        if (! empty($this->movieFields)) {
-            foreach ($this->movieFields as $field) {
-                if (array_key_exists($field, $selectableFields)) {
-                    $movieData[$field] = $selectableFields[$field];
-                }
-            }
-        } else {
-            $movieData = array_merge($movieData, $selectableFields);
-        }
-
-        return $movieData;
-    }
-
-    /**
-     * Resolve the deleted status of a movie.
-     */
-    protected function resolveIsDeleted($oldDvd): bool
-    {
-        if (isset($oldDvd->is_deleted) && $oldDvd->is_deleted) {
-            return true;
-        }
-
-        return property_exists($oldDvd, 'deleted') && $oldDvd->deleted;
     }
 }

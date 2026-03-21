@@ -114,36 +114,31 @@ class Movie extends Model
      */
     protected function resolveImageUrl($id, $type)
     {
-        if (! $id) {
-            return null;
+        $url = null;
+
+        if ($id) {
+            if (str_starts_with($id, 'http')) {
+                // Direct URL
+                $url = $id;
+            } elseif (str_starts_with($id, '/')) {
+                // TMDb Path
+                $base = $type === 'cover' ? 'https://image.tmdb.org/t/p/w500' : 'https://image.tmdb.org/t/p/w1280';
+                $url = $base.$id;
+            } elseif (str_contains($id, '.') && Storage::disk('public')->exists($id)) {
+                // Local file with extension
+                $url = Storage::disk('public')->url($id);
+            } else {
+                // Legacy format
+                $folder = $type === 'cover' ? 'covers' : 'backdrops';
+                $suffix = $type === 'cover' ? 'f' : '';
+                $path = "$folder/$id$suffix.jpg";
+
+                if (Storage::disk('public')->exists($path)) {
+                    $url = Storage::disk('public')->url($path);
+                }
+            }
         }
 
-        // Direct URL
-        if (str_starts_with($id, 'http')) {
-            return $id;
-        }
-
-        // TMDb Path
-        if (str_starts_with($id, '/')) {
-            $base = $type === 'cover' ? 'https://image.tmdb.org/t/p/w500' : 'https://image.tmdb.org/t/p/w1280';
-
-            return $base.$id;
-        }
-
-        // Local file with extension
-        if (str_contains($id, '.') && Storage::disk('public')->exists($id)) {
-            return Storage::disk('public')->url($id);
-        }
-
-        // Legacy format
-        $folder = $type === 'cover' ? 'covers' : 'backdrops';
-        $suffix = $type === 'cover' ? 'f' : '';
-        $path = "$folder/$id$suffix.jpg";
-
-        if (Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->url($path);
-        }
-
-        return null;
+        return $url;
     }
 }

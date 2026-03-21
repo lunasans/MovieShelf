@@ -6,70 +6,45 @@
     <title>{{ $title ?? config('app.name') }}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f0f0ee;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;-webkit-font-smoothing:antialiased;">
-    <!--[if mso]><table role="presentation" width="100%"><tr><td><![endif]-->
-    <table role="presentation" width="100%" style="background-color:#f0f0ee; border-collapse: collapse; border: 0;">
+    <!--[if mso]><table role="presentation" style="width: 100%;"><tr><td><![endif]-->
+    <table role="presentation" style="width: 100%; background-color: #f0f0ee; border-collapse: collapse; border: 0;">
         <tr>
             <td style="padding:40px 20px; text-align: center;">
-                <table role="presentation" width="580" style="max-width:580px;width:100%; border-collapse: collapse; border: 0; margin-left: auto; margin-right: auto;">
+                <table role="presentation" style="max-width: 580px; width: 100%; border-collapse: collapse; border: 0; margin-left: auto; margin-right: auto;">
                     {{-- ── Header mit Logo ── --}}
                     <tr>
-                        <td style="background-color:#ffffff;border-radius:16px 16px 0 0;border:1px solid #e2e2df;border-bottom:none;padding:0;">
-                            <table role="presentation" width="100%" style="border-collapse: collapse; border: 0;">
-                                {{-- Filmstreifen-Perforationen --}}
-                                <tr>
-                                    <td style="padding:10px 24px 0;font-size:0;line-height:0;">
-                                        <table role="presentation" style="width:100%; border-collapse: collapse; border: 0;">
-                                            <tr>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td style="width:28px;"></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td style="width:28px;"></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td style="width:28px;"></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td style="width:28px;"></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
+                        <td style="background-color: #ffffff; border-radius: 16px 16px 0 0; border: 1px solid #e2e2df; border-bottom: none; padding: 0;">
+                            {{-- Header Container --}}
+                            <div style="width: 100%; display: block;">
+                                {{-- Filmstreifen-Perforationen oben --}}
+                                <div style="padding: 10px 24px 0; font-size: 0; line-height: 0; text-align: center;">
+                                    @for($i = 0; $i < 6; $i++)
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNyIgaGVpZ2h0PSI3IiB2aWV3Qm94PSIwIDAgNyA3IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjMuNSIgY3k9IjMuNSIgcj0iMy41IiBmaWxsPSIjZThlOGU1Ii8+PC9zdmc+" alt="" style="width: 7px; height: 7px; display: inline-block; vertical-align: middle;" />
+                                        @if($i < 5)<span style="display: inline-block; width: 28px;"></span>@endif
+                                    @endfor
+                                </div>
+
                                 {{-- Logo --}}
-                                <tr>
-                                    <td style="padding:28px 40px 24px;text-align:center;">
-                                        @php
-                                            $logoPath = public_path('img/logo/logo.png');
-                                            $logoData = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : null;
-                                        @endphp
-                                        @if($logoData)
-                                            <img src="data:image/png;base64,{{ $logoData }}" alt="{{ config('app.name') }}" style="max-height:80px;max-width:100%;display:inline-block;" />
-                                        @else
-                                            <span style="font-size:22px;font-weight:800;color:#1f2937;letter-spacing:0.05em;text-transform:uppercase;">{{ config('app.name') }}</span>
-                                        @endif
-                                    </td>
-                                </tr>
+                                <div style="padding: 28px 40px 24px; text-align: center;">
+                                    @php
+                                        $logoPath = public_path('img/logo/logo.png');
+                                        $logoData = file_exists($logoPath) ? base64_encode(file_get_contents($logoPath)) : null;
+                                    @endphp
+                                    @if($logoData)
+                                        <img src="data:image/png;base64,{{ $logoData }}" alt="{{ config('app.name') }}" style="max-height: 80px; max-width: 100%; display: inline-block;" />
+                                    @else
+                                        <span style="font-size: 22px; font-weight: 800; color: #1f2937; letter-spacing: 0.05em; text-transform: uppercase;">{{ config('app.name') }}</span>
+                                    @endif
+                                </div>
+
                                 {{-- Perforationen unten --}}
-                                <tr>
-                                    <td style="padding:0 24px 10px;font-size:0;line-height:0;">
-                                        <table role="presentation" style="width:100%; border-collapse: collapse; border: 0;">
-                                            <tr>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td style="width:28px;"></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td style="width:28px;"></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td style="width:28px;"></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                                <td style="width:28px;"></td>
-                                                <td style="width:7px;height:7px;background:#e8e8e5;border-radius:50%;"></td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </table>
+                                <div style="padding: 0 24px 10px; font-size: 0; line-height: 0; text-align: center;">
+                                    @for($i = 0; $i < 6; $i++)
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNyIgaGVpZ2h0PSI3IiB2aWV3Qm94PSIwIDAgNyA3IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjMuNSIgY3k9IjMuNSIgcj0iMy41IiBmaWxsPSIjZThlOGU1Ii8+PC9zdmc+" alt="" style="width: 7px; height: 7px; display: inline-block; vertical-align: middle;" />
+                                        @if($i < 5)<span style="display: inline-block; width: 28px;"></span>@endif
+                                    @endfor
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     {{-- ── Akzent-Linie ── --}}
