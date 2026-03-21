@@ -197,7 +197,8 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 2.1.0 - Laravel Framework Edition
+**Version**: 2.1.1 - Laravel Framework Edition
+
 **Letztes Update**: März 2026  
 **Status**: Aktiv entwickelt
 
