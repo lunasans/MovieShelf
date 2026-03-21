@@ -32,18 +32,19 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
+          touch database/database.sqlite
 
       - name: Run Migrations
         run: php artisan migrate --force
         env:
           DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
+          DB_DATABASE: database/database.sqlite
 
       - name: Run Tests with Coverage
         run: ./vendor/bin/phpunit --coverage-clover coverage.xml --log-junit report.xml
         env:
           DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
+          DB_DATABASE: database/database.sqlite
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@884b79409bbd464b2a59edc326a4b77dc56b2195 # v3.0.0
