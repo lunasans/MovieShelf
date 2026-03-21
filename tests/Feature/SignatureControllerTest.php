@@ -68,9 +68,7 @@ class SignatureControllerTest extends TestCase
 
     public function test_cache_is_cleared()
     {
-        if (!function_exists('imagecreatetruecolor')) {
-            $this->markTestSkipped('GD Library is not installed.');
-        }
+        $this->withoutMiddleware(\App\Http\Middleware\VisitorCounterMiddleware::class);
         
         Cache::shouldReceive('forget')->once()->with('signature_banner_type_1');
         Cache::shouldReceive('remember')->once()->andReturn(response('image', 200, ['Content-Type' => 'image/png']));
