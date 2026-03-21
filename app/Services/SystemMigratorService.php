@@ -126,10 +126,14 @@ class SystemMigratorService
                         'user_agent' => $log->user_agent,
                         'created_at' => $log->created_at,
                     ]);
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                    $this->log("Fehler bei Activity/Audit-Log: " . $e->getMessage());
+                }
                 $count++;
             }
-            if ($count % 1000 == 0) $this->log("Fortschritt: {$count}/{$total} Activity-Logs migriert.");
+            if ($count % 1000 == 0) {
+                $this->log("Fortschritt: {$count}/{$total} Activity-Logs migriert.");
+            }
         });
     }
 
@@ -153,10 +157,14 @@ class SystemMigratorService
                         'user_agent' => $log->user_agent,
                         'created_at' => $log->created_at,
                     ]);
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                    $this->log("Fehler bei Activity/Audit-Log: " . $e->getMessage());
+                }
                 $countAudit++;
             }
-            if ($countAudit % 1000 == 0) $this->log("Fortschritt: {$countAudit}/{$totalAudit} Audit-Logs migriert.");
+            if ($countAudit % 1000 == 0) {
+                $this->log("Fortschritt: {$countAudit}/{$totalAudit} Audit-Logs migriert.");
+            }
         });
     }
 }

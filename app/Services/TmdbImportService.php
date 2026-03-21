@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use App\Exceptions\TmdbImportException;
 
 class TmdbImportService
 {
@@ -29,7 +30,7 @@ class TmdbImportService
     {
         $details = $this->tmdb->getMovieDetails($tmdbId);
         if (isset($details['error'])) {
-            throw new \RuntimeException($details['error']);
+            throw new TmdbImportException($details['error']);
         }
 
         try {
@@ -69,7 +70,7 @@ class TmdbImportService
     {
         $details = $this->tmdb->getTvDetails($tmdbId);
         if (isset($details['error'])) {
-            throw new \RuntimeException($details['error']);
+            throw new TmdbImportException($details['error']);
         }
 
         try {
@@ -109,7 +110,7 @@ class TmdbImportService
     public function bulkUpdate(Movie $movie)
     {
         if (! $movie->tmdb_id) {
-            throw new \RuntimeException('Keine TMDb ID für diesen Film vorhanden.');
+            throw new TmdbImportException('Keine TMDb ID für diesen Film vorhanden.');
         }
 
         try {
@@ -118,7 +119,7 @@ class TmdbImportService
                 $details = $isTv ? $this->tmdb->getTvDetails($movie->tmdb_id) : $this->tmdb->getMovieDetails($movie->tmdb_id);
 
                 if (isset($details['error'])) {
-                    throw new \RuntimeException($details['error']);
+                    throw new TmdbImportException($details['error']);
                 }
 
                 $movie->update($this->getUpdateData($movie, $details, $isTv));
