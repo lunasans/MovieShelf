@@ -28,23 +28,28 @@ class FindDuplicateMovies extends Command
         $this->warn('Found ' . $duplicates->count() . ' titles with multiple entries.');
 
         foreach ($duplicates as $duplicate) {
-            $movies = Movie::where('title', $duplicate->title)
-                ->where('year', $duplicate->year)
-                ->where('collection_type', $duplicate->collection_type)
-                ->get();
-
-            $this->line("\nDuplicates for: \"{$duplicate->title}\" ({$duplicate->year}) [{$duplicate->collection_type}]");
-            
-            foreach ($movies as $movie) {
-                $this->line("  ID: {$movie->id} | Year: {$movie->year} | TMDb: " . ($movie->tmdb_id ?? 'N/A'));
-            }
-
-            if ($this->option('merge')) {
-                $this->mergeMovies($movies);
-            }
+            $this->processDuplicate($duplicate);
         }
 
         return 0;
+    }
+
+    private function processDuplicate($duplicate)
+    {
+        $movies = Movie::where('title', $duplicate->title)
+            ->where('year', $duplicate->year)
+            ->where('collection_type', $duplicate->collection_type)
+            ->get();
+
+        $this->line("\nDuplicates for: \"{$duplicate->title}\" ({$duplicate->year}) [{$duplicate->collection_type}]");
+        
+        foreach ($movies as $movie) {
+            $this->line("  ID: {$movie->id} | Year: {$movie->year} | TMDb: " . ($movie->tmdb_id ?? 'N/A'));
+        }
+
+        if ($this->option('merge')) {
+            $this->mergeMovies($movies);
+        }
     }
 
     private function mergeMovies($movies)

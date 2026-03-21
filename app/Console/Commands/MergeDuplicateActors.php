@@ -98,24 +98,30 @@ class MergeDuplicateActors extends Command
     private function moveRelation($rel, $redundantId, $survivorId)
     {
         try {
-            $exists = \Illuminate\Support\Facades\DB::table('film_actor')
-                ->where('actor_id', $survivorId)
-                ->where('film_id', $rel->film_id)
-                ->exists();
-
-            if ($exists) {
-                \Illuminate\Support\Facades\DB::table('film_actor')
-                    ->where('actor_id', $redundantId)
-                    ->where('film_id', $rel->film_id)
-                    ->delete();
-            } else {
-                \Illuminate\Support\Facades\DB::table('film_actor')
-                    ->where('actor_id', $redundantId)
-                    ->where('film_id', $rel->film_id)
-                    ->update(['actor_id' => $survivorId]);
-            }
+            $this->resolveRelationConflict($rel->film_id, $redundantId, $survivorId);
         } catch (\Exception $e) {
             $this->error("Failed to move relation for film {$rel->film_id}: " . $e->getMessage());
         }
+    }
+
+    private function resolveRelationConflict($filmId, $redundantId, $survivorId)
+    {
+        $exists = \Illuminate\Support\Facades\DB::table('film_actor')
+            ->where('actor_id', $survivorId)
+            ->where('film_id', $filmId)
+            ->exists();
+
+        if ($exists) {
+            \Illuminate\Support\Facades\DB::table('film_actor')
+                ->where('actor_id', $redundantId)
+                ->where('film_id', $filmId)
+                ->delete();
+            return;
+        }
+
+        \Illuminate\Support\Facades\DB::table('film_actor')
+            ->where('actor_id', $redundantId)
+            ->where('film_id', $filmId)
+            ->update(['actor_id' => $survivorId]);
     }
 }

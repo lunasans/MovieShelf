@@ -101,91 +101,12 @@ class TmdbImportController extends Controller
                 'tmdb_json' => $details,
             ]);
 
-            // Handle Images (Poster & Backdrop)
-            if (!empty($details['poster_path'])) {
-                $posterUrl = "https://image.tmdb.org/t/p/w500" . $details['poster_path'];
-                $imageContent = Http::get($posterUrl)->body();
-                $filename = 'covers/' . Str::random(20) . '.jpg';
-                Storage::disk('public')->put($filename, $imageContent);
-                $movie->update(['cover_id' => $filename]);
-            }
-
-            if (!empty($details['backdrop_path'])) {
-                $backdropUrl = "https://image.tmdb.org/t/p/original" . $details['backdrop_path'];
-                $imageContent = Http::get($backdropUrl)->body();
-                $filename = 'backdrops/' . Str::random(20) . '.jpg';
-                Storage::disk('public')->put($filename, $imageContent);
-                $movie->update(['backdrop_id' => $filename]);
-            }
-
-            // Handle Actors (Top 10)
-            if (isset($details['credits']['cast'])) {
-                $cast = array_slice($details['credits']['cast'], 0, 10);
-                foreach ($cast as $person) {
-                    $nameParts = explode(' ', $person['name'], 2);
-                    $firstName = $nameParts[0];
-                    $lastName = $nameParts[1] ?? '';
-
-                $actor = Actor::where('tmdb_id', $person['id'])->first();
-
-                // Fallback: Check by name if no tmdb_id match (for legacy v1.5 imports)
-                if (!$actor) {
-                    $actor = \App\Models\Actor::where('first_name', $firstName)
-                                  ->where('last_name', $lastName)
-                                  ->first();
-                }
-
-                if ($actor) {
-                    // Update existing actor
-                    if (!$actor->tmdb_id) {
-                        $actor->update(['tmdb_id' => $person['id']]);
-                    }
-                } else {
-                    // Create entirely new actor
-                    $actor = \App\Models\Actor::create([
-                        'tmdb_id' => $person['id'],
-                        'first_name' => $firstName,
-                        'last_name' => $lastName,
-                    ]);
-                }
-
-                    // Handle Profile Image
-                    if (!empty($person['profile_path']) && empty($actor->profile_path)) {
-                        try {
-                            $profileUrl = "https://image.tmdb.org/t/p/w185" . $person['profile_path'];
-                            $imageContent = Http::get($profileUrl)->body();
-                            $filename = 'actors/' . Str::random(20) . '.jpg';
-                            Storage::disk('public')->put($filename, $imageContent);
-                            $actor->update(['profile_path' => $filename]);
-                        } catch (\Exception $e) {
-                            Log::error("Could not download actor profile: " . $e->getMessage());
-                        }
-                    }
-
-                    $movie->actors()->syncWithoutDetaching([
-                        $actor->id => [
-                            'role' => $person['character'],
-                            'is_main_role' => $person['order'] < 3,
-                            'sort_order' => $person['order']
-                        ]
-                    ]);
-                }
-            }
+            $this->handleImages($movie, $details);
+            $this->handleActors($movie, $details);
 
             DB::commit();
 
-            ActivityLog::create([
-                'user_id' => auth()->id(),
-                'action' => 'MOVIE_IMPORT',
-                'details' => json_encode([
-                    'movie_id' => $movie->id,
-                    'title' => $movie->title,
-                    'media_type' => 'movie',
-                    'tmdb_id' => $tmdbId,
-                ]),
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
+            $this->logActivity($movie, 'MOVIE_IMPORT', ['media_type' => 'movie', 'tmdb_id' => $tmdbId]);
 
             return redirect()->route('admin.movies.index')->with('success', "Filme '{$movie->title}' wurde erfolgreich importiert.");
 
@@ -332,18 +253,7 @@ class TmdbImportController extends Controller
 
             DB::commit();
 
-            ActivityLog::create([
-                'user_id' => auth()->id(),
-                'action' => 'SERIES_IMPORT',
-                'details' => json_encode([
-                    'movie_id' => $movie->id,
-                    'title' => $movie->title,
-                    'media_type' => 'tv',
-                    'tmdb_id' => $tmdbId,
-                ]),
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-            ]);
+            $this->logActivity($movie, 'SERIES_IMPORT', ['media_type' => 'tv', 'tmdb_id' => $tmdbId]);
 
             return redirect()->route('admin.movies.index')->with('success', "Serie '{$movie->title}' wurde erfolgreich importiert.");
 
@@ -457,89 +367,33 @@ class TmdbImportController extends Controller
         try {
             DB::beginTransaction();
 
-            if ($movie->tmdb_type === 'tv') {
-                $details = $this->tmdb->getTvDetails($movie->tmdb_id);
-                if (isset($details['error'])) throw new \Exception($details['error']);
-
-                $movie->update([
-                    'title' => $details['name'],
-                    'year' => isset($details['first_air_date']) ? (int)substr($details['first_air_date'], 0, 4) : $movie->year,
-                    'rating' => $details['vote_average'] ?? $movie->rating,
-                    'genre' => implode(', ', array_column($details['genres'], 'name')),
-                    'runtime' => $details['episode_run_time'][0] ?? $movie->runtime,
-                    'overview' => $details['overview'] ?? $movie->overview,
-                    'director' => $this->extractCreator($details),
-                    'rating_age' => $this->extractRating($details) ?? $movie->rating_age,
-                    'tmdb_json' => $details,
-                ]);
-
-                $this->handleActors($movie, $details);
-            } else {
-                $details = $this->tmdb->getMovieDetails($movie->tmdb_id);
-                if (isset($details['error'])) throw new \Exception($details['error']);
-
-                $movie->update([
-                    'title' => $details['title'],
-                    'year' => isset($details['release_date']) ? (int)substr($details['release_date'], 0, 4) : $movie->year,
-                    'rating' => $details['vote_average'] ?? $movie->rating,
-                    'genre' => implode(', ', array_column($details['genres'], 'name')),
-                    'runtime' => $details['runtime'] ?? $movie->runtime,
-                    'overview' => $details['overview'] ?? $movie->overview,
-                    'director' => $this->extractDirector($details),
-                    'trailer_url' => $this->extractTrailer($details) ?? $movie->trailer_url,
-                    'rating_age' => $this->extractRating($details) ?? $movie->rating_age,
-                    'tmdb_json' => $details,
-                ]);
-
-                // Handle Actors (Top 10)
-                if (isset($details['credits']['cast'])) {
-                    $cast = array_slice($details['credits']['cast'], 0, 10);
-                    $actorIds = [];
-                    foreach ($cast as $person) {
-                        $nameParts = explode(' ', $person['name'], 2);
-                        $firstName = $nameParts[0];
-                        $lastName = $nameParts[1] ?? '';
-
-                        $actor = \App\Models\Actor::where('tmdb_id', $person['id'])->first();
-
-                        if (!$actor) {
-                            $actor = \App\Models\Actor::where('first_name', $firstName)
-                                          ->where('last_name', $lastName)
-                                          ->first();
-                        }
-
-                        if ($actor) {
-                            if (!$actor->tmdb_id) {
-                                $actor->update(['tmdb_id' => $person['id']]);
-                            }
-                        } else {
-                            $actor = \App\Models\Actor::create([
-                                'tmdb_id' => $person['id'],
-                                'first_name' => $firstName,
-                                'last_name' => $lastName,
-                            ]);
-                        }
-
-                        // Handle Profile Image
-                        if (!empty($person['profile_path']) && empty($actor->profile_path)) {
-                            try {
-                                $profileUrl = "https://image.tmdb.org/t/p/w185" . $person['profile_path'];
-                                $imageContent = Http::get($profileUrl)->body();
-                                $filename = 'actors/' . Str::random(20) . '.jpg';
-                                Storage::disk('public')->put($filename, $imageContent);
-                                $actor->update(['profile_path' => $filename]);
-                            } catch (\Exception $e) {}
-                        }
-                        
-                        $actorIds[$actor->id] = [
-                            'role' => $person['character'],
-                            'is_main_role' => $person['order'] < 3,
-                            'sort_order' => $person['order']
-                        ];
-                    }
-                    $movie->actors()->sync($actorIds);
-                }
+            $isTv = ($movie->tmdb_type === 'tv');
+            $details = $isTv ? $this->tmdb->getTvDetails($movie->tmdb_id) : $this->tmdb->getMovieDetails($movie->tmdb_id);
+            
+            if (isset($details['error'])) {
+                throw new \Exception($details['error']);
             }
+
+            $updateData = [
+                'title' => $details['name'] ?? $details['title'],
+                'year' => isset($details['release_date']) || isset($details['first_air_date']) 
+                    ? (int)substr($details['release_date'] ?? $details['first_air_date'], 0, 4) 
+                    : $movie->year,
+                'rating' => $details['vote_average'] ?? $movie->rating,
+                'genre' => implode(', ', array_column($details['genres'], 'name')),
+                'runtime' => $details['runtime'] ?? ($details['episode_run_time'][0] ?? $movie->runtime),
+                'overview' => $details['overview'] ?? $movie->overview,
+                'director' => $isTv ? $this->extractCreator($details) : $this->extractDirector($details),
+                'rating_age' => $this->extractRating($details) ?? $movie->rating_age,
+                'tmdb_json' => $details,
+            ];
+
+            if (!$isTv && isset($details['videos'])) {
+                $updateData['trailer_url'] = $this->extractTrailer($details) ?? $movie->trailer_url;
+            }
+
+            $movie->update($updateData);
+            $this->handleActors($movie, $details);
 
             DB::commit();
             return response()->json(['success' => true]);
@@ -548,6 +402,22 @@ class TmdbImportController extends Controller
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    protected function logActivity(Movie $movie, string $action, array $extraDetails = [])
+    {
+        $details = array_merge([
+            'movie_id' => $movie->id,
+            'title' => $movie->title,
+        ], $extraDetails);
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => $action,
+            'details' => json_encode($details),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
     }
     /**
      * Get a list of movies that don't have a TMDb ID.
