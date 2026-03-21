@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('counter')) {
+        if (! Schema::hasTable('counter')) {
             Schema::create('counter', function (Blueprint $table) {
                 $table->id();
                 $table->string('page', 255);

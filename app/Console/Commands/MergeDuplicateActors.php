@@ -32,22 +32,24 @@ class MergeDuplicateActors extends Command
 
         if ($duplicates->isEmpty()) {
             $this->info('No duplicates found.');
+
             return 0;
         }
 
-        $this->info('Found ' . $duplicates->count() . ' names with duplicates.');
+        $this->info('Found '.$duplicates->count().' names with duplicates.');
 
         foreach ($duplicates as $dup) {
             $this->mergeDuplicateGroup($dup);
         }
 
         $this->info('Finished merging actors.');
+
         return 0;
     }
 
     private function trimActorNames()
     {
-        \Illuminate\Support\Facades\DB::update("UPDATE actors SET first_name = TRIM(first_name), last_name = TRIM(last_name)");
+        \Illuminate\Support\Facades\DB::update('UPDATE actors SET first_name = TRIM(first_name), last_name = TRIM(last_name)');
     }
 
     private function getDuplicateNames()
@@ -66,7 +68,7 @@ class MergeDuplicateActors extends Command
                 ->get();
 
             $survivor = $this->identifySurvivor($actors);
-            $redundants = $actors->reject(fn($a) => $a->id === $survivor->id);
+            $redundants = $actors->reject(fn ($a) => $a->id === $survivor->id);
 
             $this->warn("Merging duplicates for: {$dup->first_name} {$dup->last_name} (Keeping ID {$survivor->id})");
 
@@ -79,7 +81,7 @@ class MergeDuplicateActors extends Command
 
     private function identifySurvivor($actors)
     {
-        return $actors->sortByDesc(function($a) {
+        return $actors->sortByDesc(function ($a) {
             return ($a->tmdb_id ? 10 : 0) + ($a->profile_path ? 5 : 0) + ($a->id / 1000000);
         })->first();
     }
@@ -100,7 +102,7 @@ class MergeDuplicateActors extends Command
         try {
             $this->resolveRelationConflict($rel->film_id, $redundantId, $survivorId);
         } catch (\Exception $e) {
-            $this->error("Failed to move relation for film {$rel->film_id}: " . $e->getMessage());
+            $this->error("Failed to move relation for film {$rel->film_id}: ".$e->getMessage());
         }
     }
 
@@ -116,6 +118,7 @@ class MergeDuplicateActors extends Command
                 ->where('actor_id', $redundantId)
                 ->where('film_id', $filmId)
                 ->delete();
+
             return;
         }
 

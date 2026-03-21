@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-use App\Models\Setting;
 
 class ThemeController extends Controller
 {
@@ -29,7 +29,7 @@ class ThemeController extends Controller
 
         return response()->json([
             'success' => true,
-            'theme' => $theme
+            'theme' => $theme,
         ]);
     }
 }

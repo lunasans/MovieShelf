@@ -2,9 +2,9 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
 use App\Http\Controllers\Admin\SettingController;
 use App\Services\TmdbService;
+use Tests\TestCase;
 
 class SettingControllerTest extends TestCase
 {
@@ -13,7 +13,7 @@ class SettingControllerTest extends TestCase
      */
     public function test_it_returns_correct_group_for_keys(): void
     {
-        // Wir brauchen eine Instanz des Controllers. 
+        // Wir brauchen eine Instanz des Controllers.
         // Da der Konstruktor einen TmdbService erwartet, "mocken" wir diesen (wir tun so als ob).
         $tmdbService = $this->createMock(TmdbService::class);
         $controller = new SettingController($tmdbService);

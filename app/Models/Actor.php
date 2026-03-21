@@ -27,12 +27,12 @@ class Actor extends Model
     public function movies()
     {
         return $this->belongsToMany(Movie::class, 'film_actor', 'actor_id', 'film_id')
-                    ->withPivot(['role', 'is_main_role', 'sort_order']);
+            ->withPivot(['role', 'is_main_role', 'sort_order']);
     }
 
     public function getProfileUrlAttribute()
     {
-        if (!$this->profile_path) {
+        if (! $this->profile_path) {
             return null;
         }
 
@@ -43,7 +43,7 @@ class Actor extends Model
 
         // TMDb Path
         if (str_starts_with($this->profile_path, '/')) {
-            return 'https://image.tmdb.org/t/p/w185' . $this->profile_path;
+            return 'https://image.tmdb.org/t/p/w185'.$this->profile_path;
         }
 
         // Local file
@@ -54,7 +54,7 @@ class Actor extends Model
         }
 
         // Default local path
-        $path = 'actors/' . $this->profile_path;
+        $path = 'actors/'.$this->profile_path;
         if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
             return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
         }

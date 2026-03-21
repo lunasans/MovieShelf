@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('github_cache')) {
+        if (! Schema::hasTable('github_cache')) {
             Schema::create('github_cache', function (Blueprint $table) {
                 $table->string('key', 255)->primary();
                 $table->text('value');

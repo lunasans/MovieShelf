@@ -19,6 +19,7 @@ Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['de', 'en'])) {
         session(['locale' => $locale]);
     }
+
     return back();
 })->name('lang.switch');
 
@@ -59,7 +60,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('dashboard');
         Route::resource('movies', \App\Http\Controllers\Admin\MovieController::class);
         Route::resource('actors', \App\Http\Controllers\Admin\ActorController::class);
-        
+
         Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
         Route::post('settings/test-mail', [\App\Http\Controllers\Admin\SettingController::class, 'testMail'])->name('settings.test-mail');

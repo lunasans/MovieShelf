@@ -1,5 +1,5 @@
-<div class="animate-in fade-in slide-in-from-right-4 duration-500" 
-     x-data="{ 
+<div class="animate-in fade-in slide-in-from-right-4 duration-500"
+     x-data="{
         showTrailer: false,
         isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }},
         watchedCount: {{ $movie->watchedByUsers()->count() }},
@@ -17,25 +17,22 @@
                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
                            'Content-Type': 'application/json',
                            'Accept': 'application/json'
-                       }
-                   });
+                       }                   });
                    const data = await response.json();
                    if (data.watched !== undefined) {
                        this.isWatched = data.watched;
                        this.watchedCount = data.count;
                        // Dispatch event for dashboard cards
-                       window.dispatchEvent(new CustomEvent('movie-watched-updated', { 
-                           detail: { movieId: {{ $movie->id }}, watched: data.watched } 
+                       window.dispatchEvent(new CustomEvent('movie-watched-updated', {
+                           detail: { movieId: {{ $movie->id }}, watched: data.watched }
                        }));
                    }
                } catch (e) {
                    console.error('Toggle watched failed', e);
-               }
-           @else
+               }           @else
                window.location.href = '{{ route('login') }}';
            @endif
-        }
-     }">
+        }     }">
     <!-- Layout Alignment Spacer (Matches Dashboard Tabs) -->
     <div class="h-[46px] mb-8"></div>
 
@@ -82,7 +79,7 @@
                         </div>
                     @endif
                 </div>
-                
+
                 <div class="pb-2 flex-1 min-w-0">
                     <div class="flex items-center gap-3 mb-4">
                         <span class="px-3 py-1 bg-blue-600/80 backdrop-blur-md rounded-lg text-[10px] font-black tracking-widest uppercase border border-white/20 shadow-lg">
@@ -92,13 +89,13 @@
                             {{ $movie->year }}
                         </span>
                         @if($movie->rating_age !== null)
-                            <img src="{{ asset('img/fsk/fsk-' . $movie->rating_age . '.svg') }}" 
-                                 alt="FSK {{ $movie->rating_age }}" 
+                            <img src="{{ asset('img/fsk/fsk-' . $movie->rating_age . '.svg') }}"
+                                 alt="FSK {{ $movie->rating_age }}"
                                  class="h-8 w-auto drop-shadow-lg"
                                  onerror="this.style.display='none'">
                         @endif
                     </div>
-                    
+
                     <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-gray-300 text-sm font-medium">
                         <div class="flex items-center gap-2">
                             <i class="bi bi-clock text-blue-400"></i>
@@ -208,8 +205,7 @@
             <div class="glass p-6 rounded-3xl border-white/5">
                 <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2 underline decoration-blue-500/50 underline-offset-8">
                     <i class="bi bi-collection-play text-blue-400"></i>
-                    {{ __('Filme in diesem Set') }} ({{ $movie->boxsetChildren->count() }})
-                </h3>
+                    {{ __('Filme in diesem Set') }} ({{ $movie->boxsetChildren->count() }})                </h3>
                 <div class="space-y-3">
                     @foreach($movie->boxsetChildren as $child)
                         <div @click="fetchDetails({{ $child->id }})" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group/child">
@@ -238,13 +234,11 @@
                     <i class="bi bi-layers text-blue-400"></i>
                     {{ __('Staffeln & Episoden') }}
                 </h3>
-                
                 <div class="space-y-4">
                     @foreach($movie->seasons->sortBy('season_number') as $season)
                         <div class="rounded-2xl border border-white/5 bg-white/5 overflow-hidden transition-all duration-300"
                              :class="activeSeason === {{ $season->id }} ? 'border-blue-500/30 bg-white/10' : 'hover:border-white/10'">
-                            
-                            <button @click="activeSeason = activeSeason === {{ $season->id }} ? null : {{ $season->id }}" 
+                            <button @click="activeSeason = activeSeason === {{ $season->id }} ? null : {{ $season->id }}"
                                     class="w-full flex items-center justify-between p-4 text-left group">
                                 <div class="flex items-center gap-4">
                                     <div class="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center text-blue-400 font-black">
@@ -255,11 +249,10 @@
                                         <div class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">{{ $season->episodes->count() }} {{ __('Folgen') }}</div>
                                     </div>
                                 </div>
-                                <i class="bi text-gray-500 transition-transform duration-300" 
+                                <i class="bi text-gray-500 transition-transform duration-300"
                                    :class="activeSeason === {{ $season->id }} ? 'bi-chevron-up rotate-180 text-blue-400' : 'bi-chevron-down'"></i>
                             </button>
-
-                            <div x-show="activeSeason === {{ $season->id }}" 
+                            <div x-show="activeSeason === {{ $season->id }}"
                                  x-collapse
                                  class="border-t border-white/5 bg-black/20">
                                 @if($season->overview)
@@ -276,8 +269,7 @@
                                             </div>
                                             @if($episode->overview)
                                                 <p class="text-[10px] text-gray-500 leading-relaxed ml-10 line-clamp-2">
-                                                    {{ $episode->overview }}
-                                                </p>
+                                                    {{ $episode->overview }}                                                </p>
                                             @endif
                                         </div>
                                     @endforeach
@@ -295,7 +287,7 @@
         @if($movie->trailer_url)
             <div class="relative w-full aspect-video rounded-3xl overflow-hidden glass border-white/5 shadow-2xl group/player bg-black mb-4">
                 <!-- Thumbnail Layer -->
-                <div x-show="!showTrailer" 
+                <div x-show="!showTrailer"
                      class="absolute inset-0 cursor-pointer"
                      @click="showTrailer = true">
                     @if($movie->backdrop_url)
@@ -307,14 +299,12 @@
                             <i class="bi bi-film text-gray-700 text-6xl"></i>
                         </div>
                     @endif
-                    
                     <!-- Play Button Overlay -->
                     <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/player:bg-transparent transition-colors duration-500">
                         <div class="w-16 h-16 bg-rose-600/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(225,29,72,0.4)] transform group-hover/player:scale-110 transition-transform duration-300">
                             <i class="bi bi-play-fill text-3xl text-white ml-1"></i>
                         </div>
                     </div>
-                    
                     <!-- Title Overlay -->
                     <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
                         <div class="text-white font-bold text-sm tracking-wider uppercase flex items-center gap-2">
@@ -323,14 +313,14 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Video Player Layer -->
                 <template x-if="showTrailer">
-                    <iframe 
-                        :src="'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&mute=0&rel=0'" 
-                        class="w-full h-full absolute inset-0 z-10" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    <iframe
+                        :src="'https://www.youtube-nocookie.com/embed/' + youtubeId + '?autoplay=1&mute=0&rel=0'"
+                        :title="'Trailer for ' + '{{ $movie->title }}'"
+                        class="w-full h-full absolute inset-0 z-10"
+                        style="border: 0;"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowfullscreen>
                     </iframe>
                 </template>
@@ -344,7 +334,7 @@
 
         <!-- Other Actions (Watched Toggle) -->
         <div class="flex justify-end">
-            <button @click="toggleWatched()" 
+            <button @click="toggleWatched()"
                     class="h-14 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center gap-3 transition-all group shadow-lg"
                     :class="isWatched ? 'border-blue-500/50 bg-blue-500/10' : ''">
                 <span class="text-xs font-bold uppercase tracking-widest transition-colors"
@@ -352,7 +342,7 @@
                     <span x-show="isWatched">{{ __('Gesehen') }}</span>
                     <span x-show="!isWatched">{{ __('Als gesehen markieren') }}</span>
                 </span>
-                <i class="bi text-xl transition-colors" 
+                <i class="bi text-xl transition-colors"
                    :class="isWatched ? 'bi-eye-fill text-blue-400' : 'bi-eye text-gray-400 group-hover:text-blue-400'"></i>
             </button>
         </div>

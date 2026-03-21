@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Log;
 class TmdbService
 {
     protected string $apiKey;
+
     protected string $baseUrl = 'https://api.themoviedb.org/3';
+
     protected string $language = 'de-DE';
 
     public function __construct()
@@ -45,9 +47,10 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: ' . $response->status()];
+            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
         } catch (\Exception $e) {
-            Log::error('TMDb Search Error: ' . $e->getMessage());
+            Log::error('TMDb Search Error: '.$e->getMessage());
+
             return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
         }
     }
@@ -72,9 +75,10 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: ' . $response->status()];
+            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
         } catch (\Exception $e) {
-            Log::error('TMDb Details Error: ' . $e->getMessage());
+            Log::error('TMDb Details Error: '.$e->getMessage());
+
             return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
         }
     }
@@ -98,9 +102,10 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: ' . $response->status()];
+            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
         } catch (\Exception $e) {
-            Log::error('TMDb Person Details Error: ' . $e->getMessage());
+            Log::error('TMDb Person Details Error: '.$e->getMessage());
+
             return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
         }
     }
@@ -133,9 +138,10 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: ' . $response->status()];
+            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
         } catch (\Exception $e) {
-            Log::error('TMDb TV Search Error: ' . $e->getMessage());
+            Log::error('TMDb TV Search Error: '.$e->getMessage());
+
             return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
         }
     }
@@ -160,9 +166,10 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: ' . $response->status()];
+            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
         } catch (\Exception $e) {
-            Log::error('TMDb TV Details Error: ' . $e->getMessage());
+            Log::error('TMDb TV Details Error: '.$e->getMessage());
+
             return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
         }
     }
@@ -186,9 +193,10 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: ' . $response->status()];
+            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
         } catch (\Exception $e) {
-            Log::error('TMDb Season Details Error: ' . $e->getMessage());
+            Log::error('TMDb Season Details Error: '.$e->getMessage());
+
             return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
         }
     }

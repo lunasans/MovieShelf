@@ -53,7 +53,7 @@ class User extends Authenticatable
 
     public function hasTwoFactorEnabled(): bool
     {
-        return !is_null($this->two_factor_confirmed_at);
+        return ! is_null($this->two_factor_confirmed_at);
     }
 
     public function watchedMovies()

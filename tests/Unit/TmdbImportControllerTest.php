@@ -2,9 +2,9 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
 use App\Http\Controllers\Admin\TmdbImportController;
 use App\Services\TmdbService;
+use Tests\TestCase;
 
 class TmdbImportControllerTest extends TestCase
 {

@@ -15,16 +15,14 @@ class ActorController extends Controller
     public function index(Request $request)
     {
         $query = Actor::query();
-
         if ($request->has('q')) {
             $search = $request->q;
-            $query->where(function($q) use ($search) {
-                $q->where('first_name', 'like', '%' . $search . '%')
-                  ->orWhere('last_name', 'like', '%' . $search . '%')
-                  ->orWhere('nationality', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', '%'.$search.'%')
+                  ->orWhere('last_name', 'like', '%'.$search.'%')
+                  ->orWhere('nationality', 'like', '%'.$search.'%');
             });
         }
-
         $actors = $query->withCount('movies')
                       ->orderBy('last_name')
                       ->orderBy('first_name')
@@ -54,12 +52,10 @@ class ActorController extends Controller
             'nationality' => 'nullable|string|max:255',
             'biography' => 'nullable|string',
         ]);
-
-        $validated['slug'] = Str::slug($validated['first_name'] . ' ' . $validated['last_name']);
-        
+        $validated['slug'] = Str::slug($validated['first_name'].' '.$validated['last_name']);
         $actor = Actor::create($validated);
 
-        return redirect()->route('admin.actors.index')->with('success', 'Schauspieler "' . $actor->first_name . ' ' . $actor->last_name . '" wurde angelegt.');
+        return redirect()->route('admin.actors.index')->with('success', $this->formatSuccessMessage($actor, 'angelegt'));
     }
 
     /**
@@ -83,14 +79,12 @@ class ActorController extends Controller
             'nationality' => 'nullable|string|max:255',
             'biography' => 'nullable|string',
         ]);
-
         if ($request->filled('first_name') && $request->filled('last_name')) {
-             $validated['slug'] = Str::slug($request->first_name . ' ' . $request->last_name);
+            $validated['slug'] = Str::slug($request->first_name.' '.$request->last_name);
         }
-
         $actor->update($validated);
 
-        return redirect()->route('admin.actors.index')->with('success', 'Schauspieler "' . $actor->first_name . ' ' . $actor->last_name . '" wurde aktualisiert.');
+        return redirect()->route('admin.actors.index')->with('success', $this->formatSuccessMessage($actor, 'aktualisiert'));
     }
 
     /**
@@ -98,8 +92,17 @@ class ActorController extends Controller
      */
     public function destroy(Actor $actor)
     {
-        $name = $actor->first_name . ' ' . $actor->last_name;
+        $message = $this->formatSuccessMessage($actor, 'gelöscht');
         $actor->delete();
-        return redirect()->route('admin.actors.index')->with('success', 'Schauspieler "' . $name . '" wurde gelöscht.');
+
+        return redirect()->route('admin.actors.index')->with('success', $message);
+    }
+
+    /**
+     * Format a success message for actor actions.
+     */
+    private function formatSuccessMessage(Actor $actor, string $action): string
+    {
+        return sprintf('Schauspieler "%s %s" wurde %s.', $actor->first_name, $actor->last_name, $action);
     }
 }

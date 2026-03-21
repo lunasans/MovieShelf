@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserRating extends Model
 {
     protected $table = 'user_ratings';
+
     protected $fillable = ['user_id', 'movie_id', 'rating', 'comment'];
 
     public function user()
