@@ -1,11 +1,11 @@
 @extends('emails.layout')
 
 @section('content')
-    <table role="none" style="width: 100%; border-collapse: collapse; border: 0;"> <!-- NOSONAR -->
+    <table role="presentation" style="width: 100%; border-collapse: collapse; border: 0;"> <!-- NOSONAR -->
         {{-- Status-Badge --}}
         <tr>
             <td style="padding-bottom:28px; text-align: center;">
-                <table role="none" style="border-collapse: collapse; border: 0; margin-left: auto; margin-right: auto;"> <!-- NOSONAR -->
+                <table role="presentation" style="border-collapse: collapse; border: 0; margin-left: auto; margin-right: auto;"> <!-- NOSONAR -->
                     <tr>
                         <td style="background-color:#ecfdf5;border:1px solid #a7f3d0;border-radius:100px;padding:8px 20px;">
                             <span style="font-size:11px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#059669;">● Verbindung steht</span>
@@ -28,7 +28,7 @@
         {{-- Trennlinie --}}
         <tr>
             <td style="padding-bottom:28px;">
-                <table role="none" style="width: 100%; border-collapse: collapse; border: 0;"> <!-- NOSONAR -->
+                <table role="presentation" style="width: 100%; border-collapse: collapse; border: 0;"> <!-- NOSONAR -->
                     <tr>
                         <td style="height:1px;background-color:#e5e7eb;"></td>
                     </tr>
@@ -39,7 +39,7 @@
         {{-- Konfigurationsdetails --}}
         <tr>
             <td style="padding-bottom:28px;">
-                <table role="none" style="width: 100%; background-color:#ffffff;border:1px solid #e5e7eb;border-radius:12px; border-collapse: collapse;"> <!-- NOSONAR -->
+                <table role="presentation" style="width: 100%; background-color:#ffffff;border:1px solid #e5e7eb;border-radius:12px; border-collapse: collapse;"> <!-- NOSONAR -->
                     <tr>
                         <td style="padding:16px 24px 8px;">
                             <span style="font-size:10px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:#9ca3af;">Verbindungs-Info</span>
@@ -47,7 +47,7 @@
                     </tr>
                     <tr>
                         <td style="padding:0 24px;">
-                            <table role="none" style="width: 100%; border-collapse: collapse; border: 0;"> <!-- NOSONAR -->
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; border: 0;"> <!-- NOSONAR -->
                                 <tr>
                                     <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;">
                                         <span style="font-size:13px;color:#9ca3af;">Gesendet am</span>
