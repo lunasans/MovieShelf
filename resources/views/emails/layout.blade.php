@@ -6,11 +6,11 @@
     <title>{{ $title ?? config('app.name') }}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f0f0ee;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;-webkit-font-smoothing:antialiased;">
-    <!--[if mso]><table role="presentation" style="width: 100%;"><tr><td><![endif]-->
-    <table role="presentation" style="width: 100%; background-color: #f0f0ee; border-collapse: collapse; border: 0;">
+    <!--[if mso]><table role="none" style="width: 100%;"><tr><td><![endif]-->
+    <table role="none" style="width: 100%; background-color: #f0f0ee; border-collapse: collapse; border: 0;">
         <tr>
             <td style="padding:40px 20px; text-align: center;">
-                <table role="presentation" style="max-width: 580px; width: 100%; border-collapse: collapse; border: 0; margin-left: auto; margin-right: auto;">
+                <table role="none" style="max-width: 580px; width: 100%; border-collapse: collapse; border: 0; margin-left: auto; margin-right: auto;">
                     {{-- ── Header mit Logo ── --}}
                     <tr>
                         <td style="background-color: #ffffff; border-radius: 16px 16px 0 0; border: 1px solid #e2e2df; border-bottom: none; padding: 0;">
