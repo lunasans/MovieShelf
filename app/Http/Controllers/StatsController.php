@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class StatsController extends Controller
 {
+    private const COUNT_RAW = 'count(*) as count';
+
     public function index()
     {
         $totalFilms = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')->count();
@@ -34,7 +36,7 @@ class StatsController extends Controller
         // Collection Types
         $collections = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')
             ->whereNotNull('collection_type')
-            ->select('collection_type', DB::raw('count(*) as count'))
+            ->select('collection_type', DB::raw(self::COUNT_RAW))
             ->groupBy('collection_type')
             ->orderBy('count', 'desc')
             ->get()
@@ -47,7 +49,7 @@ class StatsController extends Controller
         // Ratings (FSK)
         $ratings = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')
             ->whereNotNull('rating_age')
-            ->select('rating_age', DB::raw('count(*) as count'))
+            ->select('rating_age', DB::raw(self::COUNT_RAW))
             ->groupBy('rating_age')
             ->orderBy('rating_age', 'asc')
             ->get();
@@ -75,7 +77,7 @@ class StatsController extends Controller
         $yearDistribution = Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')
             ->where('year', '>=', 1970)
             ->where('year', '<=', date('Y'))
-            ->select('year', DB::raw('count(*) as count'))
+            ->select('year', DB::raw(self::COUNT_RAW))
             ->groupBy('year')
             ->orderBy('year', 'asc')
             ->get()
@@ -86,7 +88,7 @@ class StatsController extends Controller
             ->where('year', '>', 0)
             ->select(
                 DB::raw('(CAST(year / 10 AS UNSIGNED) * 10) as decade'),
-                DB::raw('count(*) as count'),
+                DB::raw(self::COUNT_RAW),
                 DB::raw('round(avg(runtime)) as avg_runtime')
             )
             ->groupBy('decade')
