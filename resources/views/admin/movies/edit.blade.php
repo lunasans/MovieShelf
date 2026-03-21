@@ -200,19 +200,19 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('tmdbSearch', () => ({
                 showModal: false,
-                searchQuery: '{{ str_replace("'", "\'", $movie->title) }}',
+                searchQuery: {!! json_encode($movie->title) !!},
                 results: [],
                 loading: false,
                 formData: {
-                    title: '{{ str_replace("'", "\'", old('title', $movie->title)) }}',
+                    title: {!! json_encode(old('title', $movie->title)) !!},
                     year: '{{ old('year', $movie->year) }}',
                     collection_type: '{{ old('collection_type', $movie->collection_type) }}',
-                    genre: '{{ str_replace("'", "\'", old('genre', $movie->genre)) }}',
+                    genre: {!! json_encode(old('genre', $movie->genre)) !!},
                     runtime: '{{ old('runtime', $movie->runtime) }}',
                     rating: '{{ old('rating', $movie->rating ? round($movie->rating, 1) : null) }}',
                     rating_age: '{{ old('rating_age', $movie->rating_age) }}',
                     trailer_url: '{{ old('trailer_url', $movie->trailer_url) }}',
-                    overview: `{!! str_replace("`", "\`", old('overview', $movie->overview)) !!}`,
+                    overview: {!! json_encode(old('overview', $movie->overview)) !!},
                     tmdb_id: '{{ old('tmdb_id', $movie->tmdb_id) }}',
                     cover_id: '{{ old('cover_id', $movie->cover_id) }}',
                     backdrop_id: '{{ old('backdrop_id', $movie->backdrop_id) }}'

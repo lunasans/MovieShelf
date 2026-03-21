@@ -257,7 +257,9 @@ class SignatureController extends Controller
 
     private function loadCover($coverId, $targetWidth, $targetHeight)
     {
-        if (empty($coverId)) return null;
+        if (empty($coverId)) {
+            return null;
+        }
         
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
         $path = null;
@@ -277,10 +279,14 @@ class SignatureController extends Controller
             }
         }
 
-        if (!$path || !file_exists($path)) return null;
+        if (!$path || !file_exists($path)) {
+            return null;
+        }
 
         $info = \getimagesize($path);
-        if (!$info) return null;
+        if (!$info) {
+            return null;
+        }
 
         switch ($info[2]) {
             case \IMAGETYPE_JPEG: $src = @\imagecreatefromjpeg($path); break;
@@ -288,7 +294,9 @@ class SignatureController extends Controller
             default: return null;
         }
 
-        if (!$src) return null;
+        if (!$src) {
+            return null;
+        }
 
         $dst = \imagecreatetruecolor($targetWidth, $targetHeight);
         \imagesavealpha($dst, true);
@@ -302,10 +310,14 @@ class SignatureController extends Controller
     private function loadLogo($targetHeight)
     {
         $path = public_path('img/logo/logo_small.png');
-        if (!file_exists($path)) return null;
+        if (!file_exists($path)) {
+            return null;
+        }
 
         $src = \imagecreatefrompng($path);
-        if (!$src) return null;
+        if (!$src) {
+            return null;
+        }
 
         $srcW = \imagesx($src);
         $srcH = \imagesy($src);

@@ -22,7 +22,7 @@ class LegacyDataSeeder extends Seeder
             [
                 'id' => 1,
                 'name' => 'Admin',
-                'password' => Hash::make(config('app.admin_password', 'password')),
+                'password' => Hash::make(config('app.admin_password', \Illuminate\Support\Str::random(32))),
                 'email_verified_at' => now(),
             ]
         );

@@ -226,7 +226,9 @@ class TmdbImportController extends Controller
             $usRating = collect($details['content_ratings']['results'])->firstWhere('iso_3166_1', 'US');
             if ($usRating && !empty($usRating['rating'])) {
                 // Map common US TV ratings to FSK approximations if possible, but keeping it simple for now
-                if (is_numeric($usRating['rating'])) return (int)$usRating['rating'];
+                if (is_numeric($usRating['rating'])) {
+                    return (int)$usRating['rating'];
+                }
                 
                 $map = ['TV-Y' => 0, 'TV-Y7' => 6, 'TV-G' => 0, 'TV-PG' => 6, 'TV-14' => 12, 'TV-MA' => 16];
                 return $map[$usRating['rating']] ?? null;

@@ -58,6 +58,14 @@ class SettingController extends Controller
             $validated[$checkbox] = $request->has($checkbox) ? '1' : '0';
         }
 
+        // Sanitize HTML content
+        if (isset($validated['impressum_content'])) {
+            $validated['impressum_content'] = strip_tags($validated['impressum_content'], '<a><p><br><strong><em><ul><li><h3><h4><h5><h6>');
+        }
+        if (isset($validated['cookie_banner_text'])) {
+            $validated['cookie_banner_text'] = strip_tags($validated['cookie_banner_text'], '<a><strong><em>');
+        }
+
         foreach ($validated as $key => $value) {
             $group = 'general';
             if (str_starts_with($key, 'tmdb_')) {
