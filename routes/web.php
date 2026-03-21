@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
+$profilePath = '/profile';
+
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
@@ -42,9 +44,9 @@ Route::get('/statistics', [\App\Http\Controllers\StatsController::class, 'index'
 Route::post('/theme/save', [\App\Http\Controllers\ThemeController::class, 'save'])->name('theme.save');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get($profilePath, [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch($profilePath, [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete($profilePath, [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // 2FA Routes
     Route::post('/two-factor-authentication', [TwoFactorController::class, 'enable'])->name('two-factor.enable');
