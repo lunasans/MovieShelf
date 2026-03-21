@@ -35,7 +35,7 @@ class XmlImportController extends Controller
     {
         Log::info('XML Import gestartet');
         $request->validate([
-            'xml_file' => 'required|file|max:51200',
+            'xml_file' => 'required|file|max:8000',
         ]);
 
         $file = $request->file('xml_file');
