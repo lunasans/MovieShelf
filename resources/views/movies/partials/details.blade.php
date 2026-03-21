@@ -88,11 +88,10 @@
                         <span class="px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg text-[10px] font-black tracking-widest uppercase border border-white/10 shadow-lg">
                             {{ $movie->year }}
                         </span>
-                        @if($movie->rating_age !== null)
+                        @if($movie->rating_age !== null && file_exists(public_path('img/fsk/fsk-' . $movie->rating_age . '.svg')))
                             <img src="{{ asset('img/fsk/fsk-' . $movie->rating_age . '.svg') }}"
                                  alt="FSK {{ $movie->rating_age }}"
-                                 class="h-8 w-auto drop-shadow-lg"
-                                 onerror="this.style.display='none'">
+                                 class="h-8 w-auto drop-shadow-lg">
                         @endif
                     </div>
 

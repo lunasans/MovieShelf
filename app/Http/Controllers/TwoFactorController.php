@@ -30,7 +30,7 @@ class TwoFactorController extends Controller
         ]);
     }
 
-    public function enable(Request $request)
+    public function enable()
     {
         $user = Auth::user();
 
@@ -62,7 +62,7 @@ class TwoFactorController extends Controller
         return back()->withErrors(['code' => __('The provided two-factor authentication code was invalid.')]);
     }
 
-    public function disable(Request $request)
+    public function disable()
     {
         Auth::user()->update([
             'two_factor_secret' => null,

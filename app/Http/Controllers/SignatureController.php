@@ -90,12 +90,12 @@ class SignatureController extends Controller
         $fontPath = public_path('fonts/Roboto-Medium.ttf');
 
         // Hintergrund zeichnen
-        $this->drawGlassBackground($img, 0, 0, $width - 1, $height - 1, $glass_bg_top, $glass_bg_bottom, $glass_border, $glass_shadow);
+        $this->drawGlassBackground($img, 0, 0, $width - 1, $height - 1, $glass_bg_top, $glass_bg_bottom, $glass_border);
 
         if ($type === 1) {
             $this->renderType1($img, $films, $totalFilms, $fontPath, $text_dark, $accent);
         } elseif ($type === 2) {
-            $this->renderType2($img, $films, $totalFilms, $fontPath, $text_dark, $accent, $text_muted, $filmCount);
+            $this->renderType2($img, $films, $totalFilms, $fontPath, $accent, $text_muted, $filmCount);
         } elseif ($type === 3) {
             $this->renderType3($img, $films, $fontPath, $text_dark, $text_muted, $showTitle, $showYear);
         }
@@ -109,7 +109,7 @@ class SignatureController extends Controller
         return response($imageData)->header('Content-Type', 'image/png');
     }
 
-    private function drawGlassBackground($img, $x, $y, $w, $h, $bg_top, $bg_bottom, $border, $shadow)
+    private function drawGlassBackground($img, $x, $y, $w, $h, $bg_top, $bg_bottom, $border)
     {
         $radius = 12;
         for ($i = 0; $i < $h; $i++) {
@@ -183,7 +183,7 @@ class SignatureController extends Controller
         }
     }
 
-    private function renderType2($img, $films, $totalFilms, $fontPath, $text_dark, $accent, $text_muted, $filmCount)
+    private function renderType2($img, $films, $totalFilms, $fontPath, $accent, $text_muted, $filmCount)
     {
         $logo = $this->loadLogo(26);
         $textY = 32;
