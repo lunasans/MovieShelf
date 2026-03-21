@@ -83,7 +83,7 @@ class XmlImportController extends Controller
                     $stat = $zip->statIndex($i);
                     if ($stat['size'] > $maxSize) {
                         $zip->close();
-                        throw new Exception('Die extrahierte XML-Datei ist zu gross (max. 100 MB).');
+                        throw new \RuntimeException('Die extrahierte XML-Datei ist zu gross (max. 100 MB).');
                     }
                     // Limit extraction to max size
                     $xmlContent = $zip->getFromName($entry, $maxSize);
