@@ -1,5 +1,5 @@
 # Stage 1: PHP Dependencies
-FROM php:8.2-fpm-alpine AS php_base
+FROM php:8.5-fpm-alpine AS php_base
 
 # Install system dependencies
 RUN apk add --no-cache \
