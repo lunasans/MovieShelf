@@ -105,9 +105,7 @@
             </div>
 
             <!-- Infinite Scroll Trigger -->
-            <div x-show="$data.nextPageUrl" 
-                 x-intersect.margin.500px="loadMore()" 
-                 class="mt-20 flex flex-col items-center justify-center gap-4">
+            <div x-show="$data.nextPageUrl" x-intersect.margin.500px="loadMore()" class="mt-20 flex flex-col items-center justify-center gap-4">
                 <div x-show="$data.isLoading" class="flex flex-col items-center gap-4 animate-in fade-in duration-500">
                     <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
                     <span class="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] italic">{{ __('Loading more trailers...') }}</span>
@@ -144,13 +142,7 @@
                 </button>
 
                 <template x-if="playingTrailer">
-                    <iframe :src="playingTrailer.url" 
-                            class="absolute inset-0 w-full h-full"
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen
-                            referrerpolicy="strict-origin-when-cross-origin">
-                    </iframe>
+                    <iframe :src="playingTrailer.url" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
                 </template>
             </div>
         </div>

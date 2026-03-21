@@ -371,7 +371,7 @@ class TmdbImportController extends Controller
             $details = $isTv ? $this->tmdb->getTvDetails($movie->tmdb_id) : $this->tmdb->getMovieDetails($movie->tmdb_id);
             
             if (isset($details['error'])) {
-                throw new \Exception($details['error']);
+                throw new \RuntimeException($details['error']);
             }
 
             $updateData = [

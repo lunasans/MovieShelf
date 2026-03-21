@@ -226,8 +226,6 @@ class MovieController extends Controller
      */
     public function destroy(Movie $movie)
     {
-        $id = $movie->id;
-        $title = $movie->title;
         $movie->delete();
 
         $this->logMovieActivity($movie, 'MOVIE_DELETE');

@@ -52,52 +52,14 @@ class SettingController extends Controller
             'mail_from_name' => 'nullable|string|max:255',
         ]);
 
-        // Handle checkboxes
-        $checkboxes = ['impressum_enabled', 'cookie_banner_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating', 'migration_enabled'];
-        foreach ($checkboxes as $checkbox) {
-            $validated[$checkbox] = $request->has($checkbox) ? '1' : '0';
-        }
-
-        // Sanitize HTML content
-        if (isset($validated['impressum_content'])) {
-            $validated['impressum_content'] = strip_tags($validated['impressum_content'], '<a><p><br><strong><em><ul><li><h3><h4><h5><h6>');
-        }
-        if (isset($validated['cookie_banner_text'])) {
-            $validated['cookie_banner_text'] = strip_tags($validated['cookie_banner_text'], '<a><strong><em>');
-        }
+        $this->handleCheckboxes($request, $validated);
+        $this->sanitizeHtml($validated);
 
         foreach ($validated as $key => $value) {
-            $group = 'general';
-            if (str_starts_with($key, 'tmdb_')) {
-                $group = 'tmdb';
-            } elseif ($key === 'theme') {
-                $group = 'ui';
-            } elseif (str_starts_with($key, 'impressum_')) {
-                $group = 'impressum';
-            } elseif ($key === 'migration_enabled') {
-                $group = 'general';
-            } elseif (str_starts_with($key, 'signature_')) {
-                $group = 'signature';
-            } elseif (str_starts_with($key, 'mail_')) {
-                $group = 'mail';
-            }
-            Setting::set($key, (string)$value, $group);
+            Setting::set($key, (string)$value, $this->getSettingGroup($key));
         }
 
-        // Clear signature cache if any signature setting was changed
-        $hasSignatureChanges = false;
-        foreach (array_keys($validated) as $key) {
-            if (str_starts_with($key, 'signature_')) {
-                $hasSignatureChanges = true;
-                break;
-            }
-        }
-
-        if ($hasSignatureChanges) {
-            Cache::forget('signature_banner_type_1');
-            Cache::forget('signature_banner_type_2');
-            Cache::forget('signature_banner_type_3');
-        }
+        $this->handleSignatureCache($validated);
 
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -108,6 +70,56 @@ class SettingController extends Controller
         ]);
 
         return redirect()->route('admin.settings.index')->with('success', 'Einstellungen wurden gespeichert.');
+    }
+
+    protected function handleCheckboxes(Request $request, array &$validated)
+    {
+        $checkboxes = ['impressum_enabled', 'cookie_banner_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating', 'migration_enabled'];
+        foreach ($checkboxes as $checkbox) {
+            $validated[$checkbox] = $request->has($checkbox) ? '1' : '0';
+        }
+    }
+
+    protected function sanitizeHtml(array &$validated)
+    {
+        if (isset($validated['impressum_content'])) {
+            $validated['impressum_content'] = strip_tags($validated['impressum_content'], '<a><p><br><strong><em><ul><li><h3><h4><h5><h6>');
+        }
+        if (isset($validated['cookie_banner_text'])) {
+            $validated['cookie_banner_text'] = strip_tags($validated['cookie_banner_text'], '<a><strong><em>');
+        }
+    }
+
+    public function getSettingGroup(string $key): string
+    {
+        if (str_starts_with($key, 'tmdb_')) {
+            return 'tmdb';
+        }
+        if ($key === 'theme') {
+            return 'ui';
+        }
+        if (str_starts_with($key, 'impressum_')) {
+            return 'impressum';
+        }
+        if (str_starts_with($key, 'signature_')) {
+            return 'signature';
+        }
+        if (str_starts_with($key, 'mail_')) {
+            return 'mail';
+        }
+        
+        return 'general';
+    }
+
+    protected function handleSignatureCache(array $validated)
+    {
+        $hasSignatureChanges = collect(array_keys($validated))->contains(fn($k) => str_starts_with($k, 'signature_'));
+
+        if ($hasSignatureChanges) {
+            Cache::forget('signature_banner_type_1');
+            Cache::forget('signature_banner_type_2');
+            Cache::forget('signature_banner_type_3');
+        }
     }
 
     public function testMail(Request $request)
