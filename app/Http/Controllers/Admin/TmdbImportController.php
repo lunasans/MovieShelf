@@ -46,7 +46,7 @@ class TmdbImportController extends Controller
         $tmdbId = $request->get('tmdb_id');
         $type = $request->get('type', 'movie');
 
-        if (!$tmdbId) {
+        if (! $tmdbId) {
             return response()->json(['error' => 'Keine ID angegeben'], 400);
         }
 
@@ -60,7 +60,7 @@ class TmdbImportController extends Controller
         $tmdbId = $request->get('tmdb_id');
         $mediaType = $request->get('media_type', 'movie');
 
-        if (!$tmdbId) {
+        if (! $tmdbId) {
             return back()->with('error', 'Keine TMDb ID angegeben.');
         }
 
@@ -334,8 +334,8 @@ class TmdbImportController extends Controller
 
         if (! $actor) {
             $actor = Actor::where('first_name', $firstName)
-                          ->where('last_name', $lastName)
-                          ->first();
+                ->where('last_name', $lastName)
+                ->first();
         }
 
         if ($actor) {

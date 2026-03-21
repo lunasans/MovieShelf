@@ -1,1 +1,229 @@
-<?phpnamespace App\Http\Controllers\Admin;use App\Http\Controllers\Controller;use App\Models\Movie;use App\Models\Actor;use App\Services\TmdbService;use App\Models\ActivityLog;use Illuminate\Http\Request;use Illuminate\Support\Facades\Http;use Illuminate\Support\Facades\Storage;use Illuminate\Support\Str;class MovieController extends Controller{    /**     * Display a listing of the resource.     */    public function index(Request $request)    {        $query = Movie::query();        if ($request->has('q')) {            $query->where('title', 'like', '%' . $request->q . '%');        }        if ($request->filter === 'missing_tmdb') {            $query->whereNull('tmdb_id');        }        if ($request->filter === 'missing_cover') {            $query->whereNull('cover_id');        }        $movies = $query->orderBy('title')->paginate(20);        return view('admin.movies.index', compact('movies'));    }    /**     * Show the form for creating a new resource.     */    public function create()    {        // To be implemented    }    /**     * Store a newly created resource in storage.     */    public function store(Request $request)    {        // To be implemented    }    /**     * Show the form for editing the specified resource.     */    public function edit(Movie $movie)    {        return view('admin.movies.edit', compact('movie'));    }    /**     * Update the specified resource in storage.     */    public function update(Request $request, Movie $movie, TmdbService $tmdb)    {        $validated = $request->validate([            'title' => 'required|string|max:255',            'year' => 'required|integer',            'collection_type' => 'required|string',            'genre' => 'nullable|string',            'runtime' => 'nullable|integer',            'rating' => 'nullable|numeric|min:0|max:100',            'rating_age' => 'nullable|integer',            'created_at' => 'nullable|date',            'trailer_url' => 'nullable|url',            'overview' => 'nullable|string',            'tmdb_id' => 'nullable|integer',            'cover_id' => 'nullable|string',            'backdrop_id' => 'nullable|string',        ]);        $this->handleImageDownloads($validated);        if (!empty($validated['tmdb_id'])) {            $this->syncActors($movie, $validated, $tmdb);        }        $movie->update($validated);        $this->logMovieActivity($movie, 'MOVIE_UPDATE');        return redirect()->route('admin.movies.index')->with('success', 'Film "' . $movie->title . '" wurde erfolgreich aktualisiert.');    }    protected function handleImageDownloads(array &$validated)    {        if (!empty($validated['cover_id']) && str_starts_with($validated['cover_id'], '/')) {            $filename = $this->downloadTmdbImage($validated['cover_id'], 'w500', 'covers');            if ($filename) {                $validated['cover_id'] = $filename;            }        }        if (!empty($validated['backdrop_id']) && str_starts_with($validated['backdrop_id'], '/')) {            $filename = $this->downloadTmdbImage($validated['backdrop_id'], 'w1280', 'backdrops');            if ($filename) {                $validated['backdrop_id'] = $filename;            }        }    }    protected function downloadTmdbImage(string $path, string $size, string $folder): ?string    {        try {            $response = Http::withOptions(['verify' => false])->get("https://image.tmdb.org/t/p/{$size}" . $path);            if ($response->successful()) {                $prefix = $folder === 'backdrops' ? 'tmdb_backdrop_' : 'tmdb_';                $filename = $prefix . ltrim($path, '/');                Storage::disk('public')->put($folder . '/' . $filename, $response->body());                return $folder . '/' . $filename;            }            \Illuminate\Support\Facades\Log::error("TMDb Image Download Failed ({$folder}): HTTP " . $response->status());        } catch (\Exception $e) {            \Illuminate\Support\Facades\Log::error("Failed to download TMDb image ({$folder}): " . $e->getMessage());        }        return null;    }    protected function syncActors(Movie $movie, array $validated, TmdbService $tmdb)    {        try {            $type = $validated['collection_type'] === 'Serie' ? 'tv' : 'movie';            $details = $type === 'tv' ? $tmdb->getTvDetails($validated['tmdb_id']) : $tmdb->getMovieDetails($validated['tmdb_id']);            if (!isset($details['credits']['cast'])) {                return;            }            $cast = array_slice($details['credits']['cast'], 0, 10);            $actorSyncData = [];            foreach ($cast as $person) {                $actor = $this->findOrCreateActor($person);                $this->downloadActorProfileIfMissing($actor, $person['profile_path'] ?? null);                $actorSyncData[$actor->id] = [                    'role' => $person['character'] ?? '',                    'is_main_role' => ($person['order'] ?? 99) < 3,                    'sort_order' => $person['order'] ?? 99                ];            }            $movie->actors()->sync($actorSyncData);        } catch (\Exception $e) {            \Illuminate\Support\Facades\Log::error('Failed to sync actors during update: ' . $e->getMessage());        }    }    protected function findOrCreateActor(array $person): Actor    {        $nameParts = explode(' ', $person['name'], 2);        $firstName = $nameParts[0];        $lastName = $nameParts[1] ?? '';        $actor = Actor::where('tmdb_id', $person['id'])->first();        if (!$actor) {            $actor = Actor::where('first_name', $firstName)                          ->where('last_name', $lastName)                          ->first();        }        if ($actor) {            if (!$actor->tmdb_id) {                $actor->update(['tmdb_id' => $person['id']]);            }            return $actor;        }        return Actor::create([            'tmdb_id' => $person['id'],            'first_name' => $firstName,            'last_name' => $lastName,        ]);    }    protected function downloadActorProfileIfMissing(Actor $actor, ?string $profilePath)    {        if (empty($profilePath) || !empty($actor->profile_path)) {            return;        }        try {            $response = Http::withOptions(['verify' => false])->get('https://image.tmdb.org/t/p/w185' . $profilePath);            if ($response->successful()) {                $filename = 'actors/tmdb_' . ltrim($profilePath, '/');                Storage::disk('public')->put($filename, $response->body());                $actor->update(['profile_path' => $filename]);            }        } catch (\Exception $e) {            \Illuminate\Support\Facades\Log::error('Failed to download TMDb actor profile: ' . $e->getMessage());        }    }    protected function logMovieActivity(Movie $movie, string $action)    {        ActivityLog::create([            'user_id' => auth()->id(),            'action' => $action,            'details' => json_encode([                'movie_id' => $movie->id,                'title' => $movie->title,            ]),            'ip_address' => request()->ip(),            'user_agent' => request()->userAgent(),        ]);    }    /**     * Remove the specified resource from storage.     */    public function destroy(Movie $movie)    {        $movie->delete();        $this->logMovieActivity($movie, 'MOVIE_DELETE');        return redirect()->route('admin.movies.index')->with('success', 'Film gelöscht.');    }}
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\Actor;
+use App\Models\Movie;
+use App\Services\TmdbService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+
+class MovieController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $query = Movie::query();
+        if ($request->has('q')) {
+            $query->where('title', 'like', '%'.$request->q.'%');
+        }
+
+        if ($request->filter === 'missing_tmdb') {
+            $query->whereNull('tmdb_id');
+        }
+
+        if ($request->filter === 'missing_cover') {
+            $query->whereNull('cover_id');
+        }
+
+        $movies = $query->orderBy('title')->paginate(20);
+
+        return view('admin.movies.index', compact('movies'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        // To be implemented
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        // To be implemented
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Movie $movie)
+    {
+        return view('admin.movies.edit', compact('movie'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Movie $movie, TmdbService $tmdb)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'year' => 'required|integer',
+            'collection_type' => 'required|string',
+            'genre' => 'nullable|string',
+            'runtime' => 'nullable|integer',
+            'rating' => 'nullable|numeric|min:0|max:100',
+            'rating_age' => 'nullable|integer',
+            'created_at' => 'nullable|date',
+            'trailer_url' => 'nullable|url',
+            'overview' => 'nullable|string',
+            'tmdb_id' => 'nullable|integer',
+            'cover_id' => 'nullable|string',
+            'backdrop_id' => 'nullable|string',
+        ]);
+
+        $this->handleImageDownloads($validated);
+
+        if (! empty($validated['tmdb_id'])) {
+            $this->syncActors($movie, $validated, $tmdb);
+        }
+
+        $movie->update($validated);
+        $this->logMovieActivity($movie, 'MOVIE_UPDATE');
+
+        return redirect()->route('admin.movies.index')->with('success', 'Film "'.$movie->title.'" wurde erfolgreich aktualisiert.');
+    }
+
+    protected function handleImageDownloads(array &$validated)
+    {
+        if (! empty($validated['cover_id']) && str_starts_with($validated['cover_id'], '/')) {
+            $filename = $this->downloadTmdbImage($validated['cover_id'], 'w500', 'covers');
+            if ($filename) {
+                $validated['cover_id'] = $filename;
+            }
+        }
+
+        if (! empty($validated['backdrop_id']) && str_starts_with($validated['backdrop_id'], '/')) {
+            $filename = $this->downloadTmdbImage($validated['backdrop_id'], 'w1280', 'backdrops');
+            if ($filename) {
+                $validated['backdrop_id'] = $filename;
+            }
+        }
+    }
+
+    protected function downloadTmdbImage(string $path, string $size, string $folder): ?string
+    {
+        try {
+            $response = Http::withOptions(['verify' => false])->get("https://image.tmdb.org/t/p/{$size}".$path);
+            if ($response->successful()) {
+                $prefix = $folder === 'backdrops' ? 'tmdb_backdrop_' : 'tmdb_';
+                $filename = $prefix.ltrim($path, '/');
+                Storage::disk('public')->put($folder.'/'.$filename, $response->body());
+
+                return $folder.'/'.$filename;
+            }
+            Log::error("TMDb Image Download Failed ({$folder}): HTTP ".$response->status());
+        } catch (\Exception $e) {
+            Log::error("Failed to download TMDb image ({$folder}): ".$e->getMessage());
+        }
+
+        return null;
+    }
+
+    protected function syncActors(Movie $movie, array $validated, TmdbService $tmdb)
+    {
+        try {
+            $type = $validated['collection_type'] === 'Serie' ? 'tv' : 'movie';
+            $details = $type === 'tv' ? $tmdb->getTvDetails($validated['tmdb_id']) : $tmdb->getMovieDetails($validated['tmdb_id']);
+            if (! isset($details['credits']['cast'])) {
+                return;
+            }
+
+            $cast = array_slice($details['credits']['cast'], 0, 10);
+            $actorSyncData = [];
+            foreach ($cast as $person) {
+                $actor = $this->findOrCreateActor($person);
+                $this->downloadActorProfileIfMissing($actor, $person['profile_path'] ?? null);
+                $actorSyncData[$actor->id] = [
+                    'role' => $person['character'] ?? '',
+                    'is_main_role' => ($person['order'] ?? 99) < 3,
+                    'sort_order' => $person['order'] ?? 99,
+                ];
+            }
+
+            $movie->actors()->sync($actorSyncData);
+        } catch (\Exception $e) {
+            Log::error('Failed to sync actors during update: '.$e->getMessage());
+        }
+    }
+
+    protected function findOrCreateActor(array $person): Actor
+    {
+        $nameParts = explode(' ', $person['name'], 2);
+        $firstName = $nameParts[0];
+        $lastName = $nameParts[1] ?? '';
+
+        $actor = Actor::where('tmdb_id', $person['id'])->first();
+
+        if (! $actor) {
+            $actor = Actor::where('first_name', $firstName)->where('last_name', $lastName)->first();
+        }
+
+        if ($actor) {
+            if (! $actor->tmdb_id) {
+                $actor->update(['tmdb_id' => $person['id']]);
+            }
+
+            return $actor;
+        }
+
+        return Actor::create([
+            'tmdb_id' => $person['id'],
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+        ]);
+    }
+
+    protected function downloadActorProfileIfMissing(Actor $actor, ?string $profilePath)
+    {
+        if (empty($profilePath) || ! empty($actor->profile_path)) {
+            return;
+        }
+
+        try {
+            $response = Http::withOptions(['verify' => false])->get('https://image.tmdb.org/t/p/w185'.$profilePath);
+            if ($response->successful()) {
+                $filename = 'actors/tmdb_'.ltrim($profilePath, '/');
+                Storage::disk('public')->put($filename, $response->body());
+                $actor->update(['profile_path' => $filename]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to download TMDb actor profile: '.$e->getMessage());
+        }
+    }
+
+    protected function logMovieActivity(Movie $movie, string $action)
+    {
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => $action,
+            'details' => json_encode([
+                'movie_id' => $movie->id,
+                'title' => $movie->title,
+            ]),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Movie $movie)
+    {
+        $movie->delete();
+        $this->logMovieActivity($movie, 'MOVIE_DELETE');
+
+        return redirect()->route('admin.movies.index')->with('success', 'Film gelöscht.');
+    }
+}

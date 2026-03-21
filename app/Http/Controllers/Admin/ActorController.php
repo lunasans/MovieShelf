@@ -19,14 +19,14 @@ class ActorController extends Controller
             $search = $request->q;
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', '%'.$search.'%')
-                  ->orWhere('last_name', 'like', '%'.$search.'%')
-                  ->orWhere('nationality', 'like', '%'.$search.'%');
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhere('nationality', 'like', '%'.$search.'%');
             });
         }
         $actors = $query->withCount('movies')
-                      ->orderBy('last_name')
-                      ->orderBy('first_name')
-                      ->paginate(20);
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->paginate(20);
 
         return view('admin.actors.index', compact('actors'));
     }

@@ -61,7 +61,7 @@ class XmlImportController extends Controller
     private function getXmlContentFromRequest($file): string
     {
         if ($file->getClientOriginalExtension() === 'zip') {
-            $zip = new ZipArchive();
+            $zip = new ZipArchive;
             $xmlContent = '';
             if ($zip->open($file->getRealPath()) === true) {
                 for ($i = 0; $i < $zip->numFiles; $i++) {
@@ -200,7 +200,7 @@ class XmlImportController extends Controller
         $originalId = trim((string) $dvd->ID);
         $exists = Movie::where('id', $id)->exists();
 
-        $movie = Movie::updateOrCreate(['id' => $id], [
+        Movie::updateOrCreate(['id' => $id], [
             'title' => trim((string) $dvd->Title),
             'year' => (int) $dvd->ProductionYear ?: null,
             'genre' => trim((string) ($dvd->Genres->Genre[0] ?? '')),
@@ -213,6 +213,7 @@ class XmlImportController extends Controller
             'is_deleted' => false,
         ]);
 
+        $movie = Movie::find($id);
         $this->syncActors($movie, $dvd);
 
         return $exists ? 'updated' : 'imported';
