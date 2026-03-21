@@ -23,45 +23,65 @@ class MailConfigServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Only attempt to load settings if the table exists
-        if (Schema::hasTable('settings')) {
-            $mailSettings = Setting::where('group', 'mail')->pluck('value', 'key');
+        if (!Schema::hasTable('settings')) {
+            return;
+        }
 
-            if ($mailSettings->isNotEmpty()) {
-                // Set default mailer
-                if (isset($mailSettings['mail_mailer'])) {
-                    Config::set('mail.default', $mailSettings['mail_mailer']);
-                }
+        $mailSettings = Setting::where('group', 'mail')->pluck('value', 'key');
 
-                // Set SMTP details
-                if (isset($mailSettings['mail_host'])) {
-                    Config::set('mail.mailers.smtp.host', $mailSettings['mail_host']);
-                }
-                if (isset($mailSettings['mail_port'])) {
-                    Config::set('mail.mailers.smtp.port', $mailSettings['mail_port']);
-                }
-                if (isset($mailSettings['mail_username'])) {
-                    Config::set('mail.mailers.smtp.username', $mailSettings['mail_username']);
-                }
-                if (isset($mailSettings['mail_password'])) {
-                    Config::set('mail.mailers.smtp.password', $mailSettings['mail_password']);
-                }
-                if (isset($mailSettings['mail_encryption'])) {
-                    $encryption = $mailSettings['mail_encryption'];
-                    if ($encryption === 'none') {
-                        Config::set('mail.mailers.smtp.encryption', null);
-                    } else {
-                        Config::set('mail.mailers.smtp.encryption', $encryption);
-                    }
-                }
+        if ($mailSettings->isNotEmpty()) {
+            $this->applyMailSettings($mailSettings);
+        }
+    }
 
-                // Set From address
-                if (isset($mailSettings['mail_from_address'])) {
-                    Config::set('mail.from.address', $mailSettings['mail_from_address']);
-                }
-                if (isset($mailSettings['mail_from_name'])) {
-                    Config::set('mail.from.name', $mailSettings['mail_from_name']);
-                }
+    /**
+     * Apply the mail settings to the configuration.
+     */
+    protected function applyMailSettings($settings): void
+    {
+        if (isset($settings['mail_mailer'])) {
+            Config::set('mail.default', $settings['mail_mailer']);
+        }
+
+        $this->setSmtpConfig($settings);
+        $this->setFromConfig($settings);
+    }
+
+    /**
+     * Set the SMTP configuration.
+     */
+    protected function setSmtpConfig($settings): void
+    {
+        $fields = [
+            'mail_host' => 'mail.mailers.smtp.host',
+            'mail_port' => 'mail.mailers.smtp.port',
+            'mail_username' => 'mail.mailers.smtp.username',
+            'mail_password' => 'mail.mailers.smtp.password',
+        ];
+
+        foreach ($fields as $key => $configKey) {
+            if (isset($settings[$key])) {
+                Config::set($configKey, $settings[$key]);
             }
+        }
+
+        if (isset($settings['mail_encryption'])) {
+            $encryption = $settings['mail_encryption'];
+            Config::set('mail.mailers.smtp.encryption', $encryption === 'none' ? null : $encryption);
+        }
+    }
+
+    /**
+     * Set the 'from' configuration.
+     */
+    protected function setFromConfig($settings): void
+    {
+        if (isset($settings['mail_from_address'])) {
+            Config::set('mail.from.address', $settings['mail_from_address']);
+        }
+
+        if (isset($settings['mail_from_name'])) {
+            Config::set('mail.from.name', $settings['mail_from_name']);
         }
     }
 }

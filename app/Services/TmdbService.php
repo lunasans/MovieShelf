@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Log;
 
 class TmdbService
 {
+    const ERR_API_KEY_MISSING = 'TMDb API Key nicht konfiguriert.';
+
+    const ERR_API_REQUEST_FAILED = 'API-Anfrage fehlgeschlagen: ';
+
+    const ERR_CONNECTION_FAILED = 'Verbindung zur TMDb fehlgeschlagen.';
+
     protected string $apiKey;
 
     protected string $baseUrl = 'https://api.themoviedb.org/3';
@@ -25,7 +31,7 @@ class TmdbService
     public function searchMovie(string $query, ?int $year = null, int $page = 1): array
     {
         if (empty($this->apiKey)) {
-            return ['error' => 'TMDb API Key nicht konfiguriert.'];
+            return ['error' => self::ERR_API_KEY_MISSING];
         }
 
         try {
@@ -47,11 +53,11 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
+            return ['error' => self::ERR_API_REQUEST_FAILED.$response->status()];
         } catch (\Exception $e) {
             Log::error('TMDb Search Error: '.$e->getMessage());
 
-            return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
+            return ['error' => self::ERR_CONNECTION_FAILED];
         }
     }
 
@@ -61,7 +67,7 @@ class TmdbService
     public function getMovieDetails(int $tmdbId): array
     {
         if (empty($this->apiKey)) {
-            return ['error' => 'TMDb API Key nicht konfiguriert.'];
+            return ['error' => self::ERR_API_KEY_MISSING];
         }
 
         try {
@@ -75,11 +81,11 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
+            return ['error' => self::ERR_API_REQUEST_FAILED.$response->status()];
         } catch (\Exception $e) {
             Log::error('TMDb Details Error: '.$e->getMessage());
 
-            return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
+            return ['error' => self::ERR_CONNECTION_FAILED];
         }
     }
 
@@ -89,7 +95,7 @@ class TmdbService
     public function getPersonDetails(int $personId): array
     {
         if (empty($this->apiKey)) {
-            return ['error' => 'TMDb API Key nicht konfiguriert.'];
+            return ['error' => self::ERR_API_KEY_MISSING];
         }
 
         try {
@@ -102,11 +108,11 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
+            return ['error' => self::ERR_API_REQUEST_FAILED.$response->status()];
         } catch (\Exception $e) {
             Log::error('TMDb Person Details Error: '.$e->getMessage());
 
-            return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
+            return ['error' => self::ERR_CONNECTION_FAILED];
         }
     }
 
@@ -116,7 +122,7 @@ class TmdbService
     public function searchTv(string $query, ?int $year = null, int $page = 1): array
     {
         if (empty($this->apiKey)) {
-            return ['error' => 'TMDb API Key nicht konfiguriert.'];
+            return ['error' => self::ERR_API_KEY_MISSING];
         }
 
         try {
@@ -138,11 +144,11 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
+            return ['error' => self::ERR_API_REQUEST_FAILED.$response->status()];
         } catch (\Exception $e) {
             Log::error('TMDb TV Search Error: '.$e->getMessage());
 
-            return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
+            return ['error' => self::ERR_CONNECTION_FAILED];
         }
     }
 
@@ -152,7 +158,7 @@ class TmdbService
     public function getTvDetails(int $tmdbId): array
     {
         if (empty($this->apiKey)) {
-            return ['error' => 'TMDb API Key nicht konfiguriert.'];
+            return ['error' => self::ERR_API_KEY_MISSING];
         }
 
         try {
@@ -166,11 +172,11 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
+            return ['error' => self::ERR_API_REQUEST_FAILED.$response->status()];
         } catch (\Exception $e) {
             Log::error('TMDb TV Details Error: '.$e->getMessage());
 
-            return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
+            return ['error' => self::ERR_CONNECTION_FAILED];
         }
     }
 
@@ -180,7 +186,7 @@ class TmdbService
     public function getSeasonDetails(int $tmdbId, int $seasonNumber): array
     {
         if (empty($this->apiKey)) {
-            return ['error' => 'TMDb API Key nicht konfiguriert.'];
+            return ['error' => self::ERR_API_KEY_MISSING];
         }
 
         try {
@@ -193,11 +199,11 @@ class TmdbService
                 return $response->json();
             }
 
-            return ['error' => 'API-Anfrage fehlgeschlagen: '.$response->status()];
+            return ['error' => self::ERR_API_REQUEST_FAILED.$response->status()];
         } catch (\Exception $e) {
             Log::error('TMDb Season Details Error: '.$e->getMessage());
 
-            return ['error' => 'Verbindung zur TMDb fehlgeschlagen.'];
+            return ['error' => self::ERR_CONNECTION_FAILED];
         }
     }
 

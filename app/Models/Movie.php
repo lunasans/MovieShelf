@@ -76,79 +76,72 @@ class Movie extends Model
 
     public function getCoverUrlAttribute()
     {
-        // 1. Try parent's cover if exists
-        if ($this->cover_id) {
-            // Direct URL
-            if (str_starts_with($this->cover_id, 'http')) {
-                return $this->cover_id;
-            }
-            // TMDb Path
-            if (str_starts_with($this->cover_id, '/')) {
-                return 'https://image.tmdb.org/t/p/w500'.$this->cover_id;
-            }
-            // Local file (v2 local TMDb download or explicit path)
-            if (str_contains($this->cover_id, '.')) {
-                if (Storage::disk('public')->exists($this->cover_id)) {
-                    return Storage::disk('public')->url($this->cover_id);
-                }
-            }
-            // Legacy local cover format (v1.5)
-            $path = 'covers/'.$this->cover_id.'f.jpg';
-            if (Storage::disk('public')->exists($path)) {
-                return Storage::disk('public')->url($path);
-            }
-        }
+        $url = $this->resolveImageUrl($this->cover_id, 'cover');
 
-        // 2. Fallback for boxsets: use the first child's cover
-        if ($this->boxsetChildren->count() > 0) {
+        if (! $url && $this->boxsetChildren->count() > 0) {
             $firstChild = $this->boxsetChildren->first();
-            if ($firstChild) {
-                return $firstChild->cover_url;
-            }
+
+            return $firstChild ? $firstChild->cover_url : null;
         }
 
-        return null;
+        return $url;
     }
 
     public function getBackdropUrlAttribute()
     {
-        // 1. Specific backdrop_id
-        if ($this->backdrop_id) {
-            // Direct URL
-            if (str_starts_with($this->backdrop_id, 'http')) {
-                return $this->backdrop_id;
-            }
-            // TMDb Path
-            if (str_starts_with($this->backdrop_id, '/')) {
-                return 'https://image.tmdb.org/t/p/w1280'.$this->backdrop_id;
-            }
-            // Local file (v2 local TMDb download or explicit path)
-            if (str_contains($this->backdrop_id, '.')) {
-                if (Storage::disk('public')->exists($this->backdrop_id)) {
-                    return Storage::disk('public')->url($this->backdrop_id);
-                }
-            }
-            // Legacy local backdrop format
-            $path = 'backdrops/'.$this->backdrop_id.'.jpg';
-            if (Storage::disk('public')->exists($path)) {
-                return Storage::disk('public')->url($path);
-            }
-        }
+        $url = $this->resolveImageUrl($this->backdrop_id, 'backdrop');
 
-        // 2. Fallback for v1.5 movies: check 'b' version of the cover
-        if ($this->cover_id && ! str_contains($this->cover_id, '/') && ! str_starts_with($this->cover_id, 'http') && ! str_contains($this->cover_id, '.')) {
+        // Fallback for v1.5: check 'b' version of cover
+        if (! $url && $this->cover_id && ! str_contains($this->cover_id, '/') && ! str_starts_with($this->cover_id, 'http')) {
             $path = 'covers/'.$this->cover_id.'b.jpg';
             if (Storage::disk('public')->exists($path)) {
-                return Storage::disk('public')->url($path);
+                $url = Storage::disk('public')->url($path);
             }
         }
 
-        // 3. Fallback for boxsets: use the first child's backdrop/cover
-        if ($this->boxsetChildren->count() > 0) {
+        // Fallback for boxsets
+        if (! $url && $this->boxsetChildren->count() > 0) {
             $firstChild = $this->boxsetChildren->first();
-            if ($firstChild) {
-                return $firstChild->backdrop_url;
-            }
+
+            return $firstChild ? $firstChild->backdrop_url : null;
+        }
+
+        return $url;
+    }
+
+    /**
+     * Resolve image URL from ID and type.
+     */
+    protected function resolveImageUrl($id, $type)
+    {
+        if (! $id) {
+            return null;
+        }
+
+        // Direct URL
+        if (str_starts_with($id, 'http')) {
+            return $id;
+        }
+
+        // TMDb Path
+        if (str_starts_with($id, '/')) {
+            $base = $type === 'cover' ? 'https://image.tmdb.org/t/p/w500' : 'https://image.tmdb.org/t/p/w1280';
+
+            return $base.$id;
+        }
+
+        // Local file with extension
+        if (str_contains($id, '.') && Storage::disk('public')->exists($id)) {
+            return Storage::disk('public')->url($id);
+        }
+
+        // Legacy format
+        $folder = $type === 'cover' ? 'covers' : 'backdrops';
+        $suffix = $type === 'cover' ? 'f' : '';
+        $path = "$folder/$id$suffix.jpg";
+
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->url($path);
         }
 
         return null;
