@@ -63,30 +63,37 @@ class XmlImportController extends Controller
         $maxSize = 104857600; // 100 MB limit
 
         if ($file->getClientOriginalExtension() === 'zip') {
-            $zip = new ZipArchive;
-            $xmlContent = '';
-            if ($zip->open($file->getRealPath()) === true) {
-                for ($i = 0; $i < $zip->numFiles; $i++) {
-                    $entry = $zip->getNameIndex($i);
-                    if (Str::endsWith(strtolower($entry), '.xml')) {
-                        $stat = $zip->statIndex($i);
-                        if ($stat['size'] > $maxSize) {
-                            throw new Exception('Die extrahierte XML-Datei ist zu gross (max. 100 MB).');
-                        }
-                        // Limit extraction to max size
-                        $xmlContent = $zip->getFromName($entry, $maxSize);
-                        break;
-                    }
-                }
-                $zip->close();
-            }
-
-            return $xmlContent;
+            return $this->extractXmlFromZip($file, $maxSize);
         }
 
         // Limit file_get_contents to prevent memory exhaustion
         $content = file_get_contents($file->getRealPath(), false, null, 0, $maxSize);
         return $content !== false ? $content : '';
+    }
+
+    private function extractXmlFromZip($file, int $maxSize): string
+    {
+        $zip = new ZipArchive;
+        $xmlContent = '';
+
+        if ($zip->open($file->getRealPath()) === true) {
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $entry = $zip->getNameIndex($i);
+                if (Str::endsWith(strtolower($entry), '.xml')) {
+                    $stat = $zip->statIndex($i);
+                    if ($stat['size'] > $maxSize) {
+                        $zip->close();
+                        throw new Exception('Die extrahierte XML-Datei ist zu gross (max. 100 MB).');
+                    }
+                    // Limit extraction to max size
+                    $xmlContent = $zip->getFromName($entry, $maxSize);
+                    break;
+                }
+            }
+            $zip->close();
+        }
+
+        return $xmlContent;
     }
 
     protected function processXml(string $xmlContent)
