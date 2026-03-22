@@ -24,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('activity_log', function (Blueprint $table) {
-            //
-        });
+        //
     }
 };

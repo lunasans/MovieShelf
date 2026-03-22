@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Setting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
-use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SettingController extends Controller
 {
     public function index()
     {
         $settings = Setting::all()->pluck('value', 'key');
-        
+
         return view('admin.settings.index', compact('settings'));
     }
 
@@ -56,7 +56,7 @@ class SettingController extends Controller
         $this->sanitizeHtml($validated);
 
         foreach ($validated as $key => $value) {
-            Setting::set($key, (string)$value, $this->getSettingGroup($key));
+            Setting::set($key, (string) $value, $this->getSettingGroup($key));
         }
 
         $this->handleSignatureCache($validated);
@@ -92,29 +92,19 @@ class SettingController extends Controller
 
     public function getSettingGroup(string $key): string
     {
-        if (str_starts_with($key, 'tmdb_')) {
-            return 'tmdb';
-        }
-        if ($key === 'theme') {
-            return 'ui';
-        }
-        if (str_starts_with($key, 'impressum_')) {
-            return 'impressum';
-        }
-        if (str_starts_with($key, 'signature_')) {
-            return 'signature';
-        }
-        if (str_starts_with($key, 'mail_')) {
-            return 'mail';
-        }
-        
-        return 'general';
+        return match (true) {
+            str_starts_with($key, 'tmdb_') => 'tmdb',
+            $key === 'theme' => 'ui',
+            str_starts_with($key, 'impressum_') => 'impressum',
+            str_starts_with($key, 'signature_') => 'signature',
+            str_starts_with($key, 'mail_') => 'mail',
+            default => 'general',
+        };
     }
 
     protected function handleSignatureCache(array $validated)
     {
-        $hasSignatureChanges = collect(array_keys($validated))->contains(fn($k) => str_starts_with($k, 'signature_'));
-
+        $hasSignatureChanges = collect(array_keys($validated))->contains(fn ($k) => str_starts_with($k, 'signature_'));
         if ($hasSignatureChanges) {
             Cache::forget('signature_banner_type_1');
             Cache::forget('signature_banner_type_2');
@@ -126,16 +116,14 @@ class SettingController extends Controller
     {
         try {
             $to = $request->get('email', auth()->user()->email);
-            
             Mail::send('emails.test', [], function ($message) use ($to) {
-                $message->to($to)
-                        ->subject(config('app.name') . ': Test-Email');
+                $message->to($to)->subject(config('app.name').': Test-Email');
             });
 
-            return response()->json(['success' => true, 'message' => 'Die HTML Test-Email wurde erfolgreich versendet an ' . $to]);
+            return response()->json(['success' => true, 'message' => 'Die HTML Test-Email wurde erfolgreich versendet an '.$to]);
         } catch (\Exception $e) {
-            Log::error('Mail Test failed: ' . $e->getMessage());
-            
+            Log::error('Mail Test failed: '.$e->getMessage());
+
             // Provide a more user-friendly error message
             $errorMessage = $e->getMessage();
             if (str_contains($errorMessage, 'authentication failed')) {
@@ -144,7 +132,7 @@ class SettingController extends Controller
                 $errorMessage = 'Verbindung zum SMTP-Server fehlgeschlagen. Bitte prüfe Host und Port.';
             }
 
-            return response()->json(['success' => false, 'message' => 'Fehler: ' . $errorMessage], 500);
+            return response()->json(['success' => false, 'message' => 'Fehler: '.$errorMessage], 500);
         }
     }
 }

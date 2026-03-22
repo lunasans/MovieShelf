@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movie;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MovieWatchedController extends Controller
@@ -14,8 +13,8 @@ class MovieWatchedController extends Controller
     public function toggle(Movie $movie)
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }
 
@@ -31,7 +30,7 @@ class MovieWatchedController extends Controller
 
         return response()->json([
             'watched' => $watched,
-            'count' => $movie->watchedByUsers()->count()
+            'count' => $movie->watchedByUsers()->count(),
         ]);
     }
 }

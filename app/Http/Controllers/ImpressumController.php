@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
-use Illuminate\Http\Request;
 
 class ImpressumController extends Controller
 {
@@ -17,7 +16,7 @@ class ImpressumController extends Controller
         $content = Setting::get('impressum_content', '');
         $enabled = Setting::get('impressum_enabled', '1');
 
-        if ($enabled !== '1' && !auth()->check()) {
+        if ($enabled !== '1' && ! auth()->check()) {
             abort(404);
         }
 

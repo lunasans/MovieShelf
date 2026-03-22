@@ -13,7 +13,13 @@ class UserController extends Controller
     public function index()
     {
         $users = User::withCount(['watchedMovies'])->get();
+
         return view('admin.users.index', compact('users'));
+    }
+
+    public function create()
+    {
+        return response('');
     }
 
     public function store(Request $request)
@@ -33,6 +39,11 @@ class UserController extends Controller
         return back()->with('success', 'Benutzer erfolgreich erstellt.');
     }
 
+    public function edit()
+    {
+        return response('');
+    }
+
     public function update(Request $request, User $user)
     {
         $request->validate([
@@ -43,11 +54,10 @@ class UserController extends Controller
 
         $user->name = $request->name;
         $user->email = $request->email;
-        
+
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
-
         $user->save();
 
         return back()->with('success', 'Benutzer erfolgreich aktualisiert.');

@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
+$profilePath = '/profile';
+
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
@@ -19,6 +21,7 @@ Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['de', 'en'])) {
         session(['locale' => $locale]);
     }
+
     return back();
 })->name('lang.switch');
 
@@ -40,10 +43,10 @@ Route::get('/impressum', [\App\Http\Controllers\ImpressumController::class, 'ind
 Route::get('/statistics', [\App\Http\Controllers\StatsController::class, 'index'])->name('statistics');
 Route::post('/theme/save', [\App\Http\Controllers\ThemeController::class, 'save'])->name('theme.save');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::middleware('auth')->group(function () use ($profilePath) {
+    Route::get($profilePath, [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch($profilePath, [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete($profilePath, [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // 2FA Routes
     Route::post('/two-factor-authentication', [TwoFactorController::class, 'enable'])->name('two-factor.enable');
@@ -59,7 +62,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('dashboard');
         Route::resource('movies', \App\Http\Controllers\Admin\MovieController::class);
         Route::resource('actors', \App\Http\Controllers\Admin\ActorController::class);
-        
+
         Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
         Route::post('settings/test-mail', [\App\Http\Controllers\Admin\SettingController::class, 'testMail'])->name('settings.test-mail');

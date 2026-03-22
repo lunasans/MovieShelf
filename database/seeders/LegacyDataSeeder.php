@@ -1,12 +1,10 @@
 <?php
 
 namespace Database\Seeders;
- 
-use Illuminate\Database\Seeder;
-use App\Models\User;
+
 use App\Models\Movie;
-use App\Models\Actor;
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class LegacyDataSeeder extends Seeder
@@ -28,9 +26,9 @@ class LegacyDataSeeder extends Seeder
         );
 
         // For large data sets, we'll parse the SQL file or use raw inserts to keep it efficient.
-        // Since I have the data, I'll implement a few key entries as a base and 
+        // Since I have the data, I'll implement a few key entries as a base and
         // recommend a command-line import for the 11k+ lines if needed.
-        
+
         $this->seedMovies();
     }
 

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('movies')) {
+        if (! Schema::hasTable('movies')) {
             Schema::create('movies', function (Blueprint $table) {
                 $table->id();
                 $table->string('title', 255);
@@ -38,7 +38,6 @@ return new class extends Migration
                 $table->index('is_deleted', 'idx_deleted');
                 $table->index('boxset_parent', 'idx_boxset_parent');
                 $table->index('view_count', 'idx_view_count');
-                // $table->fullText(['title', 'overview'], 'idx_search');
 
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
                 $table->foreign('boxset_parent')->references('id')->on('movies')->onDelete('set null');

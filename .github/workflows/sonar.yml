@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - v2
+      - v2-dev
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -12,6 +13,9 @@ jobs:
   sonarqube:
     name: SonarQube Scan
     runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: database/database.sqlite
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -27,22 +31,23 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
+      - name: Install Node Dependencies & Build Assets
+        run: |
+          npm install
+          npm run build
+
       - name: Prepare Environment
         run: |
+          mkdir -p database
+          touch database/database.sqlite
           cp .env.example .env
           php artisan key:generate
 
       - name: Run Migrations
         run: php artisan migrate --force
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
 
       - name: Run Tests with Coverage
         run: ./vendor/bin/phpunit --coverage-clover coverage.xml --log-junit report.xml
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@884b79409bbd464b2a59edc326a4b77dc56b2195 # v3.0.0

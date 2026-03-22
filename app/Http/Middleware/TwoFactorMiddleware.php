@@ -17,9 +17,9 @@ class TwoFactorMiddleware
     {
         $user = $request->user();
 
-        if ($user && $user->hasTwoFactorEnabled() && 
-            !$request->session()->has('two_factor_verified') && 
-            !$request->is('two-factor-challenge', 'logout')) {
+        if ($user && $user->hasTwoFactorEnabled() &&
+            ! $request->session()->has('two_factor_verified') &&
+            ! $request->is('two-factor-challenge', 'logout')) {
             return redirect()->route('two-factor.challenge');
         }
 

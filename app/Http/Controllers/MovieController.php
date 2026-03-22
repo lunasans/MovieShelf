@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movie;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -11,12 +12,12 @@ class MovieController extends Controller
     {
         $query = Movie::query();
 
-        if (!$request->filled('q') && !$request->filled('type')) {
+        if (! $request->filled('q') && ! $request->filled('type')) {
             $query->whereNull('boxset_parent');
         }
 
         if ($request->filled('q')) {
-            $query->where('title', 'like', '%' . $request->q . '%');
+            $query->where('title', 'like', '%'.$request->q.'%');
         }
 
         if ($request->filled('type')) {
@@ -24,20 +25,12 @@ class MovieController extends Controller
         }
 
         $movies = $query->withCount('boxsetChildren')->orderBy('title')->paginate(20)->withQueryString();
-        
-        $collectionTypes = Movie::distinct()
-            ->whereNotNull('collection_type')
-            ->orderBy('collection_type')
-            ->pluck('collection_type');
+        $collectionTypes = Movie::distinct()->whereNotNull('collection_type')->orderBy('collection_type')->pluck('collection_type');
 
-        $latestCount = (int)\App\Models\Setting::where('key', 'latest_films_count')->value('value') ?: 15;
-        $latestMovies = Movie::whereNull('boxset_parent')
-            ->withCount('boxsetChildren')
-            ->orderBy('created_at', 'desc')
-            ->limit($latestCount)
-            ->get();
+        $latestCount = (int) Setting::where('key', 'latest_films_count')->value('value') ?: 15;
+        $latestMovies = Movie::whereNull('boxset_parent')->withCount('boxsetChildren')->orderBy('created_at', 'desc')->limit($latestCount)->get();
 
-        $defaultViewMode = \App\Models\Setting::get('default_view_mode', 'grid');
+        $defaultViewMode = Setting::get('default_view_mode', 'grid');
 
         if ($request->ajax()) {
             return view('movies.partials.movie-list-ajax', compact('movies'))->render();
@@ -49,25 +42,26 @@ class MovieController extends Controller
     public function show(Movie $movie)
     {
         $movie->load(['actors', 'boxsetChildren', 'parentBoxset', 'seasons.episodes']);
+
         return view('movies.show', compact('movie'));
     }
 
     public function details(Movie $movie)
     {
         $movie->load(['actors', 'boxsetChildren', 'parentBoxset', 'seasons.episodes']);
-        
+
         // Fetch up to 5 similar movies based on genre
         $similarMovies = collect();
         if ($movie->genre) {
             $firstGenre = trim(explode(',', $movie->genre)[0]);
             $similarMovies = Movie::where('id', '!=', $movie->id)
                 ->whereNull('boxset_parent')
-                ->where('genre', 'like', '%' . $firstGenre . '%')
+                ->where('genre', 'like', '%'.$firstGenre.'%')
                 ->inRandomOrder()
                 ->limit(5)
                 ->get();
         }
-        
+
         return view('movies.partials.details', compact('movie', 'similarMovies'));
     }
 
@@ -76,7 +70,7 @@ class MovieController extends Controller
         $query = Movie::query()->whereNull('boxset_parent');
 
         if ($request->filled('q')) {
-            $query->where('title', 'like', '%' . $request->q . '%');
+            $query->where('title', 'like', '%'.$request->q.'%');
         }
 
         if ($request->filled('type')) {
@@ -85,13 +79,13 @@ class MovieController extends Controller
 
         $movie = $query->inRandomOrder()->first();
 
-        if (!$movie) {
+        if (! $movie) {
             return response()->json(['error' => 'No movies found'], 404);
         }
 
         return response()->json([
             'id' => $movie->id,
-            'backdrop_url' => $movie->backdrop_url
+            'backdrop_url' => $movie->backdrop_url,
         ]);
     }
 
@@ -109,7 +103,7 @@ class MovieController extends Controller
                     'cover_url' => $child->cover_url,
                     'details_url' => route('movies.show', $child->id),
                 ];
-            })
+            }),
         ]);
     }
 }

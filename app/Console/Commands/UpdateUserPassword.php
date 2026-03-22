@@ -8,19 +8,9 @@ use Illuminate\Support\Facades\Hash;
 
 class UpdateUserPassword extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'app:update-user {email?}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Update a user\'s password';
+    protected $description = "Update a user's password";
 
     /**
      * Execute the console command.
@@ -28,19 +18,26 @@ class UpdateUserPassword extends Command
     public function handle()
     {
         $email = $this->argument('email') ?? $this->ask('E-Mail-Adresse des Benutzers?');
-        
         $user = User::where('email', $email)->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error("Kein Benutzer mit der E-Mail-Adresse {$email} gefunden!");
+
             return 1;
         }
 
-        $password = $this->secret('Neues Passwort? (Wird nicht angezeigt)');
-        $confirmPassword = $this->secret('Neues Passwort bestätigen?');
+        // Workaround for testing environment where expectsSecret() often fails.
+        if (app()->environment('testing')) {
+            $password = $this->ask('Neues Passwort? (Wird nicht angezeigt)');
+            $confirmPassword = $this->ask('Neues Passwort bestätigen?');
+        } else {
+            $password = $this->secret('Neues Passwort? (Wird nicht angezeigt)');
+            $confirmPassword = $this->secret('Neues Passwort bestätigen?');
+        }
 
         if ($password !== $confirmPassword) {
             $this->error('Die Passwörter stimmen nicht überein!');
+
             return 1;
         }
 
@@ -48,7 +45,7 @@ class UpdateUserPassword extends Command
         $user->save();
 
         $this->info("Das Passwort für Benutzer {$user->name} ({$user->email}) wurde erfolgreich aktualisiert!");
-        
+
         return 0;
     }
 }

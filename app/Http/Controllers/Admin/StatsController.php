@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Counter;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class StatsController extends Controller
@@ -21,32 +19,32 @@ class StatsController extends Controller
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i)->format('Y-m-d');
             $labels[] = Carbon::now()->subDays($i)->format('d.m.');
-            
+
             $visit = Counter::where('page', "daily:$date")->first();
             $count = $visit ? $visit->visits : 0;
             $data[] = $count;
-            
+
             $stats->push([
                 'date' => $date,
                 'label' => Carbon::now()->subDays($i)->format('d.m.Y'),
-                'count' => $count
+                'count' => $count,
             ]);
         }
 
         // 2. Key Metrics
         $todayCount = $data[count($data) - 1];
         $yesterdayCount = $data[count($data) - 2] ?? 0;
-        
         $totalLast7Days = array_sum(array_slice($data, -7));
         $avgLast30Days = round(array_sum($data) / $days, 1);
         $peak = max($data);
-        $peakDate = $labels[array_search($peak, $data)];
+        $peakDateList = array_keys($data, $peak);
+        $peakDate = $labels[$peakDateList[0]] ?? 'N/A';
 
         // 3. Overall Totals
         $allTimeTotal = Counter::where('page', 'all')->first()?->visits ?? 0;
 
         return view('admin.stats.index', compact(
-            'labels', 'data', 'stats', 'todayCount', 'yesterdayCount', 
+            'labels', 'data', 'stats', 'todayCount', 'yesterdayCount',
             'totalLast7Days', 'avgLast30Days', 'peak', 'peakDate', 'allTimeTotal'
         ));
     }

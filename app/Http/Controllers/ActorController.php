@@ -7,9 +7,9 @@ use App\Services\TmdbService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 
 class ActorController extends Controller
 {
@@ -27,20 +27,17 @@ class ActorController extends Controller
     {
         $availableLetters = $this->getAvailableLetters();
         $actorsQuery = $this->buildActorsQuery($request);
-        
         $totalActors = Actor::count();
         $filteredActorsCount = $actorsQuery->count();
-
         $actors = $actorsQuery->paginate(60);
         $groupedActors = $this->groupActors($actors->getCollection());
-
         $letter = strtoupper($request->get('letter'));
 
         return view('actors.index', compact(
-            'actors', 
-            'groupedActors', 
-            'availableLetters', 
-            'totalActors', 
+            'actors',
+            'groupedActors',
+            'availableLetters',
+            'totalActors',
             'filteredActorsCount',
             'letter'
         ));
@@ -64,7 +61,7 @@ class ActorController extends Controller
 
         return Actor::query()
             ->when($query, function ($q) use ($query) {
-                $q->where(function($sub) use ($query) {
+                $q->where(function ($sub) use ($query) {
                     $sub->where('first_name', 'like', "%{$query}%")
                         ->orWhere('last_name', 'like', "%{$query}%");
                 });
@@ -73,7 +70,7 @@ class ActorController extends Controller
                 if ($letter === '#') {
                     $q->whereRaw('last_name REGEXP "^[^A-Za-z]"');
                 } else {
-                    $q->where('last_name', 'like', $letter . '%');
+                    $q->where('last_name', 'like', $letter.'%');
                 }
             })
             ->withCount('movies')
@@ -83,8 +80,9 @@ class ActorController extends Controller
 
     protected function groupActors($collection)
     {
-        return $collection->groupBy(function($actor) {
+        return $collection->groupBy(function ($actor) {
             $char = strtoupper(mb_substr($actor->last_name, 0, 1));
+
             return preg_match('/^[A-Z]$/', $char) ? $char : '#';
         });
     }
@@ -95,12 +93,14 @@ class ActorController extends Controller
     public function show(Actor $actor)
     {
         $data = $this->getActorData($actor);
+
         return view('actors.show', $data);
     }
 
     public function details(Actor $actor)
     {
         $data = $this->getActorData($actor);
+
         return view('actors.partials.details', $data);
     }
 
@@ -127,12 +127,12 @@ class ActorController extends Controller
         $isLegacyPath = str_starts_with($actor->profile_path ?? '', 'tmdb_');
         $repairId = $actor->tmdb_id;
 
-        if ($isLegacyPath && !$repairId) {
+        if ($isLegacyPath && ! $repairId) {
             $repairId = (int) str_replace('tmdb_', '', $actor->profile_path);
             $actor->tmdb_id = $repairId;
         }
 
-        if (!$repairId || !(empty($actor->bio) || empty($actor->imdb_id) || $isLegacyPath || empty($actor->profile_path))) {
+        if (! $repairId || ! (empty($actor->bio) || empty($actor->imdb_id) || $isLegacyPath || empty($actor->profile_path))) {
             return;
         }
 
@@ -152,7 +152,7 @@ class ActorController extends Controller
         ];
 
         // Handle Image Repair
-        if (($isLegacyPath || empty($actor->profile_path)) && !empty($details['profile_path'])) {
+        if (($isLegacyPath || empty($actor->profile_path)) && ! empty($details['profile_path'])) {
             $filename = $this->downloadActorProfile($details['profile_path']);
             if ($filename) {
                 $updateData['profile_path'] = $filename;
@@ -167,13 +167,15 @@ class ActorController extends Controller
     protected function downloadActorProfile(string $path): ?string
     {
         try {
-            $profileUrl = "https://image.tmdb.org/t/p/w185" . $path;
+            $profileUrl = 'https://image.tmdb.org/t/p/w185'.$path;
             $imageContent = Http::get($profileUrl)->body();
-            $filename = 'actors/' . Str::random(20) . '.jpg';
+            $filename = 'actors/'.Str::random(20).'.jpg';
             Storage::disk('public')->put($filename, $imageContent);
+
             return $filename;
         } catch (\Exception $e) {
-            Log::error("Could not download actor profile: " . $e->getMessage());
+            Log::error('Could not download actor profile: '.$e->getMessage());
+
             return null;
         }
     }
@@ -183,7 +185,7 @@ class ActorController extends Controller
         return [
             'total_movies' => $movies->count(),
             'main_roles' => $movies->where('pivot.is_main_role', true)->count(),
-            'year_span' => $movies->isEmpty() ? null : $movies->min('year') . ' - ' . $movies->max('year'),
+            'year_span' => $movies->isEmpty() ? null : $movies->min('year').' - '.$movies->max('year'),
             'top_genres' => $this->calculateTopGenres($movies),
         ];
     }
@@ -197,9 +199,9 @@ class ActorController extends Controller
             'birthDate' => $actor->birthday,
             'birthPlace' => $actor->place_of_birth,
             'deathDate' => $actor->deathday,
-            'description' => \Illuminate\Support\Str::limit(strip_tags($actor->bio), 160),
-            'image' => $actor->profile_path ? asset('storage/' . $actor->profile_path) : null,
-            'url' => route('actors.show', $actor)
+            'description' => Str::limit(strip_tags($actor->bio), 160),
+            'image' => $actor->profile_path ? asset('storage/'.$actor->profile_path) : null,
+            'url' => route('actors.show', $actor),
         ];
     }
 
@@ -216,6 +218,7 @@ class ActorController extends Controller
             }
         }
         arsort($genres);
+
         return array_slice($genres, 0, 5);
     }
 }
