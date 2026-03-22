@@ -147,6 +147,17 @@ class SystemUpdateController extends Controller
                 }
             }
 
+            // Extra Diagnostics for "could not write index"
+            if (str_contains($error, 'could not write index')) {
+                $df = shell_exec('df -h .');
+                $perms = substr(sprintf('%o', fileperms(base_path().'/.git')), -4);
+                $owner = posix_getpwuid(fileowner(base_path().'/.git'))['name'] ?? 'unknown';
+                $currentUser = posix_getpwuid(posix_geteuid())['name'] ?? 'unknown';
+                
+                $error .= "\n[DIAGNOSTIK] Speicher:\n$df";
+                $error .= "\n[DIAGNOSTIK] .git Rechte: $perms, Besitzer: $owner, Aktueller User: $currentUser";
+            }
+
             Log::warning("Command failed (Exit $exitCode): $cmd. Error: ".$error);
             throw new \App\Exceptions\SystemUpdateException("Systemfehler ($exitCode): ".$error);
         }
