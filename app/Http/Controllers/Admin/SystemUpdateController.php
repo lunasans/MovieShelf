@@ -63,6 +63,13 @@ class SystemUpdateController extends Controller
         try {
             Log::info('System Update started...');
 
+            // Auto-clean stale locks before starting
+            $lockFile = base_path('.git/index.lock');
+            if (file_exists($lockFile)) {
+                Log::info('Stale git lock found. Removing...');
+                unlink($lockFile);
+            }
+
             // Check for local changes
             $status = $this->runCommand('git status --porcelain');
             $hasChanges = ! empty($status);
@@ -147,15 +154,51 @@ class SystemUpdateController extends Controller
                 }
             }
 
+            // Auto-fix for "could not write index" (Self-Healing)
+            if (str_contains($error, 'could not write index')) {
+                Log::warning('Git index error detected. Attempting self-healing...');
+                
+                @unlink(base_path('.git/index.lock'));
+                @unlink(base_path('.git/index.old'));
+                
+                // If the error persists, try clearing the primary index as a last resort
+                // but ONLY if we haven't already tried to fix this specific command
+                if (! str_contains($cmd, 'reset')) {
+                    Log::info('Removing corrupted index and resetting...');
+                    @unlink(base_path('.git/index'));
+                    Process::path(base_path())->run($executable.' reset --mixed');
+                    
+                    // Try original command again
+                    Log::info('Retrying original command after index reset: '.$cmd);
+                    $result = Process::path(base_path())->run($cmd);
+                    if ($result->successful()) {
+                        Log::info('Self-healing successful!');
+                        return trim($result->output());
+                    }
+                }
+            }
+
             // Extra Diagnostics for "could not write index"
             if (str_contains($error, 'could not write index')) {
                 $df = shell_exec('df -h .');
-                $perms = substr(sprintf('%o', fileperms(base_path().'/.git')), -4);
-                $owner = posix_getpwuid(fileowner(base_path().'/.git'))['name'] ?? 'unknown';
+                $indexPath = base_path().'/.git/index';
+                $oldIndexPath = base_path().'/.git/index.old';
+                $dirPath = base_path().'/.git';
+                
+                $dirPerms = substr(sprintf('%o', fileperms($dirPath)), -4);
+                $indexPerms = file_exists($indexPath) ? substr(sprintf('%o', fileperms($indexPath)), -4) : 'FEHLT';
+                $oldIndexPerms = file_exists($oldIndexPath) ? substr(sprintf('%o', fileperms($oldIndexPath)), -4) : 'KEINE';
+                
+                $dirOwner = posix_getpwuid(fileowner($dirPath))['name'] ?? 'unknown';
+                $indexOwner = file_exists($indexPath) ? (posix_getpwuid(fileowner($indexPath))['name'] ?? 'unknown') : 'N/A';
+                
                 $currentUser = posix_getpwuid(posix_geteuid())['name'] ?? 'unknown';
                 
                 $error .= "\n[DIAGNOSTIK] Speicher:\n$df";
-                $error .= "\n[DIAGNOSTIK] .git Rechte: $perms, Besitzer: $owner, Aktueller User: $currentUser";
+                $error .= "\n[DIAGNOSTIK] .git Ordner: $dirPerms ($dirOwner)";
+                $error .= "\n[DIAGNOSTIK] .git/index Datei: $indexPerms ($indexOwner)";
+                $error .= "\n[DIAGNOSTIK] .git/index.old: $oldIndexPerms";
+                $error .= "\n[DIAGNOSTIK] Aktueller PHP-User: $currentUser";
             }
 
             Log::warning("Command failed (Exit $exitCode): $cmd. Error: ".$error);
