@@ -30,6 +30,7 @@ class SystemUpdateController extends Controller
 
             // Check if update is needed (briefly)
             $local = $this->runCommand('git rev-parse @');
+            $remote = $this->runCommand('git rev-parse @{u}');
             $needsUpdate = ($local !== $remote);
 
             $ignoredUpdateFiles = \App\Models\Setting::get('ignored_update_files', '');
@@ -138,6 +139,8 @@ class SystemUpdateController extends Controller
             Log::info('Migration Output: '.$migrate);
             $configClear = $this->runCommand('php artisan config:clear');
             Log::info('Config Clear Output: '.$configClear);
+            $routeClear = $this->runCommand('php artisan route:clear');
+            Log::info('Route Clear Output: '.$routeClear);
 
             try {
                 $npmInstall = $this->runCommand('npm install');

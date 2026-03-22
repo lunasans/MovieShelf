@@ -81,4 +81,15 @@ class SystemUpdateControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewHas('error');
     }
+
+    public function test_save_settings_persists_ignored_files()
+    {
+        $response = $this->actingAs($this->admin)->post(route('admin.update.settings.save'), [
+            'ignored_update_files' => "test.php\nconfig/app.php"
+        ]);
+
+        $response->assertRedirect(route('admin.update.index'));
+        $response->assertSessionHas('success');
+        $this->assertEquals("test.php\nconfig/app.php", \App\Models\Setting::get('ignored_update_files'));
+    }
 }
