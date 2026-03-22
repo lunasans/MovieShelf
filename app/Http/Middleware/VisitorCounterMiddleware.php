@@ -42,26 +42,24 @@ class VisitorCounterMiddleware
             $today = now()->format('Y-m-d');
             $cacheKey = "visit:{$today}:".hash('sha256', (string) $ip);
 
-            if (! \Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            if (! \Illuminate\Support\Facades\Cache::has($cacheKey) && ! app()->bound('visitor_counted')) {
                 // Prevention of double-counting in the SAME request process
-                if (! app()->bound('visitor_counted')) {
-                    app()->instance('visitor_counted', true);
-                    
-                    // Increment total visits
-                    $totalCounter = Counter::firstOrCreate(['page' => 'all']);
-                    $totalCounter->increment('visits');
-                    $totalCounter->last_visit = now();
-                    $totalCounter->save();
+                app()->instance('visitor_counted', true);
+                
+                // Increment total visits
+                $totalCounter = Counter::firstOrCreate(['page' => 'all']);
+                $totalCounter->increment('visits');
+                $totalCounter->last_visit = now();
+                $totalCounter->save();
 
-                    // Increment daily visits
-                    $dailyCounter = Counter::firstOrCreate(['page' => "daily:$today"]);
-                    $dailyCounter->increment('visits');
-                    $dailyCounter->last_visit = now();
-                    $dailyCounter->save();
+                // Increment daily visits
+                $dailyCounter = Counter::firstOrCreate(['page' => "daily:$today"]);
+                $dailyCounter->increment('visits');
+                $dailyCounter->last_visit = now();
+                $dailyCounter->save();
 
-                    // Mark as visited for this IP today (expires at end of day)
-                    \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->endOfDay());
-                }
+                // Mark as visited for this IP today (expires at end of day)
+                \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->endOfDay());
             }
         }
 

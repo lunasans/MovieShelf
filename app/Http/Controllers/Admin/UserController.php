@@ -39,7 +39,7 @@ class UserController extends Controller
         return back()->with('success', 'Benutzer erfolgreich erstellt.');
     }
 
-    public function edit(User $user)
+    public function edit()
     {
         return response('');
     }
