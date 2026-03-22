@@ -26,17 +26,19 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      uses: actions/checkout@v4
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3 # v3
+      uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
+        # If you're analyze a compiled language, you can specify build commands here
+        # queries: security-extended,security-and-quality
 
     - name: Autobuild
-      uses: github/codeql-action/autobuild@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3 # v3
+      uses: github/codeql-action/autobuild@v3
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3 # v3
+      uses: github/codeql-action/analyze@v3
       with:
         category: "/language:${{matrix.language}}"
