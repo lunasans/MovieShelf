@@ -28,10 +28,27 @@ class FactoryTest extends TestCase
         $this->assertIsInt($counter->visits);
     }
 
-    public function test_movie_factory_creates_valid_model()
+    public function test_movie_factory_creates_valid_model_with_all_fields()
     {
         $movie = Movie::factory()->create();
+        
         $this->assertInstanceOf(Movie::class, $movie);
         $this->assertNotEmpty($movie->title);
+        $this->assertNotNull($movie->year);
+        $this->assertContains($movie->collection_type, ['Blu-ray', 'DVD', '4K', 'Serie']);
+        $this->assertNotEmpty($movie->genre);
+        $this->assertIsInt($movie->runtime);
+        $this->assertIsInt($movie->rating);
+        $this->assertContains($movie->rating_age, [0, 6, 12, 16, 18]);
+        $this->assertNotEmpty($movie->overview);
+        $this->assertNotNull($movie->user_id);
+        $this->assertFalse($movie->is_deleted);
+        $this->assertEquals(0, $movie->view_count);
+    }
+
+    public function test_movie_factory_deleted_state()
+    {
+        $movie = Movie::factory()->deleted()->create();
+        $this->assertTrue($movie->is_deleted);
     }
 }

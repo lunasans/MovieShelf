@@ -17,6 +17,11 @@ class UserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
+    public function create()
+    {
+        return response('');
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -32,6 +37,11 @@ class UserController extends Controller
         ]);
 
         return back()->with('success', 'Benutzer erfolgreich erstellt.');
+    }
+
+    public function edit(User $user)
+    {
+        return response('');
     }
 
     public function update(Request $request, User $user)

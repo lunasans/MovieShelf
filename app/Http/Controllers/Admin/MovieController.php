@@ -42,7 +42,7 @@ class MovieController extends Controller
      */
     public function create()
     {
-        // To be implemented
+        return response('');
     }
 
     /**
