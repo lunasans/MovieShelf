@@ -14,6 +14,7 @@ class Actor extends Model
         'imdb_id',
         'first_name',
         'last_name',
+        'slug',
         'profile_path',
         'birth_year',
         'birthday',

@@ -64,12 +64,17 @@ class TwoFactorController extends Controller
 
     public function disable()
     {
-        Auth::user()->update([
-            'two_factor_secret' => null,
-            'two_factor_confirmed_at' => null,
-        ]);
+        try {
+            Auth::user()->update([
+                'two_factor_secret' => null,
+                'two_factor_confirmed_at' => null,
+            ]);
 
-        return back()->with('status', 'two-factor-disabled');
+            return back()->with('status', 'two-factor-disabled');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('2FA Disable Failed: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function challenge()

@@ -19,8 +19,7 @@ class ActorController extends Controller
             $search = $request->q;
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', '%'.$search.'%')
-                    ->orWhere('last_name', 'like', '%'.$search.'%')
-                    ->orWhere('nationality', 'like', '%'.$search.'%');
+                    ->orWhere('last_name', 'like', '%'.$search.'%');
             });
         }
         $actors = $query->withCount('movies')
@@ -47,10 +46,9 @@ class ActorController extends Controller
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'birth_date' => 'nullable|date',
-            'birth_place' => 'nullable|string|max:255',
-            'nationality' => 'nullable|string|max:255',
-            'biography' => 'nullable|string',
+            'birthday' => 'nullable|date',
+            'place_of_birth' => 'nullable|string|max:255',
+            'bio' => 'nullable|string',
         ]);
         $validated['slug'] = Str::slug($validated['first_name'].' '.$validated['last_name']);
         $actor = Actor::create($validated);
@@ -74,10 +72,9 @@ class ActorController extends Controller
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'birth_date' => 'nullable|date',
-            'birth_place' => 'nullable|string|max:255',
-            'nationality' => 'nullable|string|max:255',
-            'biography' => 'nullable|string',
+            'birthday' => 'nullable|date',
+            'place_of_birth' => 'nullable|string|max:255',
+            'bio' => 'nullable|string',
         ]);
         if ($request->filled('first_name') && $request->filled('last_name')) {
             $validated['slug'] = Str::slug($request->first_name.' '.$request->last_name);
