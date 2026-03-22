@@ -96,7 +96,17 @@ Route::middleware('auth')->group(function () use ($profilePath) {
 
         // Statistics
         Route::get('stats', [\App\Http\Controllers\Admin\StatsController::class, 'index'])->name('stats.index');
+
+        // Installation Statistics (Master only, gitignored)
+        if (class_exists(\App\Http\Controllers\Admin\InstallationStatsController::class)) {
+            Route::get('installations', [\App\Http\Controllers\Admin\InstallationStatsController::class, 'index'])->name('installations.index');
+        }
     });
+
+    // Telemetry API (Master only, gitignored)
+    if (class_exists(\App\Http\Controllers\Api\TelemetryStoreController::class)) {
+        Route::post('api/telemetry', [\App\Http\Controllers\Api\TelemetryStoreController::class, 'store'])->name('api.telemetry');
+    }
 });
 // Signatur-Banner
 Route::get('/signature', [\App\Http\Controllers\SignatureController::class, 'show'])->name('signature');

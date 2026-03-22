@@ -25,3 +25,9 @@ Thumbs.db
 /public/security.txt
 docker-compose-sonarqube.yml
 test_output.txt
+
+# Private Telemetry (Master only)
+/app/Http/Controllers/Api/TelemetryStoreController.php
+/app/Http/Controllers/Admin/InstallationStatsController.php
+/resources/views/admin/installations/
+

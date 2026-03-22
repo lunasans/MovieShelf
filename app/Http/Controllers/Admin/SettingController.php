@@ -74,7 +74,7 @@ class SettingController extends Controller
 
     protected function handleCheckboxes(Request $request, array &$validated)
     {
-        $checkboxes = ['impressum_enabled', 'cookie_banner_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating', 'migration_enabled'];
+        $checkboxes = ['impressum_enabled', 'cookie_banner_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating', 'migration_enabled', 'telemetry_enabled'];
         foreach ($checkboxes as $checkbox) {
             $validated[$checkbox] = $request->has($checkbox) ? '1' : '0';
         }
