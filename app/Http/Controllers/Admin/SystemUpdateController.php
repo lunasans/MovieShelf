@@ -30,10 +30,11 @@ class SystemUpdateController extends Controller
 
             // Check if update is needed (briefly)
             $local = $this->runCommand('git rev-parse @');
-            $remote = $this->runCommand('git rev-parse @{u}');
             $needsUpdate = ($local !== $remote);
 
-            return view('admin.update.index', compact('currentCommit', 'currentBranch', 'formattedChanges', 'needsUpdate'));
+            $ignoredUpdateFiles = \App\Models\Setting::get('ignored_update_files', '');
+
+            return view('admin.update.index', compact('currentCommit', 'currentBranch', 'formattedChanges', 'needsUpdate', 'ignoredUpdateFiles'));
         } catch (\Exception $e) {
             Log::error('Update Check failed: '.$e->getMessage());
 
@@ -70,6 +71,28 @@ class SystemUpdateController extends Controller
                 unlink($lockFile);
             }
 
+            // Get ignored files to protect during update
+            $ignoredFilesRaw = \App\Models\Setting::get('ignored_update_files', '');
+            $ignoredFiles = array_filter(array_map('trim', explode("\n", $ignoredFilesRaw)));
+            $backupDir = storage_path('app/temp/update_backups_'.time());
+            $protectedFiles = [];
+
+            if (! empty($ignoredFiles)) {
+                if (! is_dir($backupDir)) {
+                    mkdir($backupDir, 0755, true);
+                }
+
+                foreach ($ignoredFiles as $file) {
+                    $fullPath = base_path($file);
+                    if (file_exists($fullPath) && is_file($fullPath)) {
+                        $backupPath = $backupDir.'/'.str_replace(['/', '\\'], '_', $file);
+                        copy($fullPath, $backupPath);
+                        $protectedFiles[$file] = $backupPath;
+                        Log::info("Protected file backed up: $file");
+                    }
+                }
+            }
+
             // Check for local changes
             $status = $this->runCommand('git status --porcelain');
             $hasChanges = ! empty($status);
@@ -94,6 +117,23 @@ class SystemUpdateController extends Controller
                 }
             }
 
+            // Restore protected files
+            foreach ($protectedFiles as $file => $backupPath) {
+                if (file_exists($backupPath)) {
+                    $fullPath = base_path($file);
+                    $dir = dirname($fullPath);
+                    if (! is_dir($dir)) {
+                        mkdir($dir, 0755, true);
+                    }
+                    copy($backupPath, $fullPath);
+                    Log::info("Protected file restored: $file");
+                    unlink($backupPath);
+                }
+            }
+            if (isset($backupDir) && is_dir($backupDir)) {
+                @rmdir($backupDir);
+            }
+
             $migrate = $this->runCommand('php artisan migrate --force');
             Log::info('Migration Output: '.$migrate);
             $configClear = $this->runCommand('php artisan config:clear');
@@ -116,6 +156,17 @@ class SystemUpdateController extends Controller
 
             return back()->with('error', 'Update fehlgeschlagen: '.$e->getMessage());
         }
+    }
+
+    public function saveSettings(\Illuminate\Http\Request $request)
+    {
+        $validated = $request->validate([
+            'ignored_update_files' => 'nullable|string',
+        ]);
+
+        \App\Models\Setting::set('ignored_update_files', (string) ($validated['ignored_update_files'] ?? ''), 'general');
+
+        return redirect()->route('admin.update.index')->with('success', 'Update-Einstellungen wurden gespeichert.');
     }
 
     private function runCommand($cmd)

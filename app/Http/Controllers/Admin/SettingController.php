@@ -50,6 +50,7 @@ class SettingController extends Controller
             'mail_encryption' => 'nullable|string|in:tls,ssl,none',
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name' => 'nullable|string|max:255',
+            'ignored_update_files' => 'nullable|string',
         ]);
 
         $this->handleCheckboxes($request, $validated);
@@ -98,6 +99,7 @@ class SettingController extends Controller
             str_starts_with($key, 'impressum_') => 'impressum',
             str_starts_with($key, 'signature_') => 'signature',
             str_starts_with($key, 'mail_') => 'mail',
+            $key === 'ignored_update_files' => 'general',
             default => 'general',
         };
     }

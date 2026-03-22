@@ -89,6 +89,7 @@ Route::middleware('auth')->group(function () use ($profilePath) {
         Route::get('update', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'index'])->name('update.index');
         Route::post('update/check', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'check'])->name('update.check');
         Route::post('update/run', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'update'])->name('update.run');
+        Route::post('update/settings', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'saveSettings'])->name('update.settings.save');
 
         // Migration v1 -> v2
         Route::get('migration', [\App\Http\Controllers\Admin\MigrationController::class, 'index'])->name('migration.index');
