@@ -2,7 +2,6 @@
     <style>
         [x-cloak] { display: none !important; }
     </style>
-
     <script>
         function trailerGallery() {
             return {
@@ -14,7 +13,6 @@
                     let videoId = '';
                     const ytRegExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
                     const match = url.match(ytRegExp);
-                    
                     let finalUrl = '';
                     if (match && match[2].length === 11) {
                         videoId = match[2];
@@ -28,28 +26,23 @@
                 async loadMore() {
                     if (this.isLoading || !this.nextPageUrl) return;
                     this.isLoading = true;
-                    
                     try {
                         const response = await fetch(this.nextPageUrl, {
                             headers: { 'X-Requested-With': 'XMLHttpRequest' }
                         });
                         const html = await response.text();
-                        
                         if (html.trim() === '') {
                             this.nextPageUrl = null;
                             return;
                         }
-
                         // Create a temporary element to parse the HTML
                         const temp = document.createElement('div');
                         temp.innerHTML = html;
-                        
                         // Append items to grid
                         const grid = this.$refs.grid;
                         while (temp.firstChild) {
                             grid.appendChild(temp.firstChild);
                         }
-                        
                         // Update nextPageUrl safely
                         try {
                             const url = new URL(this.nextPageUrl);
@@ -68,7 +61,6 @@
             }
         }
     </script>
-
     <div class="px-8 py-10 min-h-screen" x-data="trailerGallery()">
         <div class="max-w-7xl mx-auto">
             <!-- Header Section -->
@@ -79,11 +71,10 @@
                     </h1>
                     <p class="text-gray-400 font-medium italic opacity-80">{{ __('Discover trailers from your collection') }}</p>
                 </div>
-
                 <!-- Search Form -->
                 <form action="{{ route('movies.trailers') }}" method="GET" class="relative w-full max-w-md">
-                    <input type="text" name="q" value="{{ request('q') }}" 
-                        placeholder="{{ __('Search for trailers...') }}" 
+                    <input type="text" name="q" value="{{ request('q') }}"
+                        placeholder="{{ __('Search for trailers...') }}"
                         class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pl-14 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-white transition-all outline-none placeholder:text-gray-500 glass">
                     <i class="bi bi-search absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 text-xl"></i>
                 </form>
@@ -123,7 +114,7 @@
         </div>
 
         <!-- Lightbox / Modal Player -->
-        <div x-show="playingTrailer" 
+        <div x-show="playingTrailer"
              x-cloak
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 scale-95"
@@ -134,15 +125,19 @@
              class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 bg-black/95 backdrop-blur-3xl"
              @click.away="playingTrailer = null"
              @keydown.escape.window="playingTrailer = null">
-            
             <div class="relative w-full max-w-6xl aspect-video rounded-[2.5rem] overflow-hidden shadow-[0_0_100px_rgba(37,99,235,0.3)] border border-white/10 bg-black" @click.stop="">
                 <!-- Close Button -->
                 <button @click.stop="playingTrailer = null" class="absolute top-6 right-6 w-12 h-12 glass hover:bg-red-500/50 rounded-2xl flex items-center justify-center text-white z-50 transition-all border border-white/20 shadow-2xl">
                     <i class="bi bi-x-lg"></i>
                 </button>
-
                 <template x-if="playingTrailer">
-                    <iframe :src="playingTrailer.url" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                    <iframe :src="playingTrailer.url"
+                            :title="playingTrailer.title"
+                            class="absolute inset-0 w-full h-full"
+                            style="border: 0;"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen
+                            referrerpolicy="strict-origin-when-cross-origin"></iframe>
                 </template>
             </div>
         </div>

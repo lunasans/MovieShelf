@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
             $today = now()->format('Y-m-d');
             $dailyCounter = \App\Models\Counter::firstOrCreate(['page' => "daily:$today"]);
 
-            $stats = \Illuminate\Support\Facades\Cache::remember('footer_stats', 300, function () use ($totalCounter, $dailyCounter) {
+            $stats = Cache::remember('footer_stats', 300, function () use ($totalCounter, $dailyCounter) {
                 return [
                     'total_films' => \App\Models\Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')->count(),
                     'total_actors' => \App\Models\Actor::count(),
@@ -34,11 +35,11 @@ class AppServiceProvider extends ServiceProvider
                     'daily_visits' => $dailyCounter->visits,
                 ];
             });
-            
+
             // Fallback for safety during cache transitions
             $stats['total_visits'] = $stats['total_visits'] ?? $totalCounter->visits;
             $stats['daily_visits'] = $stats['daily_visits'] ?? $dailyCounter->visits;
-            
+
             $view->with('footerStats', $stats);
         });
     }

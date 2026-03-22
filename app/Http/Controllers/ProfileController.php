@@ -3,16 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use PragmaRX\Google2FALaravel\Facade as Google2FA;
-use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\Image\SvgImageBackEnd;
-use BaconQrCode\Renderer\RendererStyle\RendererStyle;
-use BaconQrCode\Writer;
 
 class ProfileController extends Controller
 {
@@ -25,7 +25,7 @@ class ProfileController extends Controller
         $qrCodeSvg = null;
         $secret = null;
 
-        if ($user->two_factor_secret && !$user->two_factor_confirmed_at) {
+        if ($user->two_factor_secret && ! $user->two_factor_confirmed_at) {
             $secret = $user->two_factor_secret;
             $qrCodeSvg = $this->generateQrCodeSvg($user->email, $secret);
         }
@@ -47,7 +47,7 @@ class ProfileController extends Controller
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
-            new SvgImageBackEnd()
+            new SvgImageBackEnd
         );
         $writer = new Writer($renderer);
 

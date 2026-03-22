@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('actors')) {
+        if (! Schema::hasTable('actors')) {
             Schema::create('actors', function (Blueprint $table) {
                 $table->id();
                 $table->string('first_name', 100);
@@ -22,7 +22,6 @@ return new class extends Migration
 
                 $table->index(['last_name', 'first_name'], 'idx_name');
                 $table->index('birth_year', 'idx_birth_year');
-                // $table->fullText(['first_name', 'last_name', 'bio'], 'idx_search');
             });
         }
     }

@@ -2,15 +2,16 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('dashboard', () => ({
-                selectedMovie: null, 
+                selectedMovie: null,
                 isStatsView: false,
                 loading: false,
                 error: null,
+
                 fetchDetails(id, backdropUrl = null) {
                     this.isStatsView = false;
                     this.loading = true;
                     this.error = null;
-                    
+
                     if (backdropUrl) {
                         window.dispatchEvent(new CustomEvent('change-background', { detail: backdropUrl }));
                     }
@@ -26,10 +27,12 @@
                             this.loading = false;
                         });
                 },
+
                 fetchActor(id) {
                     this.isStatsView = false;
                     this.loading = true;
                     this.error = null;
+
                     fetch(`/actors/${id}/details`)
                         .then(res => res.text())
                         .then(html => {
@@ -41,11 +44,14 @@
                             this.loading = false;
                         });
                 },
+
                 fetchStats() {
                     this.isStatsView = true;
                     this.loading = true;
                     this.error = null;
+
                     window.dispatchEvent(new CustomEvent('change-background', { detail: '' }));
+
                     fetch('{{ route('statistics') }}', {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest'
@@ -62,11 +68,14 @@
                             this.loading = false;
                         });
                 },
+
                 fetchImpressum() {
                     this.isStatsView = true; // Use wide layout like statistics
                     this.loading = true;
                     this.error = null;
+
                     window.dispatchEvent(new CustomEvent('change-background', { detail: '' }));
+
                     fetch('{{ route('impressum') }}', {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest'
@@ -82,19 +91,20 @@
                             this.loading = false;
                         });
                 },
+
                 async fetchRandom() {
                     this.loading = true;
                     this.error = null;
-                    
+
                     const type = new URLSearchParams(window.location.search).get('type') || '';
                     const q = new URLSearchParams(window.location.search).get('q') || '';
-                    
+
                     try {
                         const response = await fetch(`/movies/random?type=${encodeURIComponent(type)}&q=${encodeURIComponent(q)}`, {
                             headers: { 'Accept': 'application/json' }
                         });
                         const data = await response.json();
-                        
+
                         if (data.id) {
                             this.fetchDetails(data.id, data.backdrop_url);
                         } else {
@@ -107,11 +117,14 @@
                         this.loading = false;
                     }
                 },
+
                 viewMode: localStorage.getItem('movieViewMode') || '{{ $defaultViewMode }}',
+
                 toggleView(mode) {
                     this.viewMode = mode;
                     localStorage.setItem('movieViewMode', mode);
                 },
+
                 initCharts() {
                     const chartOptions = {
                         responsive: true,
@@ -142,26 +155,27 @@
                                     borderRadius: type === 'bar' ? 8 : 0,
                                 }]
                             },
-                            options: (type === 'doughnut' || type === 'polarArea') 
+                            options: (type === 'doughnut' || type === 'polarArea')
                                 ? { ...chartOptions, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#fff' } } } }
                                 : chartOptions
                         };
-
                         new Chart(canvas, config);
                     });
                 },
+
                 nextMoviesPageUrl: '{{ $movies->nextPageUrl() }}',
                 isMoviesLoading: false,
+
                 async loadMoreMovies() {
                     if (this.isMoviesLoading || !this.nextMoviesPageUrl) return;
                     this.isMoviesLoading = true;
-                    
+
                     try {
                         const response = await fetch(this.nextMoviesPageUrl, {
                             headers: { 'X-Requested-With': 'XMLHttpRequest' }
                         });
                         const html = await response.text();
-                        
+
                         if (html.trim() === '') {
                             this.nextMoviesPageUrl = null;
                             return;
@@ -170,13 +184,13 @@
                         // Create a temporary element to parse the HTML
                         const temp = document.createElement('div');
                         temp.innerHTML = html;
-                        
+
                         // Append items to list
                         const grid = this.$refs.movieGrid;
                         while (temp.firstChild) {
                             grid.appendChild(temp.firstChild);
                         }
-                        
+
                         // Update nextMoviesPageUrl safely
                         try {
                             const url = new URL(this.nextMoviesPageUrl);
@@ -192,6 +206,7 @@
                         this.isMoviesLoading = false;
                     }
                 },
+
                 init() {
                     const urlParams = new URLSearchParams(window.location.search);
                     const movieId = urlParams.get('movie');
@@ -204,18 +219,19 @@
                     else if (showStats) this.fetchStats();
                     else if (showImpressum) this.fetchImpressum();
                 },
-                
+
                 // Boxset Modal State
                 boxsetOpen: false,
                 boxsetMovie: null,
                 boxsetChildren: [],
                 boxsetLoading: false,
+
                 async openBoxset(id, title) {
                     this.boxsetOpen = true;
                     this.boxsetMovie = { id, title };
                     this.boxsetLoading = true;
                     this.boxsetChildren = [];
-                    
+
                     try {
                         const response = await fetch(`/movies/${id}/boxset`);
                         const data = await response.json();
@@ -226,6 +242,7 @@
                         this.boxsetLoading = false;
                     }
                 },
+
                 selectBoxsetChild(child) {
                     this.boxsetOpen = false;
                     this.fetchDetails(child.id);
@@ -234,7 +251,7 @@
         });
     </script>
 
-    <div class="layout transition-all duration-500 ease-in-out" 
+    <div class="layout transition-all duration-500 ease-in-out"
          :class="{ 'layout-stats-active': isStatsView }"
          x-data="dashboard"
          @stats-open.window="fetchStats()"
@@ -245,12 +262,12 @@
         <section class="film-list-area shadow-2xl">
                 <div class="flex items-center justify-between mb-8 gap-4 flex-wrap min-h-[46px]">
                     <div class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
-                        <a href="{{ route('dashboard') }}" 
+                        <a href="{{ route('dashboard') }}"
                             class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {{ !request('type') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
                             {{ __('All') }}
                         </a>
                         @foreach($collectionTypes as $type)
-                            <a href="{{ route('dashboard', ['type' => $type, 'q' => request('q')]) }}" 
+                            <a href="{{ route('dashboard', ['type' => $type, 'q' => request('q')]) }}"
                                 class="px-5 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all {{ request('type') === $type ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
                                 {{ $type }}
                             </a>
@@ -259,7 +276,7 @@
 
                 <!-- Gambling Button / View Mode Toggle -->
                 <div class="flex gap-4 items-center shrink-0">
-                    <button 
+                    <button
                         @click="fetchRandom()"
                         class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl shadow-lg shadow-purple-900/40 transition-all font-bold text-xs group active:scale-95"
                         title="{{ __('Random Movie') }}"
@@ -269,14 +286,14 @@
                     </button>
 
                     <div class="flex gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl">
-                        <button 
+                        <button
                             @click="toggleView('grid')"
                             class="p-2 rounded-xl transition-all"
                             :class="viewMode === 'grid' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'"
                         >
                             <i class="bi bi-grid-3x3-gap"></i>
                         </button>
-                        <button 
+                        <button
                             @click="toggleView('list')"
                             class="p-2 rounded-xl transition-all"
                             :class="viewMode === 'list' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'"
@@ -326,7 +343,7 @@
             </div>
 
             <!-- Manual Load More Trigger -->
-            <div x-show="nextMoviesPageUrl" 
+            <div x-show="nextMoviesPageUrl"
                  class="mt-12 flex flex-col items-center justify-center gap-4">
                 <div x-show="isMoviesLoading" class="flex flex-col items-center gap-2 animate-in fade-in duration-500">
                     <div class="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>

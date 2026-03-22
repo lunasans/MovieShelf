@@ -1,7 +1,7 @@
-<div class="group cursor-pointer" 
-     x-data="{ isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }} }"
-     @movie-watched-updated.window="if($event.detail.movieId === {{ $movie->id }}) isWatched = $event.detail.watched"
-     @click="fetchDetails({{ $movie->id }}, '{{ $movie->backdrop_url }}')">
+<div class="group cursor-pointer"
+    x-data="{ isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }} }"
+    @movie-watched-updated.window="if($event.detail.movieId === {{ $movie->id }}) isWatched = $event.detail.watched"
+    @click="fetchDetails({{ $movie->id }}, '{{ $movie->backdrop_url }}')">
     <div class="relative aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 shadow-2xl transition-all duration-500 group-hover:scale-[1.05] group-hover:shadow-blue-500/30 group-hover:border-blue-500/50">
         <!-- Movie Cover Placeholder -->
         <div class="absolute inset-0 bg-gray-900 flex items-center justify-center">
@@ -22,7 +22,7 @@
 
         <!-- Boxset Badge (Top Left, below Watched) -->
         @if($movie->boxset_children_count > 0)
-        <div class="absolute top-[3.75rem] left-3 z-20 group/boxset" 
+        <div class="absolute top-[3.75rem] left-3 z-20 group/boxset"
              @click.stop="$dispatch('open-boxset', { id: {{ $movie->id }}, title: '{{ addslashes($movie->title) }}' })">
             <div class="bg-indigo-600/90 hover:bg-indigo-500 backdrop-blur-md px-2 py-1 rounded-lg border border-white/20 flex items-center gap-1 shadow-xl transition-all duration-300 transform hover:scale-110">
                 <i class="bi bi-collection-play-fill text-[11px] text-white"></i>
@@ -38,7 +38,7 @@
                 <span class="text-[11px] font-black text-white">{{ number_format($movie->rating ?? 0, 1) }}</span>
             </div>
         </div>
-        
+
         <!-- Collection Type Badge (Bottom Left) -->
         <div class="absolute bottom-3 left-3 z-20">
             <span class="text-[9px] font-black text-white/90 uppercase tracking-widest glass px-2 py-1 rounded-lg border border-white/10 shadow-lg">
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Content Below -->
     <div class="mt-4 px-1">
         <h3 class="text-[13px] font-black text-white leading-tight truncate group-hover:text-blue-400 transition-colors uppercase tracking-tight">

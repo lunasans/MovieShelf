@@ -5,22 +5,11 @@ namespace App\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class CreateUser extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'app:create-user';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Create a new user interactively';
 
     /**
@@ -30,9 +19,10 @@ class CreateUser extends Command
     {
         $name = $this->ask('Name des Benutzers?');
         $email = $this->ask('E-Mail-Adresse?');
-        
+
         if (User::where('email', $email)->exists()) {
             $this->error('Ein Benutzer mit dieser E-Mail existiert bereits!');
+
             return 1;
         }
 
@@ -41,6 +31,7 @@ class CreateUser extends Command
 
         if ($password !== $confirmPassword) {
             $this->error('Passwörter stimmen nicht überein!');
+
             return 1;
         }
 
@@ -52,7 +43,7 @@ class CreateUser extends Command
         ]);
 
         $this->info("Benutzer {$user->name} ({$user->email}) wurde erfolgreich erstellt!");
-        
+
         return 0;
     }
 }

@@ -1,8 +1,7 @@
-<div class="group cursor-pointer flex items-center gap-6 p-4 rounded-3xl glass border border-white/5 hover:border-blue-500/30 hover:bg-white/5 transition-all duration-300" 
-     x-data="{ isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }} }"
-     @movie-watched-updated.window="if($event.detail.movieId === {{ $movie->id }}) isWatched = $event.detail.watched"
-     @click="fetchDetails({{ $movie->id }}, '{{ $movie->backdrop_url }}')">
-    
+<div class="group cursor-pointer flex items-center gap-6 p-4 rounded-3xl glass border border-white/5 hover:border-blue-500/30 hover:bg-white/5 transition-all duration-300"
+    x-data="{ isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }} }"
+    @movie-watched-updated.window="if($event.detail.movieId === {{ $movie->id }}) isWatched = $event.detail.watched"
+    @click="fetchDetails({{ $movie->id }}, '{{ $movie->backdrop_url }}')">
     <!-- Thumbnail -->
     <div class="relative w-20 aspect-[2/3] rounded-xl overflow-hidden border border-white/10 shrink-0">
         @if($movie->cover_url)
@@ -12,7 +11,6 @@
                 <i class="bi bi-film text-xl text-white/10"></i>
             </div>
         @endif
-        
         <!-- Watched Badge -->
         <div class="absolute top-2 left-2" x-show="isWatched" x-cloak>
             <div class="w-6 h-6 bg-blue-500/90 backdrop-blur-md rounded-full border border-white/20 shadow-md flex items-center justify-center">
@@ -38,7 +36,7 @@
                     @endif
                     @if($movie->boxset_children_count > 0)
                         <span class="w-1 h-1 bg-indigo-500 rounded-full opacity-40"></span>
-                        <button @click.stop="$dispatch('open-boxset', { id: {{ $movie->id }}, title: '{{ addslashes($movie->title) }}' })" 
+                        <button @click.stop="$dispatch('open-boxset', { id: {{ $movie->id }}, title: '{{ addslashes($movie->title) }}' })"
                                 class="text-[10px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300 transition-colors flex items-center gap-1">
                             <i class="bi bi-collection-play-fill"></i>
                             <span>{{ __('BoxSet (:count)', ['count' => $movie->boxset_children_count]) }}</span>

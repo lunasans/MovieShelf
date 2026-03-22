@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use PragmaRX\Google2FALaravel\Facade as Google2FA;
-use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use PragmaRX\Google2FALaravel\Facade as Google2FA;
 
 class TwoFactorController extends Controller
 {
@@ -18,7 +18,7 @@ class TwoFactorController extends Controller
         $qrCodeSvg = null;
         $secret = null;
 
-        if ($user->two_factor_secret && !$user->two_factor_confirmed_at) {
+        if ($user->two_factor_secret && ! $user->two_factor_confirmed_at) {
             $secret = $user->two_factor_secret;
             $qrCodeSvg = $this->generateQrCodeSvg($user->email, $secret);
         }
@@ -30,11 +30,11 @@ class TwoFactorController extends Controller
         ]);
     }
 
-    public function enable(Request $request)
+    public function enable()
     {
         $user = Auth::user();
 
-        if (!$user->two_factor_secret) {
+        if (! $user->two_factor_secret) {
             $user->update([
                 'two_factor_secret' => Google2FA::generateSecretKey(),
             ]);
@@ -62,14 +62,19 @@ class TwoFactorController extends Controller
         return back()->withErrors(['code' => __('The provided two-factor authentication code was invalid.')]);
     }
 
-    public function disable(Request $request)
+    public function disable()
     {
-        Auth::user()->update([
-            'two_factor_secret' => null,
-            'two_factor_confirmed_at' => null,
-        ]);
+        try {
+            Auth::user()->update([
+                'two_factor_secret' => null,
+                'two_factor_confirmed_at' => null,
+            ]);
 
-        return back()->with('status', 'two-factor-disabled');
+            return back()->with('status', 'two-factor-disabled');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('2FA Disable Failed: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function challenge()
@@ -104,7 +109,7 @@ class TwoFactorController extends Controller
 
         $renderer = new ImageRenderer(
             new RendererStyle(200),
-            new SvgImageBackEnd()
+            new SvgImageBackEnd
         );
         $writer = new Writer($renderer);
 

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 class FindDuplicateMovies extends Command
 {
     protected $signature = 'app:find-duplicate-movies {--merge : Automatically attempt to merge duplicates}';
+
     protected $description = 'Find (and optionally merge) duplicate movies with the same title and collection type.';
 
     public function handle()
@@ -22,10 +23,11 @@ class FindDuplicateMovies extends Command
 
         if ($duplicates->isEmpty()) {
             $this->info('No duplicate movies found.');
+
             return 0;
         }
 
-        $this->warn('Found ' . $duplicates->count() . ' titles with multiple entries.');
+        $this->warn('Found '.$duplicates->count().' titles with multiple entries.');
 
         foreach ($duplicates as $duplicate) {
             $this->processDuplicate($duplicate);
@@ -42,9 +44,9 @@ class FindDuplicateMovies extends Command
             ->get();
 
         $this->line("\nDuplicates for: \"{$duplicate->title}\" ({$duplicate->year}) [{$duplicate->collection_type}]");
-        
+
         foreach ($movies as $movie) {
-            $this->line("  ID: {$movie->id} | Year: {$movie->year} | TMDb: " . ($movie->tmdb_id ?? 'N/A'));
+            $this->line("  ID: {$movie->id} | Year: {$movie->year} | TMDb: ".($movie->tmdb_id ?? 'N/A'));
         }
 
         if ($this->option('merge')) {
@@ -55,7 +57,7 @@ class FindDuplicateMovies extends Command
     private function mergeMovies($movies)
     {
         $survivor = $this->identifySurvivor($movies);
-        $redundants = $movies->reject(fn($m) => $m->id === $survivor->id);
+        $redundants = $movies->reject(fn ($m) => $m->id === $survivor->id);
 
         $this->warn("  Merging into survivor: ID {$survivor->id}");
 
@@ -65,7 +67,7 @@ class FindDuplicateMovies extends Command
                 $redundant->delete();
             }
         });
-        
+
         $this->info('  Merged successfully.');
     }
 
@@ -85,7 +87,7 @@ class FindDuplicateMovies extends Command
     private function transferActors(Movie $from, Movie $to)
     {
         foreach ($from->actors as $actor) {
-            if (!$to->actors()->where('actor_id', $actor->id)->exists()) {
+            if (! $to->actors()->where('actor_id', $actor->id)->exists()) {
                 $to->actors()->attach($actor->id, [
                     'role' => $actor->pivot->role,
                     'is_main_role' => $actor->pivot->is_main_role,
@@ -98,7 +100,7 @@ class FindDuplicateMovies extends Command
     private function transferWatchedStatus(Movie $from, Movie $to)
     {
         foreach ($from->watchedByUsers as $user) {
-            if (!$to->watchedByUsers()->where('user_id', $user->id)->exists()) {
+            if (! $to->watchedByUsers()->where('user_id', $user->id)->exists()) {
                 $to->watchedByUsers()->attach($user->id);
             }
         }
