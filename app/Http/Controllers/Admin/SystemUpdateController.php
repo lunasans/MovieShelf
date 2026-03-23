@@ -153,6 +153,9 @@ class SystemUpdateController extends Controller
                 return redirect()->route('admin.update.index')->with('warning', 'System aktualisiert, aber Frontend-Build (npm) schlug fehl: '.$e->getMessage());
             }
 
+            // Ping Master after successful update
+            \App\Jobs\SendTelemetryJob::dispatch();
+
             return redirect()->route('admin.update.index')->with('success', 'System erfolgreich aktualisiert. Lokale Anpassungen wurden beibehalten.');
         } catch (\Exception $e) {
             Log::error('Update failed: '.$e->getMessage());

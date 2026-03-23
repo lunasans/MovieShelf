@@ -121,18 +121,22 @@ class MovieControllerTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_boxset_returns_children_json()
+    public function test_boxset_returns_children_sorted_by_year()
     {
         $parent = Movie::forceCreate(['id' => 1, 'title' => 'Trilogy', 'user_id' => $this->user->id, 'is_deleted' => false]);
-        $child = Movie::forceCreate(['id' => 2, 'title' => 'Part 1', 'boxset_parent' => 1, 'user_id' => $this->user->id, 'is_deleted' => false]);
+        
+        Movie::forceCreate(['id' => 2, 'title' => 'Part 2', 'year' => 2010, 'boxset_parent' => 1, 'user_id' => $this->user->id, 'is_deleted' => false]);
+        Movie::forceCreate(['id' => 3, 'title' => 'Part 1', 'year' => 2005, 'boxset_parent' => 1, 'user_id' => $this->user->id, 'is_deleted' => false]);
+        Movie::forceCreate(['id' => 4, 'title' => 'Part 3', 'year' => 2015, 'boxset_parent' => 1, 'user_id' => $this->user->id, 'is_deleted' => false]);
 
         $response = $this->actingAs($this->user)->get(route('movies.boxset', $parent));
         
         $response->assertStatus(200);
-        $response->assertJsonFragment([
-            'parent_title' => 'Trilogy',
-            'title' => 'Part 1',
-            'id' => 2,
-        ]);
+        $data = $response->json('children');
+        
+        $this->assertCount(3, $data);
+        $this->assertEquals('Part 1', $data[0]['title']);
+        $this->assertEquals('Part 2', $data[1]['title']);
+        $this->assertEquals('Part 3', $data[2]['title']);
     }
 }
