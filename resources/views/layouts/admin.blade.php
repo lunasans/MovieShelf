@@ -30,7 +30,7 @@
 </head>
 
 <body class="font-sans antialiased bg-[#020617] text-gray-200" x-data="{ sidebarOpen: false }">
-    <div class="min-h-screen flex bg-[#020617]">
+    <div class="min-h-screen flex bg-[#020617] overflow-x-hidden relative">
         <!-- Mobile Sidebar Backdrop -->
         <div x-show="sidebarOpen" 
              x-transition:enter="transition ease-out duration-300"
@@ -40,13 +40,12 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
              @click="sidebarOpen = false"
-             class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" 
+             class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden" 
              x-cloak></div>
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-            class="fixed md:relative md:translate-x-0 w-64 bg-[#020617] md:bg-[#020617]/90 backdrop-blur-xl border-r border-white/5 flex flex-col z-50 shrink-0 h-screen transition-all duration-300 ease-in-out"
-            style="background-color: #020617;">
+            class="w-64 bg-[#020617] border-r border-white/5 flex flex-col shrink-0 h-screen transition-all duration-300 ease-in-out fixed left-0 top-0 z-50 md:static md:translate-x-0 md:bg-[#020617]/90 md:backdrop-blur-xl">
             <div class="p-6 flex items-center justify-between"> 
                 <a href="{{ route('dashboard') }}" class="flex items-center group"> 
                     <x-application-logo class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
@@ -108,7 +107,8 @@
                 </form>
             </div>
         </aside> <!-- Main Content -->
-        <main class="flex-1 flex flex-col min-w-0">
+        <main :class="sidebarOpen ? 'translate-x-64 md:translate-x-0' : 'translate-x-0'"
+            class="flex-1 flex flex-col min-w-0 transition-transform duration-300 ease-in-out">
             <header
                 class="h-16 glass border-b border-white/5 flex items-center justify-between px-4 md:px-8 z-40 shrink-0 sticky top-0">
                 <div class="flex items-center gap-4">
