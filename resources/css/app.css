@@ -154,3 +154,16 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
+
+/* Admin Sidebar Refinement */
+.admin-sidebar {
+    background: rgba(2, 6, 23, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+@media (min-width: 1024px) {
+    .admin-sidebar {
+        background: rgba(2, 6, 23, 0.8);
+    }
+}
