@@ -9,6 +9,12 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="icon" type="image/png" href="{{ asset('img/logo/logo_small.png') }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MovieShelf">
+    <link rel="apple-touch-icon" href="{{ asset('img/logo/logo_small.png') }}">
     <title>{{ \App\Models\Setting::get('site_title', config('app.name', 'MovieShelf')) }}</title>
     <!-- Fonts: Inter and JetBrains Mono from 1.5.0 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,11 +32,10 @@
     </style>
 </head>
 
+
 <body class="font-sans antialiased text-white min-h-screen relative"
     style="background: var(--gradient-bg); background-attachment: fixed;" x-data="{ bg1: '', bg2: '', activeBg: 1, init() { window.addEventListener('change-background', (e) => { const url = e.detail; if (this.activeBg === 1) { this.bg2 = url;
                     this.activeBg = 2; } else { this.bg1 = url;
-                    this.activeBg = 1; } }); } }">
-    <!-- Dynamic Background Layers -->
     <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none" x-show="bg1 || bg2"
         x-transition.opacity.duration.1000ms> <!-- Layer 1 -->
         <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out"

@@ -6,6 +6,12 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
         <link rel="icon" type="image/png" href="{{ asset('img/logo/logo_small.png') }}">
+        <link rel="manifest" href="{{ asset('manifest.json') }}">
+        <meta name="theme-color" content="#020617">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="MovieShelf">
+        <link rel="apple-touch-icon" href="{{ asset('img/logo/logo_small.png') }}">
 
         <title>{{ \App\Models\Setting::get('site_title', config('app.name', 'MovieShelf')) }}</title>
 
