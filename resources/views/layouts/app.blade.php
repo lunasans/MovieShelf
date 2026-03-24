@@ -34,8 +34,24 @@
 
 
 <body class="font-sans antialiased text-white min-h-screen relative"
-    style="background: var(--gradient-bg); background-attachment: fixed;" x-data="{ bg1: '', bg2: '', activeBg: 1, init() { window.addEventListener('change-background', (e) => { const url = e.detail; if (this.activeBg === 1) { this.bg2 = url;
-                    this.activeBg = 2; } else { this.bg1 = url;
+    style="background: var(--gradient-bg); background-attachment: fixed;" 
+    x-data="{ 
+        bg1: '', 
+        bg2: '', 
+        activeBg: 1, 
+        init() { 
+            window.addEventListener('change-background', (e) => { 
+                const url = e.detail; 
+                if (this.activeBg === 1) { 
+                    this.bg2 = url; 
+                    this.activeBg = 2; 
+                } else { 
+                    this.bg1 = url; 
+                    this.activeBg = 1; 
+                } 
+            }) 
+        } 
+    }">
     <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none" x-show="bg1 || bg2"
         x-transition.opacity.duration.1000ms> <!-- Layer 1 -->
         <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out"
@@ -54,6 +70,7 @@
         @if (\App\Models\Setting::get('cookie_banner_enabled', '1') == '1')
             @include('partials.cookie-banner')
         @endif
+    </div>
 </body>
 
 </html>
