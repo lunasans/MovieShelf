@@ -44,13 +44,13 @@
              x-cloak></div>
 
         <!-- Sidebar -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-            class="fixed lg:relative lg:translate-x-0 w-64 admin-sidebar border-r border-white/5 flex flex-col z-50 shrink-0 h-screen transition-all duration-300 ease-in-out">
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
+            class="fixed md:relative md:translate-x-0 w-64 bg-slate-950/95 md:bg-slate-950/80 backdrop-blur-xl border-r border-white/5 flex flex-col z-50 shrink-0 h-screen transition-all duration-300 ease-in-out">
             <div class="p-6 flex items-center justify-between"> 
                 <a href="{{ route('dashboard') }}" class="flex items-center group"> 
                     <x-application-logo class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
                 </a> 
-                <button @click="sidebarOpen = false" class="lg:hidden text-gray-400 hover:text-white transition-colors">
+                <button @click="sidebarOpen = false" class="md:hidden text-gray-400 hover:text-white transition-colors">
                     <i class="bi bi-x-lg text-xl"></i>
                 </button>
             </div>
@@ -111,7 +111,7 @@
             <header
                 class="h-16 glass border-b border-white/5 flex items-center justify-between px-4 md:px-8 z-40 shrink-0 sticky top-0">
                 <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = true" class="lg:hidden text-gray-400 hover:text-white transition-colors">
+                    <button @click="sidebarOpen = true" class="md:hidden text-gray-400 hover:text-white transition-colors">
                         <i class="bi bi-list text-2xl"></i>
                     </button>
                     <h1 class="text-base md:text-lg font-bold text-white flex items-center gap-2 truncate"> @yield('header_title', 'Administration') </h1>
