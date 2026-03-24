@@ -33,7 +33,7 @@ jobs:
 
       - name: Install Node Dependencies & Build Assets
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
 
       - name: Prepare Environment
