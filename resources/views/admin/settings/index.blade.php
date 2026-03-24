@@ -1,8 +1,8 @@
 <x-admin-layout> @section('header_title', 'System-Einstellungen') <div class="max-w-5xl mx-auto" x-data="{ activeTab: 'general' }"> <!-- Tab Navigation -->
-        <div class="flex flex-wrap gap-2 mb-8 bg-white/5 p-2 rounded-2xl border border-white/10 backdrop-blur-md"> <button @click="activeTab = 'general'" :class="activeTab === 'general' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300"> <i class="bi bi-gear"></i> Allgemein </button> <button @click="activeTab = 'tmdb'" :class="activeTab === 'tmdb' ? 'bg-amber-600 text-white shadow-lg shadow-amber-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300"> <i class="bi bi-star-fill"></i> TMDb </button> <button @click="activeTab = 'legal'" :class="activeTab === 'legal' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300"> <i class="bi bi-info-circle"></i> Rechtliches </button> <button @click="activeTab = 'signature'" :class="activeTab === 'signature' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300"> <i class="bi bi-card-image"></i> Signaturbanner </button> <button @click="activeTab = 'mail'" :class="activeTab === 'mail' ? 'bg-rose-600 text-white shadow-lg shadow-rose-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300"> <i class="bi bi-envelope"></i> E-Mail / Server </button> </div>
+        <div class="flex overflow-x-auto custom-scrollbar-hide md:flex-wrap gap-2 mb-8 bg-white/5 p-2 rounded-2xl border border-white/10 backdrop-blur-md"> <button @click="activeTab = 'general'" :class="activeTab === 'general' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 whitespace-nowrap shrink-0"> <i class="bi bi-gear"></i> Allgemein </button> <button @click="activeTab = 'tmdb'" :class="activeTab === 'tmdb' ? 'bg-amber-600 text-white shadow-lg shadow-amber-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 whitespace-nowrap shrink-0"> <i class="bi bi-star-fill"></i> TMDb </button> <button @click="activeTab = 'legal'" :class="activeTab === 'legal' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 whitespace-nowrap shrink-0"> <i class="bi bi-info-circle"></i> Rechtliches </button> <button @click="activeTab = 'signature'" :class="activeTab === 'signature' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 whitespace-nowrap shrink-0"> <i class="bi bi-card-image"></i> Signaturbanner </button> <button @click="activeTab = 'mail'" :class="activeTab === 'mail' ? 'bg-rose-600 text-white shadow-lg shadow-rose-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'" class="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all duration-300 whitespace-nowrap shrink-0"> <i class="bi bi-envelope"></i> E-Mail / Server </button> </div>
         <form action="{{ route('admin.settings.update') }}" method="POST"> @csrf <!-- General Settings -->
             <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="glass p-8 rounded-3xl border-white/10 shadow-2xl">
+                <div class="glass p-4 md:p-8 rounded-3xl border-white/10 shadow-2xl">
                     <div class="flex items-center gap-4 mb-8">
                         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/20"> <i class="bi bi-gear"></i> </div>
                         <div>
@@ -51,7 +51,7 @@
                 </div>
             </div> <!-- TMDb Integration -->
             <div x-show="activeTab === 'tmdb'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="glass p-8 rounded-3xl border-white/10 shadow-2xl">
+                <div class="glass p-4 md:p-8 rounded-3xl border-white/10 shadow-2xl">
                     <div class="flex items-center gap-4 mb-8">
                         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-white text-xl shadow-lg shadow-amber-500/20"> <i class="bi bi-star-fill"></i> </div>
                         <div>
@@ -69,7 +69,7 @@
                 </div>
             </div> <!-- Impressum Settings -->
             <div x-show="activeTab === 'legal'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="glass p-8 rounded-3xl border-white/10 shadow-2xl">
+                <div class="glass p-4 md:p-8 rounded-3xl border-white/10 shadow-2xl">
                     <div class="flex items-center gap-4 mb-8">
                         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/20"> <i class="bi bi-info-circle"></i> </div>
                         <div>
@@ -100,7 +100,7 @@
                 </div>
             </div> <!-- Signatur-Banner -->
             <div x-show="activeTab === 'signature'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="glass p-8 rounded-3xl border-white/10 shadow-2xl">
+                <div class="glass p-4 md:p-8 rounded-3xl border-white/10 shadow-2xl">
                     <div class="flex items-center gap-4 mb-8">
                         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xl shadow-lg shadow-purple-500/20"> <i class="bi bi-card-image"></i> </div>
                         <div>
@@ -159,7 +159,7 @@
                 </div>
             </div> <!-- Mail-Server -->
             <div x-show="activeTab === 'mail'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="glass p-8 rounded-3xl border-white/10 shadow-2xl">
+                <div class="glass p-4 md:p-8 rounded-3xl border-white/10 shadow-2xl">
                     <div class="flex items-center justify-between gap-4 mb-8">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 flex items-center justify-center text-white text-xl shadow-lg shadow-rose-500/20"> <i class="bi bi-envelope"></i> </div>

@@ -23,12 +23,31 @@
     </style>
 </head>
 
-<body class="font-sans antialiased bg-[#020617] text-gray-200">
-    <div class="min-h-screen flex bg-[#020617]"> <!-- Sidebar -->
-        <aside class="w-64 glass-strong border-r border-white/5 flex flex-col z-50 shrink-0 sticky top-0 h-screen">
-            <div class="p-6"> <a href="{{ route('dashboard') }}" class="flex items-center group"> <x-application-logo
-                        class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
-                </a> </div>
+<body class="font-sans antialiased bg-[#020617] text-gray-200" x-data="{ sidebarOpen: false }">
+    <div class="min-h-screen flex bg-[#020617]">
+        <!-- Mobile Sidebar Backdrop -->
+        <div x-show="sidebarOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarOpen = false"
+             class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" 
+             x-cloak></div>
+
+        <!-- Sidebar -->
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+            class="fixed lg:sticky top-0 left-0 w-64 glass-strong border-r border-white/5 flex flex-col z-50 shrink-0 h-screen transition-transform duration-300 ease-in-out">
+            <div class="p-6 flex items-center justify-between"> 
+                <a href="{{ route('dashboard') }}" class="flex items-center group"> 
+                    <x-application-logo class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
+                </a> 
+                <button @click="sidebarOpen = false" class="lg:hidden text-gray-400 hover:text-white transition-colors">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
+            </div>
             <nav class="flex-1 px-4 space-y-2 mt-4 overflow-y-auto custom-scrollbar"> <!-- Übersicht -->
                 <div class="pb-2 px-4 opacity-40"> <span
                         class="text-[10px] font-bold text-white uppercase tracking-widest">Übersicht</span> </div> <a
@@ -84,31 +103,36 @@
         </aside> <!-- Main Content -->
         <main class="flex-1 flex flex-col min-w-0">
             <header
-                class="h-16 glass border-b border-white/5 flex items-center justify-between px-8 z-40 shrink-0 sticky top-0">
-                <h1 class="text-lg font-bold text-white flex items-center gap-2"> @yield('header_title', 'Administration') </h1>
+                class="h-16 glass border-b border-white/5 flex items-center justify-between px-4 md:px-8 z-40 shrink-0 sticky top-0">
                 <div class="flex items-center gap-4">
-                    <div class="flex flex-col items-end"> <span
+                    <button @click="sidebarOpen = true" class="lg:hidden text-gray-400 hover:text-white transition-colors">
+                        <i class="bi bi-list text-2xl"></i>
+                    </button>
+                    <h1 class="text-base md:text-lg font-bold text-white flex items-center gap-2 truncate"> @yield('header_title', 'Administration') </h1>
+                </div>
+                <div class="flex items-center gap-2 md:gap-4 shrink-0">
+                    <div class="flex flex-col items-end hidden sm:flex"> <span
                             class="text-sm font-bold text-white">{{ Auth::user()->name }}</span> <span
                             class="text-[10px] text-gray-500 uppercase font-black tracking-widest">Administrator</span>
                     </div>
                     <div
-                        class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 border border-white/10 flex items-center justify-center">
-                        <i class="bi bi-person-fill text-gray-400"></i> </div>
+                        class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 border border-white/10 flex items-center justify-center">
+                        <i class="bi bi-person-fill text-gray-400 text-sm md:text-base"></i> </div>
                 </div>
             </header>
-            <div class="p-8">
+            <div class="p-4 md:p-8">
                 @if (session('success'))
                     <div
-                        class="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-400 animate-in fade-in slide-in-from-top-4 duration-500">
+                        class="mb-6 md:mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-400 animate-in fade-in slide-in-from-top-4 duration-500">
                         <i class="bi bi-check-circle-fill"></i> <span
                             class="text-sm font-bold">{{ session('success') }}</span> </div>
                     @endif @if (session('error'))
                         <div
-                            class="mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400 animate-in fade-in slide-in-from-top-4 duration-500">
+                            class="mb-6 md:mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400 animate-in fade-in slide-in-from-top-4 duration-500">
                             <i class="bi bi-exclamation-circle-fill"></i> <span
                                 class="text-sm font-bold">{{ session('error') }}</span> </div>
                         @endif @if (isset($header))
-                            <header class="mb-8"> {{ $header }} </header>
+                            <header class="mb-6 md:mb-8"> {{ $header }} </header>
                         @endif {{ $slot }}
             </div>
             <div class="mt-auto border-t border-white/5 bg-black/20 backdrop-blur-sm shrink-0"> <x-footer
