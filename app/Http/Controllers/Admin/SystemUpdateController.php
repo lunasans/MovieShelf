@@ -145,7 +145,7 @@ class SystemUpdateController extends Controller
             Log::info('View Clear Output: '.$viewClear);
 
             try {
-                $npmInstall = $this->runCommand('npm install');
+                $npmInstall = $this->runCommand('npm install --legacy-peer-deps');
                 Log::info('NPM Install Output: '.$npmInstall);
                 $npmBuild = $this->runCommand('npm run build');
                 Log::info('NPM Build Output: '.$npmBuild);

@@ -108,7 +108,7 @@
             </div>
         </aside> <!-- Main Content -->
         <main :class="sidebarOpen ? 'translate-x-64 md:translate-x-0' : 'translate-x-0'"
-            class="flex-1 flex flex-col min-w-0 transition-transform duration-300 ease-in-out">
+            class="flex-1 flex flex-col min-w-0 md:ml-64 transition-transform duration-300 ease-in-out">
             <header
                 class="h-16 glass border-b border-white/5 flex items-center justify-between px-4 md:px-8 z-40 shrink-0 sticky top-0">
                 <div class="flex items-center gap-4">
