@@ -141,6 +141,8 @@ class SystemUpdateController extends Controller
             Log::info('Config Clear Output: '.$configClear);
             $routeClear = $this->runCommand('php artisan route:clear');
             Log::info('Route Clear Output: '.$routeClear);
+            $viewClear = $this->runCommand('php artisan view:clear');
+            Log::info('View Clear Output: '.$viewClear);
 
             try {
                 $npmInstall = $this->runCommand('npm install');
