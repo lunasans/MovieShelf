@@ -61,11 +61,10 @@
         <div class="absolute inset-0 transition-opacity duration-1000 ease-in-out"
             :class="activeBg === 2 ? 'opacity-40' : 'opacity-0'"
             :style="'background-image: url(' + bg2 + '); background-size: cover; background-position: center;'"> </div>
+        <!-- Glassmorphism Overlay -->
+        <div class="absolute inset-0 bg-gray-950/40 backdrop-blur-[100px]"></div> <!-- Dark Vignette -->
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-[#0c0c0e]/50"></div>
     </div>
-    
-    <!-- Glassmorphism Overlay (Always visible) -->
-    <div class="fixed inset-0 z-0 pointer-events-none bg-gray-950/40 backdrop-blur-[100px]"></div> <!-- Dark Vignette -->
-    <div class="fixed inset-0 z-0 pointer-events-none bg-gradient-to-t from-[#0c0c0e] via-transparent to-[#0c0c0e]/50"></div>
     <div class="px-4 pb-12 sm:px-6 lg:px-8 relative z-10"> @include('layouts.navigation') <!-- Page Content -->
         <main class="mt-8"> {{ $slot }} </main> <x-footer /> <x-theme-switcher /> @stack('scripts')
         @if (\App\Models\Setting::get('cookie_banner_enabled', '1') == '1')
