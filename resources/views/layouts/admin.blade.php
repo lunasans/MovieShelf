@@ -29,8 +29,8 @@
     </style>
 </head>
 
-<body class="font-sans antialiased bg-[#020617] text-gray-200" x-data="{ sidebarOpen: false }">
-    <div class="min-h-screen flex bg-[#020617] overflow-x-hidden relative">
+<body class="font-sans antialiased text-white min-h-screen relative" style="background: var(--gradient-bg); background-attachment: fixed;" x-data="{ sidebarOpen: false }">
+    <div class="min-h-screen flex overflow-x-hidden relative">
         <!-- Mobile Sidebar Backdrop -->
         <div x-show="sidebarOpen" 
              x-transition:enter="transition ease-out duration-300"
