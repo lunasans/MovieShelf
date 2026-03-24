@@ -45,7 +45,7 @@
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-            class="w-64 bg-[#020617] border-r border-white/5 flex flex-col shrink-0 h-screen transition-all duration-300 ease-in-out fixed left-0 top-0 z-50 md:relative md:left-0 md:top-0 md:z-auto md:translate-x-0 md:bg-[#020617]/90 md:backdrop-blur-xl">
+            class="w-64 bg-[#020617] md:bg-[#020617]/90 md:backdrop-blur-xl border-r border-white/5 flex flex-col shrink-0 h-screen transition-all duration-300 ease-in-out fixed left-0 top-0 z-50">
             <div class="p-6 flex items-center justify-between"> 
                 <a href="{{ route('dashboard') }}" class="flex items-center group"> 
                     <x-application-logo class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
