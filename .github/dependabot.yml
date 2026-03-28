@@ -8,9 +8,6 @@ updates:
       day: "monday"
       time: "08:00"
     open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "php"
     groups:
       laravel:
         patterns:
