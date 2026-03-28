@@ -38,7 +38,9 @@ class TmdbService
             $params['api_key'] = $this->apiKey;
             $params['language'] = $this->language;
 
-            $response = Http::get("{$this->baseUrl}{$endpoint}", $params);
+            $response = Http::withOptions([
+                'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]
+            ])->get("{$this->baseUrl}{$endpoint}", $params);
 
             return $response->successful()
                 ? $response->json()
@@ -132,7 +134,9 @@ class TmdbService
         }
 
         return cache()->remember('tmdb_config', 86400, function () {
-            $response = Http::get("{$this->baseUrl}/configuration", [
+            $response = Http::withOptions([
+                'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]
+            ])->get("{$this->baseUrl}/configuration", [
                 'api_key' => $this->apiKey,
             ]);
 

@@ -139,19 +139,31 @@ class TmdbImportService
     protected function handleImages(Movie $movie, array $details)
     {
         if (! empty($details['poster_path'])) {
-            $posterUrl = 'https://image.tmdb.org/t/p/w500'.$details['poster_path'];
-            $imageContent = Http::get($posterUrl)->body();
-            $filename = 'covers/'.Str::random(20).'.jpg';
-            Storage::disk('public')->put($filename, $imageContent);
-            $movie->update(['cover_id' => $filename]);
+            try {
+                $posterUrl = 'https://image.tmdb.org/t/p/w500'.$details['poster_path'];
+                $imageContent = Http::withOptions([
+                    'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]
+                ])->get($posterUrl)->body();
+                $filename = 'covers/'.Str::random(20).'.jpg';
+                Storage::disk('public')->put($filename, $imageContent);
+                $movie->update(['cover_id' => $filename]);
+            } catch (\Exception $e) {
+                Log::warning('Tmdb poster download failed: '.$e->getMessage());
+            }
         }
 
         if (! empty($details['backdrop_path'])) {
-            $backdropUrl = 'https://image.tmdb.org/t/p/original'.$details['backdrop_path'];
-            $imageContent = Http::get($backdropUrl)->body();
-            $filename = 'backdrops/'.Str::random(20).'.jpg';
-            Storage::disk('public')->put($filename, $imageContent);
-            $movie->update(['backdrop_id' => $filename]);
+            try {
+                $backdropUrl = 'https://image.tmdb.org/t/p/original'.$details['backdrop_path'];
+                $imageContent = Http::withOptions([
+                    'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]
+                ])->get($backdropUrl)->body();
+                $filename = 'backdrops/'.Str::random(20).'.jpg';
+                Storage::disk('public')->put($filename, $imageContent);
+                $movie->update(['backdrop_id' => $filename]);
+            } catch (\Exception $e) {
+                Log::warning('Tmdb backdrop download failed: '.$e->getMessage());
+            }
         }
     }
 
@@ -213,7 +225,9 @@ class TmdbImportService
         if (! empty($person['profile_path']) && empty($actor->profile_path)) {
             try {
                 $profileUrl = 'https://image.tmdb.org/t/p/w185'.$person['profile_path'];
-                $imageContent = Http::get($profileUrl)->body();
+                $imageContent = Http::withOptions([
+                    'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]
+                ])->get($profileUrl)->body();
                 $filename = 'actors/'.Str::random(20).'.jpg';
                 Storage::disk('public')->put($filename, $imageContent);
                 $actor->update(['profile_path' => $filename]);
