@@ -30,7 +30,14 @@ class AppServiceProvider extends ServiceProvider
                 return [
                     'total_films' => \App\Models\Movie::where('is_deleted', false)->whereDoesntHave('boxsetChildren')->count(),
                     'total_actors' => \App\Models\Actor::count(),
-                    'total_genres' => \App\Models\Movie::where('is_deleted', false)->distinct('genre')->count('genre'),
+                    'total_genres' => \App\Models\Movie::where('is_deleted', false)
+                        ->whereDoesntHave('boxsetChildren')
+                        ->whereNotNull('genre')
+                        ->get(['genre'])
+                        ->flatMap(fn($movie) => array_map('trim', explode(',', $movie->genre)))
+                        ->filter()
+                        ->unique()
+                        ->count(),
                     'total_visits' => $totalCounter->visits,
                     'daily_visits' => $dailyCounter->visits,
                 ];
