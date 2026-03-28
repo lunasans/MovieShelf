@@ -119,14 +119,26 @@ class Movie extends Model
         }
 
         $url = null;
+        $disk = Storage::disk('public');
 
+        // Check for absolute URLs
         if (str_starts_with($id, 'http')) {
             $url = $id;
-        } elseif (str_starts_with($id, '/')) {
+        } 
+        // Check for direct TMDb paths (start with /)
+        elseif (str_starts_with($id, '/')) {
             $url = $this->resolveTmdbUrl($id, $type);
-        } elseif (str_contains($id, '.') && Storage::disk('public')->exists($id)) {
-            $url = Storage::disk('public')->url($id);
-        } else {
+        } 
+        // Modern approach: ID is a path containing a dot and a slash (e.g. covers/abc.jpg)
+        elseif (str_contains($id, '/') && str_contains($id, '.') && $disk->exists($id)) {
+            $url = $disk->url($id);
+        } 
+        // Fallback: Check if the ID itself exists as a file (any case)
+        elseif ($disk->exists($id)) {
+             $url = $disk->url($id);
+        }
+        // Legacy: Use the structured legacy path with fallback extensions
+        else {
             $url = $this->resolveLegacyStorageUrl($id, $type);
         }
 
@@ -144,10 +156,28 @@ class Movie extends Model
     {
         $folder = $type === 'cover' ? 'covers' : 'backdrops';
         $suffix = $type === 'cover' ? 'f' : '';
-        $path = "$folder/$id$suffix.jpg";
+        $disk = Storage::disk('public');
 
-        if (Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->url($path);
+        // Try standard extension first
+        $path = "$folder/$id$suffix.jpg";
+        if ($disk->exists($path)) {
+            return $disk->url($path);
+        }
+
+        // Fallback extensions (case-sensitive systems or alternative formats)
+        $extensions = ['.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.webp'];
+        foreach ($extensions as $ext) {
+            $fallbackPath = "$folder/$id$suffix$ext";
+            if ($disk->exists($fallbackPath)) {
+                return $disk->url($fallbackPath);
+            }
+        }
+
+        // Try without suffix as a last resort
+        if ($suffix !== '') {
+            if ($disk->exists("$folder/$id.jpg")) {
+                return $disk->url("$folder/$id.jpg");
+            }
         }
 
         return null;

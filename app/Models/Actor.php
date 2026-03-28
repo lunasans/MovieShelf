@@ -44,10 +44,12 @@ class Actor extends Model
             $url = $this->profile_path;
         } elseif (str_starts_with($this->profile_path, '/')) {
             $url = 'https://image.tmdb.org/t/p/w185'.$this->profile_path;
-        } elseif (str_contains($this->profile_path, '.') && $disk->exists($this->profile_path)) {
+        } elseif (str_contains($this->profile_path, '/') && str_contains($this->profile_path, '.') && $disk->exists($this->profile_path)) {
             $url = $disk->url($this->profile_path);
         } elseif ($disk->exists('actors/'.$this->profile_path)) {
             $url = $disk->url('actors/'.$this->profile_path);
+        } elseif ($disk->exists($this->profile_path)) { // Direct check if the path itself is valid
+            $url = $disk->url($this->profile_path);
         }
 
         return $url;
