@@ -135,6 +135,15 @@ class SystemUpdateController extends Controller
                 @rmdir($backupDir);
             }
 
+            try {
+                // Check if composer exists or use default
+                $composerInstall = $this->runCommand('composer install --no-interaction --no-dev --optimize-autoloader');
+                Log::info('Composer Install Output: '.$composerInstall);
+            } catch (\Exception $e) {
+                Log::error('Composer Install failed: '.$e->getMessage());
+                // We don't fail the whole update yet, as it might just be the command name
+            }
+
             $migrate = $this->runCommand('php artisan migrate --force');
             Log::info('Migration Output: '.$migrate);
             $configClear = $this->runCommand('php artisan config:clear');
@@ -177,20 +186,28 @@ class SystemUpdateController extends Controller
         return redirect()->route('admin.update.index')->with('success', 'Update-Einstellungen wurden gespeichert.');
     }
 
-    private function runCommand($cmd)
+    protected function runCommand($cmd)
     {
         $gitBinary = config('app.git_binary', 'git');
+        $composerBinary = config('app.composer_binary', 'composer');
 
-        // On Linux, if it's a Windows path, it won't exist. Fallback to 'git'.
+        // On Linux, if it's a Windows path, it won't exist. Fallback to defaults.
         if ($gitBinary !== 'git' && ! file_exists($gitBinary)) {
             Log::debug("Configured git binary not found: $gitBinary. Falling back to 'git'.");
             $gitBinary = 'git';
         }
+        if ($composerBinary !== 'composer' && ! file_exists($composerBinary)) {
+            Log::debug("Configured composer binary not found: $composerBinary. Falling back to 'composer'.");
+            $composerBinary = 'composer';
+        }
 
-        // Replace 'git ' prefix with the actual binary path
+        // Replace command prefixes with the actual binary paths
         if (str_starts_with($cmd, 'git ')) {
             $executable = PHP_OS_FAMILY === 'Windows' ? '"'.$gitBinary.'"' : $gitBinary;
             $cmd = $executable.substr($cmd, 3);
+        } elseif (str_starts_with($cmd, 'composer ')) {
+            $executable = PHP_OS_FAMILY === 'Windows' ? '"'.$composerBinary.'"' : $composerBinary;
+            $cmd = $executable.substr($cmd, 8);
         }
 
         Log::debug("Executing command: $cmd in ".base_path());
