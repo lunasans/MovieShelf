@@ -16,8 +16,8 @@ class ActorResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'image_url' => $this->image_url,
+            'name' => $this->full_name,
+            'image_url' => $this->profile_url,
             'role' => $this->whenPivotLoaded('film_actor', function () {
                 return $this->pivot->role;
             }),

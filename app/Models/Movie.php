@@ -133,13 +133,13 @@ class Movie extends Model
         elseif (str_contains($id, '/') && str_contains($id, '.') && $disk->exists($id)) {
             $url = $disk->url($id);
         } 
+        // Legacy: Use the structured legacy path with fallback extensions
+        elseif (($legacyUrl = $this->resolveLegacyStorageUrl($id, $type)) !== null) {
+            $url = $legacyUrl;
+        }
         // Fallback: Check if the ID itself exists as a file (any case)
         elseif ($disk->exists($id)) {
              $url = $disk->url($id);
-        }
-        // Legacy: Use the structured legacy path with fallback extensions
-        else {
-            $url = $this->resolveLegacyStorageUrl($id, $type);
         }
 
         return $url;
