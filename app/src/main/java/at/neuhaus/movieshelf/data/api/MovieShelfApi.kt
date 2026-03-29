@@ -1,0 +1,66 @@
+package at.neuhaus.movieshelf.data.api
+
+import at.neuhaus.movieshelf.data.model.*
+import retrofit2.http.*
+
+interface MovieShelfApi {
+    @POST("api/login")
+    suspend fun login(@Body request: Map<String, String>): LoginResponse
+
+    @POST("api/login/2fa")
+    suspend fun verify2fa(@Body request: Map<String, String>): LoginResponse
+
+    @GET("api/movies")
+    suspend fun getMovies(
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 20
+    ): MovieResponse
+
+    @GET("api/movies/{id}")
+    suspend fun getMovie(@Path("id") id: Int): SingleMovieResponse
+
+    @GET("api/search")
+    suspend fun searchMovies(@Query("q") query: String): MovieResponse
+
+    @POST("api/movies/{id}/watched")
+    suspend fun toggleWatched(@Path("id") id: Int): Map<String, Any>
+
+    @GET("api/info")
+    suspend fun getServerInfo(): ServerInfo
+
+    // User Profile
+    @GET("api/user")
+    suspend fun getUser(): User
+
+    @PUT("api/user")
+    suspend fun updateUser(@Body user: User): UserUpdateResponse
+
+    // Actors
+    @GET("api/actors")
+    suspend fun getActors(
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 20
+    ): ActorResponse
+
+    @GET("api/actors/{id}")
+    suspend fun getActor(@Path("id") id: Int): SingleActorResponse
+
+    @GET("api/actors/search")
+    suspend fun searchActors(@Query("q") query: String): ActorResponse
+
+    // TMDb Integration
+    @GET("api/tmdb/search")
+    suspend fun searchTmdb(
+        @Query("query") query: String
+    ): Map<String, Any>
+
+    @GET("api/tmdb/details")
+    suspend fun getTmdbDetails(
+        @Query("tmdb_id") tmdbId: Int
+    ): Map<String, Any>
+
+    @POST("api/tmdb/import")
+    suspend fun importFromTmdb(
+        @Body request: TmdbImportRequest
+    ): SingleMovieResponse
+}
