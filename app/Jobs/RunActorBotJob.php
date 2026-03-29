@@ -27,20 +27,19 @@ class RunActorBotJob implements ShouldQueue
     public function handle(ActorBotService $botService): void
     {
         try {
-            // Keep running until all chunks are finished or status changed
-            while (true) {
-                // Check if user cancelled it from admin panel
-                $currentRun = BotRun::find($this->botRun->id);
-                if (!$currentRun || $currentRun->status !== 'running') {
-                    break;
-                }
-
-                $hasMore = $botService->processChunk($currentRun, 50);
-
-                if (!$hasMore) {
-                    break;
-                }
+            $currentRun = BotRun::find($this->botRun->id);
+            
+            // Check if user cancelled it from admin panel
+            if (!$currentRun || $currentRun->status !== 'running') {
+                return;
             }
+
+            $hasMore = $botService->processChunk($currentRun, 25);
+
+            if ($hasMore) {
+                self::dispatch($currentRun)->delay(now()->addSeconds(1));
+            }
+
 
         } catch (\Exception $e) {
             BotRun::where('id', $this->botRun->id)->update([

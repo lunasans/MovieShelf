@@ -97,7 +97,12 @@
                                     @if($run->status === 'completed')
                                         <span class="text-emerald-400"><i class="bi bi-check-circle mr-1"></i>Beendet</span>
                                     @elseif($run->status === 'failed')
-                                        <span class="text-rose-400"><i class="bi bi-exclamation-circle mr-1"></i>Fehlerhaft</span>
+                                        <div>
+                                            <span class="text-rose-400"><i class="bi bi-exclamation-circle mr-1"></i>Fehlerhaft</span>
+                                            <div class="text-[10px] text-rose-500/80 mt-1 max-w-[150px] truncate" title="{{ $run->error_message }}">
+                                                {{ $run->error_message }}
+                                            </div>
+                                        </div>
                                     @elseif($run->status === 'aborted')
                                         <span class="text-rose-400"><i class="bi bi-x-circle mr-1"></i>Abgebrochen</span>
                                     @else
