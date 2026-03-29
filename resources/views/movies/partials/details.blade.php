@@ -161,7 +161,7 @@
                     {{ __('Beschreibung') }}
                 </h3>
                 <p class="text-gray-300 leading-relaxed text-sm">
-                    {{ $movie->overview }}
+                    {!! $movie->overview !!}
                 </p>
             </div>
         @endif
@@ -256,7 +256,7 @@
                                  class="border-t border-white/5 bg-black/20">
                                 @if($season->overview)
                                     <div class="p-4 text-[11px] text-gray-400 border-b border-white/5 italic">
-                                        {{ $season->overview }}
+                                        {!! $season->overview !!}
                                     </div>
                                 @endif
                                 <div class="divide-y divide-white/5">
@@ -268,7 +268,8 @@
                                             </div>
                                             @if($episode->overview)
                                                 <p class="text-[10px] text-gray-500 leading-relaxed ml-10 line-clamp-2">
-                                                    {{ $episode->overview }}                                                </p>
+                                                    {!! $episode->overview !!}
+                                                </p>
                                             @endif
                                         </div>
                                     @endforeach

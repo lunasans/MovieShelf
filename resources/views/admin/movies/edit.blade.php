@@ -1,5 +1,40 @@
 <x-admin-layout>
     @section('header_title', 'Film bearbeiten')
+    
+    @push('styles')
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+        .ql-toolbar.ql-snow {
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            padding: 12px 20px !important;
+        }
+        .ql-container.ql-snow {
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-top: none !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-bottom-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            font-family: inherit !important;
+            font-size: 0.875rem !important;
+        }
+        .ql-editor {
+            min-height: 200px;
+            color: white !important;
+            padding: 20px !important;
+            line-height: 1.625 !important;
+        }
+        .ql-editor.ql-blank::before {
+            color: rgba(255, 255, 255, 0.3) !important;
+            font-style: normal !important;
+        }
+        .ql-snow .ql-stroke { stroke: rgba(255, 255, 255, 0.5) !important; }
+        .ql-snow .ql-fill { fill: rgba(255, 255, 255, 0.5) !important; }
+        .ql-snow .ql-picker { color: rgba(255, 255, 255, 0.5) !important; }
+    </style>
+    @endpush
 
     <div class="max-w-4xl mx-auto" x-data="tmdbSearch()">
         <div class="mb-6 flex items-center justify-between">
@@ -104,8 +139,10 @@
 
                     <div>
                         <label for="overview" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Handlung / Beschreibung</label>
-                        <textarea name="overview" id="overview" rows="5" x-model="formData.overview"
-                                  class="w-full bg-white/5 border border-white/10 rounded-3xl py-4 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all leading-relaxed"></textarea>
+                        <div class="rounded-3xl overflow-hidden" x-init="initQuill()">
+                            <div id="overview-editor"></div>
+                            <input type="hidden" name="overview" x-model="formData.overview">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -188,10 +225,12 @@
     </div>
 
     @push('scripts')
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     <script>
         function tmdbSearch() {
             return {
                 showModal: false,
+                quill: null,
                 searchQuery: {!! json_encode($movie->title) !!},
                 results: [],
                 loading: false,
@@ -208,6 +247,39 @@
                     tmdb_id: {!! json_encode(old('tmdb_id', $movie->tmdb_id)) !!},
                     cover_id: {!! json_encode(old('cover_id', $movie->cover_id)) !!},
                     backdrop_id: {!! json_encode(old('backdrop_id', $movie->backdrop_id)) !!}
+                },
+
+                initQuill() {
+                    this.$nextTick(() => {
+                        this.quill = new Quill('#overview-editor', {
+                            theme: 'snow',
+                            modules: {
+                                toolbar: [
+                                    ['bold', 'italic', 'underline'],
+                                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                    ['clean']
+                                ]
+                            },
+                            placeholder: 'Filmhandlung hier eingeben...'
+                        });
+
+                        // Set initial content
+                        if (this.formData.overview) {
+                            this.quill.root.innerHTML = this.formData.overview;
+                        }
+
+                        // Sync Quill to Alpine
+                        this.quill.on('text-change', () => {
+                            this.formData.overview = this.quill.root.innerHTML;
+                        });
+
+                        // Watch for programmatic changes (e.g. TMDb Import)
+                        this.$watch('formData.overview', value => {
+                            if (value !== this.quill.root.innerHTML) {
+                                this.quill.root.innerHTML = value || '';
+                            }
+                        });
+                    });
                 },
 
                 openModal() {

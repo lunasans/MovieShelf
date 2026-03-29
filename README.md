@@ -1,7 +1,7 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
 
 
-# MovieShelf v2.1.5 - Dein digitales Filmregal
+# MovieShelf v2.1.6 - Dein digitales Filmregal
 
 
 
@@ -197,7 +197,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 2.1.5 - Laravel Framework Edition
+**Version**: 2.1.6 - Laravel Framework Edition
 
 **Letztes Update**: März 2026  
 **Status**: Aktiv entwickelt
