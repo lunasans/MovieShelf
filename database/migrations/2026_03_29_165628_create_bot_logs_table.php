@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('bot_logs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('bot_run_id')->constrained('bot_runs')->cascadeOnDelete();
+            $table->foreignId('actor_id')->nullable()->constrained('actors')->nullOnDelete();
+            $table->string('status'); // success, skipped, error
+            $table->text('message')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('bot_logs');
+    }
+};

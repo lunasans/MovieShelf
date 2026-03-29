@@ -93,6 +93,9 @@
                         href="{{ route('admin.update.index') }}"
                         class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.update.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
                         <i class="bi bi-arrow-repeat"></i> <span class="font-bold text-sm">System Update</span> </a>
+                    <a href="{{ route('admin.bot.index') }}"
+                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.bot.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
+                        <i class="bi bi-robot"></i> <span class="font-bold text-sm">Actor Bot</span> </a>
                     @if (\App\Models\Setting::get('migration_enabled', '1') == '1')
                         <a href="{{ route('admin.migration.index') }}"
                             class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.migration.index') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">

@@ -91,6 +91,14 @@ Route::middleware('auth')->group(function () use ($profilePath) {
         Route::post('update/run', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'update'])->name('update.run');
         Route::post('update/settings', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'saveSettings'])->name('update.settings.save');
 
+        // Bot
+        Route::get('bot', [\App\Http\Controllers\Admin\BotController::class, 'index'])->name('bot.index');
+        Route::post('bot/start', [\App\Http\Controllers\Admin\BotController::class, 'start'])->name('bot.start');
+        Route::post('bot/process', [\App\Http\Controllers\Admin\BotController::class, 'process'])->name('bot.process');
+        Route::post('bot/cancel', [\App\Http\Controllers\Admin\BotController::class, 'cancel'])->name('bot.cancel');
+        Route::get('bot/status', [\App\Http\Controllers\Admin\BotController::class, 'status'])->name('bot.status');
+        Route::get('bot/{botRun}/logs', [\App\Http\Controllers\Admin\BotController::class, 'logs'])->name('bot.logs');
+
         // Migration v1 -> v2
         Route::get('migration', [\App\Http\Controllers\Admin\MigrationController::class, 'index'])->name('migration.index');
         Route::post('migration/run', [\App\Http\Controllers\Admin\MigrationController::class, 'run'])->name('migration.run');

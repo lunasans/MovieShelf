@@ -89,6 +89,20 @@ class TmdbService
     }
 
     /**
+     * Search for a person by name
+     */
+    public function searchPerson(string $query, int $page = 1): array
+    {
+        $params = [
+            'query' => $query,
+            'page' => $page,
+            'include_adult' => false,
+        ];
+
+        return $this->executeRequest('/search/person', $params, 'TMDb Person Search Error');
+    }
+
+    /**
      * Search for TV shows by title
      */
     public function searchTv(string $query, ?int $year = null, int $page = 1): array
