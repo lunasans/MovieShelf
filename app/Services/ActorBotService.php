@@ -73,7 +73,38 @@ class ActorBotService
             $search = $this->tmdb->searchPerson($actor->full_name);
             if (isset($search['results']) && count($search['results']) > 0) {
                 // Heuristic: take the first match
-                $actor->tmdb_id = $search['results'][0]['id'];
+                $foundTmdbId = $search['results'][0]['id'];
+                
+                // Check if this TMDb ID is already taken by another actor
+                $existingActor = Actor::where('tmdb_id', $foundTmdbId)->first();
+                
+                if ($existingActor && $existingActor->id !== $actor->id) {
+                    $actorName = $actor->full_name;
+                    $actorId = $actor->id;
+                    
+                    // Merge movies safely
+                    $pivotData = [];
+                    foreach ($actor->movies as $movie) {
+                        $pivotData[$movie->id] = [
+                            'role' => $movie->pivot->role ?? null,
+                            'is_main_role' => $movie->pivot->is_main_role ?? false,
+                            'sort_order' => $movie->pivot->sort_order ?? 0,
+                        ];
+                    }
+                    $existingActor->movies()->syncWithoutDetaching($pivotData);
+                    
+                    // Delete the duplicate
+                    $actor->delete();
+                    BotLog::create([
+                        'bot_run_id' => $botRun->id,
+                        'actor_id' => null,
+                        'status' => 'success',
+                        'message' => "Schauspieler '{$actorName}' (ID: {$actorId}) wurde gelöscht (Duplikat zu bestehender TMDb ID {$foundTmdbId}). Filme zusammengeführt.",
+                    ]);
+                    return;
+                }
+
+                $actor->tmdb_id = $foundTmdbId;
                 $actor->save();
             } else {
                 BotLog::create([
