@@ -13,6 +13,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+    Route::put('/user', [AuthController::class, 'update']);
 
     Route::get('/movies', [MovieController::class, 'index']);
     Route::get('/movies/{movie}', [MovieController::class, 'show']);
