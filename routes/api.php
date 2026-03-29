@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/info', [\App\Http\Controllers\Api\InfoController::class, 'index']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login/2fa', [AuthController::class, 'login2fa']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
