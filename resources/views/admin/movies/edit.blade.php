@@ -46,6 +46,23 @@
             color: rgba(255, 255, 255, 0.3) !important;
             font-style: normal !important;
         }
+
+        /* Custom Actor Button */
+        .ql-actor {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 28px !important;
+        }
+        .ql-actor::after {
+            content: "\F4D1"; /* Bootstrap Icon bi-person-plus */
+            font-family: "bootstrap-icons" !important;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .ql-actor:hover::after {
+            color: #3b82f6;
+        }
     </style>
     @endpush
 
@@ -269,11 +286,25 @@
                         this.quill = new Quill('#overview-editor', {
                             theme: 'snow',
                             modules: {
-                                toolbar: [
-                                    ['bold', 'italic', 'underline'],
-                                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                                    ['clean']
-                                ]
+                                toolbar: {
+                                    container: [
+                                        ['bold', 'italic', 'underline'],
+                                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                        ['actor'],
+                                        ['clean']
+                                    ],
+                                    handlers: {
+                                        'actor': function() {
+                                            const name = prompt('Name des Schauspielers eingeben:');
+                                            if (name) {
+                                                const range = this.quill.getSelection();
+                                                if (range) {
+                                                    this.quill.insertText(range.index, `{!Actor}${name}`);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             },
                             placeholder: 'Filmhandlung hier eingeben...'
                         });

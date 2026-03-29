@@ -56,7 +56,7 @@
 
         @if($movie->overview)
             <p class="mt-3 text-xs text-gray-500 line-clamp-2 leading-relaxed">
-                {!! $movie->overview !!}
+                {!! \App\Services\ShortcodeService::parse($movie->overview) !!}
             </p>
         @endif
     </div>
