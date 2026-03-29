@@ -1,10 +1,19 @@
 <style>
-    .prose-movie p { margin-bottom: 1rem; }
-    .prose-movie p:last-child { margin-bottom: 0; }
-    .prose-movie ul, .prose-movie ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+    .prose-movie p, .prose-movie div { margin-bottom: 1rem; display: block; }
+    .prose-movie p:last-child, .prose-movie div:last-child { margin-bottom: 0; }
+    .prose-movie h1, .prose-movie h2, .prose-movie h3, .prose-movie h4 { 
+        margin-top: 1.5rem; 
+        margin-bottom: 0.75rem; 
+        font-weight: bold; 
+        display: block;
+        color: white;
+    }
+    .prose-movie h1:first-child, .prose-movie h2:first-child, .prose-movie p:first-child { margin-top: 0; }
+    .prose-movie ul, .prose-movie ol { margin-bottom: 1rem; padding-left: 1.5rem; display: block; }
     .prose-movie ul { list-style-type: disc; }
     .prose-movie ol { list-style-type: decimal; }
     .prose-movie li { margin-bottom: 0.25rem; }
+    .prose-movie strong { font-weight: bold; color: white; }
 </style>
 
 <div class="animate-in fade-in slide-in-from-right-4 duration-500"
