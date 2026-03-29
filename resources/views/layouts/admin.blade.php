@@ -22,11 +22,13 @@
         rel="stylesheet"> <!-- NOSONAR --> <!-- Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
         integrity="sha256-9kPW/n5nn53j4WMRYAxe9c1rCY96Oogo/MKSVdKzPmI=" crossorigin="anonymous"> <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js']) <style>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
         [x-cloak] {
             display: none !important;
         }
     </style>
+    @stack('styles')
 </head>
 
 <body class="font-sans antialiased text-white min-h-screen relative" style="background: var(--gradient-bg); background-attachment: fixed;" x-data="{ sidebarOpen: false }">

@@ -6,7 +6,8 @@
     <style>
         .ql-toolbar.ql-snow {
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            background: rgba(255, 255, 255, 0.05) !important;
+            background: rgba(15, 23, 42, 0.8) !important; /* Dark background */
+            backdrop-blur: 10px;
             border-top-left-radius: 1.5rem;
             border-top-right-radius: 1.5rem;
             padding: 12px 20px !important;
@@ -14,7 +15,7 @@
         .ql-container.ql-snow {
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-top: none !important;
-            background: rgba(255, 255, 255, 0.05) !important;
+            background: rgba(15, 23, 42, 0.5) !important; /* Dark background */
             border-bottom-left-radius: 1.5rem;
             border-bottom-right-radius: 1.5rem;
             font-family: inherit !important;
@@ -22,17 +23,29 @@
         }
         .ql-editor {
             min-height: 200px;
-            color: white !important;
+            color: rgba(255, 255, 255, 0.9) !important;
             padding: 20px !important;
             line-height: 1.625 !important;
         }
+        /* Toolbar Icon Colors */
+        .ql-snow .ql-stroke { stroke: rgba(255, 255, 255, 0.6) !important; }
+        .ql-snow .ql-fill { fill: rgba(255, 255, 255, 0.6) !important; }
+        .ql-snow .ql-picker { color: rgba(255, 255, 255, 0.6) !important; }
+        .ql-snow .ql-picker-options {
+            background-color: #1e293b !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+        }
+        /* Active States */
+        .ql-snow.ql-toolbar button:hover .ql-stroke,
+        .ql-snow.ql-toolbar button.ql-active .ql-stroke { stroke: #3b82f6 !important; }
+        .ql-snow.ql-toolbar button:hover .ql-fill,
+        .ql-snow.ql-toolbar button.ql-active .ql-fill { fill: #3b82f6 !important; }
+        
         .ql-editor.ql-blank::before {
             color: rgba(255, 255, 255, 0.3) !important;
             font-style: normal !important;
         }
-        .ql-snow .ql-stroke { stroke: rgba(255, 255, 255, 0.5) !important; }
-        .ql-snow .ql-fill { fill: rgba(255, 255, 255, 0.5) !important; }
-        .ql-snow .ql-picker { color: rgba(255, 255, 255, 0.5) !important; }
     </style>
     @endpush
 
@@ -250,7 +263,9 @@
                 },
 
                 initQuill() {
-                    this.$nextTick(() => {
+                    const setup = () => {
+                        if (this.quill) return;
+                        
                         this.quill = new Quill('#overview-editor', {
                             theme: 'snow',
                             modules: {
@@ -275,11 +290,23 @@
 
                         // Watch for programmatic changes (e.g. TMDb Import)
                         this.$watch('formData.overview', value => {
-                            if (value !== this.quill.root.innerHTML) {
+                            if (this.quill && value !== this.quill.root.innerHTML) {
                                 this.quill.root.innerHTML = value || '';
                             }
                         });
-                    });
+                    };
+
+                    // Wait for Quill to be available if script is still loading
+                    if (typeof Quill === 'undefined') {
+                        const interval = setInterval(() => {
+                            if (typeof Quill !== 'undefined') {
+                                clearInterval(interval);
+                                setup();
+                            }
+                        }, 50);
+                    } else {
+                        this.$nextTick(() => setup());
+                    }
                 },
 
                 openModal() {
