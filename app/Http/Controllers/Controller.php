@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
     license: new OA\License(name: 'Apache 2.0', url: 'http://www.apache.org/licenses/LICENSE-2.0.html')
 )]
 #[OA\Server(
-    url: 'http://localhost/api',
+    url: L5_SWAGGER_CONST_HOST,
     description: 'MovieShelf API Server'
 )]
 #[OA\SecurityScheme(

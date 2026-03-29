@@ -1,5 +1,9 @@
 <?php
 
+if (!defined('L5_SWAGGER_CONST_HOST')) {
+    define('L5_SWAGGER_CONST_HOST', env('APP_URL', 'http://localhost') . '/api');
+}
+
 return [
     'default' => 'default',
     'documentations' => [
