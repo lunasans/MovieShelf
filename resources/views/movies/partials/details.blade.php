@@ -160,9 +160,9 @@
                     <i class="bi bi-text-left text-blue-400"></i>
                     {{ __('Beschreibung') }}
                 </h3>
-                <p class="text-gray-300 leading-relaxed text-sm">
+                <div class="text-gray-300 leading-relaxed text-sm prose-movie">
                     {!! \App\Services\ShortcodeService::parse($movie->overview) !!}
-                </p>
+                </div>
             </div>
         @endif
 

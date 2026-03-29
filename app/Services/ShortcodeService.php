@@ -31,12 +31,10 @@ class ShortcodeService
                 return $rawName;
             }
 
-            // Cache lookup (using a very short duration while debugging)
+            // Cache lookup for 24 hours
             $cacheKey = 'actor_link_'.md5($cleanName);
             
-            return Cache::remember($cacheKey, now()->addMinutes(1), function () use ($cleanName, $rawName) {
-                \Log::info("ShortcodeService: Searching for Actor [{$cleanName}]");
-
+            return Cache::remember($cacheKey, now()->addHours(24), function () use ($cleanName, $rawName) {
                 // Split name by space to handle first/last name search more robustly
                 $parts = preg_split('/\s+/', $cleanName, 2);
                 $query = Actor::query();
@@ -62,12 +60,10 @@ class ShortcodeService
                 $actor = $query->first();
 
                 if ($actor) {
-                    \Log::info("ShortcodeService: Found Actor ID [{$actor->id}] for [{$cleanName}]");
                     $url = route('actors.show', $actor);
                     return '<a href="'.$url.'" class="text-blue-400 hover:text-blue-300 transition-colors font-medium border-b border-blue-400/30 hover:border-blue-300">'.$rawName.'</a>';
                 }
 
-                \Log::warning("ShortcodeService: No Actor found for [{$cleanName}]");
                 return $rawName; // Fallback
             });
         }, $text);

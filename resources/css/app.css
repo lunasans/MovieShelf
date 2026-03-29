@@ -158,3 +158,24 @@ h1, h2, h3, h4, h5, h6 {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
 }
+
+/* Typography for Editor Content (Quill/Shortcodes) */
+.prose-movie p {
+    margin-bottom: 1rem;
+}
+.prose-movie p:last-child {
+    margin-bottom: 0;
+}
+.prose-movie ul, .prose-movie ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+.prose-movie ul {
+    list-style-type: disc;
+}
+.prose-movie ol {
+    list-style-type: decimal;
+}
+.prose-movie li {
+    margin-bottom: 0.25rem;
+}
