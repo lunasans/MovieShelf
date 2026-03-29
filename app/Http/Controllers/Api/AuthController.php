@@ -9,8 +9,50 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use PragmaRX\Google2FALaravel\Facade as Google2FA;
 
+use OpenApi\Attributes as OA;
+
 class AuthController extends Controller
 {
+    #[OA\Post(
+        path: '/api/login',
+        summary: 'Benutzer-Login',
+        tags: ['Auth'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', example: 'test@example.com'),
+                    new OA\Property(property: 'password', type: 'string', example: 'password'),
+                    new OA\Property(property: 'device_name', type: 'string', example: 'mobile_app')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Erfolgreich eingeloggt oder 2FA-Herausforderung',
+                content: new OA\JsonContent(
+                    oneOf: [
+                        new OA\Schema(
+                            properties: [
+                                new OA\Property(property: 'token', type: 'string'),
+                                new OA\Property(property: 'user', type: 'object'),
+                                new OA\Property(property: 'version', type: 'string')
+                            ]
+                        ),
+                        new OA\Schema(
+                            properties: [
+                                new OA\Property(property: 'requires_2fa', type: 'boolean'),
+                                new OA\Property(property: 'user_id', type: 'integer'),
+                                new OA\Property(property: 'device_name', type: 'string')
+                            ]
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Validierungsfehler')
+        ]
+    )]
     public function login(Request $request)
     {
         $request->validate([
@@ -50,6 +92,35 @@ class AuthController extends Controller
         ]);
     }
 
+    #[OA\Post(
+        path: '/api/login/2fa',
+        summary: '2FA-Verifizierung',
+        tags: ['Auth'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'user_id', type: 'integer', example: 1),
+                    new OA\Property(property: 'device_name', type: 'string', example: 'mobile_app'),
+                    new OA\Property(property: 'code', type: 'string', example: '123456')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: '2FA erfolgreich, Token ausgestellt',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'token', type: 'string'),
+                        new OA\Property(property: 'user', type: 'object'),
+                        new OA\Property(property: 'version', type: 'string')
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Ungültiger Code')
+        ]
+    )]
     public function login2fa(Request $request)
     {
         $request->validate([
@@ -84,6 +155,36 @@ class AuthController extends Controller
         ]);
     }
 
+    #[OA\Put(
+        path: '/api/user',
+        summary: 'Benutzerprofil aktualisieren',
+        tags: ['User'],
+        security: [['apiAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', example: 'Neuer Name'),
+                    new OA\Property(property: 'email', type: 'string', example: 'neu@example.com'),
+                    new OA\Property(property: 'password', type: 'string', example: 'neuespasswort123'),
+                    new OA\Property(property: 'password_confirmation', type: 'string', example: 'neuespasswort123')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Profil erfolgreich aktualisiert',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'user', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Nicht autorisiert')
+        ]
+    )]
     public function update(Request $request)
     {
         $user = $request->user();
@@ -114,6 +215,23 @@ class AuthController extends Controller
         ]);
     }
 
+    #[OA\Post(
+        path: '/api/logout',
+        summary: 'Benutzer-Logout',
+        tags: ['Auth'],
+        security: [['apiAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Erfolgreich ausgeloggt',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string')
+                    ]
+                )
+            )
+        ]
+    )]
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

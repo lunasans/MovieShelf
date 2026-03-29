@@ -1,0 +1,497 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "MovieShelf API v2",
+        "description": "API Dokumentation für MovieShelf - Dein digitales Filmregal",
+        "contact": {
+            "email": "support@neuhaus.ovh"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "2.1.7"
+    },
+    "servers": [
+        {
+            "url": "http://localhost/api",
+            "description": "MovieShelf API Server"
+        }
+    ],
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Benutzer-Login",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "test@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    },
+                                    "device_name": {
+                                        "type": "string",
+                                        "example": "mobile_app"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Erfolgreich eingeloggt oder 2FA-Herausforderung",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string"
+                                                },
+                                                "user": {
+                                                    "type": "object"
+                                                },
+                                                "version": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        {
+                                            "properties": {
+                                                "requires_2fa": {
+                                                    "type": "boolean"
+                                                },
+                                                "user_id": {
+                                                    "type": "integer"
+                                                },
+                                                "device_name": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validierungsfehler"
+                    }
+                }
+            }
+        },
+        "/api/login/2fa": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "2FA-Verifizierung",
+                "operationId": "24ffb1a96143911f35f172582a45a10c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "device_name": {
+                                        "type": "string",
+                                        "example": "mobile_app"
+                                    },
+                                    "code": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "2FA erfolgreich, Token ausgestellt",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ungültiger Code"
+                    }
+                }
+            }
+        },
+        "/api/user": {
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Benutzerprofil aktualisieren",
+                "operationId": "01d9d5911236a2580a4d4d83334bd777",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Neuer Name"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "neu@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "neuespasswort123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "neuespasswort123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil erfolgreich aktualisiert",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Nicht autorisiert"
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Benutzer-Logout",
+                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "responses": {
+                    "200": {
+                        "description": "Erfolgreich ausgeloggt",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/info": {
+            "get": {
+                "tags": [
+                    "System"
+                ],
+                "summary": "System-Informationen abrufen",
+                "operationId": "36986dcfd0253454449f035b6fa64a46",
+                "responses": {
+                    "200": {
+                        "description": "System-Informationen (Name, Version)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "app_name": {
+                                            "type": "string"
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/movies": {
+            "get": {
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Filmliste abrufen (paginiert)",
+                "operationId": "f1b3cb64ae74885cdcf404eebe09485f",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Anzahl der Filme pro Seite",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Seitenzahl",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste der Filme",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Nicht autorisiert"
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/movies/{movie}": {
+            "get": {
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Film-Details abrufen",
+                "operationId": "af114386bfd942e4a5971042e6ba1996",
+                "parameters": [
+                    {
+                        "name": "movie",
+                        "in": "path",
+                        "description": "Film ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detaillierte Filminformationen",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Film nicht gefunden"
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/search": {
+            "get": {
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Filme suchen",
+                "operationId": "8b4d97ac3fc891d19197e8de6494cff9",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Suchbegriff (Titel oder Regisseur)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Suchergebnisse",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/movies/{movie}/watched": {
+            "post": {
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Gesehen-Status umschalten",
+                "operationId": "a36cd441adf25eba086ba5562e82bb19",
+                "parameters": [
+                    {
+                        "name": "movie",
+                        "in": "path",
+                        "description": "Film ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status erfolgreich geändert",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "is_watched": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "apiAuth": {
+                "type": "http",
+                "description": "Geben Sie Ihren Bearer-Token im Format 'Bearer {token}' ein.",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "User",
+            "description": "User"
+        },
+        {
+            "name": "System",
+            "description": "System"
+        },
+        {
+            "name": "Movies",
+            "description": "Movies"
+        }
+    ]
+}
