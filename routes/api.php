@@ -21,6 +21,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/search', [MovieController::class, 'search']);
     Route::post('/movies/{movie}/watched', [MovieController::class, 'toggleWatched']);
 
+    Route::get('/actors', [\App\Http\Controllers\Api\ActorController::class, 'index']);
+    Route::get('/actors/search', [\App\Http\Controllers\Api\ActorController::class, 'search']);
+    Route::get('/actors/{actor}', [\App\Http\Controllers\Api\ActorController::class, 'show']);
+
     // TMDb Integration
     Route::prefix('tmdb')->group(function () {
         Route::get('/search', [\App\Http\Controllers\Api\TmdbController::class, 'search']);

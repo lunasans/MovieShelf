@@ -19,6 +19,144 @@
         }
     ],
     "paths": {
+        "/actors": {
+            "get": {
+                "tags": [
+                    "Actors"
+                ],
+                "summary": "Schauspielerliste abrufen (paginiert)",
+                "operationId": "4f5c642fce6986ca7a34ce64a07c4c91",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Anzahl pro Seite",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Seitenzahl",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste der Schauspieler",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Nicht autorisiert"
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
+        "/actors/{actor}": {
+            "get": {
+                "tags": [
+                    "Actors"
+                ],
+                "summary": "Schauspieler-Details abrufen",
+                "operationId": "ac60a5138d2750be2917a9d412a3c4b5",
+                "parameters": [
+                    {
+                        "name": "actor",
+                        "in": "path",
+                        "description": "Schauspieler ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detaillierte Schauspielerinformationen inkl. Filmografie",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Schauspieler nicht gefunden"
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
+        "/actors/search": {
+            "get": {
+                "tags": [
+                    "Actors"
+                ],
+                "summary": "Nach Schauspielern suchen",
+                "operationId": "13b61850982651a619a6843485ae744a",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Suchbegriff (Vor- oder Nachname)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Suchergebnisse",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "apiAuth": []
+                    }
+                ]
+            }
+        },
         "/login": {
             "post": {
                 "tags": [
@@ -477,6 +615,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Actors",
+            "description": "Actors"
+        },
         {
             "name": "Auth",
             "description": "Auth"
