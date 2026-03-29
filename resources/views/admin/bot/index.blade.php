@@ -131,20 +131,20 @@
 
     <!-- Terminal Modal -->
     <div id="logsModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
-        <div class="p-1 rounded-xl border border-white/20 w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 shadow-2xl bg-[#1e1e1e]">
+        <div class="p-1 rounded-xl border border-white/20 w-full max-w-5xl h-[85vh] max-h-[85vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 shadow-2xl bg-[#1e1e1e]">
             <!-- Terminal Header -->
-            <div class="flex items-center justify-between px-4 py-3 shrink-0 bg-[#2d2d2d] rounded-t-lg border-b border-black">
+            <div class="h-12 flex items-center justify-between px-4 shrink-0 bg-[#2d2d2d] rounded-t-lg border-b border-black">
                 <div class="flex gap-2">
-                    <button onclick="closeLogs()" class="w-3 h-3 rounded-full bg-rose-500 hover:bg-rose-400 transition-colors shadow-inner cursor-pointer"></button>
+                    <button onclick="closeLogs()" class="w-3 h-3 rounded-full bg-rose-500 hover:bg-rose-400 transition-colors shadow-inner cursor-pointer" title="Schließen"></button>
                     <div class="w-3 h-3 rounded-full bg-amber-500 shadow-inner"></div>
                     <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-inner"></div>
                 </div>
-                <div class="text-xs font-mono text-gray-400 font-bold tracking-widest uppercase">Actor-Bot Terminal ~ Lauf <span id="modalRunId"></span></div>
+                <div class="text-xs font-mono text-gray-400 font-bold tracking-widest uppercase truncate ml-2">Actor-Bot <span class="hidden md:inline">Terminal</span> ~ Lauf <span id="modalRunId"></span></div>
                 <div class="w-5"></div><!-- Spacer for centering -->
             </div>
             
             <!-- Terminal Body -->
-            <div id="terminalBody" class="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0d1117] p-4 font-mono text-xs md:text-sm text-gray-300 leading-relaxed">
+            <div id="terminalBody" class="h-[calc(100%-3rem)] w-full overflow-y-auto custom-scrollbar bg-[#0d1117] p-4 font-mono text-xs md:text-sm text-gray-300 leading-relaxed" style="overscroll-behavior: contain;">
                 <div id="logsTableBody" class="space-y-0.5">
                     <!-- Filled via JS -->
                 </div>
@@ -177,66 +177,99 @@
 
             const modal = document.getElementById('logsModal');
             const modalContent = modal.querySelector('div[class*="transform"]');
+            
+            let terminalPoller = null;
+            let currentRenderedCount = 0;
 
             function showLogs(runId) {
                 document.getElementById('modalRunId').innerText = '#' + runId;
                 const tbody = document.getElementById('logsTableBody');
                 tbody.innerHTML = '<div class="text-blue-400 animate-pulse">> Initialisiere Verbindung zur Datenbank...</div>';
+                currentRenderedCount = 0;
                 
                 modal.classList.remove('hidden');
                 void modal.offsetWidth;
                 modal.classList.remove('opacity-0');
                 modalContent.classList.remove('scale-95');
 
+                fetchLogs(runId);
+                // Live Polling every 2 secs
+                terminalPoller = setInterval(() => fetchLogs(runId), 2000);
+            }
+
+            function fetchLogs(runId) {
                 fetch(`/admin/bot/${runId}/logs`)
                     .then(r => r.json())
                     .then(data => {
-                        tbody.innerHTML = '';
-                        if (data.logs.length === 0) {
-                            tbody.innerHTML = '<div class="text-gray-500">> Keine Logs für diesen Lauf gefunden.</div>';
-                            return;
-                        }
+                        const tbody = document.getElementById('logsTableBody');
+                        const terminalBody = document.getElementById('terminalBody');
                         
-                        data.logs.forEach(log => {
-                            let statusColor = 'text-gray-500';
-                            
-                            if (log.status === 'success') {
-                                statusColor = 'text-emerald-400 font-bold';
-                            } else if (log.status === 'error') {
-                                statusColor = 'text-rose-500 font-bold';
-                            } else if (log.status === 'skipped') {
-                                statusColor = 'text-blue-400/80';
+                        if (currentRenderedCount === 0) {
+                            tbody.innerHTML = '';
+                            if (data.logs.length === 0) {
+                                tbody.innerHTML = '<div class="text-gray-500">> Warte auf erste Log-Einträge...</div>';
+                                return;
+                            }
+                        }
+
+                        if (data.logs.length > currentRenderedCount) {
+                            // Check if user is scrolled to bottom (allow 50px tolerance)
+                            let isAtBottom = Math.abs((terminalBody.scrollHeight - terminalBody.clientHeight) - terminalBody.scrollTop) < 50;
+                            if (currentRenderedCount === 0) {
+                                isAtBottom = true;
+                                if (tbody.innerHTML.includes('> Warte auf')) tbody.innerHTML = '';
                             }
 
-                            let actorName = log.actor ? log.actor.first_name + ' ' + (log.actor.last_name || '') : 'Gelöscht (ID: ' + log.actor_id + ')';
-                            
-                            // Parse time specifically to HH:mm:ss if it's an ISO timestamp
-                            let rawDate = log.created_at;
-                            if(rawDate && rawDate.length > 18) {
-                                rawDate = rawDate.substring(11, 19);
-                            }
+                            for (let i = currentRenderedCount; i < data.logs.length; i++) {
+                                let log = data.logs[i];
+                                let statusColor = 'text-gray-500';
+                                
+                                if (log.status === 'success') {
+                                    statusColor = 'text-emerald-400 font-bold';
+                                } else if (log.status === 'error') {
+                                    statusColor = 'text-rose-500 font-bold';
+                                } else if (log.status === 'skipped') {
+                                    statusColor = 'text-blue-400/80';
+                                }
 
-                            tbody.innerHTML += `
-                                <div class="hover:bg-white/5 px-2 py-0.5 rounded transition-colors break-words flex flex-col md:flex-row md:gap-4 md:items-start group">
+                                let actorName = log.actor ? log.actor.first_name + ' ' + (log.actor.last_name || '') : 'Gelöscht (ID: ' + log.actor_id + ')';
+                                
+                                // Parse time specifically to HH:mm:ss if it's an ISO timestamp
+                                let rawDate = log.created_at;
+                                if(rawDate && rawDate.length > 18) {
+                                    rawDate = rawDate.substring(11, 19);
+                                }
+
+                                let div = document.createElement('div');
+                                div.className = 'hover:bg-white/5 px-2 py-0.5 rounded transition-colors break-words flex flex-col md:flex-row md:gap-4 md:items-start group';
+                                div.innerHTML = `
                                     <div class="flex gap-3 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
-                                        <span class="text-gray-600">[${rawDate}]</span>
-                                        <span class="${statusColor} w-24">[${log.status.toUpperCase()}]</span>
+                                        <span class="text-gray-600 font-semibold">[${rawDate}]</span>
+                                        <span class="${statusColor} w-24 whitespace-nowrap">[${log.status.toUpperCase()}]</span>
                                     </div>
                                     <div class="flex-1 flex flex-col md:flex-row gap-2 md:gap-4">
                                         <span class="text-white font-semibold md:w-48 truncate flex-shrink-0 mr-2">${actorName}</span>
                                         <span class="text-gray-400 font-extralight">> ${log.message}</span>
                                     </div>
-                                </div>
-                            `;
-                        });
-                        
-                        // Auto-scroll to bottom of terminal
-                        const terminalBody = document.getElementById('terminalBody');
-                        terminalBody.scrollTop = terminalBody.scrollHeight;
+                                `;
+                                tbody.appendChild(div);
+                            }
+                            
+                            currentRenderedCount = data.logs.length;
+                            
+                            // Only auto-scroll if user was already at the bottom
+                            if (isAtBottom) {
+                                terminalBody.scrollTop = terminalBody.scrollHeight;
+                            }
+                        }
                     });
             }
 
             function closeLogs() {
+                if (terminalPoller) {
+                    clearInterval(terminalPoller);
+                    terminalPoller = null;
+                }
                 modal.classList.add('opacity-0');
                 modalContent.classList.add('scale-95');
                 setTimeout(() => {
