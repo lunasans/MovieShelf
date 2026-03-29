@@ -1,5 +1,4 @@
 <style>
-    .prose-movie { white-space: pre-wrap; }
     .prose-movie p, .prose-movie div { margin-bottom: 1rem; display: block; }
     .prose-movie p:last-child, .prose-movie div:last-child { margin-bottom: 0; }
     .prose-movie h1, .prose-movie h2, .prose-movie h3, .prose-movie h4 { 
