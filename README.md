@@ -1,7 +1,7 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
 
 
-# MovieShelf v2.1.7 - Dein digitales Filmregal
+# MovieShelf v2.2.0 - Dein digitales Filmregal
 
 
 
@@ -151,6 +151,7 @@ Das moderne Interface nutzt Glasmorphismus-Effekte für eine elegante und zeitge
 - **Film-Verwaltung** mit TMDb-Import
 - **Batch-Import** von XML-Dateien
 - **Film-Metadaten Verwaltung** (z.B. fehlende Cover & TMDb-IDs)
+- **Actor Bot** (Automatischer Background-Service zur Vervollständigung von Schauspieler-Profilen via TMDb)
 - **Statistik-Dashboard**
 - **GitHub-basierte System-Updates**
 
@@ -173,7 +174,13 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.1.7)
+## 🚀 Letzte Änderungen (v2.2.0)
+
+- **Actor Bot Daemon**: Neuer, leistungsstarker Hintergrundprozess im Adminpanel, der die Schauspieler-Datenbank autonom durchsucht und fehlende Biografie- sowie Profilbild-Daten automatisch via TMDb-API nachträgt.
+- **Bereinigungs-Logik für Schauspieler**: Schauspieler ohne zugeordnete Filme ("Karteileichen") werden durch den neuen Bot nun automatisch erkannt und sauber aus der Datenbank entfernt.
+- **Bot Verlaufs-Dashboard**: Neues User Interface im Admin-Bereich zur Überwachung aktueller Bot-Läufe inklusive detaillierter Protokolle ("Logs") zu jedem verarbeiteten Schauspieler.
+
+## 🚀 Version v2.1.7 (Historie)
 
 - **Quill Rich-Text Editor**: Vollständige Integration eines WYSIWYG-Editors für Filmbeschreibungen (inkl. Dark-Mode Styling).
 - **Actor Shortcodes**: Einführung von `{!Actor}Name}` Shortcodes zur automatischen Verlinkung von Schauspieler-Profilen in Beschreibungen.
@@ -208,7 +215,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 2.1.7 - Laravel Framework Edition
+**Version**: 2.2.0 - Laravel Framework Edition
 
 **Letztes Update**: 29. März 2026  
 **Status**: Aktiv entwickelt
