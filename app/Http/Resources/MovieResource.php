@@ -31,6 +31,9 @@ class MovieResource extends JsonResource
                 return $this->watchedByUsers->contains(auth()->id());
             }),
             'actors' => ActorResource::collection($this->whenLoaded('actors')),
+            'is_boxset' => $this->boxset_children_count > 0 || ($this->relationLoaded('boxsetChildren') && $this->boxsetChildren->count() > 0),
+            'boxset_parent_id' => $this->boxset_parent,
+            'boxset_children' => MovieResource::collection($this->whenLoaded('boxsetChildren')),
             'tmdb_id' => $this->tmdb_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

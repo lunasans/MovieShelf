@@ -13,6 +13,7 @@ class MovieController extends Controller
     {
         $movies = Movie::where('is_deleted', false)
             ->with(['actors'])
+            ->withCount('boxsetChildren')
             ->orderBy('created_at', 'desc')
             ->paginate($request->get('per_page', 20));
 
@@ -40,6 +41,7 @@ class MovieController extends Controller
                   ->orWhere('director', 'like', "%{$query}%");
             })
             ->with(['actors'])
+            ->withCount('boxsetChildren')
             ->paginate(20);
 
         return MovieResource::collection($movies);
