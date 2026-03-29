@@ -173,6 +173,14 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
+## 🚀 Letzte Änderungen (v2.1.7)
+
+- **Quill Rich-Text Editor**: Vollständige Integration eines WYSIWYG-Editors für Filmbeschreibungen (inkl. Dark-Mode Styling).
+- **Actor Shortcodes**: Einführung von `{!Actor}Name}` Shortcodes zur automatischen Verlinkung von Schauspieler-Profilen in Beschreibungen.
+- **Shortcode Toolbar**: Neuer Button im Editor zum einfachen Einfügen von Schauspielern per Klick.
+- **Robustes Parsing**: Optimierter `ShortcodeService` mit Schutz gegen Verschachtelungsfehler und Unterstützung für verschiedene Klammertypen.
+- **UI-Fix Detailansicht**: Korrekte Darstellung von Absätzen und Listen in der Filmbeschreibung durch optimierte CSS-Regeln.
+
 ## 🤝 Mitwirken
 
 Beiträge sind willkommen! Bitte:
@@ -199,7 +207,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 
 **Version**: 2.1.7 - Laravel Framework Edition
 
-**Letztes Update**: März 2026  
+**Letztes Update**: 29. März 2026  
 **Status**: Aktiv entwickelt
 
 *Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨

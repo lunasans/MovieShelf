@@ -1,3 +1,12 @@
+<style>
+    .prose-movie p { margin-bottom: 1rem; }
+    .prose-movie p:last-child { margin-bottom: 0; }
+    .prose-movie ul, .prose-movie ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+    .prose-movie ul { list-style-type: disc; }
+    .prose-movie ol { list-style-type: decimal; }
+    .prose-movie li { margin-bottom: 0.25rem; }
+</style>
+
 <div class="animate-in fade-in slide-in-from-right-4 duration-500"
      x-data="{
         showTrailer: false,
