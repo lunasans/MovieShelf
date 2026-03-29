@@ -90,9 +90,12 @@ class ActorController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $actors = Actor::where('first_name', 'like', "%{$query}%")
-            ->orWhere('last_name', 'like', "%{$query}%")
-            ->paginate(20);
+        $actors = Actor::where(function($q) use ($query) {
+            $q->where('first_name', 'like', "%{$query}%")
+              ->orWhere('last_name', 'like', "%{$query}%")
+              ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$query}%"]);
+        })
+        ->paginate(20);
 
         return ActorResource::collection($actors);
     }
