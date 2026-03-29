@@ -35,6 +35,7 @@ class AuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
             ],
+            'version' => config('app.version'),
         ]);
     }
 
