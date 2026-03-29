@@ -8,7 +8,7 @@ use OpenApi\Attributes as OA;
 class InfoController extends Controller
 {
     #[OA\Get(
-        path: '/api/info',
+        path: '/info',
         summary: 'System-Informationen abrufen',
         tags: ['System'],
         responses: [

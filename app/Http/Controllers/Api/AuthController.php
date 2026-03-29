@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
 class AuthController extends Controller
 {
     #[OA\Post(
-        path: '/api/login',
+        path: '/login',
         summary: 'Benutzer-Login',
         tags: ['Auth'],
         requestBody: new OA\RequestBody(
@@ -93,7 +93,7 @@ class AuthController extends Controller
     }
 
     #[OA\Post(
-        path: '/api/login/2fa',
+        path: '/login/2fa',
         summary: '2FA-Verifizierung',
         tags: ['Auth'],
         requestBody: new OA\RequestBody(
@@ -156,7 +156,7 @@ class AuthController extends Controller
     }
 
     #[OA\Put(
-        path: '/api/user',
+        path: '/user',
         summary: 'Benutzerprofil aktualisieren',
         tags: ['User'],
         security: [['apiAuth' => []]],
@@ -216,7 +216,7 @@ class AuthController extends Controller
     }
 
     #[OA\Post(
-        path: '/api/logout',
+        path: '/logout',
         summary: 'Benutzer-Logout',
         tags: ['Auth'],
         security: [['apiAuth' => []]],

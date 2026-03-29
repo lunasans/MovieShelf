@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
 class MovieController extends Controller
 {
     #[OA\Get(
-        path: '/api/movies',
+        path: '/movies',
         summary: 'Filmliste abrufen (paginiert)',
         tags: ['Movies'],
         security: [['apiAuth' => []]],
@@ -47,7 +47,7 @@ class MovieController extends Controller
     }
 
     #[OA\Get(
-        path: '/api/movies/{movie}',
+        path: '/movies/{movie}',
         summary: 'Film-Details abrufen',
         tags: ['Movies'],
         security: [['apiAuth' => []]],
@@ -71,7 +71,7 @@ class MovieController extends Controller
     }
 
     #[OA\Get(
-        path: '/api/search',
+        path: '/search',
         summary: 'Filme suchen',
         tags: ['Movies'],
         security: [['apiAuth' => []]],
@@ -107,7 +107,7 @@ class MovieController extends Controller
     }
 
     #[OA\Post(
-        path: '/api/movies/{movie}/watched',
+        path: '/movies/{movie}/watched',
         summary: 'Gesehen-Status umschalten',
         tags: ['Movies'],
         security: [['apiAuth' => []]],

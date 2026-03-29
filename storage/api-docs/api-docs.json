@@ -19,13 +19,13 @@
         }
     ],
     "paths": {
-        "/api/login": {
+        "/login": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Benutzer-Login",
-                "operationId": "222b2625838e3c57e017987f73598fda",
+                "operationId": "67d6d0fdd54fba132e1b6f55ca254183",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -96,13 +96,13 @@
                 }
             }
         },
-        "/api/login/2fa": {
+        "/login/2fa": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "2FA-Verifizierung",
-                "operationId": "24ffb1a96143911f35f172582a45a10c",
+                "operationId": "4c9ee982a5eef4e86b4bdcea31cfd8d3",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -155,13 +155,13 @@
                 }
             }
         },
-        "/api/user": {
+        "/user": {
             "put": {
                 "tags": [
                     "User"
                 ],
                 "summary": "Benutzerprofil aktualisieren",
-                "operationId": "01d9d5911236a2580a4d4d83334bd777",
+                "operationId": "4bf203be8c8483a553f91d446ebd920e",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -220,13 +220,13 @@
                 ]
             }
         },
-        "/api/logout": {
+        "/logout": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Benutzer-Logout",
-                "operationId": "ad65cbbd4e9f201619eae184a5961a98",
+                "operationId": "28d48c13fca984400ac8de99f54ee13a",
                 "responses": {
                     "200": {
                         "description": "Erfolgreich ausgeloggt",
@@ -251,13 +251,13 @@
                 ]
             }
         },
-        "/api/info": {
+        "/info": {
             "get": {
                 "tags": [
                     "System"
                 ],
                 "summary": "System-Informationen abrufen",
-                "operationId": "36986dcfd0253454449f035b6fa64a46",
+                "operationId": "9a13442d68d8d7bdae9c808d93af7579",
                 "responses": {
                     "200": {
                         "description": "System-Informationen (Name, Version)",
@@ -280,13 +280,13 @@
                 }
             }
         },
-        "/api/movies": {
+        "/movies": {
             "get": {
                 "tags": [
                     "Movies"
                 ],
                 "summary": "Filmliste abrufen (paginiert)",
-                "operationId": "f1b3cb64ae74885cdcf404eebe09485f",
+                "operationId": "b20bc5b83ce909fde5b6aac802e2304d",
                 "parameters": [
                     {
                         "name": "per_page",
@@ -345,13 +345,13 @@
                 ]
             }
         },
-        "/api/movies/{movie}": {
+        "/movies/{movie}": {
             "get": {
                 "tags": [
                     "Movies"
                 ],
                 "summary": "Film-Details abrufen",
-                "operationId": "af114386bfd942e4a5971042e6ba1996",
+                "operationId": "a4c2b67f1aa700303437b4fdac4f6f37",
                 "parameters": [
                     {
                         "name": "movie",
@@ -383,13 +383,13 @@
                 ]
             }
         },
-        "/api/search": {
+        "/search": {
             "get": {
                 "tags": [
                     "Movies"
                 ],
                 "summary": "Filme suchen",
-                "operationId": "8b4d97ac3fc891d19197e8de6494cff9",
+                "operationId": "84e1cbc6927ea12debc6cb875fe1bfb5",
                 "parameters": [
                     {
                         "name": "q",
@@ -418,13 +418,13 @@
                 ]
             }
         },
-        "/api/movies/{movie}/watched": {
+        "/movies/{movie}/watched": {
             "post": {
                 "tags": [
                     "Movies"
                 ],
                 "summary": "Gesehen-Status umschalten",
-                "operationId": "a36cd441adf25eba086ba5562e82bb19",
+                "operationId": "8a1df4a843bd36cc9c34ea3ddcd16032",
                 "parameters": [
                     {
                         "name": "movie",
