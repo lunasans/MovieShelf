@@ -1,4 +1,5 @@
 <style>
+    .prose-movie { white-space: pre-wrap; }
     .prose-movie p, .prose-movie div { margin-bottom: 1rem; display: block; }
     .prose-movie p:last-child, .prose-movie div:last-child { margin-bottom: 0; }
     .prose-movie h1, .prose-movie h2, .prose-movie h3, .prose-movie h4 { 
@@ -14,6 +15,7 @@
     .prose-movie ol { list-style-type: decimal; }
     .prose-movie li { margin-bottom: 0.25rem; }
     .prose-movie strong { font-weight: bold; color: white; }
+    .prose-movie u { text-decoration: underline; text-underline-offset: 4px; }
 </style>
 
 <div class="animate-in fade-in slide-in-from-right-4 duration-500"
