@@ -266,7 +266,20 @@ fun MovieDetailScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // BESETZUNG SEKTION (VERTIKAL)
+                    // BOXSET SEKTION
+                    if (movie.isBoxset == true && !movie.boxsetChildren.isNullOrEmpty()) {
+                        Spacer(Modifier.height(32.dp))
+                        Text(text = "Enthaltene Filme", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(16.dp))
+                        
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            movie.boxsetChildren.forEach { childMovie ->
+                                BoxsetMovieItem(movie = childMovie, onClick = { onMovieClick(childMovie) })
+                            }
+                        }
+                    }
+
+                    // BESETZUNG SEKTION
                     if (!movie.actors.isNullOrEmpty()) {
                         Spacer(Modifier.height(32.dp))
                         Text(text = "Besetzung", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -284,6 +297,47 @@ fun MovieDetailScreen(
 
                     Spacer(Modifier.height(100.dp))
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun BoxsetMovieItem(movie: Movie, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .clickable(onClick = onClick),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            if (movie.coverUrl != null) {
+                val imageUrl = if (movie.coverUrl.startsWith("http")) movie.coverUrl else "${RetrofitClient.baseUrl}${movie.coverUrl}"
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = movie.title,
+                    modifier = Modifier.width(70.dp).fillMaxHeight(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = movie.title ?: "Unbekannt",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = movie.year?.toString() ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }
