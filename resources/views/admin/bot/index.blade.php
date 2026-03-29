@@ -125,25 +125,25 @@
     </div>
 
     <!-- Logs Modal -->
-    <div id="logsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div class="glass p-6 rounded-2xl border border-white/10 w-full max-w-4xl max-h-[80vh] flex flex-col transform scale-95 transition-transform duration-300">
+    <div id="logsModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="glass p-6 rounded-2xl border border-white/10 w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300">
             <div class="flex items-center justify-between mb-4 shrink-0">
-                <h2 class="text-lg font-bold">Log-Protkoll für Lauf <span id="modalRunId"></span></h2>
+                <h2 class="text-lg font-bold">Log-Protokoll für Lauf <span id="modalRunId"></span></h2>
                 <button onclick="closeLogs()" class="text-gray-400 hover:text-white transition-colors">
                     <i class="bi bi-x-lg text-xl"></i>
                 </button>
             </div>
             
-            <div class="flex-1 overflow-y-auto custom-scrollbar p-2 bg-black/40 rounded-xl border border-white/5">
+            <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-black/40 rounded-xl border border-white/5">
                 <table class="w-full text-left text-sm text-gray-300">
-                    <thead>
+                    <thead class="sticky top-0 bg-slate-900/95 backdrop-blur-sm shadow-md z-10">
                         <tr class="text-xs uppercase text-gray-500 border-b border-white/10">
-                            <th class="pb-2 w-1/4">Actor</th>
-                            <th class="pb-2 w-1/4">Bot Aktion</th>
-                            <th class="pb-2">Nachricht</th>
+                            <th class="px-4 py-3 w-1/4">Actor</th>
+                            <th class="px-4 py-3 w-1/4">Bot Aktion</th>
+                            <th class="px-4 py-3">Nachricht</th>
                         </tr>
                     </thead>
-                    <tbody id="logsTableBody">
+                    <tbody id="logsTableBody" class="divide-y divide-white/5">
                         <!-- Filled via JS -->
                     </tbody>
                 </table>
@@ -211,10 +211,10 @@
                             let actorName = log.actor ? log.actor.first_name + ' ' + (log.actor.last_name || '') : 'Gelöscht (ID: ' + log.actor_id + ')';
                             
                             tbody.innerHTML += `
-                                <tr class="border-b border-white/5 last:border-0 hover:bg-white/5">
-                                    <td class="py-2 pr-4 font-medium">${actorName}</td>
-                                    <td class="py-2 pr-4 ${statusColor}"><i class="bi ${statusIcon} mr-1"></i> ${log.status}</td>
-                                    <td class="py-2 text-gray-400 text-xs">${log.message}</td>
+                                <tr class="hover:bg-white/5 transition-colors">
+                                    <td class="px-4 py-3 font-medium">${actorName}</td>
+                                    <td class="px-4 py-3 ${statusColor}"><i class="bi ${statusIcon} mr-1"></i> ${log.status}</td>
+                                    <td class="px-4 py-3 text-gray-400 text-xs">${log.message}</td>
                                 </tr>
                             `;
                         });
