@@ -298,9 +298,7 @@
                                             const name = prompt('Name des Schauspielers eingeben:');
                                             if (name) {
                                                 const range = this.quill.getSelection();
-                                                if (range) {
-                                                    this.quill.insertText(range.index, `{!Actor}${name}`);
-                                                }
+                                                    this.quill.insertText(range.index, `{!Actor}${name}}`);
                                             }
                                         }
                                     }
