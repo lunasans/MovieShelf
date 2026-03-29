@@ -31,23 +31,44 @@ class ShortcodeService
                 return $rawName;
             }
 
-            // Cache lookup to avoid redundant queries
+            // Cache lookup (using a very short duration while debugging)
             $cacheKey = 'actor_link_'.md5($cleanName);
             
-            return Cache::remember($cacheKey, now()->addHours(24), function () use ($cleanName, $rawName) {
-                // Find Actor by full name (first_name space last_name)
-                // We use a more robust search by concatenating the names in the DB
-                $actor = Actor::whereRaw('LOWER(TRIM(CONCAT(first_name, " ", last_name))) = ?', [strtolower($cleanName)])
-                    ->orWhereRaw('LOWER(TRIM(first_name)) = ? AND (last_name IS NULL OR last_name = "")', [strtolower($cleanName)])
-                    ->first();
+            return Cache::remember($cacheKey, now()->addMinutes(1), function () use ($cleanName, $rawName) {
+                \Log::info("ShortcodeService: Searching for Actor [{$cleanName}]");
+
+                // Split name by space to handle first/last name search more robustly
+                $parts = preg_split('/\s+/', $cleanName, 2);
+                $query = Actor::query();
+
+                if (count($parts) === 2) {
+                    $firstName = trim($parts[0]);
+                    $lastName = trim($parts[1]);
+                    
+                    $query->where(function ($q) use ($firstName, $lastName, $cleanName) {
+                        // Standard match
+                        $q->where('first_name', 'like', $firstName)
+                          ->where('last_name', 'like', $lastName);
+                    })->orWhere(function ($q) use ($cleanName) {
+                        // Match full name in first_name (sometimes happens on imports)
+                        $q->where('first_name', 'like', $cleanName)
+                          ->where(function($sub) { $sub->whereNull('last_name')->orWhere('last_name', ''); });
+                    });
+                } else {
+                    $query->where('first_name', 'like', $cleanName)
+                          ->orWhere('last_name', 'like', $cleanName);
+                }
+
+                $actor = $query->first();
 
                 if ($actor) {
+                    \Log::info("ShortcodeService: Found Actor ID [{$actor->id}] for [{$cleanName}]");
                     $url = route('actors.show', $actor);
-                    // We keep the $rawName (including potential tags like <strong>) for the link text
                     return '<a href="'.$url.'" class="text-blue-400 hover:text-blue-300 transition-colors font-medium border-b border-blue-400/30 hover:border-blue-300">'.$rawName.'</a>';
                 }
 
-                return $rawName; // Fallback to original text if not found
+                \Log::warning("ShortcodeService: No Actor found for [{$cleanName}]");
+                return $rawName; // Fallback
             });
         }, $text);
     }
