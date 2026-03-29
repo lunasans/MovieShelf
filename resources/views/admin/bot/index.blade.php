@@ -129,29 +129,25 @@
         </div>
     </div>
 
-    <!-- Logs Modal -->
-    <div id="logsModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div class="glass p-6 rounded-2xl border border-white/10 w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300">
-            <div class="flex items-center justify-between mb-4 shrink-0">
-                <h2 class="text-lg font-bold">Log-Protokoll für Lauf <span id="modalRunId"></span></h2>
-                <button onclick="closeLogs()" class="text-gray-400 hover:text-white transition-colors">
-                    <i class="bi bi-x-lg text-xl"></i>
-                </button>
+    <!-- Terminal Modal -->
+    <div id="logsModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="p-1 rounded-xl border border-white/20 w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 shadow-2xl bg-[#1e1e1e]">
+            <!-- Terminal Header -->
+            <div class="flex items-center justify-between px-4 py-3 shrink-0 bg-[#2d2d2d] rounded-t-lg border-b border-black">
+                <div class="flex gap-2">
+                    <button onclick="closeLogs()" class="w-3 h-3 rounded-full bg-rose-500 hover:bg-rose-400 transition-colors shadow-inner cursor-pointer"></button>
+                    <div class="w-3 h-3 rounded-full bg-amber-500 shadow-inner"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-inner"></div>
+                </div>
+                <div class="text-xs font-mono text-gray-400 font-bold tracking-widest uppercase">Actor-Bot Terminal ~ Lauf <span id="modalRunId"></span></div>
+                <div class="w-5"></div><!-- Spacer for centering -->
             </div>
             
-            <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-black/40 rounded-xl border border-white/5">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="sticky top-0 bg-slate-900/95 backdrop-blur-sm shadow-md z-10">
-                        <tr class="text-xs uppercase text-gray-500 border-b border-white/10">
-                            <th class="px-4 py-3 w-1/4">Actor</th>
-                            <th class="px-4 py-3 w-1/4">Bot Aktion</th>
-                            <th class="px-4 py-3">Nachricht</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logsTableBody" class="divide-y divide-white/5">
-                        <!-- Filled via JS -->
-                    </tbody>
-                </table>
+            <!-- Terminal Body -->
+            <div id="terminalBody" class="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0d1117] p-4 font-mono text-xs md:text-sm text-gray-300 leading-relaxed">
+                <div id="logsTableBody" class="space-y-0.5">
+                    <!-- Filled via JS -->
+                </div>
             </div>
         </div>
     </div>
@@ -180,12 +176,12 @@
             @endif
 
             const modal = document.getElementById('logsModal');
-            const modalContent = modal.querySelector('.glass');
+            const modalContent = modal.querySelector('div[class*="transform"]');
 
             function showLogs(runId) {
                 document.getElementById('modalRunId').innerText = '#' + runId;
                 const tbody = document.getElementById('logsTableBody');
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4"><i class="bi bi-arrow-repeat animate-spin text-xl text-blue-400 inline-block"></i> Lade Logs aus der Datenbank...</td></tr>';
+                tbody.innerHTML = '<div class="text-blue-400 animate-pulse">> Initialisiere Verbindung zur Datenbank...</div>';
                 
                 modal.classList.remove('hidden');
                 void modal.offsetWidth;
@@ -197,32 +193,46 @@
                     .then(data => {
                         tbody.innerHTML = '';
                         if (data.logs.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-gray-500">Der Bot hat für diesen Lauf keine Logs hinterlassen.</td></tr>';
+                            tbody.innerHTML = '<div class="text-gray-500">> Keine Logs für diesen Lauf gefunden.</div>';
                             return;
                         }
                         
                         data.logs.forEach(log => {
-                            let statusColor = 'text-gray-400';
-                            let statusIcon = 'bi-dash-circle';
+                            let statusColor = 'text-gray-500';
                             
                             if (log.status === 'success') {
-                                statusColor = 'text-emerald-400';
-                                statusIcon = 'bi-check-circle';
+                                statusColor = 'text-emerald-400 font-bold';
                             } else if (log.status === 'error') {
-                                statusColor = 'text-rose-400';
-                                statusIcon = 'bi-exclamation-circle';
+                                statusColor = 'text-rose-500 font-bold';
+                            } else if (log.status === 'skipped') {
+                                statusColor = 'text-blue-400/80';
                             }
 
                             let actorName = log.actor ? log.actor.first_name + ' ' + (log.actor.last_name || '') : 'Gelöscht (ID: ' + log.actor_id + ')';
                             
+                            // Parse time specifically to HH:mm:ss if it's an ISO timestamp
+                            let rawDate = log.created_at;
+                            if(rawDate && rawDate.length > 18) {
+                                rawDate = rawDate.substring(11, 19);
+                            }
+
                             tbody.innerHTML += `
-                                <tr class="hover:bg-white/5 transition-colors">
-                                    <td class="px-4 py-3 font-medium">${actorName}</td>
-                                    <td class="px-4 py-3 ${statusColor}"><i class="bi ${statusIcon} mr-1"></i> ${log.status}</td>
-                                    <td class="px-4 py-3 text-gray-400 text-xs">${log.message}</td>
-                                </tr>
+                                <div class="hover:bg-white/5 px-2 py-0.5 rounded transition-colors break-words flex flex-col md:flex-row md:gap-4 md:items-start group">
+                                    <div class="flex gap-3 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                                        <span class="text-gray-600">[${rawDate}]</span>
+                                        <span class="${statusColor} w-24">[${log.status.toUpperCase()}]</span>
+                                    </div>
+                                    <div class="flex-1 flex flex-col md:flex-row gap-2 md:gap-4">
+                                        <span class="text-white font-semibold md:w-48 truncate flex-shrink-0 mr-2">${actorName}</span>
+                                        <span class="text-gray-400 font-extralight">> ${log.message}</span>
+                                    </div>
+                                </div>
                             `;
                         });
+                        
+                        // Auto-scroll to bottom of terminal
+                        const terminalBody = document.getElementById('terminalBody');
+                        terminalBody.scrollTop = terminalBody.scrollHeight;
                     });
             }
 
