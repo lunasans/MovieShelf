@@ -179,6 +179,9 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Actor Shortcodes**: Einführung von `{!Actor}Name}` Shortcodes zur automatischen Verlinkung von Schauspieler-Profilen in Beschreibungen.
 - **Shortcode Toolbar**: Neuer Button im Editor zum einfachen Einfügen von Schauspielern per Klick.
 - **Robustes Parsing**: Optimierter `ShortcodeService` mit Schutz gegen Verschachtelungsfehler und Unterstützung für verschiedene Klammertypen.
+- **API-Profil-Management**: Neuer Endpunkt `PUT /api/user` zur Aktualisierung von Name, E-Mail und Passwort.
+- **Sicherer 2FA-Login (API)**: Implementierung eines 2-Schritt-Login-Flows für die API mit `POST /api/login/2fa`.
+- **Swagger UI Integration**: Interaktive API-Dokumentation unter `/api/documentation` mit vollständiger Sanctum/Bearer-Unterstützung.
 - **UI-Fix Detailansicht**: Korrekte Darstellung von Absätzen und Listen in der Filmbeschreibung durch optimierte CSS-Regeln.
 
 ## 🤝 Mitwirken
