@@ -25,6 +25,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/actors/search', [\App\Http\Controllers\Api\ActorController::class, 'search']);
     Route::get('/actors/{actor}', [\App\Http\Controllers\Api\ActorController::class, 'show']);
 
+    Route::get('/stats', [\App\Http\Controllers\Api\StatsController::class, 'index']);
+
     // TMDb Integration
     Route::prefix('tmdb')->group(function () {
         Route::get('/search', [\App\Http\Controllers\Api\TmdbController::class, 'search']);

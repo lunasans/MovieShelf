@@ -600,6 +600,147 @@
                     }
                 ]
             }
+        },
+        "/stats": {
+            "get": {
+                "tags": [
+                    "Statistics"
+                ],
+                "summary": "Sammlungs-Statistiken abrufen",
+                "operationId": "650f9464b8366de5a021b51ca3a48123",
+                "responses": {
+                    "200": {
+                        "description": "Detaillierte Statistiken der Film-Sammlung",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_films": {
+                                            "type": "integer"
+                                        },
+                                        "total_runtime_minutes": {
+                                            "type": "integer"
+                                        },
+                                        "total_runtime_hours": {
+                                            "type": "integer"
+                                        },
+                                        "total_runtime_days": {
+                                            "type": "integer"
+                                        },
+                                        "avg_runtime": {
+                                            "type": "integer"
+                                        },
+                                        "watched": {
+                                            "properties": {
+                                                "count": {
+                                                    "type": "integer"
+                                                },
+                                                "percentage": {
+                                                    "type": "number",
+                                                    "format": "float"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "years": {
+                                            "properties": {
+                                                "avg_year": {
+                                                    "type": "integer"
+                                                },
+                                                "oldest_year": {
+                                                    "type": "integer"
+                                                },
+                                                "newest_year": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "collections": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "collection_type": {
+                                                        "type": "string"
+                                                    },
+                                                    "count": {
+                                                        "type": "integer"
+                                                    },
+                                                    "percentage": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "ratings": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "rating_age": {
+                                                        "type": "integer"
+                                                    },
+                                                    "count": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "genres": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "genre": {
+                                                        "type": "string"
+                                                    },
+                                                    "count": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "year_distribution": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "decades": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "decade": {
+                                                        "type": "integer"
+                                                    },
+                                                    "count": {
+                                                        "type": "integer"
+                                                    },
+                                                    "avg_runtime": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Nicht authentifiziert"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -634,6 +775,10 @@
         {
             "name": "Movies",
             "description": "Movies"
+        },
+        {
+            "name": "Statistics",
+            "description": "Statistics"
         }
     ]
 }
