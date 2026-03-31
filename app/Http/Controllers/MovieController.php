@@ -30,20 +30,37 @@ class MovieController extends Controller
         $latestCount = (int) Setting::where('key', 'latest_films_count')->value('value') ?: 15;
         $latestMovies = Movie::whereNull('boxset_parent')->withCount('boxsetChildren')->orderBy('created_at', 'desc')->limit($latestCount)->get();
 
+
+        $genreRows = []; // Genre rows removed in favor of a unified grid
+
+        $featuredMovie = Movie::whereNotNull('backdrop_url')->whereNull('boxset_parent')->inRandomOrder()->first() ?: Movie::first();
+
         $defaultViewMode = Setting::get('default_view_mode', 'grid');
+        $viewMode = $request->get('view', $defaultViewMode);
 
         if ($request->ajax()) {
-            return view('movies.partials.movie-list-ajax', compact('movies'))->render();
+            if (auth()->user()->layout === 'streaming') {
+                return view('movies.partials.streaming-movie-list-ajax', compact('movies'))->render();
+            }
+            return view('movies.partials.movie-list-ajax', compact('movies', 'viewMode'))->render();
         }
 
-        return view('dashboard', compact('movies', 'collectionTypes', 'latestMovies', 'defaultViewMode'));
+        return view('dashboard', compact(
+            'movies',
+            'collectionTypes',
+            'latestMovies',
+            'defaultViewMode',
+            'genreRows',
+            'featuredMovie'
+        ));
     }
 
     public function show(Movie $movie)
     {
         $movie->load(['actors', 'boxsetChildren', 'parentBoxset', 'seasons.episodes']);
+        $layoutMode = auth()->check() ? optional(auth()->user())->layout : 'classic';
 
-        return view('movies.show', compact('movie'));
+        return view('movies.show', compact('movie', 'layoutMode'));
     }
 
     public function details(Movie $movie)

@@ -179,3 +179,23 @@ h1, h2, h3, h4, h5, h6 {
 .prose-movie li {
     margin-bottom: 0.25rem;
 }
+/* Streaming Layout Specifics */
+.layout-streaming {
+    display: block !important;
+}
+.glass-streaming {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.streaming-container {
+    width: 100%;
+}
+@keyframes reveal-row {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.streaming-container section {
+    animation: reveal-row 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}

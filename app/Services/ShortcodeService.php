@@ -20,8 +20,8 @@ class ShortcodeService
             return '';
         }
 
-        // Pattern for {!Actor}Name - Using [^{}\[\]] to ensure we stop at the FIRST closing mark and don't skip over other starts
-        $pattern = '/\{!Actor\}([^{}\[\]\n]+)[}\]]/';
+        // Pattern for {!Actor}Name} or [Actor:Name] - Case-insensitive and robust
+        $pattern = '/\{!Actor\}(.*?)[\}\]]/i';
 
         return preg_replace_callback($pattern, function ($matches) {
             $rawName = $matches[1];

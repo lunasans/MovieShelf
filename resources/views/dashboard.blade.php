@@ -118,6 +118,36 @@
                     }
                 },
 
+                layoutMode: '{{ auth()->user()->layout ?? "classic" }}' || localStorage.getItem('dashboardLayout') || 'classic',
+
+                async toggleLayout(mode) {
+                    this.layoutMode = mode;
+                    localStorage.setItem('dashboardLayout', mode);
+                    
+                    // Persist to user profile via AJAX
+                    try {
+                        await fetch('{{ route("profile.settings.update") }}', {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ 
+                                layout: mode,
+                                language: '{{ app()->getLocale() }}' // Include language as it's now required by the new validation logic
+                            })
+                        });
+                    } catch (e) {
+                        console.error('Failed to save layout preference:', e);
+                    }
+
+                    // If switching to streaming, we might want to reset background
+                    if (mode === 'streaming') {
+                         window.dispatchEvent(new CustomEvent('change-background', { detail: '' }));
+                    }
+                },
+
                 viewMode: localStorage.getItem('movieViewMode') || '{{ $defaultViewMode }}',
 
                 toggleView(mode) {
@@ -126,13 +156,29 @@
                 },
 
                 initCharts() {
+                    const isStreaming = this.layoutMode === 'streaming';
                     const chartOptions = {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+                        plugins: { 
+                            legend: { 
+                                display: false,
+                                labels: {
+                                    color: isStreaming ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.5)',
+                                    font: { size: 10, weight: 'bold', family: 'Inter, sans-serif' }
+                                }
+                            } 
+                        },
                         scales: {
-                            y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10, weight: 'bold' } } },
-                            x: { grid: { display: false }, ticks: { color: 'rgba(255, 255, 255, 0.5)', font: { size: 10, weight: 'bold' } } }
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: isStreaming ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 255, 255, 0.05)' }, 
+                                ticks: { color: isStreaming ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.5)', font: { size: 10, weight: 'bold' } } 
+                            },
+                            x: { 
+                                grid: { display: false }, 
+                                ticks: { color: isStreaming ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.5)', font: { size: 10, weight: 'bold' } } 
+                            }
                         }
                     };
 
@@ -147,12 +193,19 @@
                                 labels: labels,
                                 datasets: [{
                                     data: values,
-                                    backgroundColor: type === 'line' ? 'rgba(96, 165, 250, 0.1)' : ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#a855f7'],
-                                    borderColor: type === 'line' ? '#60a5fa' : 'transparent',
-                                    borderWidth: type === 'line' ? 3 : 0,
+                                    backgroundColor: type === 'line' 
+                                        ? (isStreaming ? 'rgba(59, 130, 246, 0.15)' : 'rgba(96, 165, 250, 0.1)') 
+                                        : (isStreaming 
+                                            ? ['#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981'] 
+                                            : ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6', '#a855f7']),
+                                    borderColor: type === 'line' ? (isStreaming ? '#3b82f6' : '#60a5fa') : 'transparent',
+                                    borderWidth: type === 'line' ? (isStreaming ? 4 : 3) : 0,
                                     fill: type === 'line',
                                     tension: type === 'line' ? 0.4 : 0,
-                                    borderRadius: type === 'bar' ? 8 : 0,
+                                    borderRadius: type === 'bar' ? (isStreaming ? 12 : 8) : 0,
+                                    pointBackgroundColor: type === 'line' ? '#3b82f6' : 'transparent',
+                                    pointRadius: type === 'line' ? (isStreaming ? 0 : 3) : 0,
+                                    pointHoverRadius: 6,
                                 }]
                             },
                             options: (type === 'doughnut' || type === 'polarArea')
@@ -252,13 +305,16 @@
     </script>
 
     <div class="layout transition-all duration-500 ease-in-out"
-         :class="{ 'layout-stats-active': isStatsView }"
+         :class="{ 'layout-stats-active': isStatsView, 'layout-streaming': layoutMode === 'streaming' }"
          x-data="dashboard"
          @stats-open.window="fetchStats()"
          @impressum-open.window="fetchImpressum()"
          @open-boxset.window="openBoxset($event.detail.id, $event.detail.title)"
+         @layout-change.window="toggleLayout($event.detail)"
     >
-        <!-- Film-Liste Area (Left Column) -->
+        <template x-if="layoutMode === 'classic'">
+            <div class="contents">
+                <!-- Film-Liste Area (Left Column) -->
         <section class="film-list-area shadow-2xl">
                 <div class="flex items-center justify-between mb-8 gap-4 flex-wrap min-h-[46px]">
                     <div class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
@@ -386,8 +442,41 @@
             </div>
 
             <!-- Dynamic Detail Content -->
-            <div x-show="selectedMovie && !loading" x-html="selectedMovie" class="h-full"></div>
-        </aside>
+                <div x-show="selectedMovie && !loading" x-html="selectedMovie" class="h-full"></div>
+            </aside>
+        </template>
+
+        <template x-if="layoutMode === 'streaming'">
+            <div class="relative min-h-screen pt-0">
+                <template x-if="isStatsView || selectedMovie">
+                    <div class="animate-in fade-in slide-in-from-bottom-8 duration-700 relative">
+                        <!-- Close Button -->
+                        <button @click="selectedMovie = null; isStatsView = false;" 
+                                class="fixed top-8 right-8 z-[100] w-14 h-14 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-rose-600 hover:border-rose-500 transition-all shadow-2xl group active:scale-90">
+                            <i class="bi bi-x-lg text-xl group-hover:rotate-90 transition-transform"></i>
+                        </button>
+
+                        <div x-html="selectedMovie" class="w-full"></div>
+                    </div>
+                </template>
+                <template x-if="!isStatsView && !selectedMovie">
+                    <div class="animate-in fade-in duration-700">
+                        @include('movies.partials.streaming-layout')
+                    </div>
+                </template>
+                
+                {{-- Global Streaming Loading State --}}
+                <div x-show="loading" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#0c0c0e]/80 backdrop-blur-xl">
+                    <div class="flex flex-col items-center gap-6">
+                        <div class="relative w-20 h-20">
+                            <div class="absolute inset-0 border-4 border-blue-500/20 rounded-full"></div>
+                            <div class="absolute inset-0 border-4 border-t-blue-500 rounded-full animate-spin"></div>
+                        </div>
+                        <span class="text-sm font-black text-white/40 uppercase tracking-[0.3em] animate-pulse">{{ __('Loading...') }}</span>
+                    </div>
+                </div>
+            </div>
+        </template>
 
         @if(\App\Models\Setting::get('boxset_quick_view_style', 'island') === 'modal')
             @include('movies.partials.boxset-modal')

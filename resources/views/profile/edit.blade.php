@@ -15,6 +15,12 @@
 
             <div class="glass p-8 rounded-[2rem] border border-white/10 shadow-2xl">
                 <div class="max-w-xl">
+                    @include('profile.partials.update-settings-form')
+                </div>
+            </div>
+
+            <div class="glass p-8 rounded-[2rem] border border-white/10 shadow-2xl">
+                <div class="max-w-xl">
                     @include('profile.partials.two-factor-management')
                 </div>
             </div>

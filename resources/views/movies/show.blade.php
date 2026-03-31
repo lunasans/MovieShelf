@@ -1,4 +1,7 @@
 <x-app-layout>
+@if($layoutMode === 'streaming')
+    @include('movies.partials.streaming-details')
+@else
     <div class="relative min-h-screen">
         <!-- Backdrop (Subtle) -->
         <div class="absolute inset-0 h-[50vh] bg-gradient-to-b from-blue-600/5 to-transparent opacity-20 pointer-events-none"></div>
@@ -17,4 +20,5 @@
             </div>
         </div>
     </div>
+@endif
 </x-app-layout>

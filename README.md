@@ -1,7 +1,7 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
 
 
-# MovieShelf v2.2.0 - Dein digitales Filmregal
+# MovieShelf v2.3.0 - Dein digitales Filmregal
 
 
 
@@ -174,10 +174,17 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.2.0)
+## 🚀 Letzte Änderungen (v2.3.0)
+
+- **Premium Streaming-Layout**: Einführung eines komplett neuen, immersiven User-Interfaces im "Cloud-Streaming"-Stil (Netflix/Disney+ Look).
+- **Infinite Scrolling**: Nahtloses Nachladen von Filmen ("Lade mehr") für ein flüssiges Durchstöbern großer Sammlungen.
+- **Glassmorphismus-Evolution**: Tiefere Blur-Effekte, moderne Navigations-Dropdowns und ein radikal bereinigter Footer für maximale Immersion.
+- **Performance-Boost**: Optimierte AJAX-Schnittstellen und reduzierter DOM-Overhead im Dashboard.
+
+## 🚀 Version v2.2.0 (Historie)
 
 - **Actor Bot Daemon**: Neuer, leistungsstarker Hintergrundprozess im Adminpanel, der die Schauspieler-Datenbank autonom durchsucht und fehlende Biografie- sowie Profilbild-Daten automatisch via TMDb-API nachträgt.
-- **Bereinigungs-Logik für Schauspieler**: Schauspieler ohne zugeordnete Filme ("Karteileichen") werden durch den neuen Bot nun automatisch erkannt und sauber aus der Datenbank entfernt.
+- **Bereinigungs-Logik für Schauspieler**: Schauspieler ohne zugeordnete Filme ("Karteileichen werden durch den neuen Bot nun automatisch erkannt und sauber aus der Datenbank entfernt.
 - **Bot Verlaufs-Dashboard**: Neues User Interface im Admin-Bereich zur Überwachung aktueller Bot-Läufe inklusive detaillierter Protokolle ("Logs") zu jedem verarbeiteten Schauspieler.
 
 ## 🚀 Version v2.1.7 (Historie)
@@ -215,9 +222,9 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 2.2.0 - Laravel Framework Edition
+**Version**: 2.3.0 - Laravel Framework Edition
 
-**Letztes Update**: 29. März 2026  
+**Letztes Update**: 31. März 2026  
 **Status**: Aktiv entwickelt
 
 *Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨

@@ -67,7 +67,28 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+        if ($request->has('language')) {
+            session(['locale' => $request->language]);
+        }
+
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update the user's application settings.
+     */
+    public function updateSettings(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'language' => ['required', 'string', 'in:en,de'],
+            'layout' => ['required', 'string', 'in:classic,streaming'],
+        ]);
+
+        $request->user()->update($validated);
+
+        session(['locale' => $validated['language']]);
+
+        return Redirect::route('profile.edit')->with('status', 'settings-updated');
     }
 
     /**

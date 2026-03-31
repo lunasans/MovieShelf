@@ -30,4 +30,5 @@ test_output.txt
 /app/Http/Controllers/Api/TelemetryStoreController.php
 /app/Http/Controllers/Admin/InstallationStatsController.php
 /resources/views/admin/installations/
+/landing-page
 

@@ -33,6 +33,10 @@ class ActorController extends Controller
         $groupedActors = $this->groupActors($actors->getCollection());
         $letter = strtoupper($request->get('letter'));
 
+        if ($request->ajax()) {
+            return view('actors.partials.actor-list', compact('groupedActors'))->render();
+        }
+
         return view('actors.index', compact(
             'actors',
             'groupedActors',
