@@ -17,7 +17,7 @@ class MovieController extends Controller
         tags: ['Movies'],
         security: [['apiAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'per_page', in: 'query', description: 'Anzahl der Filme pro Seite', required: false, schema: new OA\Schema(type: 'integer', default: 20)),
+            new OA\Parameter(name: 'per_page', in: 'query', description: 'Anzahl der Filme pro Seite', required: false, schema: new OA\Schema(type: 'integer', default: 20)), // Default 20 in docs as placeholder
             new OA\Parameter(name: 'page', in: 'query', description: 'Seitenzahl', required: false, schema: new OA\Schema(type: 'integer', default: 1))
         ],
         responses: [
@@ -37,11 +37,12 @@ class MovieController extends Controller
     )]
     public function index(Request $request)
     {
+        $perPage = $request->get('per_page', \App\Models\Setting::get('items_per_page', 20));
         $movies = Movie::where('is_deleted', false)
             ->with(['actors'])
             ->withCount('boxsetChildren')
             ->orderBy('created_at', 'desc')
-            ->paginate($request->get('per_page', 20));
+            ->paginate($perPage);
 
         return MovieResource::collection($movies);
     }
@@ -94,6 +95,7 @@ class MovieController extends Controller
             return response()->json(['data' => []]);
         }
 
+        $perPage = \App\Models\Setting::get('items_per_page', 20);
         $movies = Movie::where('is_deleted', false)
             ->where(function($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
@@ -101,7 +103,7 @@ class MovieController extends Controller
             })
             ->with(['actors'])
             ->withCount('boxsetChildren')
-            ->paginate(20);
+            ->paginate($perPage);
 
         return MovieResource::collection($movies);
     }

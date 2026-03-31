@@ -58,10 +58,6 @@
                         <i class="bi bi-play-fill text-3xl"></i>
                         {{ $movie->trailer_url ? __('Watch Trailer') : __('No Trailer') }}
                     </button>
-                    <button class="px-10 py-5 bg-white/5 backdrop-blur-xl border border-white/10 text-white rounded-2xl font-black text-xl flex items-center gap-3 hover:bg-white/10 transition-all shadow-2xl active:scale-95">
-                        <i class="bi bi-plus-lg"></i>
-                        {{ __('Add to List') }}
-                    </button>
                 </div>
 
                 <div class="glass p-8 md:p-12 rounded-[3rem] border border-white/10 backdrop-blur-3xl shadow-2xl relative overflow-hidden mb-12">
@@ -126,10 +122,10 @@
                         @foreach($movie->actors as $actor)
                         <a href="{{ route('actors.show', $actor) }}" class="group min-w-[120px] md:min-w-[150px] text-center">
                             <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-white/10 group-hover:border-red-600 transition-all mb-4 relative shadow-2xl">
-                                <img src="{{ $actor->photo_url ?: asset('img/default-actor.png') }}" alt="{{ $actor->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                <img src="{{ $actor->profile_url ?: asset('img/default-actor.png') }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                 <div class="absolute inset-0 bg-red-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             </div>
-                            <p class="text-sm font-black text-white truncate px-2 group-hover:text-red-400 transition-colors">{{ $actor->name }}</p>
+                            <p class="text-sm font-black text-white truncate px-2 group-hover:text-red-400 transition-colors">{{ $actor->full_name }}</p>
                             <p class="text-[10px] font-bold text-white/40 truncate uppercase italic">{{ $actor->pivot->role ?? '' }}</p>
                         </a>
                         @endforeach

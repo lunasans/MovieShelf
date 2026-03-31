@@ -8,8 +8,8 @@
         <div class="relative mb-16 rounded-[3rem] overflow-hidden group shadow-2xl border border-white/10 min-h-[500px]">
              <!-- Large Portrait Backdrop -->
              <div class="absolute inset-0 bg-[#0c0c0e]">
-                @if($actor->profile_path)
-                    <img src="{{ asset('storage/' . $actor->profile_path) }}" alt="{{ $actor->full_name }}" 
+                @if($actor->profile_url)
+                    <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" 
                          class="w-full h-full object-cover opacity-40 blur-[80px] scale-110">
                     <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-[#0c0c0e]/40 to-transparent"></div>
                     <div class="absolute inset-0 bg-gradient-to-r from-[#0c0c0e] via-transparent to-[#0c0c0e]/40"></div>
@@ -22,8 +22,8 @@
              <div class="relative z-10 p-12 lg:p-20 flex flex-col lg:flex-row gap-16 items-center lg:items-start text-center lg:text-left">
                 <!-- Large Portrait -->
                 <div class="relative w-full max-w-[320px] aspect-[2/3] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/20 transform skew-y-1 hover:skew-y-0 transition-transform duration-700 group-hover:scale-[1.02]">
-                    @if($actor->profile_path)
-                        <img src="{{ asset('storage/' . $actor->profile_path) }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover">
+                    @if($actor->profile_url)
+                        <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full bg-[#1a1a1f] flex items-center justify-center">
                             <i class="bi bi-person text-white/5 text-8xl"></i>
@@ -152,8 +152,8 @@
         {{-- Original Classic Layout --}}
         <div class="relative rounded-[2.5rem] overflow-hidden glass-strong mb-10 aspect-[21/9] group shadow-2xl border border-white/5">
             <div class="absolute inset-0 bg-gray-950 flex items-center justify-center">
-                @if ($actor->profile_path)
-                    <img src="{{ asset('storage/' . $actor->profile_path) }}" alt="{{ $actor->full_name }}" 
+                @if ($actor->profile_url)
+                    <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" 
                          class="w-full h-full object-cover opacity-30 blur-xl scale-110">
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-transparent"></div>
                 @else
@@ -162,8 +162,8 @@
             </div>
             <div class="absolute left-8 bottom-8 flex items-end gap-8 z-20">
                 <div class="relative w-32 md:w-36 aspect-[2/3] rounded-2xl overflow-hidden glass border-2 border-white/10 shadow-2xl">
-                    @if ($actor->profile_path)
-                        <img src="{{ asset('storage/' . $actor->profile_path) }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover">
+                    @if ($actor->profile_url)
+                        <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full bg-white/5 flex items-center justify-center">
                             <i class="bi bi-person text-white/20 text-3xl"></i>

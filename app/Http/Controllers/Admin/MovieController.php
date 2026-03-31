@@ -32,7 +32,8 @@ class MovieController extends Controller
             $query->whereNull('cover_id');
         }
 
-        $movies = $query->orderBy('title')->paginate(20);
+        $perPage = \App\Models\Setting::get('items_per_page', 20);
+        $movies = $query->orderBy('title')->paginate($perPage);
 
         return view('admin.movies.index', compact('movies'));
     }

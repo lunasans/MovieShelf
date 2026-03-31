@@ -1,7 +1,7 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
 
 
-# MovieShelf v2.3.0 - Dein digitales Filmregal
+# MovieShelf v2.3.1 - Dein digitales Filmregal
 
 
 
@@ -174,7 +174,14 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.3.0)
+## 🚀 Letzte Änderungen (v2.3.1)
+
+- **Dynamischer Hero-Slider**: Der Slider im Streaming-Layout wechselt nun automatisch alle 8 Sekunden zwischen den Top-Filmen der Sammlung.
+- **Synchronisierte Paginierung**: Die Anzahl der Filme pro Ladung (Infinite Scroll) folgt nun strikt der Admin-Einstellung für "Filme pro Seite".
+- **Actor Metadata Fix**: Vollständige Korrektur der Porträtbilder und Namen in der Besetzungsliste und den Detail-Ansichten (Umstellung auf `profile_url`).
+- **UI-Cleanup**: Entfernung von Platzhalter-Buttons ("My List") für ein noch cleanereres Streaming-Erlebnis.
+
+## 🚀 Version v2.3.0 (Historie)
 
 - **Premium Streaming-Layout**: Einführung eines komplett neuen, immersiven User-Interfaces im "Cloud-Streaming"-Stil (Netflix/Disney+ Look).
 - **Infinite Scrolling**: Nahtloses Nachladen von Filmen ("Lade mehr") für ein flüssiges Durchstöbern großer Sammlungen.
@@ -222,7 +229,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 2.3.0 - Laravel Framework Edition
+**Version**: 2.3.1 - Laravel Framework Edition
 
 **Letztes Update**: 31. März 2026  
 **Status**: Aktiv entwickelt

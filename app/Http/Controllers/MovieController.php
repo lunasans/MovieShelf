@@ -24,7 +24,8 @@ class MovieController extends Controller
             $query->where('collection_type', $request->type);
         }
 
-        $movies = $query->withCount('boxsetChildren')->orderBy('title')->paginate(20)->withQueryString();
+        $perPage = Setting::get('items_per_page', 20);
+        $movies = $query->withCount('boxsetChildren')->orderBy('title')->paginate($perPage)->withQueryString();
         $collectionTypes = Movie::distinct()->whereNotNull('collection_type')->orderBy('collection_type')->pluck('collection_type');
 
         $latestCount = (int) Setting::where('key', 'latest_films_count')->value('value') ?: 15;
@@ -33,7 +34,10 @@ class MovieController extends Controller
 
         $genreRows = []; // Genre rows removed in favor of a unified grid
 
-        $featuredMovie = Movie::whereNotNull('backdrop_url')->whereNull('boxset_parent')->inRandomOrder()->first() ?: Movie::first();
+        $featuredMovies = Movie::whereNotNull('backdrop_url')->whereNull('boxset_parent')->inRandomOrder()->limit(5)->get();
+        if ($featuredMovies->isEmpty()) {
+            $featuredMovies = Movie::whereNull('boxset_parent')->latest()->limit(1)->get();
+        }
 
         $defaultViewMode = Setting::get('default_view_mode', 'grid');
         $viewMode = $request->get('view', $defaultViewMode);
@@ -51,7 +55,7 @@ class MovieController extends Controller
             'latestMovies',
             'defaultViewMode',
             'genreRows',
-            'featuredMovie'
+            'featuredMovies'
         ));
     }
 

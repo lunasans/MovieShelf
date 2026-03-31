@@ -1,41 +1,68 @@
 <div class="streaming-container animate-in fade-in duration-700">
-    {{-- Hero Section --}}
-    @if($featuredMovie)
-    <section class="relative h-[85vh] w-full overflow-hidden rounded-b-[3rem] mb-16 group">
-        <!-- Hero Backdrop -->
-        <div class="absolute inset-0 z-0">
-            <img src="{{ $featuredMovie->backdrop_url }}" alt="{{ $featuredMovie->title }}" class="w-full h-full object-cover transition-transform duration-[20s] ease-linear group-hover:scale-110">
-            <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-[#0c0c0e]/60 to-transparent"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-[#0c0c0e] via-[#0c0c0e]/20 to-transparent"></div>
-            <div class="absolute inset-0 bg-gradient-to-r from-[#0c0c0e] via-transparent to-transparent"></div>
-        </div>
+    {{-- Hero Slider --}}
+    @if($featuredMovies->isNotEmpty())
+    <section class="relative h-[85vh] w-full overflow-hidden rounded-b-[3rem] mb-16 group"
+             x-data="{ 
+                active: 0, 
+                count: {{ $featuredMovies->count() }},
+                next() { this.active = (this.active + 1) % this.count },
+                prev() { this.active = (this.active - 1 + this.count) % this.count },
+                init() { if(this.count > 1) setInterval(() => this.next(), 8000) }
+             }">
+        
+        @foreach($featuredMovies as $index => $movie)
+        <div x-show="active === {{ $index }}" 
+             x-transition:enter="transition ease-out duration-1000"
+             x-transition:enter-start="opacity-0 scale-105"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-1000"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             class="absolute inset-0 z-0">
+            
+            <!-- Hero Backdrop -->
+            <div class="absolute inset-0">
+                <img src="{{ $movie->backdrop_url ?: $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover transition-transform duration-[20s] ease-linear group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-[#0c0c0e]/60 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-[#0c0c0e] via-[#0c0c0e]/20 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-[#0c0c0e] via-transparent to-transparent"></div>
+            </div>
 
-        <!-- Hero Content -->
-        <div class="absolute inset-0 z-10 flex flex-col justify-center px-12 md:px-20 max-w-4xl pt-32">
-            <div class="mb-4 flex items-center gap-2">
-                <span class="bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg uppercase tracking-widest">
-                    {{ __('Feature') }}
-                </span>
-                <span class="text-white/60 text-xs font-bold">{{ $featuredMovie->year }} • {{ $featuredMovie->collection_type }}</span>
-            </div>
-            <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 drop-shadow-2xl">
-                {{ $featuredMovie->title }}
-            </h1>
-            <p class="text-white/70 text-lg line-clamp-3 mb-8 max-w-xl font-medium">
-                {!! \App\Services\ShortcodeService::parse($featuredMovie->overview) ?: __('Experience the latest cinematic masterpiece added to your collection.') !!}
-            </p>
-            <div class="flex items-center gap-4">
-                 <a href="{{ route('movies.show', $featuredMovie) }}" 
-                        class="px-8 py-4 bg-white text-black rounded-2xl font-black text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl active:scale-95">
-                    <i class="bi bi-play-fill text-2xl"></i>
-                    {{ __('Details') }}
-                 </a>
-                <button class="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-2xl font-black text-lg flex items-center gap-3 hover:bg-white/20 transition-all shadow-xl active:scale-95">
-                    <i class="bi bi-plus-lg"></i>
-                    {{ __('My List') }}
-                </button>
+            <!-- Hero Content -->
+            <div class="absolute inset-0 z-10 flex flex-col justify-center px-12 md:px-20 max-w-4xl pt-32">
+                <div class="mb-4 flex items-center gap-2">
+                    <span class="bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg uppercase tracking-widest">
+                        {{ __('Featured') }}
+                    </span>
+                    <span class="text-white/60 text-xs font-bold">{{ $movie->year }} • {{ $movie->collection_type }}</span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 drop-shadow-2xl">
+                    {{ $movie->title }}
+                </h1>
+                <p class="text-white/70 text-lg line-clamp-3 mb-8 max-w-xl font-medium">
+                    {!! \App\Services\ShortcodeService::parse($movie->overview) ?: __('Experience the latest cinematic masterpiece added to your collection.') !!}
+                </p>
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('movies.show', $movie) }}" 
+                            class="px-8 py-4 bg-white text-black rounded-2xl font-black text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl active:scale-95">
+                        <i class="bi bi-play-fill text-2xl"></i>
+                        {{ __('Details') }}
+                    </a>
+                </div>
             </div>
         </div>
+        @endforeach
+
+        <!-- Slider Indicators -->
+        @if($featuredMovies->count() > 1)
+        <div class="absolute bottom-12 right-12 z-20 flex gap-3">
+            @foreach($featuredMovies as $index => $movie)
+            <button @click="active = {{ $index }}" 
+                    class="h-1.5 transition-all duration-500 rounded-full"
+                    :class="active === {{ $index }} ? 'w-12 bg-blue-600' : 'w-4 bg-white/20 hover:bg-white/40'"></button>
+            @endforeach
+        </div>
+        @endif
     </section>
     @endif
 
