@@ -1,6 +1,9 @@
+@php
+    $isStreaming = (optional(auth()->user())->layout ?? 'classic') === 'streaming';
+@endphp
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-black text-3xl {{ $isStreaming ? 'text-white tracking-tighter italic' : 'text-gray-800 leading-tight' }}">
             {{ __('Profile') }}
         </h2>
     </x-slot>

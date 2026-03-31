@@ -1,8 +1,9 @@
 @php
-    $isStreaming = (request()->routeIs('dashboard') || request()->routeIs('movies.show') || request()->routeIs('actors.show') || request()->routeIs('movies.trailers')) && (optional(auth()->user())->layout ?? 'classic') === 'streaming';
+    $isStreaming = (request()->routeIs('dashboard', 'movies.show', 'actors.show', 'movies.trailers', 'profile.edit')) && (optional(auth()->user())->layout ?? 'classic') === 'streaming';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" 
+      class="{{ $isStreaming ? 'dark' : '' }}"
       data-theme="{{ $isStreaming ? 'dark' : session('theme', \App\Models\Setting::get('theme', 'default')) }}" 
       style="background-color: #0c0c0e;">
     <head>
@@ -73,7 +74,13 @@
             @include('layouts.navigation')
 
             <!-- Page Content -->
-            <main class="{{ $isStreaming ? 'mt-0' : 'mt-8' }}">
+            @php
+                $hasHero = request()->routeIs('dashboard', 'movies.show', 'actors.show', 'movies.trailers');
+                $mainClasses = $isStreaming 
+                    ? ($hasHero ? 'mt-0' : 'pt-28') 
+                    : 'mt-8';
+            @endphp
+            <main class="{{ $mainClasses }}">
                 {{ $slot }}
             </main>
 

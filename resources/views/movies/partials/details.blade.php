@@ -15,6 +15,8 @@
     .prose-movie li { margin-bottom: 0.25rem; }
     .prose-movie strong { font-weight: bold; color: white; }
     .prose-movie u { text-decoration: underline; text-underline-offset: 4px; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
 <div class="animate-in fade-in slide-in-from-right-4 duration-500"
@@ -191,21 +193,21 @@
                 <i class="bi bi-people text-blue-400"></i>
                 {{ __('Besetzung') }}
             </h3>
-            <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                @forelse($movie->actors->take(12) as $actor)
-                    <div @click="fetchActor({{ $actor->id }})" class="flex items-center gap-3 group/actor cursor-pointer">
-                        <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover/actor:border-blue-500/50 transition-colors shadow-lg overflow-hidden">
+            <div class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory no-scrollbar">
+                @forelse($movie->actors as $actor)
+                    <div @click="fetchActor({{ $actor->id }})" class="flex items-center gap-3 group/actor cursor-pointer shrink-0 snap-start bg-white/5 p-3 rounded-2xl border border-white/10 hover:border-blue-500/30 transition-all min-w-[220px]">
+                        <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover/actor:border-blue-500/50 transition-colors shadow-lg overflow-hidden">
                             @if($actor->profile_url)
-                                <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover">
+                                <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover group-hover/actor:scale-110 transition-transform">
                             @else
                                 <i class="bi bi-person text-lg text-gray-500 group-hover/actor:text-blue-400 transition-colors"></i>
                             @endif
                         </div>
                         <div class="min-w-0">
-                            <div class="text-sm font-bold text-white truncate group-hover/actor:text-blue-400 transition-colors">
+                            <div class="text-xs font-bold text-white truncate group-hover/actor:text-blue-400 transition-colors">
                                 {{ $actor->full_name }}
                             </div>
-                            <div class="text-[10px] text-gray-500 truncate italic">
+                            <div class="text-[10px] text-gray-500 truncate italic font-medium uppercase tracking-tighter">
                                 {{ $actor->pivot->role ?: __('Darsteller') }}
                             </div>
                         </div>

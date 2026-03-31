@@ -118,15 +118,15 @@
                         {{ __('Cast Members') }}
                         <div class="h-1 w-8 bg-blue-600 rounded-full"></div>
                     </h3>
-                    <div class="flex gap-6 overflow-x-auto no-scrollbar pb-8 px-4">
+                    <div class="flex gap-6 overflow-x-auto no-scrollbar pb-8 px-4 snap-x snap-mandatory">
                         @foreach($movie->actors as $actor)
-                        <a href="{{ route('actors.show', $actor) }}" class="group min-w-[120px] md:min-w-[150px] text-center">
-                            <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-white/10 group-hover:border-red-600 transition-all mb-4 relative shadow-2xl">
-                                <img src="{{ $actor->profile_url ?: asset('img/default-actor.png') }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                                <div class="absolute inset-0 bg-red-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <a href="{{ route('actors.show', $actor) }}" class="group min-w-[140px] md:min-w-[170px] text-center snap-start">
+                            <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-white/10 group-hover:border-red-600 group-hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all mb-4 relative shadow-2xl">
+                                <img src="{{ $actor->profile_url ?: asset('img/default-actor.png') }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                                <div class="absolute inset-0 bg-gradient-to-t from-red-600/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             </div>
-                            <p class="text-sm font-black text-white truncate px-2 group-hover:text-red-400 transition-colors">{{ $actor->full_name }}</p>
-                            <p class="text-[10px] font-bold text-white/40 truncate uppercase italic">{{ $actor->pivot->role ?? '' }}</p>
+                            <p class="text-sm font-black text-white truncate px-2 group-hover:text-red-400 transition-colors uppercase tracking-tight italic">{{ $actor->full_name }}</p>
+                            <p class="text-[10px] font-black text-white/30 truncate uppercase italic tracking-widest mt-1">{{ $actor->pivot->role ?? '' }}</p>
                         </a>
                         @endforeach
                     </div>
