@@ -66,7 +66,7 @@
     </div>
 
     <!-- Header Area (Backdrop & Poster) -->
-    <div class="relative rounded-[2.5rem] overflow-hidden glass-strong mb-10 aspect-[21/9] group shadow-2xl border border-white/5">
+    <div class="relative rounded-[2.5rem] overflow-hidden glass-strong mb-10 aspect-[21/9] group shadow-2xl border border-white/5 max-h-[300px] md:max-h-[450px]">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-gray-950 flex items-center justify-center">
              @if($movie->backdrop_url)
@@ -188,14 +188,33 @@
         @endif
 
         <!-- Actors -->
-        <div class="glass p-6 rounded-3xl border-white/5">
-            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2 underline decoration-blue-500/50 underline-offset-8">
-                <i class="bi bi-people text-blue-400"></i>
-                {{ __('Besetzung') }}
-            </h3>
-            <div class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory no-scrollbar">
+        <div class="glass p-6 rounded-3xl border-white/5 w-full max-w-full overflow-hidden" 
+             x-data="{ 
+                 scrollAmount: 400,
+                 scroll(dir) { 
+                     this.$refs.castContainer.scrollBy({ left: dir * this.scrollAmount, behavior: 'smooth' }); 
+                 } 
+             }">
+            <div class="flex items-center justify-between mb-4 px-2">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 underline decoration-blue-500/50 underline-offset-8">
+                    <i class="bi bi-people text-blue-400"></i>
+                    {{ __('Besetzung') }}
+                </h3>
+                
+                <!-- Navigation Arrows -->
+                <div class="flex items-center gap-2">
+                    <button @click="scroll(-1)" class="w-8 h-8 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-blue-500/50 flex items-center justify-center transition-all active:scale-90 text-gray-500 hover:text-white">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button @click="scroll(1)" class="w-8 h-8 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-blue-500/50 flex items-center justify-center transition-all active:scale-90 text-gray-500 hover:text-white">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar scroll-smooth" x-ref="castContainer">
                 @forelse($movie->actors as $actor)
-                    <div @click="fetchActor({{ $actor->id }})" class="flex items-center gap-3 group/actor cursor-pointer shrink-0 snap-start bg-white/5 p-3 rounded-2xl border border-white/10 hover:border-blue-500/30 transition-all min-w-[220px]">
+                    <div @click="fetchActor({{ $actor->id }})" class="flex items-center gap-3 group/actor cursor-pointer shrink-0 bg-white/5 p-3 rounded-2xl border border-white/10 hover:border-blue-500/30 transition-all w-[220px] min-w-0">
                         <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover/actor:border-blue-500/50 transition-colors shadow-lg overflow-hidden">
                             @if($actor->profile_url)
                                 <img src="{{ $actor->profile_url }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover group-hover/actor:scale-110 transition-transform">
@@ -306,7 +325,7 @@
     <!-- Trailer & Actions -->
     <div class="mt-8">
         @if($movie->trailer_url)
-            <div class="relative w-full aspect-video rounded-3xl overflow-hidden glass border-white/5 shadow-2xl group/player bg-black mb-4">
+            <div class="relative w-full max-w-4xl mx-auto aspect-video rounded-3xl overflow-hidden glass border-white/5 shadow-2xl group/player bg-black mb-4">
                 <!-- Thumbnail Layer -->
                 <div x-show="!showTrailer"
                      class="absolute inset-0 cursor-pointer"

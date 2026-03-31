@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () use ($profilePath) {
     Route::get($profilePath, [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch($profilePath, [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/settings', [ProfileController::class, 'updateSettings'])->name('profile.settings.update');
+    Route::post('/profile/layout', [ProfileController::class, 'toggleLayout'])->name('profile.layout.toggle');
     Route::delete($profilePath, [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // 2FA Routes

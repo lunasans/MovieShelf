@@ -113,14 +113,33 @@
 
                 {{-- Cast Carousel --}}
                 @if($movie->actors->isNotEmpty())
-                <div class="animate-in slide-in-from-bottom duration-1000 delay-300">
-                    <h3 class="text-xl font-black text-white mb-8 uppercase tracking-tight flex items-center gap-4 pl-4">
-                        {{ __('Cast Members') }}
-                        <div class="h-1 w-8 bg-blue-600 rounded-full"></div>
-                    </h3>
-                    <div class="flex gap-6 overflow-x-auto no-scrollbar pb-8 px-4 snap-x snap-mandatory">
+                <div class="animate-in slide-in-from-bottom duration-1000 delay-300" 
+                     x-data="{ 
+                         scrollAmount: 400,
+                         scroll(dir) { 
+                             this.$refs.castContainer.scrollBy({ left: dir * this.scrollAmount, behavior: 'smooth' }); 
+                         } 
+                     }">
+                    <div class="flex items-center justify-between mb-8 pl-4 pr-4">
+                        <h3 class="text-xl font-black text-white uppercase tracking-tight flex items-center gap-4">
+                            {{ __('Cast Members') }}
+                            <div class="h-1 w-8 bg-blue-600 rounded-full"></div>
+                        </h3>
+                        
+                        <!-- Navigation Arrows -->
+                        <div class="flex items-center gap-3">
+                            <button @click="scroll(-1)" class="w-12 h-12 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-red-600/50 flex items-center justify-center transition-all active:scale-90 text-white/40 hover:text-white">
+                                <i class="bi bi-chevron-left text-xl"></i>
+                            </button>
+                            <button @click="scroll(1)" class="w-12 h-12 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-red-600/50 flex items-center justify-center transition-all active:scale-90 text-white/40 hover:text-white">
+                                <i class="bi bi-chevron-right text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-6 overflow-x-auto no-scrollbar pb-8 px-4 scroll-smooth" x-ref="castContainer">
                         @foreach($movie->actors as $actor)
-                        <a href="{{ route('actors.show', $actor) }}" class="group min-w-[140px] md:min-w-[170px] text-center snap-start">
+                        <a href="{{ route('actors.show', $actor) }}" class="group min-w-[140px] md:min-w-[170px] text-center">
                             <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-white/10 group-hover:border-red-600 group-hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all mb-4 relative shadow-2xl">
                                 <img src="{{ $actor->profile_url ?: asset('img/default-actor.png') }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                                 <div class="absolute inset-0 bg-gradient-to-t from-red-600/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>

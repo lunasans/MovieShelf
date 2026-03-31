@@ -1,10 +1,35 @@
 <nav x-data="{ 
     open: false, 
     scrolled: window.pageYOffset > 20,
-    layoutMode: '{{ optional(auth()->user())->layout ?? "classic" }}' 
+    layoutMode: '{{ optional(auth()->user())->layout ?? "classic" }}',
+    async saveLayout(mode) {
+        if (this.layoutMode === mode) return;
+        this.layoutMode = mode;
+        $dispatch('layout-change', mode);
+        
+        try {
+            const response = await fetch('{{ route('profile.layout.toggle') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ layout: mode })
+            });
+            
+            if (response.ok) {
+                // If we are on a detail page or profile page, reload to re-render server-side layout logic
+                if (window.location.pathname.includes('/movies/') || window.location.pathname.includes('/profile')) {
+                    window.location.reload();
+                }
+            }
+        } catch (e) {
+            console.error('Failed to save layout preference', e);
+        }
+    }
 }" 
 x-init="window.addEventListener('scroll', () => { scrolled = window.pageYOffset > 20 })"
-@layout-change.window="layoutMode = $event.detail"
+@layout-change.window="if ($event.detail !== layoutMode) layoutMode = $event.detail"
 class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
 :class="{
     'fixed top-0 left-0 right-0': layoutMode === 'streaming',
@@ -66,7 +91,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                 <!-- Layout Switcher -->
                 <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-2xl mr-2">
                     <button 
-                        @click="$dispatch('layout-change', 'classic')"
+                        @click="saveLayout('classic')"
                         class="p-1 px-2 rounded-xl transition-all flex items-center gap-1"
                         :class="layoutMode === 'classic' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-gray-500 hover:text-white hover:bg-white/5'"
                         title="{{ __('Classic Layout') }}"
@@ -75,7 +100,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                         <span class="text-[10px] font-black uppercase">Classic</span>
                     </button>
                     <button 
-                        @click="$dispatch('layout-change', 'streaming')"
+                        @click="saveLayout('streaming')"
                         class="p-1 px-2 rounded-xl transition-all flex items-center gap-1"
                         :class="layoutMode === 'streaming' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-gray-500 hover:text-white hover:bg-white/5'"
                         title="{{ __('Streaming Layout') }}"

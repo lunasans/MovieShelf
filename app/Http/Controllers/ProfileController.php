@@ -92,6 +92,20 @@ class ProfileController extends Controller
     }
 
     /**
+     * Toggle the user's layout preference via AJAX.
+     */
+    public function toggleLayout(Request $request)
+    {
+        $validated = $request->validate([
+            'layout' => ['required', 'string', 'in:classic,streaming'],
+        ]);
+
+        $request->user()->update(['layout' => $validated['layout']]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse
