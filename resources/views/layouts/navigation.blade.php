@@ -1,32 +1,8 @@
 <nav x-data="{ 
     open: false, 
     scrolled: window.pageYOffset > 20,
-    layoutMode: '{{ optional(auth()->user())->layout ?? "classic" }}',
-    async saveLayout(mode) {
-        if (this.layoutMode === mode) return;
-        this.layoutMode = mode;
-        $dispatch('layout-change', mode);
-        
-        try {
-            const response = await fetch('{{ route('profile.layout.toggle') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ layout: mode })
-            });
-            
-            if (response.ok) {
-                // If we are on a detail page or profile page, reload to re-render server-side layout logic
-                if (window.location.pathname.includes('/movies/') || window.location.pathname.includes('/profile')) {
-                    window.location.reload();
-                }
-            }
-        } catch (e) {
-            console.error('Failed to save layout preference', e);
-        }
-    }
+    layoutMode: '{{ optional(auth()->user())->layout ?? \App\Models\Setting::get("default_guest_layout", "classic") }}',
+
 }" 
 x-init="window.addEventListener('scroll', () => { scrolled = window.pageYOffset > 20 })"
 @layout-change.window="if ($event.detail !== layoutMode) layoutMode = $event.detail"
@@ -79,36 +55,8 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
 
         <!-- Search & User Section (Right) -->
         <div class="flex items-center gap-4 flex-1 justify-end">
-            <!-- Search Form -->
-            <form action="{{ route('dashboard') }}" method="GET" class="relative hidden xl:block w-full max-w-[200px]">
-                <input type="text" name="q" value="{{ request('q') }}"
-                    placeholder="{{ __('Search...') }}"
-                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 pl-10 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm transition-all placeholder:text-gray-500">
-                <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-            </form>
 
             <div class="flex items-center gap-4">
-                <!-- Layout Switcher -->
-                <div class="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-2xl mr-2">
-                    <button 
-                        @click="saveLayout('classic')"
-                        class="p-1 px-2 rounded-xl transition-all flex items-center gap-1"
-                        :class="layoutMode === 'classic' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-gray-500 hover:text-white hover:bg-white/5'"
-                        title="{{ __('Classic Layout') }}"
-                    >
-                        <i class="bi bi-grid-fill"></i>
-                        <span class="text-[10px] font-black uppercase">Classic</span>
-                    </button>
-                    <button 
-                        @click="saveLayout('streaming')"
-                        class="p-1 px-2 rounded-xl transition-all flex items-center gap-1"
-                        :class="layoutMode === 'streaming' ? 'bg-red-600 text-white shadow-lg shadow-red-900/40' : 'text-gray-500 hover:text-white hover:bg-white/5'"
-                        title="{{ __('Streaming Layout') }}"
-                    >
-                        <i class="bi bi-play-circle-fill"></i>
-                        <span class="text-[10px] font-black uppercase">Streaming</span>
-                    </button>
-                </div>
 
                 <!-- Language Switcher -->
                 <div class="flex items-center gap-2 px-2 border-r border-white/10 mr-2">

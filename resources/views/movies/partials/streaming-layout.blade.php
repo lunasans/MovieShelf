@@ -1,7 +1,7 @@
-<div class="streaming-container animate-in fade-in duration-700">
+<div class="streaming-container animate-in fade-in duration-700 overflow-x-hidden">
     {{-- Hero Slider --}}
     @if($featuredMovies->isNotEmpty())
-    <section class="relative h-[85vh] w-full overflow-hidden rounded-b-[3rem] mb-16 group"
+    <section class="relative h-[85vh] w-full rounded-b-[3rem] mb-0 group"
              x-data="{ 
                 active: 0, 
                 count: {{ $featuredMovies->count() }},
@@ -21,7 +21,7 @@
              class="absolute inset-0 z-0">
             
             <!-- Hero Backdrop -->
-            <div class="absolute inset-0">
+            <div class="absolute inset-0 overflow-hidden rounded-b-[3rem]">
                 <img src="{{ $movie->backdrop_url ?: $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover transition-transform duration-[20s] ease-linear group-hover:scale-110">
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-[#0c0c0e]/60 to-transparent"></div>
                 <div class="absolute inset-0 bg-gradient-to-b from-[#0c0c0e] via-[#0c0c0e]/20 to-transparent"></div>
@@ -63,11 +63,39 @@
             @endforeach
         </div>
         @endif
+        
+        {{-- Integrated Search Bar (Full Width) --}}
+        <div class="absolute bottom-0 left-0 right-0 z-40" style="transform: translateY(50%);">
+            <div class="w-full">
+                <div class="relative group">
+                    <form action="{{ route('dashboard') }}" method="GET" class="relative transition-all duration-700 ease-in-out transform">
+                        <input type="text" name="q" value="{{ request('q') }}"
+                            @focus="isSearchFocused = true"
+                            @blur="isSearchFocused = false"
+                            @keydown.window.prevent.slash="if($event.target.tagName !== 'INPUT' && $event.target.tagName !== 'TEXTAREA') { $el.querySelector('input').focus() }"
+                            placeholder="{{ __('What do you want to watch today?') }}"
+                            class="w-full bg-white/10 border-y border-white/20 py-8 px-12 pl-24 focus:ring-0 focus:border-blue-500/50 text-2xl md:text-3xl transition-all placeholder:text-gray-400 backdrop-blur-3xl group-hover:bg-white/15 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] text-white font-light tracking-wide outline-none"
+                            :class="isSearchFocused ? 'bg-white/20 border-blue-500/50 shadow-[0_0_80px_rgba(59,130,246,0.3)]' : ''"
+                        >
+                        <div class="absolute left-10 top-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-500" :class="isSearchFocused ? 'scale-110 text-blue-400' : 'text-gray-500'">
+                            <i class="bi bi-search text-4xl group-hover:text-blue-400 transition-colors"></i>
+                        </div>
+                        
+                        <!-- Shortcut Hint -->
+                        <div class="absolute right-12 top-1/2 -translate-y-1/2 px-5 py-2 rounded-2xl bg-black/40 border border-white/10 text-[10px] font-black text-gray-500 pointer-events-none transition-opacity duration-500 flex items-center gap-3 uppercase tracking-[0.3em]" :class="isSearchFocused ? 'opacity-0' : 'opacity-100'">
+                            <span>Search</span>
+                            <span class="bg-white/10 px-2 py-1 rounded ml-2">/</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </section>
     @endif
+    
 
     {{-- Content Rows --}}
-    <div class="space-y-16 pb-20">
+    <div class="space-y-16 pb-20" style="padding-top: 2.5rem;">
         @if(request('q') || request('type'))
             {{-- Search/Filter Results View --}}
             <section class="animate-in fade-in slide-in-from-bottom-8 duration-700">

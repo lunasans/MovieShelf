@@ -4,6 +4,7 @@
             Alpine.data('dashboard', () => ({
                 selectedMovie: null,
                 isStatsView: false,
+                isSearchFocused: false,
                 loading: false,
                 error: null,
 
@@ -118,7 +119,7 @@
                     }
                 },
 
-                layoutMode: '{{ auth()->user()->layout ?? "classic" }}' || localStorage.getItem('dashboardLayout') || 'classic',
+                layoutMode: '{{ auth()->user()->layout ?? \App\Models\Setting::get("default_guest_layout", "classic") }}' || localStorage.getItem('dashboardLayout') || 'classic',
 
                 async toggleLayout(mode) {
                     this.layoutMode = mode;
@@ -316,8 +317,32 @@
             <div class="contents">
                 <!-- Film-Liste Area (Left Column) -->
         <section class="film-list-area shadow-2xl">
-                <div class="flex items-center justify-between mb-8 gap-4 flex-wrap min-h-[46px]">
-                    <div class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
+                <div class="flex flex-col gap-8 mb-12">
+                    <!-- Search Bar Section -->
+                    <div class="relative group max-w-2xl px-2">
+                        <form action="{{ route('dashboard') }}" method="GET" class="relative transition-all duration-500 ease-in-out">
+                            <input type="text" name="q" value="{{ request('q') }}"
+                                @focus="isSearchFocused = true"
+                                @blur="isSearchFocused = false"
+                                @keydown.window.prevent.slash="if($event.target.tagName !== 'INPUT' && $event.target.tagName !== 'TEXTAREA') { $el.querySelector('input').focus() }"
+                                placeholder="{{ __('Search in your library...') }}"
+                                class="w-full bg-white/10 border border-white/20 rounded-[2rem] py-5 px-8 pl-16 focus:ring-8 focus:ring-blue-500/20 focus:border-blue-500/50 text-lg transition-all placeholder:text-gray-400 backdrop-blur-2xl group-hover:bg-white/15 shadow-2xl text-white"
+                                :class="isSearchFocused ? 'bg-white/20 border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.3)]' : ''"
+                            >
+                            <div class="absolute left-6 top-1/2 -translate-y-1/2 flex items-center justify-center transition-transform duration-300" :class="isSearchFocused ? 'scale-110' : ''">
+                                <i class="bi bi-search text-2xl text-gray-500 group-hover:text-blue-400 transition-colors" :class="isSearchFocused ? 'text-blue-400' : ''"></i>
+                            </div>
+                            
+                            <!-- Shortcut Hint -->
+                            <div class="absolute right-6 top-1/2 -translate-y-1/2 px-3 py-1 rounded-xl bg-black/20 border border-white/10 text-xs font-black text-gray-500 pointer-events-none transition-opacity duration-300 flex items-center gap-1" :class="isSearchFocused ? 'opacity-0' : 'opacity-100'">
+                                <span class="tracking-widest capitalize">Suchen</span>
+                                <span class="bg-white/10 px-1.5 py-0.5 rounded ml-1">/</span>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4 flex-wrap min-h-[46px]">
+                        <div class="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl overflow-x-auto no-scrollbar max-w-full">
                         <a href="{{ route('dashboard') }}"
                             class="px-5 py-2 rounded-xl text-sm font-semibold transition-all {{ !request('type') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
                             {{ __('All') }}

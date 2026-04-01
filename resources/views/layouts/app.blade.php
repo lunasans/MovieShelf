@@ -1,5 +1,5 @@
 @php
-    $isStreaming = (request()->routeIs('dashboard', 'movies.show', 'actors.show', 'movies.trailers', 'profile.edit')) && (optional(auth()->user())->layout ?? 'classic') === 'streaming';
+    $isStreaming = (request()->routeIs('dashboard', 'movies.show', 'actors.show', 'movies.trailers', 'profile.edit')) && (optional(auth()->user())->layout ?? \App\Models\Setting::get('default_guest_layout', 'classic')) === 'streaming';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" 

@@ -31,4 +31,7 @@ test_output.txt
 /app/Http/Controllers/Admin/InstallationStatsController.php
 /resources/views/admin/installations/
 /landing-page
+pub/
+.bin/
+**/*.tscom
 

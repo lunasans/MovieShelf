@@ -26,6 +26,7 @@ class SettingController extends Controller
             'items_per_page' => 'required|integer|min:5|max:100',
             'latest_films_count' => 'required|integer|min:5|max:50',
             'default_view_mode' => 'required|string|in:grid,list',
+            'default_guest_layout' => 'required|string|in:classic,streaming',
             'boxset_quick_view_style' => 'required|string|in:island,modal',
             'theme' => 'required|string|max:50',
             'tmdb_api_key' => 'nullable|string|max:255',
@@ -95,7 +96,7 @@ class SettingController extends Controller
     {
         return match (true) {
             str_starts_with($key, 'tmdb_') => 'tmdb',
-            $key === 'theme' => 'ui',
+            $key === 'theme' || $key === 'default_guest_layout' => 'ui',
             str_starts_with($key, 'impressum_') => 'impressum',
             str_starts_with($key, 'signature_') => 'signature',
             str_starts_with($key, 'mail_') => 'mail',

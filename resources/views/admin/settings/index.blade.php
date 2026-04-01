@@ -33,6 +33,10 @@
                                 <option value="christmas" {{ (old('theme', $settings['theme'] ?? 'default') == 'christmas') ? 'selected' : '' }} class="bg-gray-900">Christmas</option>
                                 <option value="summer" {{ (old('theme', $settings['theme'] ?? 'default') == 'summer') ? 'selected' : '' }} class="bg-gray-900">Summer Breeze</option>
                             </select> </div>
+                        <div> <label for="default_guest_layout" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Standard-Layout für Gäste</label> <select name="default_guest_layout" id="default_guest_layout" required class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all appearance-none">
+                                <option value="classic" {{ (old('default_guest_layout', $settings['default_guest_layout'] ?? 'classic') == 'classic') ? 'selected' : '' }} class="bg-gray-900">Klassisch (v1.5/v2)</option>
+                                <option value="streaming" {{ (old('default_guest_layout', $settings['default_guest_layout'] ?? 'classic') == 'streaming') ? 'selected' : '' }} class="bg-gray-900">Streaming (Modern)</option>
+                            </select> </div>
                         <div> <label for="boxset_quick_view_style" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Boxset Quick-View Stil</label> <select name="boxset_quick_view_style" id="boxset_quick_view_style" required class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all appearance-none">
                                 <option value="island" {{ (old('boxset_quick_view_style', $settings['boxset_quick_view_style'] ?? 'island') == 'island') ? 'selected' : '' }} class="bg-gray-900">Floating Island (Modern)</option>
                                 <option value="modal" {{ (old('boxset_quick_view_style', $settings['boxset_quick_view_style'] ?? 'island') == 'modal') ? 'selected' : '' }} class="bg-gray-900">Modal (Klassisch v1.5)</option>
