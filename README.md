@@ -1,8 +1,7 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
 
 
-# MovieShelf v2.3.2 - Dein digitales Filmregal
-
+# MovieShelf v2.3.3 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -174,6 +173,21 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
+## 🚀 Letzte Änderungen (v2.3.3)
+
+- **Immersive Cinematic Detail View**: Umstellung auf eine vollflächige, kinoreife Detailansicht (`movies/ID`) anstelle von AJAX-Panels für ein beeindruckendes Benutzererlebnis.
+- **Interaktiver Serien-Support**: Neues, ausklappbares Accordion-System für Staffeln und Episoden inklusive Inhaltsangaben pro Folge.
+- **Erweiterte Boxset-Logik**: Dedizierte Sektion für zusammengehörige Filme einer Kollektion innerhalb der Detailansicht.
+- **Premium Cast-Ribbon**: Die Besetzung wird nun als elegantes Ribbon mit kreisförmigen Profilbildern und sanften Hover-Effekten präsentiert.
+- **Echtzeit Watched-Toggle**: Direktes Markieren von Filmen als "Gesehen" mit sofortigem visuellem Feedback (Blue-Glow) via AJAX.
+- **Navigation Unification**: Konsistente Link-Struktur im gesamten System (Dashboard, Schauspieler, Suche) für eine stabile Browser-Historie.
+- **Sleek Pill-Button Design**: Modernisierte Pill-Shaped Action-Buttons (Trailer & Auswahl) im High-End-Streaming-Look.
+
+## 🚀 Version v2.3.2 (Historie)
+ion**: Schutz vor Cross-Site-Request-Forgery
+- **Prepared Statements**: SQL-Injection-Schutz
+- **Password Hashing**: Bcrypt-Verschlüsselung
+
 ## 🚀 Letzte Änderungen (v2.3.2)
 
 - **Besetzungs-Slidebar (Cast Slider)**: Die Schauspielerliste auf der Detailseite ist nun in beiden Layouts ein eleganter, horizontaler Slider mit Snap-Effekt.
@@ -236,9 +250,9 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 2.3.2 - Laravel Framework Edition
+**Version**: 2.3.3 - Laravel Framework Edition
 
-**Letztes Update**: 31. März 2026  
+**Letztes Update**: 1. April 2026  
 **Status**: Aktiv entwickelt
 
 *Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
