@@ -1,5 +1,7 @@
 @php
-    $layoutMode = auth()->user()->layout ?? 'classic';
+    $layoutMode = auth()->check() 
+        ? auth()->user()->layout 
+        : \App\Models\Setting::get('default_guest_layout', 'classic');
 @endphp
 
 <div class="{{ $layoutMode === 'streaming' ? 'streaming-actor-details animate-in fade-in slide-in-from-bottom-8 duration-700' : 'animate-in fade-in slide-in-from-right-4 duration-500' }}">

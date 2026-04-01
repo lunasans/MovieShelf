@@ -89,7 +89,11 @@ class MovieController extends Controller
                 ->get();
         }
 
-        return view('movies.partials.details', compact('movie', 'similarMovies'));
+        $layoutMode = auth()->check() 
+            ? auth()->user()->layout 
+            : \App\Models\Setting::get('default_guest_layout', 'classic');
+
+        return view('movies.partials.details', compact('movie', 'similarMovies', 'layoutMode'));
     }
 
     public function random(Request $request)
