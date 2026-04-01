@@ -10,6 +10,17 @@ class MovieController extends Controller
 {
     public function index(Request $request)
     {
+        // Redirect to full-page movie details in streaming mode if a movie is selected
+        if ($request->filled('movie')) {
+            $currentLayout = auth()->check() 
+                ? auth()->user()->layout 
+                : \App\Models\Setting::get('default_guest_layout', 'classic');
+
+            if ($currentLayout === 'streaming') {
+                return redirect()->route('movies.show', ['movie' => $request->movie]);
+            }
+        }
+
         $query = Movie::query();
 
         if (! $request->filled('q') && ! $request->filled('type')) {

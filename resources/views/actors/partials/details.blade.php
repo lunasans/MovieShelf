@@ -128,7 +128,7 @@
         {{-- Horizontal Movie Ribbon --}}
         <div class="flex gap-6 overflow-x-auto no-scrollbar pb-10">
             @foreach ($movies as $movie)
-                <div @click="fetchDetails({{ $movie->id }})" 
+                <div @click="window.location.href = '{{ route('movies.show', $movie) }}'" 
                      class="min-w-[180px] md:min-w-[220px] group cursor-pointer animate-in zoom-in duration-700">
                     <div class="relative aspect-[2/3] rounded-[2rem] overflow-hidden glass-streaming border border-white/5 transition-all duration-700 hover:scale-[1.08] hover:border-blue-500/50 shadow-2xl">
                         @if ($movie->cover_url)

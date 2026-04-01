@@ -22,6 +22,11 @@
                         .then(html => {
                             this.selectedMovie = html;
                             this.loading = false;
+                            
+                            // Update URL without reload
+                            const url = new URL(window.location);
+                            url.searchParams.set('movie', id);
+                            window.history.pushState({}, '', url);
                         })
                         .catch(err => {
                             this.error = "{{ __('Error loading details.') }}";
@@ -476,7 +481,7 @@
                 <template x-if="isStatsView || selectedMovie">
                     <div class="animate-in fade-in slide-in-from-bottom-8 duration-700 relative">
                         <!-- Close Button -->
-                        <button @click="selectedMovie = null; isStatsView = false;" 
+                        <button @click="selectedMovie = null; isStatsView = false; const url = new URL(window.location); url.searchParams.delete('movie'); window.history.pushState({}, '', url);" 
                                 class="fixed top-8 right-8 z-[100] w-14 h-14 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center text-white hover:bg-rose-600 hover:border-rose-500 transition-all shadow-2xl group active:scale-90">
                             <i class="bi bi-x-lg text-xl group-hover:rotate-90 transition-transform"></i>
                         </button>

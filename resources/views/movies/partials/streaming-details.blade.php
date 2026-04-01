@@ -1,10 +1,37 @@
 <div class="relative min-h-screen text-white overflow-x-hidden"
      x-data="{
         showTrailer: false,
+        isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }},
+        watchedCount: {{ $movie->watchedByUsers()->count() }},
         get youtubeId() {
             const url = '{{ $movie->trailer_url }}';
             const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:v\/|u\/\w\/|embed\/|watch\?v=))([^#\&\?]*)/);
             return (match && match[1].length == 11) ? match[1] : null;
+        },
+        async toggleWatched() {
+           @if(Auth::check())
+               try {
+                   const response = await fetch('{{ route('movies.watched.toggle', $movie) }}', {
+                       method: 'POST',
+                       headers: {
+                           'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                           'Content-Type': 'application/json',
+                           'Accept': 'application/json'
+                       }                   });
+                   const data = await response.json();
+                   if (data.watched !== undefined) {
+                       this.isWatched = data.watched;
+                       this.watchedCount = data.count;
+                       // Dispatch event for dashboard cards
+                       window.dispatchEvent(new CustomEvent('movie-watched-updated', {
+                           detail: { movieId: {{ $movie->id }}, watched: data.watched }
+                       }));
+                   }
+               } catch (e) {
+                   console.error('Toggle watched failed', e);
+               }           @else
+               window.location.href = '{{ route('login') }}';
+           @endif
         }
      }">
     {{-- Fullscreen Backdrop --}}
@@ -18,7 +45,8 @@
     <div class="relative z-10 pt-32 pb-20 px-4 md:px-12 lg:px-24">
         {{-- Header / Back Button --}}
         <div class="mb-12">
-            <a href="{{ route('dashboard') }}" class="group inline-flex items-center gap-4 text-white/60 hover:text-white transition-all">
+            <a href="{{ route('dashboard') }}" 
+               class="group inline-flex items-center gap-4 text-white/60 hover:text-white transition-all">
                 <div class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5 backdrop-blur-xl group-hover:border-white/30 group-hover:scale-110 transition-all">
                     <i class="bi bi-arrow-left text-xl"></i>
                 </div>
@@ -52,11 +80,29 @@
                 </h1>
 
                 <div class="flex flex-wrap items-center gap-4 mb-12">
+                    {{-- Play Trailer Button --}}
                     <button @click="showTrailer = true" 
                             @if(!$movie->trailer_url) disabled @endif
-                            class="px-10 py-5 bg-white text-black rounded-2xl font-black text-xl flex items-center gap-3 hover:scale-105 transition-all shadow-2xl active:scale-95 shadow-white/10 {{ !$movie->trailer_url ? 'opacity-50 cursor-not-allowed' : '' }}">
-                        <i class="bi bi-play-fill text-3xl"></i>
-                        {{ $movie->trailer_url ? __('Watch Trailer') : __('No Trailer') }}
+                            class="h-12 px-8 bg-white text-black rounded-full font-bold flex items-center gap-2 hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-lg {{ !$movie->trailer_url ? 'opacity-40 cursor-not-allowed' : '' }}">
+                        <i class="bi bi-play-fill text-2xl"></i>
+                        <span class="text-sm uppercase tracking-wider">{{ __('Trailer') }}</span>
+                    </button>
+
+                    {{-- Watched Toggle Button --}}
+                    <button @click="toggleWatched()"
+                            class="h-12 px-8 rounded-full font-bold flex items-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-lg border-2"
+                            :class="isWatched 
+                                ? 'bg-blue-600 border-blue-600 text-white shadow-blue-600/20' 
+                                : 'bg-white/5 border-white/20 text-white hover:bg-white/10 hover:border-white/40'">
+                        
+                        <div class="relative w-5 h-5 flex items-center justify-center">
+                            <i class="bi bi-eye-fill absolute transition-all duration-300"
+                               :class="isWatched ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"></i>
+                            <i class="bi bi-eye absolute transition-all duration-300"
+                               :class="!isWatched ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"></i>
+                        </div>
+
+                        <span class="text-sm uppercase tracking-wider" x-text="isWatched ? '{{ __('Gesehen') }}' : '{{ __('Nicht gesehen') }}'"></span>
                     </button>
                 </div>
 
@@ -111,9 +157,83 @@
                     </div>
                 </div>
 
+                {{-- Seasons & Episodes (for Series) --}}
+                @if($movie->collection_type === 'Serie' && $movie->seasons->count() > 0)
+                    <div class="mb-16 animate-in slide-in-from-bottom duration-1000 delay-200" x-data="{ activeSeason: null }">
+                        <h3 class="text-xl font-black text-white uppercase tracking-tight flex items-center gap-6 mb-10 text-emerald-400">
+                            {{ __('Staffeln & Episoden') }}
+                            <div class="h-1 w-12 bg-emerald-600 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            @foreach($movie->seasons->sortBy('season_number') as $season)
+                                <div class="rounded-3xl border border-white/5 bg-white/5 overflow-hidden transition-all duration-500 group/season"
+                                     :class="activeSeason === {{ $season->id }} ? 'border-emerald-500/30 bg-white/10 shadow-2xl' : 'hover:border-white/10'">
+                                    <button @click="activeSeason = activeSeason === {{ $season->id }} ? null : {{ $season->id }}"
+                                            class="w-full flex items-center justify-between p-6 text-left">
+                                        <div class="flex items-center gap-6">
+                                            <div class="w-14 h-14 bg-emerald-600/20 rounded-2xl flex items-center justify-center text-emerald-400 font-black text-xl italic group-hover/season:scale-110 transition-transform">
+                                                {{ $season->season_number }}
+                                            </div>
+                                            <div>
+                                                <div class="text-lg font-black text-white group-hover/season:text-emerald-400 transition-colors uppercase italic">{{ $season->title ?: __('Staffel ' . $season->season_number) }}</div>
+                                                <div class="text-[10px] text-white/30 uppercase font-black tracking-[0.2em] italic">{{ $season->episodes->count() }} {{ __('Folgen') }}</div>
+                                            </div>
+                                        </div>
+                                        <i class="bi text-white/20 transition-transform duration-500 text-xl"
+                                           :class="activeSeason === {{ $season->id }} ? 'bi-dash-lg rotate-180 text-emerald-400' : 'bi-plus-lg group-hover/season:text-emerald-400'"></i>
+                                    </button>
+                                    <div x-show="activeSeason === {{ $season->id }}"
+                                         x-collapse
+                                         class="border-t border-white/5 bg-black/40">
+                                        <div class="divide-y divide-white/5">
+                                            @foreach($season->episodes->sortBy('episode_number') as $episode)
+                                                <div class="p-6 hover:bg-white/5 transition-all group/episode">
+                                                    <div class="flex items-center gap-6 mb-3">
+                                                        <span class="text-[10px] font-black text-emerald-400/50 w-10 uppercase italic">E{{ $episode->episode_number }}</span>
+                                                        <h4 class="text-sm font-black text-white uppercase group-hover/episode:text-emerald-400 transition-colors italic tracking-tight">{{ $episode->title }}</h4>
+                                                    </div>
+                                                    @if($episode->overview)
+                                                        <p class="text-[11px] text-white/40 leading-relaxed ml-16 line-clamp-3 font-medium italic">
+                                                            {!! \App\Services\ShortcodeService::parse($episode->overview) !!}
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Boxset Section --}}
+                @if($movie->boxsetChildren->isNotEmpty())
+                    <div class="mb-16 animate-in slide-in-from-bottom duration-1000 delay-300">
+                        <h3 class="text-xl font-black text-white uppercase tracking-tight flex items-center gap-6 mb-10 text-amber-500">
+                            {{ __('Filme in diesem Set') }}
+                            <div class="h-1 w-12 bg-amber-600 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.5)]"></div>
+                        </h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                            @foreach($movie->boxsetChildren as $child)
+                                <a href="{{ route('movies.show', $child) }}" 
+                                   class="group/child">
+                                    <div class="relative aspect-[2/3] rounded-[2rem] overflow-hidden glass border border-white/5 transition-all duration-700 group-hover/child:scale-105 group-hover/child:border-amber-500/50 shadow-2xl mb-4">
+                                        <img src="{{ $child->cover_url }}" alt="{{ $child->title }}" class="w-full h-full object-cover duration-[1.5s] group-hover/child:scale-110">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-transparent opacity-60"></div>
+                                    </div>
+                                    <div class="px-2">
+                                        <p class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-1 italic">{{ $child->year }}</p>
+                                        <h4 class="text-white font-black text-xs leading-none uppercase tracking-tighter truncate italic group-hover/child:text-amber-400 transition-colors">{{ $child->title }}</h4>
+                                    </div>
+                                </a>
+                            @endforeach
+                    </div>
+                @endif
+
                 {{-- Cast Carousel --}}
                 @if($movie->actors->isNotEmpty())
-                <div class="animate-in slide-in-from-bottom duration-1000 delay-300" 
+                <div class="mb-16 animate-in slide-in-from-bottom duration-1000 delay-400" 
                      x-data="{ 
                          scrollAmount: 400,
                          scroll(dir) { 
@@ -121,31 +241,73 @@
                          } 
                      }">
                     <div class="flex items-center justify-between mb-8 pl-4 pr-4">
-                        <h3 class="text-xl font-black text-white uppercase tracking-tight flex items-center gap-4">
-                            {{ __('Cast Members') }}
-                            <div class="h-1 w-8 bg-blue-600 rounded-full"></div>
+                        <h3 class="text-xl font-black text-white uppercase tracking-tight flex items-center gap-4 text-blue-500">
+                            {{ __('Besetzung') }}
+                            <div class="h-1 w-8 bg-blue-600 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
                         </h3>
                         
                         <!-- Navigation Arrows -->
                         <div class="flex items-center gap-3">
-                            <button @click="scroll(-1)" class="w-12 h-12 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-red-600/50 flex items-center justify-center transition-all active:scale-90 text-white/40 hover:text-white">
-                                <i class="bi bi-chevron-left text-xl"></i>
+                            <button @click="scroll(-1)" class="w-10 h-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-blue-600/50 flex items-center justify-center transition-all active:scale-90 text-white/40 hover:text-white">
+                                <i class="bi bi-chevron-left text-lg"></i>
                             </button>
-                            <button @click="scroll(1)" class="w-12 h-12 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-red-600/50 flex items-center justify-center transition-all active:scale-90 text-white/40 hover:text-white">
-                                <i class="bi bi-chevron-right text-xl"></i>
+                            <button @click="scroll(1)" class="w-10 h-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-blue-600/50 flex items-center justify-center transition-all active:scale-90 text-white/40 hover:text-white">
+                                <i class="bi bi-chevron-right text-lg"></i>
                             </button>
                         </div>
                     </div>
 
                     <div class="flex gap-6 overflow-x-auto no-scrollbar pb-8 px-4 scroll-smooth" x-ref="castContainer">
                         @foreach($movie->actors as $actor)
-                        <a href="{{ route('actors.show', $actor) }}" class="group min-w-[140px] md:min-w-[170px] text-center">
-                            <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-white/10 group-hover:border-red-600 group-hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] transition-all mb-4 relative shadow-2xl">
+                        <a href="{{ route('actors.show', $actor) }}" class="group min-w-[140px] md:min-w-[160px] text-center">
+                            <div class="w-full aspect-square rounded-full overflow-hidden border-2 border-white/10 group-hover:border-blue-600 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all mb-4 relative shadow-2xl">
                                 <img src="{{ $actor->profile_url ?: asset('img/default-actor.png') }}" alt="{{ $actor->full_name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                                <div class="absolute inset-0 bg-gradient-to-t from-red-600/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <div class="absolute inset-0 bg-gradient-to-t from-blue-600/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             </div>
-                            <p class="text-sm font-black text-white truncate px-2 group-hover:text-red-400 transition-colors uppercase tracking-tight italic">{{ $actor->full_name }}</p>
+                            <p class="text-sm font-black text-white truncate px-2 group-hover:text-blue-400 transition-colors uppercase tracking-tight italic">{{ $actor->full_name }}</p>
                             <p class="text-[10px] font-black text-white/30 truncate uppercase italic tracking-widest mt-1">{{ $actor->pivot->role ?? '' }}</p>
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                {{-- Similar Movies Ribbon --}}
+                 @if(isset($similarMovies) && $similarMovies->isNotEmpty())
+                <div class="animate-in slide-in-from-bottom duration-1000 delay-500" 
+                     x-data="{ 
+                         scrollAmount: 400,
+                         scroll(dir) { 
+                             this.$refs.similarContainer.scrollBy({ left: dir * this.scrollAmount, behavior: 'smooth' }); 
+                         } 
+                     }">
+                    <div class="flex items-center justify-between mb-8 pl-4 pr-4">
+                        <h3 class="text-xl font-black text-white uppercase tracking-tight flex items-center gap-4">
+                            {{ __('Das könnte dir auch gefallen') }}
+                            <div class="h-1 w-8 bg-emerald-600 rounded-full"></div>
+                        </h3>
+                        
+                        <!-- Navigation Arrows -->
+                        <div class="flex items-center gap-3">
+                            <button @click="scroll(-1)" class="w-12 h-12 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-emerald-600/50 flex items-center justify-center transition-all active:scale-90 text-white/40 hover:text-white">
+                                <i class="bi bi-chevron-left text-xl"></i>
+                            </button>
+                            <button @click="scroll(1)" class="w-12 h-12 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:border-emerald-600/50 flex items-center justify-center transition-all active:scale-90 text-white/40 hover:text-white">
+                                <i class="bi bi-chevron-right text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-8 overflow-x-auto no-scrollbar pb-12 px-4 scroll-smooth" x-ref="similarContainer">
+                        @foreach($similarMovies as $similar)
+                        <a href="{{ route('movies.show', $similar) }}" 
+                             class="group min-w-[180px] md:min-w-[220px]">
+                            <div class="w-full aspect-[2/3] rounded-[2rem] overflow-hidden glass border border-white/10 group-hover:border-emerald-500 group-hover:shadow-[0_0_40px_rgba(16,185,129,0.2)] transition-all duration-700 mb-4 relative shadow-2xl hover:scale-105">
+                                <img src="{{ $similar->cover_url }}" alt="{{ $similar->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.5s]">
+                                <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-transparent opacity-60"></div>
+                            </div>
+                            <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1 italic">{{ $similar->year }}</p>
+                            <p class="text-sm font-black text-white truncate px-2 group-hover:text-emerald-400 transition-colors uppercase tracking-tight italic">{{ $similar->title }}</p>
                         </a>
                         @endforeach
                     </div>
