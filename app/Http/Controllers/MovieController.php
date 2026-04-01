@@ -43,7 +43,11 @@ class MovieController extends Controller
         $viewMode = $request->get('view', $defaultViewMode);
 
         if ($request->ajax()) {
-            if (auth()->user()->layout === 'streaming') {
+            $currentLayout = auth()->check() 
+                ? auth()->user()->layout 
+                : Setting::get('default_guest_layout', 'classic');
+
+            if ($currentLayout === 'streaming') {
                 return view('movies.partials.streaming-movie-list-ajax', compact('movies'))->render();
             }
             return view('movies.partials.movie-list-ajax', compact('movies', 'viewMode'))->render();
@@ -62,7 +66,9 @@ class MovieController extends Controller
     public function show(Movie $movie)
     {
         $movie->load(['actors', 'boxsetChildren', 'parentBoxset', 'seasons.episodes']);
-        $layoutMode = auth()->check() ? optional(auth()->user())->layout : 'classic';
+        $layoutMode = auth()->check() 
+            ? auth()->user()->layout 
+            : Setting::get('default_guest_layout', 'classic');
 
         return view('movies.show', compact('movie', 'layoutMode'));
     }
