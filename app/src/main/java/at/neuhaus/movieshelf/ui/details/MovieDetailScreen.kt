@@ -3,15 +3,16 @@ package at.neuhaus.movieshelf.ui.details
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,8 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -31,9 +34,11 @@ import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -101,6 +106,7 @@ fun MovieDetailScreen(
     val movie = viewModel.movie
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
+    val uriHandler = LocalUriHandler.current
 
     val headerHeightPx = with(density) { 350.dp.toPx() }
     val toolbarAlpha = (scrollState.value / (headerHeightPx * 0.8f)).coerceIn(0f, 1f)
@@ -109,17 +115,16 @@ fun MovieDetailScreen(
     val titleAlpha = ((scrollState.value - titleStartScroll) / (titleEndScroll - titleStartScroll)).coerceIn(0f, 1f)
     val titleTranslationY = with(density) { (15.dp * (1f - titleAlpha)).toPx() }
 
-    val appBarContainerColor by animateColorAsState(
-        targetValue = if (toolbarAlpha > 0.9f) MaterialTheme.colorScheme.surface else Color.Transparent,
-        animationSpec = tween(300)
-    )
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val appBarContainerColor = surfaceColor.copy(alpha = toolbarAlpha)
 
     val iconContentColor by animateColorAsState(
-        targetValue = if (toolbarAlpha > 0.9f) MaterialTheme.colorScheme.onSurface else Color.White,
+        targetValue = if (toolbarAlpha > 0.7f) MaterialTheme.colorScheme.onSurface else Color.White,
         animationSpec = tween(300)
     )
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { 
@@ -160,7 +165,13 @@ fun MovieDetailScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = appBarContainerColor)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = appBarContainerColor,
+                    scrolledContainerColor = appBarContainerColor,
+                    navigationIconContentColor = iconContentColor,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = iconContentColor
+                )
             )
         }
     ) { padding ->
@@ -195,6 +206,26 @@ fun MovieDetailScreen(
                         )
                     }
                     Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(colors = listOf(Color.Black.copy(alpha = 0.4f), Color.Transparent, MaterialTheme.colorScheme.background))))
+                    
+                    // Trailer Button
+                    if (!movie.trailerUrl.isNullOrBlank()) {
+                        FilledIconButton(
+                            onClick = { uriHandler.openUri(movie.trailerUrl!!) },
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .size(64.dp),
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = Color.White.copy(alpha = 0.8f),
+                                contentColor = Color.Black
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Trailer abspielen",
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                    }
                 }
 
                 Column(modifier = Modifier.background(MaterialTheme.colorScheme.background).padding(horizontal = 16.dp)) {
@@ -204,6 +235,37 @@ fun MovieDetailScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.graphicsLayer { alpha = (1f - (scrollState.value / titleStartScroll)).coerceIn(0f, 1f) }
                     )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    // Metadaten-Zeile
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth().graphicsLayer { alpha = (1f - (scrollState.value / titleStartScroll)).coerceIn(0f, 1f) }
+                    ) {
+                        movie.ratingAge?.let { age ->
+                            FskBadge(age = age)
+                        }
+                        movie.year?.let {
+                            MetadataItem(icon = Icons.Default.CalendarToday, text = it.toString())
+                        }
+                        movie.runtime?.let {
+                            MetadataItem(icon = Icons.Default.AccessTime, text = "$it Min.")
+                        }
+                        if (!movie.rating.isNullOrBlank()) {
+                            MetadataItem(icon = Icons.Default.Star, text = "${movie.rating}/10", iconColor = Color(0xFFFFC107))
+                        }
+                    }
+
+                    if (!movie.director.isNullOrBlank()) {
+                        Spacer(Modifier.height(8.dp))
+                        MetadataItem(
+                            icon = Icons.Default.MovieCreation, 
+                            text = "Regie: ${movie.director}",
+                            modifier = Modifier.graphicsLayer { alpha = (1f - (scrollState.value / titleStartScroll)).coerceIn(0f, 1f) }
+                        )
+                    }
                     
                     Spacer(Modifier.height(24.dp))
                     Text(text = "Handlung", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -299,6 +361,59 @@ fun MovieDetailScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun FskBadge(age: Int) {
+    val (color, textColor) = when {
+        age <= 0 -> Color.White to Color.Black
+        age <= 6 -> Color(0xFFFFEB3B) to Color.Black
+        age <= 12 -> Color(0xFF4CAF50) to Color.White
+        age <= 16 -> Color(0xFF2196F3) to Color.White
+        age >= 18 -> Color(0xFFF44336) to Color.White
+        else -> Color.Gray to Color.White
+    }
+
+    Surface(
+        color = color,
+        shape = RoundedCornerShape(4.dp),
+        modifier = Modifier.size(width = 36.dp, height = 24.dp).border(width = 1.dp, color = Color.Black.copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp))
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(
+                text = age.toString(),
+                color = textColor,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun MetadataItem(
+    icon: ImageVector, 
+    text: String, 
+    modifier: Modifier = Modifier,
+    iconColor: Color = MaterialTheme.colorScheme.outline
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        Icon(
+            imageVector = icon, 
+            contentDescription = null, 
+            modifier = Modifier.size(16.dp),
+            tint = iconColor
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline
+        )
     }
 }
 

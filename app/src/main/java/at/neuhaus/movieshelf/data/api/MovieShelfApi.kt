@@ -63,4 +63,8 @@ interface MovieShelfApi {
     suspend fun importFromTmdb(
         @Body request: TmdbImportRequest
     ): SingleMovieResponse
+
+    // Stats - Rückgabe ist direkt das Stats Objekt
+    @GET("api/stats")
+    suspend fun getStats(): Stats
 }

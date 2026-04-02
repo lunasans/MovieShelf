@@ -25,6 +25,7 @@ import at.neuhaus.movieshelf.ui.details.MovieDetailScreen
 import at.neuhaus.movieshelf.ui.login.LoginScreen
 import at.neuhaus.movieshelf.ui.profile.ProfileScreen
 import at.neuhaus.movieshelf.ui.setup.SetupScreen
+import at.neuhaus.movieshelf.ui.stats.StatsScreen
 import at.neuhaus.movieshelf.ui.theme.MovieShelfTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -125,7 +126,13 @@ fun MovieShelfApp() {
                 )
             }
             composable("profile") {
-                ProfileScreen(onBack = { navController.popBackStack() })
+                ProfileScreen(
+                    onBack = { navController.popBackStack() },
+                    onStatsClick = { navController.navigate("stats") }
+                )
+            }
+            composable("stats") {
+                StatsScreen(onBack = { navController.popBackStack() })
             }
             composable("movie_details/{movieId}") { backStackEntry ->
                 val movieId = backStackEntry.arguments?.getString("movieId")?.toIntOrNull()

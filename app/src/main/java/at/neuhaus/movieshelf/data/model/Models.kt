@@ -18,6 +18,10 @@ data class SingleActorResponse(
     val data: Actor?
 )
 
+data class StatsResponse(
+    val data: Stats?
+)
+
 data class Movie(
     val id: Int,
     val title: String?,
@@ -34,6 +38,7 @@ data class Movie(
     @SerializedName("is_watched") val isWatched: Boolean?,
     @SerializedName("actors", alternate = ["cast", "credits"]) val actors: List<Actor>?,
     @SerializedName("tmdb_id") val tmdbId: String?,
+    @SerializedName("rating_age") val ratingAge: Int? = null,
     // Felder für Boxsets
     @SerializedName("is_boxset") val isBoxset: Boolean? = false,
     @SerializedName("boxset_parent_id") val boxsetParentId: Int? = null,
@@ -50,6 +55,54 @@ data class Actor(
     @SerializedName("bio", alternate = ["biography"]) val biography: String? = null,
     @SerializedName("birth_date", alternate = ["birthday"]) val birthDate: String? = null,
     @SerializedName("place_of_birth") val placeOfBirth: String? = null
+)
+
+data class Stats(
+    @SerializedName("total_films") val totalFilms: Int,
+    @SerializedName("total_runtime_minutes") val totalRuntimeMinutes: Long,
+    @SerializedName("total_runtime_hours") val totalRuntimeHours: Double,
+    @SerializedName("total_runtime_days") val totalRuntimeDays: Double,
+    @SerializedName("avg_runtime") val avgRuntime: Double,
+    val watched: WatchedStats?,
+    val years: YearStats?,
+    val collections: List<CollectionStats>?,
+    val ratings: List<RatingStats>?,
+    val genres: List<GenreStats>?,
+    @SerializedName("year_distribution") val yearDistribution: Map<String, Int>?,
+    val decades: List<DecadeStats>?
+)
+
+data class WatchedStats(
+    val count: Int,
+    val percentage: Double
+)
+
+data class YearStats(
+    @SerializedName("avg_year") val avgYear: Double,
+    @SerializedName("oldest_year") val oldestYear: Int,
+    @SerializedName("newest_year") val newestYear: Int
+)
+
+data class CollectionStats(
+    @SerializedName("collection_type") val collectionType: String,
+    val count: Int,
+    val percentage: Double
+)
+
+data class RatingStats(
+    @SerializedName("rating_age") val ratingAge: Int,
+    val count: Int
+)
+
+data class GenreStats(
+    val genre: String,
+    val count: Int
+)
+
+data class DecadeStats(
+    val decade: Int,
+    val count: Int,
+    @SerializedName("avg_runtime") val avgRuntime: Double
 )
 
 data class TmdbImportRequest(
