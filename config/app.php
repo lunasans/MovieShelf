@@ -125,6 +125,6 @@ return [
 
     'git_binary' => env('GIT_BINARY', 'git'),
     'composer_binary' => env('COMPOSER_BINARY', 'composer'),
-    'version' => env('APP_VERSION', '2.6.1'),
+    'version' => env('APP_VERSION', '2.6.2'),
 
 ];

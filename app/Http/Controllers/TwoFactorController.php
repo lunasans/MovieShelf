@@ -62,7 +62,7 @@ class TwoFactorController extends Controller
 
             return back()
                 ->with('status', 'two-factor-confirmed')
-                ->with('recoveryCodes', $recoveryCodes);
+                ->with('recoveryCodes', collect($recoveryCodes)->pluck('code')->toArray());
         }
 
         return back()->withErrors(['code' => __('The provided two-factor authentication code was invalid.')]);
@@ -99,13 +99,19 @@ class TwoFactorController extends Controller
             $recoveryCodes = json_decode($user->two_factor_recovery_codes ?? '[]', true);
             $normalizedInput = strtoupper(str_replace('-', '', trim($recoveryCode)));
 
-            foreach ($recoveryCodes as $index => $storedCode) {
-                $normalizedStored = strtoupper(str_replace('-', '', $storedCode));
+            foreach ($recoveryCodes as $index => $entry) {
+                // Support both old flat format and new object format
+                $code = is_array($entry) ? $entry['code'] : $entry;
+                $isUsed = is_array($entry) ? !empty($entry['used_at']) : false;
+
+                if ($isUsed) continue;
+
+                $normalizedStored = strtoupper(str_replace('-', '', $code));
                 if (hash_equals($normalizedStored, $normalizedInput)) {
-                    // Remove used code
-                    unset($recoveryCodes[$index]);
+                    // Mark as used with timestamp
+                    $recoveryCodes[$index] = ['code' => $code, 'used_at' => now()->toIso8601String()];
                     $user->forceFill([
-                        'two_factor_recovery_codes' => json_encode(array_values($recoveryCodes)),
+                        'two_factor_recovery_codes' => json_encode($recoveryCodes),
                     ])->save();
 
                     $request->session()->put('two_factor_verified', true);
@@ -145,14 +151,17 @@ class TwoFactorController extends Controller
 
         return back()
             ->with('status', 'recovery-codes-regenerated')
-            ->with('recoveryCodes', $recoveryCodes);
+            ->with('recoveryCodes', collect($recoveryCodes)->pluck('code')->toArray());
     }
 
     private function generateRecoveryCodes(int $count = 8): array
     {
         $codes = [];
         for ($i = 0; $i < $count; $i++) {
-            $codes[] = strtoupper(Str::random(4) . '-' . Str::random(4) . '-' . Str::random(2));
+            $codes[] = [
+                'code' => strtoupper(Str::random(4) . '-' . Str::random(4) . '-' . Str::random(2)),
+                'used_at' => null,
+            ];
         }
         return $codes;
     }

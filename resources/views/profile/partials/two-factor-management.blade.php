@@ -83,10 +83,17 @@
 
             <div x-show="showCodes" x-transition class="space-y-3">
                 @php
-                    $recoveryCodes = json_decode($user->two_factor_recovery_codes ?? '[]', true);
+                    $rawCodes = json_decode($user->two_factor_recovery_codes ?? '[]', true);
+                    $usedCount = 0;
+                    $availableCount = 0;
+                    foreach ($rawCodes as $entry) {
+                        $isUsed = is_array($entry) ? !empty($entry['used_at']) : false;
+                        if ($isUsed) $usedCount++;
+                        else $availableCount++;
+                    }
                 @endphp
 
-                @if (count($recoveryCodes) > 0)
+                @if (count($rawCodes) > 0)
                     <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
                         <div class="flex items-center gap-2 mb-4">
                             <i class="bi bi-exclamation-triangle-fill text-amber-400"></i>
@@ -98,15 +105,27 @@
                             {{ __('Diese Codes können jeweils nur einmal verwendet werden, falls Sie keinen Zugriff auf Ihre Authenticator-App haben.') }}
                         </p>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            @foreach ($recoveryCodes as $code)
-                                <div class="bg-gray-900/50 border border-white/5 rounded-lg px-3 py-2 text-center">
-                                    <code class="text-sm font-mono font-bold text-white tracking-wider">{{ $code }}</code>
+                            @foreach ($rawCodes as $entry)
+                                @php
+                                    $code = is_array($entry) ? $entry['code'] : $entry;
+                                    $isUsed = is_array($entry) ? !empty($entry['used_at']) : false;
+                                @endphp
+                                <div class="{{ $isUsed ? 'bg-red-900/20 border border-red-500/20' : 'bg-gray-900/50 border border-white/5' }} rounded-lg px-3 py-2 text-center relative">
+                                    @if ($isUsed)
+                                        <code class="text-sm font-mono font-bold text-gray-600 tracking-wider line-through">{{ $code }}</code>
+                                        <span class="block text-[10px] text-red-400/70 mt-0.5 uppercase tracking-widest font-bold">{{ __('verwendet') }}</span>
+                                    @else
+                                        <code class="text-sm font-mono font-bold text-white tracking-wider">{{ $code }}</code>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
                         <p class="text-xs text-gray-500 mt-3">
                             <i class="bi bi-info-circle mr-1"></i>
-                            {{ count($recoveryCodes) }} {{ __('Codes verbleibend') }}
+                            {{ $availableCount }} {{ __('von') }} {{ count($rawCodes) }} {{ __('Codes verfügbar') }}
+                            @if ($usedCount > 0)
+                                <span class="text-red-400/60"> · {{ $usedCount }} {{ __('verwendet') }}</span>
+                            @endif
                         </p>
                     </div>
                 @else
