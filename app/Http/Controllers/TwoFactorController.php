@@ -8,6 +8,7 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use PragmaRX\Google2FALaravel\Facade as Google2FA;
 
 class TwoFactorController extends Controller
@@ -52,11 +53,16 @@ class TwoFactorController extends Controller
         $user = Auth::user();
 
         if (Google2FA::verifyKey($user->two_factor_secret, $request->code)) {
+            $recoveryCodes = $this->generateRecoveryCodes();
+
             $user->update([
                 'two_factor_confirmed_at' => now(),
+                'two_factor_recovery_codes' => json_encode($recoveryCodes),
             ]);
 
-            return back()->with('status', 'two-factor-confirmed');
+            return back()
+                ->with('status', 'two-factor-confirmed')
+                ->with('recoveryCodes', $recoveryCodes);
         }
 
         return back()->withErrors(['code' => __('The provided two-factor authentication code was invalid.')]);
@@ -68,6 +74,7 @@ class TwoFactorController extends Controller
             Auth::user()->update([
                 'two_factor_secret' => null,
                 'two_factor_confirmed_at' => null,
+                'two_factor_recovery_codes' => null,
             ]);
 
             return back()->with('status', 'two-factor-disabled');
@@ -89,14 +96,61 @@ class TwoFactorController extends Controller
         ]);
 
         $user = Auth::user();
+        $inputCode = $request->code;
 
-        if (Google2FA::verifyKey($user->two_factor_secret, $request->code)) {
+        // Try OTP verification first
+        if (Google2FA::verifyKey($user->two_factor_secret, $inputCode)) {
             $request->session()->put('two_factor_verified', true);
-
             return redirect()->intended(route('dashboard'));
         }
 
-        return back()->withErrors(['code' => __('The provided two-factor authentication code was invalid.')]);
+        // Try recovery code
+        $recoveryCodes = json_decode($user->two_factor_recovery_codes ?? '[]', true);
+        $normalizedInput = strtoupper(str_replace('-', '', $inputCode));
+
+        foreach ($recoveryCodes as $index => $storedCode) {
+            $normalizedStored = strtoupper(str_replace('-', '', $storedCode));
+            if (hash_equals($normalizedStored, $normalizedInput)) {
+                // Remove used code
+                unset($recoveryCodes[$index]);
+                $user->update([
+                    'two_factor_recovery_codes' => json_encode(array_values($recoveryCodes)),
+                ]);
+
+                $request->session()->put('two_factor_verified', true);
+                return redirect()->intended(route('dashboard'));
+            }
+        }
+
+        return back()->withErrors(['code' => __('Der eingegebene Code ist ungültig.')]);
+    }
+
+    public function regenerateCodes()
+    {
+        $user = Auth::user();
+
+        if (! $user->hasTwoFactorEnabled()) {
+            return back()->withErrors(['2fa' => __('2FA ist nicht aktiviert.')]);
+        }
+
+        $recoveryCodes = $this->generateRecoveryCodes();
+
+        $user->update([
+            'two_factor_recovery_codes' => json_encode($recoveryCodes),
+        ]);
+
+        return back()
+            ->with('status', 'recovery-codes-regenerated')
+            ->with('recoveryCodes', $recoveryCodes);
+    }
+
+    private function generateRecoveryCodes(int $count = 8): array
+    {
+        $codes = [];
+        for ($i = 0; $i < $count; $i++) {
+            $codes[] = strtoupper(Str::random(4) . '-' . Str::random(4) . '-' . Str::random(2));
+        }
+        return $codes;
     }
 
     private function generateQrCodeSvg($email, $secret)

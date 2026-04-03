@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'two_factor_secret',
         'two_factor_confirmed_at',
+        'two_factor_recovery_codes',
         'language',
         'layout',
     ];
@@ -36,6 +37,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -50,6 +52,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_secret' => 'encrypted',
             'two_factor_confirmed_at' => 'datetime',
+            'two_factor_recovery_codes' => 'encrypted',
         ];
     }
 

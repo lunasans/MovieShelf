@@ -1,5 +1,5 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
-# MovieShelf v2.5.9 - Dein digitales Filmregal
+# MovieShelf v2.6.0 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -171,11 +171,16 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.5.9)
+## 🚀 Letzte Änderungen (v2.6.0)
 
-- **New Feature**: Manuelle Darsteller-Zuweisung in der Filmbearbeitung. Stars können nun gesucht und mit Rollen/Hauptrollen-Status manuell verknüpft werden.
-- **Fixed**: Die Darsteller-Suche im Admin-Panel unterstützt nun die kombinierte Vor- und Nachnamensuche.
-- **Fixed**: Behebung eines Fehlers im Quill-Editor, bei dem Biografien im Bearbeitungsmodus nicht geladen wurden.
+- **Cinematic Red Login Redesign**: Vollständige Neugestaltung der Login-Seite. Die Seite ist jetzt in das App-Layout integriert (wie die 2FA-Seite) mit dunklem cineastischem Hintergrund.
+- **2FA Backup-Codes**: 8 einmalige Recovery-Codes werden bei der 2FA-Aktivierung generiert. Codes können im Profil angezeigt und regeneriert werden. Bei der 2FA-Challenge kann zwischen OTP und Backup-Code umgeschaltet werden.
+- **Branding Alignment**: Umstellung von Blau/Violett auf das markenkonforme Rose/Crimson-Farbschema (Streaming-Layout).
+- **Premium Glassmorphism**: Vertiefte Blur-Effekte und modernisierte Eingabefelder für ein nahtloses Benutzererlebnis ab der Anmeldung.
+
+## 🚀 Version v2.5.9 (Historie)
+
+- **Fixed**: Die öffentliche Schauspieler-Suche wurde für "Vorname Nachname" Kombinationen optimiert (z.B. "Eddie Murphy").
 
 ## 🚀 Version v2.5.8 (Historie)
 
@@ -314,7 +319,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version:** 2.5.9  - Laravel Framework Edition
+**Version:** 2.6.0  - Laravel Framework Edition
 
 **Letztes Update**: 3. April 2026  
 **Status**: Aktiv entwickelt

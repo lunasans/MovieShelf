@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () use ($profilePath) {
     Route::delete('/two-factor-authentication', [TwoFactorController::class, 'disable'])->name('two-factor.disable');
     Route::get('/two-factor-challenge', [TwoFactorController::class, 'challenge'])->name('two-factor.challenge');
     Route::post('/two-factor-challenge', [TwoFactorController::class, 'verify'])->name('two-factor.verify');
+    Route::post('/two-factor-recovery-codes', [TwoFactorController::class, 'regenerateCodes'])->name('two-factor.recovery-codes');
 
     Route::post('/movies/{movie}/watched', [\App\Http\Controllers\MovieWatchedController::class, 'toggle'])->name('movies.watched.toggle');
 

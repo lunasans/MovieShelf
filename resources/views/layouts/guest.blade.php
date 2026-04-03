@@ -26,13 +26,13 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 relative">
             <!-- Background Decorative Elements -->
             <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-                <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-600/20 blur-[120px] rounded-full"></div>
-                <div class="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] bg-purple-600/20 blur-[120px] rounded-full"></div>
+                <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-rose-600/10 blur-[120px] rounded-full"></div>
+                <div class="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] bg-red-900/10 blur-[120px] rounded-full"></div>
             </div>
 
             <div class="mb-8 animate-in fade-in zoom-in duration-700">
                 <a href="/">
-                    <x-application-logo class="h-32 w-auto drop-shadow-[0_0_30px_rgba(37,99,235,0.3)]" />
+                    <x-application-logo class="h-32 w-auto drop-shadow-[0_0_30px_rgba(225,29,72,0.25)]" />
                 </a>
             </div>
 
