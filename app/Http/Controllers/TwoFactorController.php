@@ -91,35 +91,39 @@ class TwoFactorController extends Controller
 
     public function verify(Request $request)
     {
+        $user = Auth::user();
+
+        // Check if a recovery code was submitted
+        $recoveryCode = $request->input('recovery_code');
+        if ($recoveryCode) {
+            $recoveryCodes = json_decode($user->two_factor_recovery_codes ?? '[]', true);
+            $normalizedInput = strtoupper(str_replace('-', '', trim($recoveryCode)));
+
+            foreach ($recoveryCodes as $index => $storedCode) {
+                $normalizedStored = strtoupper(str_replace('-', '', $storedCode));
+                if (hash_equals($normalizedStored, $normalizedInput)) {
+                    // Remove used code
+                    unset($recoveryCodes[$index]);
+                    $user->forceFill([
+                        'two_factor_recovery_codes' => json_encode(array_values($recoveryCodes)),
+                    ])->save();
+
+                    $request->session()->put('two_factor_verified', true);
+                    return redirect()->intended(route('dashboard'));
+                }
+            }
+
+            return back()->withErrors(['recovery_code' => __('Der Backup-Code ist ungültig.')]);
+        }
+
+        // OTP verification
         $request->validate([
             'code' => 'required|string',
         ]);
 
-        $user = Auth::user();
-        $inputCode = $request->code;
-
-        // Try OTP verification first
-        if (Google2FA::verifyKey($user->two_factor_secret, $inputCode)) {
+        if (Google2FA::verifyKey($user->two_factor_secret, $request->code)) {
             $request->session()->put('two_factor_verified', true);
             return redirect()->intended(route('dashboard'));
-        }
-
-        // Try recovery code
-        $recoveryCodes = json_decode($user->two_factor_recovery_codes ?? '[]', true);
-        $normalizedInput = strtoupper(str_replace('-', '', $inputCode));
-
-        foreach ($recoveryCodes as $index => $storedCode) {
-            $normalizedStored = strtoupper(str_replace('-', '', $storedCode));
-            if (hash_equals($normalizedStored, $normalizedInput)) {
-                // Remove used code
-                unset($recoveryCodes[$index]);
-                $user->update([
-                    'two_factor_recovery_codes' => json_encode(array_values($recoveryCodes)),
-                ]);
-
-                $request->session()->put('two_factor_verified', true);
-                return redirect()->intended(route('dashboard'));
-            }
         }
 
         return back()->withErrors(['code' => __('Der eingegebene Code ist ungültig.')]);

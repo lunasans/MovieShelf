@@ -1,5 +1,5 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
-# MovieShelf v2.6.0 - Dein digitales Filmregal
+# MovieShelf v2.6.1 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -171,7 +171,12 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.6.0)
+## 🚀 Letzte Änderungen (v2.6.1)
+
+- **Fixed**: 2FA Backup-Codes werden nach Verwendung korrekt verbraucht und die Anzahl im Profil aktualisiert.
+- **Improved**: OTP- und Backup-Code-Eingabe nutzen nun separate Formulare für zuverlässigere Verarbeitung.
+
+## 🚀 Version v2.6.0 (Historie)
 
 - **Cinematic Red Login Redesign**: Vollständige Neugestaltung der Login-Seite. Die Seite ist jetzt in das App-Layout integriert (wie die 2FA-Seite) mit dunklem cineastischem Hintergrund.
 - **2FA Backup-Codes**: 8 einmalige Recovery-Codes werden bei der 2FA-Aktivierung generiert. Codes können im Profil angezeigt und regeneriert werden. Bei der 2FA-Challenge kann zwischen OTP und Backup-Code umgeschaltet werden.
@@ -319,7 +324,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version:** 2.6.0  - Laravel Framework Edition
+**Version:** 2.6.1  - Laravel Framework Edition
 
 **Letztes Update**: 3. April 2026  
 **Status**: Aktiv entwickelt
