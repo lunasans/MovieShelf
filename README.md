@@ -1,7 +1,7 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
 
 
-# MovieShelf v2.4.0 - Dein digitales Filmregal
+# MovieShelf v2.5.2 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -173,7 +173,28 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.4.1)
+## 🚀 Letzte Änderungen (v2.5.2)
+
+- **New Feature**: Overhauled the Admin & Public Footer with a modern "Cinematic" design.
+- **Improved**: Global styling for Select/Dropdown menus (no more white backgrounds in Dark Mode).
+- **Fixed**: Restored missing Biography editor (Quill) on Actor Create/Edit pages.
+- **Fixed**: Corrected layout spacing in the Admin Panel for better glassmorphism visibility.
+
+## 🚀 Version v2.5.1 (Historie)
+
+- **Cinematic Admin Redesign (Final)**: Umstellung des gesamten Administrationsbereichs auf das neue "Cinematic Red" Farbschema (Rose/Crimson).
+- **Glassmorphism everywhere**: Konsistente Anwendung von tiefem `backdrop-blur` und Premium-Glass-Effekten auf alle Admin-Module (Migration, Bot, Update, Import).
+- **Sleek Stats & Charts**: Die Besucherstatistiken wurden mit einem neuen, markenkonformen Chart-Design und modernisierten Infokarten ausgestattet.
+- **Harmonized Components**: Alle Buttons, Badges, Inputs und Modals im Admin-Panel folgen nun der hochwertigen Ästhetik der öffentlichen Seite.
+- **Improved UX**: Optimierte Abstände und Typografie in den Actor- und Movie-Bearbeitungsmasken für einen effizienteren Workflow.
+
+## 🚀 Version v2.5.0 (Historie)
+
+- **Admin Panel UI Overhaul**: Grundlegende Neugestaltung des Admin-Dashboards und der Listenansichten (Filme, Stars, Benutzer).
+- **Themed Quill Editor**: Integration des Redesigns in den Rich-Text-Editor zur nahtlosen Bearbeitung im neuen Look.
+- **Global Layout Modernization**: Einführung der neuen Sidebar-Struktur mit Glow-Effekten und optimierter Navigation.
+
+## 🚀 Version v2.4.1 (Historie)
 
 - **Quill Formatting Recovery**: Vollständige Wiederherstellung aller Editor-Formatierungen (Fett, Kursiv, Listen, Ausrichtung, Textgrößen) in der Detailansicht.
 - **Smart Line Break Handling**: Einführung von `white-space: pre-wrap` um sicherzustellen, dass sowohl HTML-Absätze als auch einfache Zeilenumbrüche (Plain Text) korrekt dargestellt werden.
@@ -265,7 +286,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 2.4.0 - Laravel Framework Edition
+**Version**: 2.5.1 - Laravel Framework Edition
 
 **Letztes Update**: 3. April 2026  
 **Status**: Aktiv entwickelt

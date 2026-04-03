@@ -27,12 +27,89 @@
         [x-cloak] {
             display: none !important;
         }
+
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.98) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .animate-page-entry {
+            animation: fadeInScale 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .glass-sidebar {
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(40px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 20px 0 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-link-active {
+            background: linear-gradient(90deg, rgba(225, 29, 72, 0.15) 0%, transparent 100%);
+            color: #fb7185 !important;
+            border-left: 3px solid #e11d48;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.03);
+            transform: translateX(4px);
+        }
+
+        .header-glass {
+            background: rgba(2, 6, 23, 0.6);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Fix for white dropdowns in dark theme */
+        select {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+            color: white !important;
+        }
+        
+        select option {
+            background-color: #0f172a !important;
+            color: white !important;
+            padding: 10px !important;
+        }
+
+        /* Scrollbar styles */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(225, 29, 72, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(225, 29, 72, 0.4);
+        }
     </style>
     @stack('styles')
 </head>
 
-<body class="font-sans antialiased text-white min-h-screen relative" style="background: var(--gradient-bg); background-attachment: fixed;" x-data="{ sidebarOpen: false }">
-    <div class="min-h-screen flex overflow-x-hidden relative">
+<body class="font-sans antialiased text-white min-h-screen relative overflow-x-hidden selection:bg-rose-500/30" x-data="{ sidebarOpen: false }">
+    <!-- Premium Cinematic background -->
+    <div class="fixed inset-0 z-0 bg-[#020617] pointer-events-none overflow-hidden">
+        <!-- Main Dark Gradient -->
+        <div class="absolute inset-0 bg-gradient-to-br from-[#020617] via-[#0a0f1e] to-[#020617]"></div>
+        
+        <!-- Animated Blobs -->
+        <div class="absolute top-[10%] -left-[10%] w-[50%] h-[50%] bg-rose-600/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-red-900/10 rounded-full blur-[100px] animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="absolute top-[40%] left-[30%] w-[30%] h-[30%] bg-rose-500/5 rounded-full blur-[80px] animate-pulse" style="animation-delay: 4s;"></div>
+        
+        <!-- Subtle Grid Pattern (Optional but premium) -->
+        <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 40px 40px;"></div>
+        
+        <!-- Vignette -->
+        <div class="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-black/40"></div>
+    </div>
+
+    <div class="min-h-screen flex overflow-x-hidden relative z-10">
         <!-- Mobile Sidebar Backdrop -->
         <div x-show="sidebarOpen" 
              x-transition:enter="transition ease-out duration-300"
@@ -47,7 +124,7 @@
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-            class="w-64 bg-[#020617] md:bg-[#020617]/90 md:backdrop-blur-xl border-r border-white/5 flex flex-col shrink-0 h-screen transition-all duration-300 ease-in-out fixed left-0 top-0 z-50">
+            class="w-72 glass-sidebar flex flex-col shrink-0 h-screen transition-all duration-500 ease-in-out fixed left-0 top-0 z-50">
             <div class="p-6 flex items-center justify-between"> 
                 <a href="{{ route('dashboard') }}" class="flex items-center group"> 
                     <x-application-logo class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
@@ -58,52 +135,52 @@
             </div>
             <nav class="flex-1 px-4 space-y-2 mt-4 overflow-y-auto custom-scrollbar"> <!-- Übersicht -->
                 <div class="pb-2 px-4 opacity-40"> <span
-                        class="text-[10px] font-bold text-white uppercase tracking-widest">Übersicht</span> </div> <a
+                        class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Übersicht</span> </div> <a
                     href="{{ route('admin.dashboard') }}"
-                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                    <i class="bi bi-speedometer2"></i> <span class="font-bold text-sm">Dashboard</span> </a>
+                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.dashboard') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                    <i class="bi bi-grid-1x2-fill"></i> <span class="font-bold text-sm">Dashboard</span> </a>
                 @if (Route::has('admin.stats.index'))
                     <a href="{{ route('admin.stats.index') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.stats.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                        <i class="bi bi-graph-up"></i> <span class="font-bold text-sm">Statistiken</span> </a>
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.stats.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                        <i class="bi bi-bar-chart-fill"></i> <span class="font-bold text-sm">Statistiken</span> </a>
                     @endif <!-- Mediathek -->
-                    <div class="pt-6 pb-2 px-4 opacity-40"> <span
-                            class="text-[10px] font-bold text-white uppercase tracking-widest">Mediathek</span> </div>
+                    <div class="pt-8 pb-3 px-6"> <span
+                            class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Mediathek</span> </div>
                     <a href="{{ route('admin.movies.index') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.movies.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                        <i class="bi bi-collection-play"></i> <span class="font-bold text-sm">Filme</span> </a> <a
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.movies.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                        <i class="bi bi-film"></i> <span class="font-bold text-sm">Filme</span> </a> <a
                         href="{{ route('admin.actors.index') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.actors.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                        <i class="bi bi-people"></i> <span class="font-bold text-sm">Schauspieler</span> </a>
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.actors.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                        <i class="bi bi-stars"></i> <span class="font-bold text-sm">Schauspieler</span> </a>
                     <!-- Datenaustausch -->
-                    <div class="pt-6 pb-2 px-4 opacity-40"> <span
-                            class="text-[10px] font-bold text-white uppercase tracking-widest">Datenaustausch</span>
+                    <div class="pt-8 pb-3 px-6"> <span
+                            class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Exchange</span>
                     </div> <a href="{{ route('admin.tmdb.index') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.tmdb.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                        <i class="bi bi-cloud-download"></i> <span class="font-bold text-sm">TMDb Import</span> </a> <a
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.tmdb.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                        <i class="bi bi-cloud-arrow-down-fill"></i> <span class="font-bold text-sm">TMDb Import</span> </a> <a
                         href="{{ route('admin.import.index') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.import.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                        <i class="bi bi-file-earmark-arrow-up"></i> <span class="font-bold text-sm">XML Import</span>
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.import.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                        <i class="bi bi-file-earmark-code-fill"></i> <span class="font-bold text-sm">XML Import</span>
                     </a> <!-- System -->
-                    <div class="pt-6 pb-2 px-4 opacity-40"> <span
-                            class="text-[10px] font-bold text-white uppercase tracking-widest">System</span> </div> <a
+                    <div class="pt-8 pb-3 px-6"> <span
+                            class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">System</span> </div> <a
                         href="{{ route('admin.users.index') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.users.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                        <i class="bi bi-person-gear"></i> <span class="font-bold text-sm">Benutzer</span> </a> <a
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.users.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                        <i class="bi bi-person-badge-fill"></i> <span class="font-bold text-sm">Benutzer</span> </a> <a
                         href="{{ route('admin.update.index') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.update.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.update.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
                         <i class="bi bi-arrow-repeat"></i> <span class="font-bold text-sm">System Update</span> </a>
                     <a href="{{ route('admin.bot.index') }}"
-                        class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.bot.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.bot.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
                         <i class="bi bi-robot"></i> <span class="font-bold text-sm">Actor Bot</span> </a>
                     @if (\App\Models\Setting::get('migration_enabled', '1') == '1')
                         <a href="{{ route('admin.migration.index') }}"
-                            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.migration.index') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                            <i class="bi bi-database-up"></i> <span class="font-bold text-sm">Daten Migration</span>
+                            class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.migration.index') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                            <i class="bi bi-database-fill-up"></i> <span class="font-bold text-sm">Daten Migration</span>
                         </a>
                         @endif <a href="{{ route('admin.settings.index') }}"
-                            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all {{ request()->routeIs('admin.settings.*') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-gray-400 hover:bg-white/5' }}">
-                            <i class="bi bi-gear"></i> <span class="font-bold text-sm">Einstellungen</span> </a>
+                            class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.settings.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                            <i class="bi bi-sliders"></i> <span class="font-bold text-sm">Einstellungen</span> </a>
             </nav>
             <div class="p-4 border-t border-white/5 shrink-0">
                 <form method="POST" action="{{ route('logout') }}"> @csrf <button type="submit"
@@ -112,27 +189,27 @@
                 </form>
             </div>
         </aside> <!-- Main Content -->
-        <main :class="sidebarOpen ? 'translate-x-64 md:translate-x-0' : 'translate-x-0'"
-            class="flex-1 flex flex-col min-w-0 md:ml-64 transition-transform duration-300 ease-in-out">
+        <main :class="sidebarOpen ? 'translate-x-72 md:translate-x-0' : 'translate-x-0'"
+            class="flex-1 flex flex-col min-w-0 md:ml-72 transition-transform duration-500 ease-in-out">
             <header
-                class="h-16 glass border-b border-white/5 flex items-center justify-between px-4 md:px-8 z-40 shrink-0 sticky top-0">
-                <div class="flex items-center gap-4">
+                class="h-20 header-glass flex items-center justify-between px-6 md:px-12 z-40 shrink-0 sticky top-0">
+                <div class="flex items-center gap-6">
                     <button @click="sidebarOpen = true" class="md:hidden text-gray-400 hover:text-white transition-colors">
                         <i class="bi bi-list text-2xl"></i>
                     </button>
-                    <h1 class="text-base md:text-lg font-bold text-white flex items-center gap-2 truncate"> @yield('header_title', 'Administration') </h1>
+                    <h1 class="text-xl md:text-3xl font-black text-white flex items-center gap-2 truncate tracking-tight"> @yield('header_title', 'Administration') </h1>
                 </div>
-                <div class="flex items-center gap-2 md:gap-4 shrink-0">
+                <div class="flex items-center gap-4 md:gap-6 shrink-0">
                     <div class="flex flex-col items-end hidden sm:flex"> <span
-                            class="text-sm font-bold text-white">{{ Auth::user()->name }}</span> <span
-                            class="text-[10px] text-gray-500 uppercase font-black tracking-widest">Administrator</span>
+                            class="text-sm font-black text-white">{{ Auth::user()->name }}</span> <span
+                            class="text-[10px] text-rose-400 uppercase font-black tracking-widest opacity-80">Administrator</span>
                     </div>
                     <div
-                        class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 border border-white/10 flex items-center justify-center">
-                        <i class="bi bi-person-fill text-gray-400 text-sm md:text-base"></i> </div>
+                        class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-rose-600 to-red-700 border border-white/10 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                        <i class="bi bi-person-fill text-white text-lg md:text-xl"></i> </div>
                 </div>
             </header>
-            <div class="p-4 md:p-8">
+            <div class="p-6 md:p-12 animate-page-entry">
                 @if (session('success'))
                     <div
                         class="mb-6 md:mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-400 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -155,8 +232,9 @@
                             <header class="mb-6 md:mb-8"> {{ $header }} </header>
                         @endif {{ $slot }}
             </div>
-            <div class="mt-auto border-t border-white/5 bg-black/20 backdrop-blur-sm shrink-0"> <x-footer
-                    :compact="true" /> </div>
+            <div class="mt-auto shrink-0">
+                <x-footer :compact="true" />
+            </div>
         </main>
     </div> <x-theme-switcher /> @stack('scripts')
 </body>

@@ -1,125 +1,142 @@
 <x-admin-layout>
-    @section('header_title', 'Actor Bot')
+    @section('header_title', 'Actor Database Bot')
 
-    <div class="space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="max-w-6xl mx-auto space-y-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <!-- Bot Status Card -->
-            <div class="glass p-6 rounded-2xl border border-white/5">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-bold">Bot Status</h2>
+            <div class="lg:col-span-2 glass p-10 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 to-transparent pointer-events-none"></div>
+                
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center gap-5">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-600 to-red-800 flex items-center justify-center text-white text-2xl shadow-xl shadow-rose-600/20 ring-2 ring-white/10">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-black text-white tracking-tight uppercase">Bot-Status</h2>
+                            <p class="text-[10px] text-white/30 font-black uppercase tracking-widest mt-1">Hintergrundprozess-Steuerung</p>
+                        </div>
+                    </div>
+                    
                     @if($currentRun)
-                        <span id="bot-status-badge" class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold border border-blue-500/30 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                            Läuft im Hintergrund...
+                        <span id="bot-status-badge" class="px-5 py-2 rounded-full bg-rose-500/10 text-rose-400 text-[10px] font-black uppercase tracking-widest border border-rose-500/20 flex items-center gap-3">
+                            <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                            Aktiv
                         </span>
                     @else
-                        <span class="px-3 py-1 rounded-full bg-gray-500/20 text-gray-400 text-xs font-bold border border-gray-500/30">
+                        <span class="px-5 py-2 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
                             Bereit
                         </span>
                     @endif
                 </div>
 
                 @if($currentRun)
-                    <div class="space-y-4" id="bot-status-container" data-run-id="{{ $currentRun->id }}">
-                        <p class="text-xs text-gray-400 mb-2">
-                            <i class="bi bi-info-circle"></i> Der Bot wurde als Server-Prozess gestartet. Du kannst das Fenster bedenkenlos schließen!
-                        </p>
-                        <div class="flex justify-between text-sm text-gray-400">
-                            <span>Fortschritt</span>
-                            <span id="bot-progress-text">{{ $currentRun->processed_actors }} / {{ max(1, $currentRun->total_actors) }}</span>
-                        </div>
-                        <div class="w-full bg-gray-700 rounded-full h-2.5 dark:bg-gray-700">
-                            @php
-                                $percent = $currentRun->total_actors > 0 ? min(100, round(($currentRun->processed_actors / $currentRun->total_actors) * 100)) : 0;
-                            @endphp
-                            <div id="bot-progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: {{ $percent }}%"></div>
+                    <div class="space-y-8" id="bot-status-container" data-run-id="{{ $currentRun->id }}">
+                        <div class="p-5 bg-black/20 rounded-2xl border border-white/5">
+                            <p class="text-xs text-white/40 font-medium leading-relaxed italic">
+                                <i class="bi bi-info-circle-fill text-rose-500 mr-2"></i> 
+                                Der Bot läuft als autonomer Prozess. Du kannst diese Seite jederzeit verlassen.
+                            </p>
                         </div>
 
-                        <form action="{{ route('admin.bot.cancel') }}" method="POST" class="mt-4">
+                        <div class="space-y-4">
+                            <div class="flex justify-between text-[10px] font-black text-white/30 uppercase tracking-[0.2em] px-1">
+                                <span>Verarbeitungsfortschritt</span>
+                                <span id="bot-progress-text" class="text-rose-400">{{ $currentRun->processed_actors }} / {{ max(1, $currentRun->total_actors) }} Stars</span>
+                            </div>
+                            <div class="w-full bg-white/5 rounded-full h-3 p-0.5 border border-white/10">
+                                @php
+                                    $percent = $currentRun->total_actors > 0 ? min(100, round(($currentRun->processed_actors / $currentRun->total_actors) * 100)) : 0;
+                                @endphp
+                                <div id="bot-progress-bar" class="bg-gradient-to-r from-rose-600 to-red-500 h-full rounded-full transition-all duration-700 shadow-lg shadow-rose-600/20" style="width: {{ $percent }}%"></div>
+                            </div>
+                        </div>
+
+                        <form action="{{ route('admin.bot.cancel') }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full flex items-center justify-center gap-2 bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500 hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition-all">
-                                <i class="bi bi-x-circle text-lg"></i>
-                                Prozess abbrechen
+                            <button type="submit" class="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-rose-500/10 text-white/40 hover:text-rose-400 border border-white/10 hover:border-rose-500/30 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all">
+                                <i class="bi bi-stop-circle text-lg"></i>
+                                Prozess gewaltsam stoppen
                             </button>
                         </form>
                     </div>
                 @else
-                    <p class="text-sm text-gray-400 mb-6">
-                        Der echte System-Bot durchsucht im Hintergrund (Queue) die Datenbank nach Schauspielern mit fehlenden Informationen und aktualisiert diese automatisch über die TMDb API.
+                    <p class="text-sm text-white/40 leading-relaxed mb-10 font-medium italic">
+                        Der Actor-Bot synchronisiert fehlende Metadaten (Geburtsdaten, Biografien, Profile) automatisch im Hintergrund über die TMDb API, um deine Datenbank aktuell zu halten.
                     </p>
                     <form action="{{ route('admin.bot.start') }}" method="POST">
                         @csrf
-                        <button type="submit" class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-xl font-bold transition-all hover:scale-[1.02] shadow-lg shadow-blue-500/20">
+                        <button type="submit" class="w-full flex items-center justify-center gap-4 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white px-8 py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] transition-all shadow-2xl shadow-rose-600/30 transform hover:scale-[1.02] active:scale-[0.98]">
                             <i class="bi bi-robot text-xl"></i>
-                            Bot als Daemon ausführen
+                            Bot-Daemon starten
                         </button>
                     </form>
                 @endif
             </div>
             
             <!-- Quick Stats Card -->
-            <div class="glass p-6 rounded-2xl border border-white/5 flex flex-col justify-center">
-                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Statistik</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white/5 p-4 rounded-xl border border-white/5">
-                        <div class="text-sm text-gray-400">Schauspieler Gesamt</div>
-                        <div class="text-2xl font-bold mt-1">{{ \App\Models\Actor::count() }}</div>
-                    </div>
-                    <div class="bg-white/5 p-4 rounded-xl border border-white/5">
-                        <div class="text-sm text-gray-400">Ohne TMDb Profil</div>
-                        <div class="text-2xl font-bold mt-1 text-yellow-500">{{ \App\Models\Actor::whereNull('tmdb_id')->count() }}</div>
+            <div class="lg:col-span-1 space-y-6">
+                <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl text-center h-full flex flex-col justify-center">
+                    <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-8">Datenabgleich</h3>
+                    <div class="space-y-10">
+                        <div>
+                            <div class="text-[10px] font-black text-white/30 uppercase tracking-widest mb-2">Stars Gesamt</div>
+                            <div class="text-5xl font-black text-white tracking-tighter">{{ \App\Models\Actor::count() }}</div>
+                        </div>
+                        <div class="pt-10 border-t border-white/5">
+                            <div class="text-[10px] font-black text-white/30 uppercase tracking-widest mb-2">Unverknüpft</div>
+                            <div class="text-5xl font-black text-rose-500 tracking-tighter">{{ \App\Models\Actor::whereNull('tmdb_id')->count() }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- History -->
-        <div class="glass p-6 rounded-2xl border border-white/5">
-            <h2 class="text-lg font-bold mb-4">Dashboard-Verlauf</h2>
+        <div class="glass p-10 rounded-[3.5rem] border-white/5 shadow-2xl relative overflow-hidden">
+            <h2 class="text-xl font-black text-white tracking-tight uppercase mb-10 flex items-center gap-4">
+                <i class="bi bi-clock-history text-rose-500/40"></i>
+                Verlauf & Logs
+            </h2>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="text-xs uppercase bg-white/5 text-gray-400 border-b border-white/10">
-                        <tr>
-                            <th class="px-4 py-3 rounded-tl-xl">Lauf ID</th>
-                            <th class="px-4 py-3">Datum</th>
-                            <th class="px-4 py-3">Status</th>
-                            <th class="px-4 py-3">Fortschritt</th>
-                            <th class="px-4 py-3 text-right rounded-tr-xl">Aktionen</th>
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-sm text-white/60">
+                    <thead>
+                        <tr class="text-[10px] uppercase font-black text-white/30 tracking-[0.2em] border-b border-white/5">
+                            <th class="px-6 py-5">Lauf</th>
+                            <th class="px-6 py-5">Datum / Uhrzeit</th>
+                            <th class="px-6 py-5">Status</th>
+                            <th class="px-6 py-5">Ergebnis</th>
+                            <th class="px-6 py-5 text-right">Protokoll</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-white/[0.03]">
                         @forelse($recentRuns as $run)
-                            <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                <td class="px-4 py-3 font-medium text-white">#{{ $run->id }}</td>
-                                <td class="px-4 py-3">{{ $run->created_at->format('d.m.Y H:i') }}</td>
-                                <td class="px-4 py-3">
+                            <tr class="group hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-6 font-black text-white/40">#{{ $run->id }}</td>
+                                <td class="px-6 py-6 font-bold">{{ $run->created_at->format('d. M Y') }} <span class="text-white/20 ml-2">{{ $run->created_at->format('H:i') }}</span></td>
+                                <td class="px-6 py-6">
                                     @if($run->status === 'completed')
-                                        <span class="text-emerald-400"><i class="bi bi-check-circle mr-1"></i>Beendet</span>
-                                    @elseif($run->status === 'failed')
-                                        <div>
-                                            <span class="text-rose-400"><i class="bi bi-exclamation-circle mr-1"></i>Fehlerhaft</span>
-                                            <div class="text-[10px] text-rose-500/80 mt-1 max-w-[150px] truncate" title="{{ $run->error_message }}">
-                                                {{ $run->error_message }}
-                                            </div>
-                                        </div>
-                                    @elseif($run->status === 'aborted')
-                                        <span class="text-rose-400"><i class="bi bi-x-circle mr-1"></i>Abgebrochen</span>
+                                        <span class="text-emerald-400 font-black text-[10px] uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">Erfolgreich</span>
+                                    @elseif($run->status === 'failed' || $run->status === 'aborted')
+                                        <span class="text-rose-400 font-black text-[10px] uppercase tracking-widest bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">Fehlgeschlagen</span>
                                     @else
-                                        <span class="text-blue-400"><i class="bi bi-arrow-repeat animate-spin mr-1 inline-block"></i>Aktiv (Hintergrund)</span>
+                                        <span class="text-rose-400 font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+                                            <i class="bi bi-arrow-repeat animate-spin"></i> Aktiv
+                                        </span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3">{{ $run->processed_actors }} / {{ max(1, $run->total_actors) }} ({{ round(($run->processed_actors / max(1, $run->total_actors)) * 100) }}%)</td>
-                                <td class="px-4 py-3 text-right">
-                                    <button onclick="showLogs({{ $run->id }})" class="text-blue-400 hover:text-blue-300 transition-colors">
-                                        <i class="bi bi-list-columns-reverse mr-1"></i> Logs
+                                <td class="px-6 py-6 font-mono text-xs">{{ $run->processed_actors }} / {{ max(1, $run->total_actors) }}</td>
+                                <td class="px-6 py-6 text-right">
+                                    <button onclick="showLogs({{ $run->id }})" class="px-5 py-2 bg-rose-600/10 hover:bg-rose-600 text-rose-500 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-rose-500/20">
+                                        <i class="bi bi-list-columns-reverse mr-2"></i> Details
                                     </button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-6 text-center text-gray-500">
-                                    Der Bot ist noch nie gelaufen.
+                                <td colspan="5" class="px-6 py-12 text-center text-white/20 italic font-medium uppercase tracking-widest text-[10px]">
+                                    Keine bisherigen Aufzeichnungen gefunden
                                 </td>
                             </tr>
                         @endforelse
@@ -130,23 +147,22 @@
     </div>
 
     <!-- Terminal Modal -->
-    <div id="logsModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
-        <div class="p-1 rounded-xl border border-white/20 w-full max-w-5xl h-[85vh] max-h-[85vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 shadow-2xl bg-[#1e1e1e]">
+    <div id="logsModal" class="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/90 backdrop-blur-2xl hidden opacity-0 transition-all duration-500">
+        <div class="glass border-white/20 w-full max-w-6xl h-[85vh] rounded-[2.5rem] flex flex-col overflow-hidden transform scale-95 transition-all duration-500 shadow-3xl bg-[#0a0a0c]">
             <!-- Terminal Header -->
-            <div class="h-12 flex items-center justify-between px-4 shrink-0 bg-[#2d2d2d] rounded-t-lg border-b border-black">
+            <div class="h-16 flex items-center justify-between px-8 shrink-0 bg-white/[0.02] border-b border-white/10">
                 <div class="flex gap-2">
-                    <button onclick="closeLogs()" class="w-3 h-3 rounded-full bg-rose-500 hover:bg-rose-400 transition-colors shadow-inner cursor-pointer" title="Schließen"></button>
-                    <div class="w-3 h-3 rounded-full bg-amber-500 shadow-inner"></div>
-                    <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-inner"></div>
+                    <button @click="closeLogs()" class="w-3.5 h-3.5 rounded-full bg-rose-500/80 hover:bg-rose-500 transition-all shadow-lg" onclick="closeLogs()"></button>
+                    <div class="w-3.5 h-3.5 rounded-full bg-zinc-700"></div>
+                    <div class="w-3.5 h-3.5 rounded-full bg-zinc-700"></div>
                 </div>
-                <div class="text-xs font-mono text-gray-400 font-bold tracking-widest uppercase truncate ml-2">Actor-Bot <span class="hidden md:inline">Terminal</span> ~ Lauf <span id="modalRunId"></span></div>
-                <div class="w-5"></div><!-- Spacer for centering -->
+                <div class="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] ml-4">Actor Bot Runtime <span class="text-white/20 font-mono">:: RUN <span id="modalRunId"></span></span></div>
+                <div class="w-6"></div>
             </div>
             
             <!-- Terminal Body -->
-            <div id="terminalBody" class="h-[calc(100%-3rem)] w-full overflow-y-auto custom-scrollbar bg-[#0d1117] p-4 font-mono text-xs md:text-sm text-gray-300 leading-relaxed" style="overscroll-behavior: contain;">
-                <div id="logsTableBody" class="space-y-0.5">
-                    <!-- Filled via JS -->
+            <div id="terminalBody" class="h-full w-full overflow-y-auto custom-scrollbar p-8 font-mono text-[11px] md:text-xs text-white/60 leading-relaxed" style="overscroll-behavior: contain;">
+                <div id="logsTableBody" class="space-y-1">
                 </div>
             </div>
         </div>
@@ -155,23 +171,20 @@
     @push('scripts')
         <script>
             @if($currentRun)
-                // Poll status every 3 seconds to see progress of the backend worker
                 let statusInterval = setInterval(function() {
                     fetch('{{ route('admin.bot.status') }}')
                         .then(response => response.json())
                         .then(data => {
                             if (data.running) {
                                 let percent = data.total > 0 ? (data.processed / data.total) * 100 : 0;
-                                document.getElementById('bot-progress-text').innerText = data.processed + ' / ' + data.total;
+                                document.getElementById('bot-progress-text').innerText = data.processed + ' / ' + data.total + ' Stars';
                                 document.getElementById('bot-progress-bar').style.width = Math.min(percent, 100) + '%';
                             } else {
                                 clearInterval(statusInterval);
                                 location.reload();
                             }
                         })
-                        .catch(() => {
-                            // ignore silent polling errors
-                        });
+                        .catch(() => {});
                 }, 3000);
             @endif
 
@@ -184,16 +197,16 @@
             function showLogs(runId) {
                 document.getElementById('modalRunId').innerText = '#' + runId;
                 const tbody = document.getElementById('logsTableBody');
-                tbody.innerHTML = '<div class="text-blue-400 animate-pulse">> Initialisiere Verbindung zur Datenbank...</div>';
+                tbody.innerHTML = '<div class="text-rose-500/40 font-black animate-pulse uppercase tracking-widest text-[9px] mb-4">> [SYSTEM] Initialisiere Terminal-Verbindung...</div>';
                 currentRenderedCount = 0;
                 
                 modal.classList.remove('hidden');
-                void modal.offsetWidth;
-                modal.classList.remove('opacity-0');
-                modalContent.classList.remove('scale-95');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modalContent.classList.remove('scale-95');
+                }, 50);
 
                 fetchLogs(runId);
-                // Live Polling every 2 secs
                 terminalPoller = setInterval(() => fetchLogs(runId), 2000);
             }
 
@@ -207,60 +220,50 @@
                         if (currentRenderedCount === 0) {
                             tbody.innerHTML = '';
                             if (data.logs.length === 0) {
-                                tbody.innerHTML = '<div class="text-gray-500">> Warte auf erste Log-Einträge...</div>';
+                                tbody.innerHTML = '<div class="text-white/20 italic tracking-widest">> Warten auf Datenpakete...</div>';
                                 return;
                             }
                         }
 
                         if (data.logs.length > currentRenderedCount) {
-                            // Check if user is scrolled to bottom (allow 50px tolerance)
-                            let isAtBottom = Math.abs((terminalBody.scrollHeight - terminalBody.clientHeight) - terminalBody.scrollTop) < 50;
-                            if (currentRenderedCount === 0) {
-                                isAtBottom = true;
-                                if (tbody.innerHTML.includes('> Warte auf')) tbody.innerHTML = '';
-                            }
+                            let isAtBottom = Math.abs((terminalBody.scrollHeight - terminalBody.clientHeight) - terminalBody.scrollTop) < 100;
+                            if (currentRenderedCount === 0) isAtBottom = true;
 
                             for (let i = currentRenderedCount; i < data.logs.length; i++) {
                                 let log = data.logs[i];
-                                let statusColor = 'text-gray-500';
+                                let statusColor = 'text-white/20';
                                 
                                 if (log.status === 'success') {
-                                    statusColor = 'text-emerald-400 font-bold';
+                                    statusColor = 'text-emerald-500 font-black';
                                 } else if (log.status === 'error') {
-                                    statusColor = 'text-rose-500 font-bold';
+                                    statusColor = 'text-rose-600 font-black animate-pulse';
                                 } else if (log.status === 'skipped') {
-                                    statusColor = 'text-blue-400/80';
+                                    statusColor = 'text-rose-500/40 font-bold';
                                 }
 
-                                let actorName = log.actor ? log.actor.first_name + ' ' + (log.actor.last_name || '') : 'Gelöscht (ID: ' + log.actor_id + ')';
-                                
-                                // Parse time specifically to HH:mm:ss if it's an ISO timestamp
+                                let actorName = log.actor ? log.actor.first_name + ' ' + (log.actor.last_name || '') : 'ID: ' + log.actor_id;
                                 let rawDate = log.created_at;
                                 if(rawDate && rawDate.length > 18) {
                                     rawDate = rawDate.substring(11, 19);
                                 }
 
                                 let div = document.createElement('div');
-                                div.className = 'hover:bg-white/5 px-2 py-0.5 rounded transition-colors break-words flex flex-col md:flex-row md:gap-4 md:items-start group';
+                                div.className = 'hover:bg-white/[0.03] px-3 py-1.5 rounded-lg transition-colors flex flex-col md:flex-row md:gap-6 border border-transparent hover:border-white/5';
                                 div.innerHTML = `
-                                    <div class="flex gap-3 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
-                                        <span class="text-gray-600 font-semibold">[${rawDate}]</span>
-                                        <span class="${statusColor} w-24 whitespace-nowrap">[${log.status.toUpperCase()}]</span>
+                                    <div class="flex gap-4 shrink-0 font-black uppercase text-[10px] tracking-widest">
+                                        <span class="text-white/20">${rawDate}</span>
+                                        <span class="${statusColor} w-24">[${log.status}]</span>
                                     </div>
-                                    <div class="flex-1 flex flex-col md:flex-row gap-2 md:gap-4">
-                                        <span class="text-white font-semibold md:w-48 truncate flex-shrink-0 mr-2">${actorName}</span>
-                                        <span class="text-gray-400 font-extralight">> ${log.message}</span>
+                                    <div class="flex-1 font-medium">
+                                        <span class="text-white font-black mr-4">${actorName}</span>
+                                        <span class="text-white/40 italic">${log.message}</span>
                                     </div>
                                 `;
                                 tbody.appendChild(div);
                             }
                             
                             currentRenderedCount = data.logs.length;
-                            
-                            // Only auto-scroll if user was already at the bottom
-                            if (isAtBottom) {
-                                terminalBody.scrollTop = terminalBody.scrollHeight;
-                            }
+                            if (isAtBottom) terminalBody.scrollTop = terminalBody.scrollHeight;
                         }
                     });
             }
@@ -272,9 +275,7 @@
                 }
                 modal.classList.add('opacity-0');
                 modalContent.classList.add('scale-95');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
+                setTimeout(() => modal.classList.add('hidden'), 500);
             }
         </script>
     @endpush

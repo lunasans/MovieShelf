@@ -6,79 +6,69 @@
     <style>
         .ql-toolbar.ql-snow {
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            background: rgba(15, 23, 42, 0.8) !important; /* Dark background */
-            backdrop-blur: 10px;
+            background: rgba(15, 23, 42, 0.8) !important;
+            backdrop-filter: blur(10px);
             border-top-left-radius: 1.5rem;
             border-top-right-radius: 1.5rem;
-            padding: 12px 20px !important;
+            padding: 15px 25px !important;
         }
         .ql-container.ql-snow {
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-top: none !important;
-            background: rgba(15, 23, 42, 0.5) !important; /* Dark background */
+            background: rgba(15, 23, 42, 0.5) !important;
             border-bottom-left-radius: 1.5rem;
             border-bottom-right-radius: 1.5rem;
             font-family: inherit !important;
-            font-size: 0.875rem !important;
+            font-size: 0.95rem !important;
         }
         .ql-editor {
-            min-height: 200px;
+            min-height: 250px;
             color: rgba(255, 255, 255, 0.9) !important;
-            padding: 20px !important;
-            line-height: 1.625 !important;
+            padding: 25px !important;
+            line-height: 1.8 !important;
         }
         /* Toolbar Icon Colors */
-        .ql-snow .ql-stroke { stroke: rgba(255, 255, 255, 0.6) !important; }
-        .ql-snow .ql-fill { fill: rgba(255, 255, 255, 0.6) !important; }
-        .ql-snow .ql-picker { color: rgba(255, 255, 255, 0.6) !important; }
-        .ql-snow .ql-picker-options {
-            background-color: #1e293b !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: white !important;
-        }
-        /* Active States */
+        .ql-snow .ql-stroke { stroke: rgba(255, 255, 255, 0.5) !important; }
+        .ql-snow .ql-fill { fill: rgba(255, 255, 255, 0.5) !important; }
+        .ql-snow .ql-picker { color: rgba(255, 255, 255, 0.5) !important; }
+        
+        /* Active States - Red Overhaul */
         .ql-snow.ql-toolbar button:hover .ql-stroke,
-        .ql-snow.ql-toolbar button.ql-active .ql-stroke { stroke: #3b82f6 !important; }
+        .ql-snow.ql-toolbar button.ql-active .ql-stroke { stroke: #e11d48 !important; }
         .ql-snow.ql-toolbar button:hover .ql-fill,
-        .ql-snow.ql-toolbar button.ql-active .ql-fill { fill: #3b82f6 !important; }
+        .ql-snow.ql-toolbar button.ql-active .ql-fill { fill: #e11d48 !important; }
         
         .ql-editor.ql-blank::before {
-            color: rgba(255, 255, 255, 0.3) !important;
-            font-style: normal !important;
+            color: rgba(255, 255, 255, 0.2) !important;
+            font-style: italic !important;
         }
 
-        /* Custom Actor Button */
-        .ql-actor {
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
-            width: 28px !important;
-        }
+        /* Custom Actor Button - Red */
         .ql-actor::after {
-            content: "\F4D1"; /* Bootstrap Icon bi-person-plus */
+            content: "\F4D1";
             font-family: "bootstrap-icons" !important;
             font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.5);
         }
         .ql-actor:hover::after {
-            color: #3b82f6;
+            color: #e11d48;
         }
     </style>
     @endpush
 
-    <div class="max-w-4xl mx-auto" x-data="tmdbSearch()">
-        <div class="mb-6 flex items-center justify-between">
-            <a href="{{ route('admin.movies.index') }}" class="text-sm text-gray-500 hover:text-blue-400 transition-colors flex items-center gap-2">
-                <i class="bi bi-arrow-left"></i>
-                Zurück zur Übersicht
+    <div class="max-w-5xl mx-auto" x-data="tmdbSearch()">
+        <div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <a href="{{ route('admin.movies.index') }}" class="text-xs font-black text-white/30 hover:text-rose-400 uppercase tracking-[0.2em] transition-all flex items-center gap-2 group">
+                <i class="bi bi-arrow-left text-lg group-hover:-translate-x-1 transition-transform"></i>
+                Zurück zur Liste
             </a>
-            <button @click="openModal()" type="button" class="px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 rounded-xl font-bold text-xs transition-all border border-purple-500/20 flex items-center gap-2">
+            <button @click="openModal()" type="button" class="px-8 py-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3">
                 <i class="bi bi-search"></i>
-                TMDb Suche
+                Daten von TMDb laden
             </button>
         </div>
 
-        <form action="{{ route('admin.movies.update', $movie) }}" method="POST" enctype="multipart/form-data" class="space-y-8">
+        <form action="{{ route('admin.movies.update', $movie) }}" method="POST" enctype="multipart/form-data" class="space-y-10">
             @csrf
             @method('PUT')
 
@@ -87,149 +77,140 @@
             <input type="hidden" name="backdrop_id" x-model="formData.backdrop_id">
 
             <!-- General Info -->
-            <div class="glass p-8 rounded-3xl border-white/5 shadow-2xl">
-                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <i class="bi bi-info-circle text-blue-400"></i>
-                    Allgemeine Informationen
+            <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 to-transparent pointer-events-none"></div>
+                <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-10 flex items-center gap-3">
+                    <i class="bi bi-info-circle-fill text-rose-500"></i>
+                    Stammdaten
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="md:col-span-2">
-                        <label for="title" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Titel *</label>
+                        <label for="title" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Originaltitel / Titel *</label>
                         <input type="text" name="title" id="title" x-model="formData.title" required
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
-                        @error('title') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-lg font-black focus:outline-none focus:border-rose-500/50 focus:ring-4 focus:ring-rose-500/10 transition-all">
+                        @error('title') <p class="text-rose-400 text-[10px] mt-2 font-bold">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="year" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Erscheinungsjahr *</label>
+                        <label for="year" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Erscheinungsjahr *</label>
                         <input type="number" name="year" id="year" x-model="formData.year" required
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all font-bold">
                     </div>
 
                     <div>
-                        <label for="collection_type" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Medientyp *</label>
+                        <label for="collection_type" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Archiv-Status *</label>
                         <select name="collection_type" id="collection_type" x-model="formData.collection_type" required
-                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all appearance-none">
-                            <option value="Owned">Owned</option>
-                            <option value="Serie">Serie</option>
-                            <option value="Stream">Stream</option>
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none cursor-pointer font-bold">
+                            <option value="Owned">Besitzt (Physisch)</option>
+                            <option value="Serie">Serie (Episodisch)</option>
+                            <option value="Stream">Streaming / Digital</option>
                         </select>
                     </div>
 
                     <div>
-                        <label for="genre" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Genre</label>
+                        <label for="genre" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Genre / Kategorien</label>
                         <input type="text" name="genre" id="genre" x-model="formData.genre"
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
                     </div>
 
                     <div>
-                        <label for="runtime" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Laufzeit (Min.)</label>
+                        <label for="runtime" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Laufzeit (Minuten)</label>
                         <input type="number" name="runtime" id="runtime" x-model="formData.runtime"
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
                     </div>
 
                     <div>
-                        <label for="rating" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Bewertung (TMDb)</label>
+                        <label for="rating" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">TMDb Bewertung</label>
                         <input type="number" step="0.1" min="0" name="rating" id="rating" x-model="formData.rating"
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
                     </div>
 
                     <div>
-                        <label for="rating_age" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">FSK</label>
+                        <label for="rating_age" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Jugendschutz (FSK)</label>
                         <select name="rating_age" id="rating_age" x-model="formData.rating_age"
-                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all appearance-none">
-                            <option value="">Keine Angabe</option>
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none cursor-pointer">
+                            <option value="">Nicht geprüft</option>
                             @foreach([0, 6, 12, 16, 18] as $age)
-                                <option value="{{ $age }}">FSK {{ $age }}</option>
+                                <option value="{{ $age }}">Ab {{ $age }} Jahren</option>
                             @endforeach
                         </select>
-                    </div>
-
-                    <div>
-                        <label for="created_at" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Hinzugefügt am</label>
-                        <input type="date" name="created_at" id="created_at" value="{{ old('created_at', $movie->created_at?->format('Y-m-d')) }}"
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Visuals Section -->
-            <div class="glass p-8 rounded-3xl border-white/5 shadow-2xl">
-                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <i class="bi bi-image text-emerald-400"></i>
-                    Cover & Backdrop
-                </h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Cover Upload -->
-                    <div class="space-y-4">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Cover Image</label>
-                        <div class="relative group aspect-[2/3] rounded-2xl overflow-hidden bg-white/5 border border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-all"
-                             @click="$refs.coverInput.click()">
-                            
-                            <!-- Preview -->
-                            <template x-if="coverPreview || formData.cover_id">
-                                <img :src="coverPreview || getImageUrl(formData.cover_id, 'cover')" 
-                                     class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
-                                     :class="coverPreview ? 'opacity-100' : 'opacity-60'">
-                            </template>
-
-                            <div class="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
-                                <i class="bi bi-cloud-arrow-up text-3xl text-emerald-400"></i>
-                                <span class="text-xs font-bold text-white/50 uppercase tracking-tighter">Klicke zum Hochladen</span>
-                                <span class="text-[10px] text-white/30 uppercase tracking-widest bg-black/50 px-3 py-1 rounded-full backdrop-blur-md border border-white/10" x-show="coverPreview">Neue Datei gewählt</span>
-                            </div>
-
-                            <input type="file" name="cover_upload" x-ref="coverInput" class="hidden" accept="image/*" @change="handleFileChange($event, 'cover')">
-                        </div>
-                        @error('cover_upload') <p class="text-red-400 text-[10px] mt-1 text-center font-bold uppercase tracking-widest">{{ $message }}</p> @enderror
-                        <p class="text-[10px] text-gray-500 text-center uppercase tracking-widest font-bold">Empfohlen: 500x750px (JPG/PNG)</p>
-                    </div>
-
-                    <!-- Backdrop Upload -->
-                    <div class="space-y-4">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Backdrop Image</label>
-                        <div class="relative group aspect-video rounded-2xl overflow-hidden bg-white/5 border border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-all"
-                             @click="$refs.backdropInput.click()">
-                            
-                            <!-- Preview -->
-                            <template x-if="backdropPreview || formData.backdrop_id">
-                                <img :src="backdropPreview || getImageUrl(formData.backdrop_id, 'backdrop')" 
-                                     class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
-                                     :class="backdropPreview ? 'opacity-100' : 'opacity-60'">
-                            </template>
-
-                            <div class="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
-                                <i class="bi bi-cloud-arrow-up text-3xl text-emerald-400"></i>
-                                <span class="text-xs font-bold text-white/50 uppercase tracking-tighter">Klicke zum Hochladen</span>
-                                <span class="text-[10px] text-white/30 uppercase tracking-widest bg-black/50 px-3 py-1 rounded-full backdrop-blur-md border border-white/10" x-show="backdropPreview">Neue Datei gewählt</span>
-                            </div>
-
-                            <input type="file" name="backdrop_upload" x-ref="backdropInput" class="hidden" accept="image/*" @change="handleFileChange($event, 'backdrop')">
-                        </div>
-                        @error('backdrop_upload') <p class="text-red-400 text-[10px] mt-1 text-center font-bold uppercase tracking-widest">{{ $message }}</p> @enderror
-                        <p class="text-[10px] text-gray-500 text-center uppercase tracking-widest font-bold">Empfohlen: 1920x1080px (JPG/PNG)</p>
                     </div>
                 </div>
             </div>
 
             <!-- Media Section -->
-            <div class="glass p-8 rounded-3xl border-white/5 shadow-2xl">
-                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <i class="bi bi-play-circle text-red-500"></i>
-                    Medien & Links
+            <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl">
+                <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-10 flex items-center gap-3">
+                    <i class="bi bi-image-fill text-rose-500"></i>
+                    Visuelle Medien
                 </h3>
-                <div class="space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <!-- Cover -->
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-2 px-1">Filmplakat (Cover)</label>
+                        <div class="relative group aspect-[2/3] rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-rose-500/40 transition-all shadow-xl"
+                             @click="$refs.coverInput.click()">
+                            
+                            <template x-if="coverPreview || formData.cover_id">
+                                <img :src="coverPreview || getImageUrl(formData.cover_id, 'cover')" 
+                                     class="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                                     :class="coverPreview ? 'opacity-100' : 'opacity-60'">
+                            </template>
+
+                            <div class="relative z-10 flex flex-col items-center gap-4 p-8 text-center">
+                                <div class="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
+                                    <i class="bi bi-cloud-arrow-up text-2xl"></i>
+                                </div>
+                                <span class="text-[10px] font-black text-white/40 uppercase tracking-widest">Klicke zum Bearbeiten</span>
+                            </div>
+
+                            <input type="file" name="cover_upload" x-ref="coverInput" class="hidden" accept="image/*" @change="handleFileChange($event, 'cover')">
+                        </div>
+                    </div>
+
+                    <!-- Backdrop -->
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-2 px-1">Hintergrundbild (Backdrop)</label>
+                        <div class="relative group aspect-video rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-rose-500/40 transition-all shadow-xl"
+                             @click="$refs.backdropInput.click()">
+                            
+                            <template x-if="backdropPreview || formData.backdrop_id">
+                                <img :src="backdropPreview || getImageUrl(formData.backdrop_id, 'backdrop')" 
+                                     class="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                                     :class="backdropPreview ? 'opacity-100' : 'opacity-60'">
+                            </template>
+
+                            <div class="relative z-10 flex flex-col items-center gap-4 p-8 text-center">
+                                <div class="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
+                                    <i class="bi bi-image text-2xl"></i>
+                                </div>
+                                <span class="text-[10px] font-black text-white/40 uppercase tracking-widest">Klicke zum Bearbeiten</span>
+                            </div>
+
+                            <input type="file" name="backdrop_upload" x-ref="backdropInput" class="hidden" accept="image/*" @change="handleFileChange($event, 'backdrop')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Section -->
+            <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl">
+                <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-10 flex items-center gap-3">
+                    <i class="bi bi-text-left text-rose-500"></i>
+                    Inhalt & Trailer
+                </h3>
+                <div class="space-y-8">
                     <div>
-                        <label for="trailer_url" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Trailer URL (YouTube)</label>
+                        <label for="trailer_url" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">YouTube Trailer URL</label>
                         <input type="url" name="trailer_url" id="trailer_url" x-model="formData.trailer_url"
                                placeholder="https://www.youtube.com/watch?v=..."
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all">
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
                     </div>
 
                     <div>
-                        <label for="overview" class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Handlung / Beschreibung</label>
-                        <div class="rounded-3xl overflow-hidden" x-init="initQuill()">
+                        <label class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Detailbeschreibung</label>
+                        <div class="rounded-[2rem] overflow-hidden shadow-inner bg-black/20" x-init="initQuill()">
                             <div id="overview-editor"></div>
                             <input type="hidden" name="overview" x-model="formData.overview">
                         </div>
@@ -238,13 +219,13 @@
             </div>
 
             <!-- Footer Actions -->
-            <div class="flex items-center justify-end gap-4 pt-4">
-                <a href="{{ route('admin.movies.index') }}" class="px-8 py-3 rounded-2xl font-bold text-sm text-gray-400 hover:bg-white/5 transition-all">
-                    Abbrechen
+            <div class="flex items-center justify-end gap-6 pt-6 mb-12">
+                <a href="{{ route('admin.movies.index') }}" class="px-8 py-4 text-[10px] font-black text-white/20 hover:text-white uppercase tracking-widest transition-all">
+                    Verwerfen
                 </a>
-                <button type="submit" class="px-10 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">
-                    <i class="bi bi-save"></i>
-                    Änderungen speichern
+                <button type="submit" class="px-12 py-5 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] transition-all shadow-2xl shadow-rose-600/30 flex items-center gap-4 transform hover:scale-[1.03] active:scale-[0.98]">
+                    <i class="bi bi-save2 text-base"></i>
+                    Änderungen sichern
                 </button>
             </div>
         </form>
@@ -254,57 +235,52 @@
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 transform scale-95"
              x-transition:enter-end="opacity-100 transform scale-100"
-             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+             class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/95 backdrop-blur-xl"
              style="display: none;"
              x-cloak>
-            <div class="glass w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 max-h-[90vh] flex flex-col" @click.away="showModal = false">
-                <div class="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+            <div class="glass w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-3xl border border-white/10 max-h-[85vh] flex flex-col" @click.away="showModal = false">
+                <div class="p-10 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
                     <div>
-                        <h2 class="text-xl font-black text-white leading-tight">TMDb Suche</h2>
-                        <p class="text-white/50 text-[10px] uppercase font-bold tracking-widest mt-1">Informationen synchronisieren</p>
+                        <h2 class="text-3xl font-black text-white tracking-tight">TMDb Sync</h2>
+                        <p class="text-rose-500/60 text-[10px] font-black uppercase tracking-[0.3em] mt-2">Datenbank durchsuchen</p>
                     </div>
-                    <button @click="showModal = false" class="text-white/30 hover:text-white transition-colors">
+                    <button @click="showModal = false" class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 hover:text-white transition-all">
                         <i class="bi bi-x-lg text-xl"></i>
                     </button>
                 </div>
 
-                <div class="p-5 pb-1">
+                <div class="p-10 pb-4">
                     <div class="relative">
                         <input
                             type="text"
                             x-model="searchQuery"
                             @input.debounce.500ms="search()"
-                            placeholder="Titel suchen..."
-                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+                            placeholder="Filmtitel oder URL..."
+                            class="w-full bg-white/5 border border-white/10 rounded-[1.5rem] px-8 py-5 text-white placeholder-white/20 focus:outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500/50 transition-all font-bold"
                         >
-                        <div class="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-3">
-                            <div x-show="loading" class="animate-spin h-5 w-5 border-2 border-purple-500 border-t-transparent rounded-full"></div>
-                            <i class="bi bi-search text-white/20"></i>
+                        <div class="absolute right-8 top-1/2 -translate-y-1/2 flex items-center gap-4">
+                            <div x-show="loading" class="animate-spin h-6 w-6 border-2 border-rose-500 border-t-transparent rounded-full"></div>
+                            <i class="bi bi-search text-white/10 text-xl"></i>
                         </div>
                     </div>
                 </div>
 
-                <div class="overflow-y-auto p-5 pt-0 flex-1">
-                    <div class="grid grid-cols-1 gap-4">
+                <div class="overflow-y-auto p-10 pt-0 flex-1 custom-scrollbar">
+                    <div class="grid grid-cols-1 gap-5">
                         <template x-for="item in results" :key="item.id">
-                            <div @click="selectItem(item)" class="group flex items-center gap-4 p-4 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer">
-                                <div class="w-16 h-24 bg-white/5 rounded-lg overflow-hidden flex-shrink-0">
+                            <div @click="selectItem(item)" class="group flex items-center gap-6 p-6 rounded-[2rem] border border-white/5 bg-white/[0.02] hover:bg-white/[0.08] hover:border-rose-500/40 transition-all cursor-pointer">
+                                <div class="w-20 h-28 bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 border border-white/5 shadow-xl">
                                     <template x-if="item.poster_path">
-                                        <img :src="'https://image.tmdb.org/t/p/w92' + item.poster_path" class="w-full h-full object-cover">
-                                    </template>
-                                    <template x-if=\"!item.poster_path\">
-                                        <div class="w-full h-full flex items-center justify-center">
-                                            <i class="bi bi-camera-video text-white/10"></i>
-                                        </div>
+                                        <img :src="'https://image.tmdb.org/t/p/w92' + item.poster_path" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                                     </template>
                                 </div>
                                 <div class="flex-1">
-                                    <div class="text-white font-black" x-text="item.title || item.name"></div>
-                                    <div class="text-white/40 text-[10px] uppercase font-bold tracking-widest" x-text="(item.release_date || item.first_air_date || '').substring(0, 4)"></div>
-                                    <div class=\"text-white/30 text-xs mt-2 line-clamp-2\" x-text=\"item.overview\"></div>
+                                    <div class="text-white font-black text-lg group-hover:text-rose-400 transition-colors" x-text="item.title || item.name"></div>
+                                    <div class="text-rose-500/60 text-[10px] font-black uppercase tracking-widest mt-1" x-text="(item.release_date || item.first_air_date || '').substring(0, 4)"></div>
+                                    <div class="text-white/20 text-xs mt-3 line-clamp-2 italic leading-relaxed" x-text="item.overview"></div>
                                 </div>
-                                <div class=\"text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity\">
-                                    <i class=\"bi bi-check2-circle text-2xl\"></i>
+                                <div class="text-rose-500 opacity-0 group-hover:opacity-100 transition-all transform scale-50 group-hover:scale-100">
+                                    <i class="bi bi-check2-circle text-3xl"></i>
                                 </div>
                             </div>
                         </template>
@@ -397,17 +373,14 @@
                             placeholder: 'Filmhandlung hier eingeben...'
                         });
 
-                        // Set initial content
                         if (this.formData.overview) {
                             this.quill.root.innerHTML = this.formData.overview;
                         }
 
-                        // Sync Quill to Alpine
                         this.quill.on('text-change', () => {
                             this.formData.overview = this.quill.root.innerHTML;
                         });
 
-                        // Watch for programmatic changes (e.g. TMDb Import)
                         this.$watch('formData.overview', value => {
                             if (this.quill && value !== this.quill.root.innerHTML) {
                                 this.quill.root.innerHTML = value || '';
@@ -415,7 +388,6 @@
                         });
                     };
 
-                    // Wait for Quill to be available if script is still loading
                     if (typeof Quill === 'undefined') {
                         const interval = setInterval(() => {
                             if (typeof Quill !== 'undefined') {
@@ -473,7 +445,6 @@
                                 this.formData.backdrop_id = data.backdrop_path;
                             }
 
-                            // Extract Trailer
                             if (data.videos && data.videos.results) {
                                 const trailer = data.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
                                 if (trailer) {
@@ -481,7 +452,6 @@
                                 }
                             }
 
-                            // Extract Rating (FSK)
                             let fskRating = null;
                             if (data.release_dates && data.release_dates.results) {
                                 const de = data.release_dates.results.find(r => r.iso_3166_1 === 'DE');
@@ -509,7 +479,6 @@
             };
         }
 
-        // Handle Alpine.js component registration robustly
         if (window.Alpine) {
             Alpine.data('tmdbSearch', tmdbSearch);
         } else {

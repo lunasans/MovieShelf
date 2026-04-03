@@ -36,3 +36,4 @@ pub/
 **/*.tscom
 
 .agents/rules/zugangdaten.md
+.agents/rules/update-version.md
