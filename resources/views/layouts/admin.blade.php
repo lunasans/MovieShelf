@@ -138,12 +138,20 @@
                         class="mb-6 md:mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-400 animate-in fade-in slide-in-from-top-4 duration-500">
                         <i class="bi bi-check-circle-fill"></i> <span
                             class="text-sm font-bold">{{ session('success') }}</span> </div>
-                    @endif @if (session('error'))
+                    @endif @if ($errors->any())
                         <div
-                            class="mb-6 md:mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400 animate-in fade-in slide-in-from-top-4 duration-500">
-                            <i class="bi bi-exclamation-circle-fill"></i> <span
-                                class="text-sm font-bold">{{ session('error') }}</span> </div>
-                        @endif @if (isset($header))
+                            class="mb-6 md:mb-8 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex flex-col gap-2 text-rose-400 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div class="flex items-center gap-3">
+                                <i class="bi bi-exclamation-triangle-fill"></i> <span
+                                    class="text-sm font-bold">Bitte korrigiere die folgenden Fehler:</span>
+                            </div>
+                            <ul class="list-disc list-inside text-xs font-medium opacity-80 mt-2 pl-6">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif @if (isset($header))
                             <header class="mb-6 md:mb-8"> {{ $header }} </header>
                         @endif {{ $slot }}
             </div>

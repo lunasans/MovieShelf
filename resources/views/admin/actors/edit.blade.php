@@ -1,13 +1,76 @@
 <x-admin-layout>
     @section('header_title', 'Schauspieler bearbeiten')
 
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-4xl mx-auto" x-data="{ 
+        bio: @js($actor->bio),
+        quill: null,
+        init() {
+            const setup = () => {
+                this.quill = new Quill('#quill-editor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Biografie hier eingeben...'
+                });
+                if (this.bio) this.quill.root.innerHTML = this.bio;
+                this.quill.on('text-change', () => {
+                    this.bio = this.quill.root.innerHTML;
+                });
+            };
+            if (typeof Quill === 'undefined') {
+                const interval = setInterval(() => {
+                    if (typeof Quill !== 'undefined') { clearInterval(interval); setup(); }
+                }, 50);
+            } else { this.$nextTick(() => setup()); }
+        }
+    }">
         <div class="mb-6">
             <a href="{{ route('admin.actors.index') }}" class="text-sm text-gray-500 hover:text-blue-400 transition-colors flex items-center gap-2">
                 <i class="bi bi-arrow-left"></i>
                 Zurück zur Übersicht
             </a>
         </div>
+
+        @push('styles')
+        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+        <style>
+            .ql-toolbar.ql-snow {
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                background: rgba(15, 23, 42, 0.8) !important;
+                backdrop-filter: blur(10px);
+                border-top-left-radius: 1.5rem;
+                border-top-right-radius: 1.5rem;
+                padding: 12px 20px !important;
+            }
+            .ql-container.ql-snow {
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                border-top: none !important;
+                background: rgba(15, 23, 42, 0.5) !important;
+                border-bottom-left-radius: 1.5rem;
+                border-bottom-right-radius: 1.5rem;
+                font-family: inherit !important;
+                font-size: 0.875rem !important;
+            }
+            .ql-editor {
+                min-height: 250px;
+                color: rgba(255, 255, 255, 0.9) !important;
+                padding: 20px !important;
+                line-height: 1.625 !important;
+            }
+            .ql-snow .ql-stroke { stroke: rgba(255, 255, 255, 0.6) !important; }
+            .ql-snow .ql-fill { fill: rgba(255, 255, 255, 0.6) !important; }
+            .ql-snow .ql-picker { color: rgba(255, 255, 255, 0.6) !important; }
+            .ql-snow.ql-toolbar button:hover .ql-stroke,
+            .ql-snow.ql-toolbar button.ql-active .ql-stroke { stroke: #3b82f6 !important; }
+            .ql-snow.ql-toolbar button:hover .ql-fill,
+            .ql-snow.ql-toolbar button.ql-active .ql-fill { fill: #3b82f6 !important; }
+        </style>
+        @endpush
 
         <form action="{{ route('admin.actors.update', $actor) }}" method="POST" class="space-y-8">
             @csrf
@@ -63,8 +126,8 @@
                 </h3>
 
                 <div>
-                    <textarea name="biography" id="biography" rows="8"
-                              class="w-full bg-white/5 border border-white/10 rounded-3xl py-4 px-4 text-white focus:outline-none focus:border-blue-500/50 transition-all leading-relaxed">{{ old('biography', $actor->biography) }}</textarea>
+                    <div id="quill-editor"></div>
+                    <input type="hidden" name="bio" x-model="bio">
                 </div>
             </div>
 
@@ -80,4 +143,7 @@
             </div>
         </form>
     </div>
+    @push('scripts')
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    @endpush
 </x-admin-layout>

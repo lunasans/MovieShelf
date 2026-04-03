@@ -110,10 +110,10 @@
                                     {{ __('Biografie') }}
                                     <div class="h-px bg-white/5 flex-1"></div>
                                 </h2>
-                                <p class="text-white/70 leading-relaxed text-xl lg:text-2xl font-medium italic tracking-tight relative pl-10">
+                                <div class="text-white/70 leading-relaxed text-xl lg:text-2xl font-medium tracking-tight relative pl-10 prose-movie">
                                     <span class="absolute left-0 top-0 text-7xl text-blue-500/20 leading-none">"</span>
-                                    {{ $actor->bio }}
-                                </p>
+                                    {!! \App\Services\ShortcodeService::parse($actor->bio) !!}
+                                </div>
                             </div>
                          @endif
 
@@ -187,7 +187,9 @@
                      </div>
                      <div class="w-full lg:w-2/3">
                         <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 uppercase">{{ $actor->full_name }}</h1>
-                        <p class="text-gray-300 italic">{{ $actor->bio }}</p>
+                        <div class="text-gray-300 prose-movie">
+                            {!! \App\Services\ShortcodeService::parse($actor->bio) !!}
+                        </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mt-12">
                              @foreach($movies as $movie)
                                 <a href="{{ route('dashboard', ['movie' => $movie->id]) }}" class="group">
