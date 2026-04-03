@@ -72,9 +72,26 @@ class ActorBotService
             // Try to find tmdb_id via search
             $search = $this->tmdb->searchPerson($actor->full_name);
             if (isset($search['results']) && count($search['results']) > 0) {
-                // Heuristic: take the first match
-                $foundTmdbId = $search['results'][0]['id'];
+                // Heuristic: take the first match but only if the name is reasonably similar
+                $firstResult = $search['results'][0];
+                $foundTmdbId = $firstResult['id'];
+                $foundName = $firstResult['name'];
+
+                // Safety Check: Name Similarity (Simple exact match or fuzzy)
+                $dbName = strtolower($actor->full_name);
+                $tmdbNameLower = strtolower($foundName);
                 
+                // If it's not a very close match, skip it for safety
+                if (!str_contains($tmdbNameLower, $dbName) && !str_contains($dbName, $tmdbNameLower)) {
+                     BotLog::create([
+                        'bot_run_id' => $botRun->id,
+                        'actor_id' => $actor->id,
+                        'status' => 'skipped',
+                        'message' => "Sicherheits-Skip: Name '{$foundName}' (TMDb) weicht zu stark von '{$actor->full_name}' (DB) ab.",
+                    ]);
+                    return;
+                }
+
                 // Check if this TMDb ID is already taken by another actor
                 $existingActor = Actor::where('tmdb_id', $foundTmdbId)->first();
                 
