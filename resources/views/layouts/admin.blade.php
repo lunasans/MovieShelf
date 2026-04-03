@@ -236,7 +236,7 @@
                 <x-footer :compact="true" />
             </div>
         </main>
-    </div> <x-theme-switcher /> @stack('scripts')
+    </div> @stack('scripts')
 </body>
 
 </html>
