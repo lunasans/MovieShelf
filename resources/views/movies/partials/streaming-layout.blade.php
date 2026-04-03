@@ -39,9 +39,9 @@
                 <h1 class="text-5xl md:text-7xl font-black text-white tracking-tighter mb-4 drop-shadow-2xl">
                     {{ $movie->title }}
                 </h1>
-                <p class="text-white/70 text-lg line-clamp-3 mb-8 max-w-xl font-medium">
+                <div class="text-white/70 text-lg line-clamp-3 mb-8 max-w-xl font-medium hero-overview">
                     {!! \App\Services\ShortcodeService::parse($movie->overview) ?: __('Experience the latest cinematic masterpiece added to your collection.') !!}
-                </p>
+                </div>
                 <div class="flex items-center gap-4">
                     <a href="{{ route('movies.show', $movie) }}" 
                             class="px-8 py-4 bg-white text-black rounded-2xl font-black text-lg flex items-center gap-3 hover:scale-105 transition-all shadow-xl active:scale-95">
@@ -182,10 +182,13 @@
                      <div @click="window.location.href = '{{ route('movies.show', $movie) }}'" 
                          class="w-[160px] md:w-[220px] shrink-0 aspect-[2/3] relative rounded-[2rem] overflow-hidden glass-streaming border border-white/10 group cursor-pointer hover:border-blue-500/50 hover:scale-105 transition-all duration-500 shadow-2xl">
                         <img src="{{ $movie->cover_url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        {{-- Permanent subtle bottom shadow for legibility on light covers --}}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-0"></div>
+                        {{-- Hover gradient --}}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         
                         <div class="absolute bottom-0 left-0 right-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                             <h4 class="text-xs font-black text-white uppercase tracking-wider mb-2 drop-shadow-lg">{{ $movie->title }}</h4>
+                             <h4 class="text-xs font-black text-white uppercase tracking-wider mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] truncate">{{ $movie->title }}</h4>
                              <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
                                  <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest">{{ $movie->year }}</span>
                                  <div class="h-1 w-1 bg-white/20 rounded-full"></div>
@@ -254,4 +257,10 @@
     .streaming-container section:nth-child(1) { animation-delay: 0.1s; }
     .streaming-container section:nth-child(2) { animation-delay: 0.3s; }
     .streaming-container section:nth-child(3) { animation-delay: 0.5s; }
+
+    /* Fix line-clamp for Hero Overview containing Quill HTML */
+    .hero-overview p, .hero-overview div {
+        display: inline !important;
+        margin: 0 !important;
+    }
 </style>
