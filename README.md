@@ -1,5 +1,5 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
-# MovieShelf v2.5.6 - Dein digitales Filmregal
+# MovieShelf v2.5.9 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -171,12 +171,22 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (2.5.6)
+## 🚀 Letzte Änderungen (v2.5.9)
 
-- **New Feature**: Browser-basierter Arbeitsmodus für den Actor-Bot. Der Bot arbeitet nun auch ohne Terminal-Worker weiter, solange die Admin-Seite geöffnet bleibt.
-- **Improved**: Automatisches Fortschritts-Frontend für den Bot mit AJAX-Steuerung.
+- **New Feature**: Manuelle Darsteller-Zuweisung in der Filmbearbeitung. Stars können nun gesucht und mit Rollen/Hauptrollen-Status manuell verknüpft werden.
+- **Fixed**: Die Darsteller-Suche im Admin-Panel unterstützt nun die kombinierte Vor- und Nachnamensuche.
+- **Fixed**: Behebung eines Fehlers im Quill-Editor, bei dem Biografien im Bearbeitungsmodus nicht geladen wurden.
 
-## 🚀 Version v2.5.5 (Historie)
+## 🚀 Version v2.5.8 (Historie)
+
+- **Fixed**: Die öffentliche Schauspieler-Suche wurde für "Vorname Nachname" Kombinationen optimiert (z.B. "Eddie Murphy").
+
+## 🚀 Version v2.5.7 (Historie)
+
+- **Improved**: Der ActorBot validiert nun lokale Zuordnungen gegen die offiziellen TMDb-Credits.
+- **Feature**: Automatischer Pruning-Prozess zur Bereinigung fehlerhafter Film-Schauspieler-Verknüpfungen.
+
+## 🚀 Version v2.5.6 (Historie)
 
 - **Improved**: Die System-Update-Seite im Admin-Bereich zeigt nun wieder den aktuellen Commit-Hash und die letzten 5 Änderungen aus dem Git-Log an.
 - **Visual**: Optimiertes Layout der Update-Ansicht für bessere Übersicht über den Systemstatus.
@@ -304,7 +314,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version:** 2.5.7  - Laravel Framework Edition
+**Version:** 2.5.9  - Laravel Framework Edition
 
 **Letztes Update**: 3. April 2026  
 **Status**: Aktiv entwickelt

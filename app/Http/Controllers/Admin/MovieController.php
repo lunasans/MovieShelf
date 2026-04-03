@@ -83,12 +83,28 @@ class MovieController extends Controller
             'backdrop_id' => 'nullable|string',
             'cover_upload' => 'nullable|image|max:4096',
             'backdrop_upload' => 'nullable|image|max:10240',
+            'actors' => 'nullable|array',
+            'actors.*.id' => 'required|integer|exists:actors,id',
+            'actors.*.role' => 'nullable|string|max:255',
+            'actors.*.is_main_role' => 'nullable|boolean',
+            'actors.*.sort_order' => 'required|integer',
         ]);
 
         $this->handleManualUploads($validated, $request);
         $this->handleImageDownloads($validated);
 
-        if (! empty($validated['tmdb_id'])) {
+        // Sync Actors: Prefer manual list from request, fallback to TMDb sync if empty but ID present
+        if ($request->has('actors')) {
+            $actorSyncData = [];
+            foreach ($request->actors as $actorData) {
+                $actorSyncData[$actorData['id']] = [
+                    'role' => $actorData['role'] ?? '',
+                    'is_main_role' => isset($actorData['is_main_role']),
+                    'sort_order' => $actorData['sort_order'] ?? 0,
+                ];
+            }
+            $movie->actors()->sync($actorSyncData);
+        } elseif (! empty($validated['tmdb_id'])) {
             $this->syncActors($movie, $validated, $tmdb);
         }
 

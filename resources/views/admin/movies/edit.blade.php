@@ -194,26 +194,83 @@
                 </div>
             </div>
 
-            <!-- Content Section -->
-            <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl">
-                <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-10 flex items-center gap-3">
-                    <i class="bi bi-text-left text-rose-500"></i>
-                    Inhalt & Trailer
-                </h3>
-                <div class="space-y-8">
-                    <div>
-                        <label for="trailer_url" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">YouTube Trailer URL</label>
-                        <input type="url" name="trailer_url" id="trailer_url" x-model="formData.trailer_url"
-                               placeholder="https://www.youtube.com/watch?v=..."
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Detailbeschreibung</label>
-                        <div class="rounded-[2rem] overflow-hidden shadow-inner bg-black/20" x-init="initQuill()">
-                            <div id="overview-editor"></div>
-                            <input type="hidden" name="overview" x-model="formData.overview">
+            <!-- Actors Section -->
+            <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden" x-data="actorManagement()">
+                <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 to-transparent pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-10">
+                    <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] flex items-center gap-3">
+                        <i class="bi bi-people-fill text-rose-500"></i>
+                        Darsteller & Rollen
+                    </h3>
+                    <div class="relative w-64">
+                        <input type="text" x-model="searchQuery" @input.debounce.300ms="searchActors()" 
+                               placeholder="Darsteller suchen..."
+                               class="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-4 text-xs text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        
+                        <!-- Search Results Dropdown -->
+                        <div x-show="searchResults.length > 0" 
+                             class="absolute z-50 left-0 right-0 mt-2 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto custom-scrollbar"
+                             x-transition @click.away="searchResults = []">
+                            <template x-for="actor in searchResults" :key="actor.id">
+                                <div @click="addActor(actor)" class="p-3 hover:bg-white/5 cursor-pointer flex items-center gap-3 border-b border-white/5 last:border-0 group">
+                                    <div class="w-8 h-10 rounded-md bg-white/5 overflow-hidden flex-shrink-0">
+                                        <img :src="actor.profile_path ? (actor.profile_path.startsWith('http') ? actor.profile_path : '/storage/'+actor.profile_path) : 'https://ui-avatars.com/api/?name='+actor.first_name+'+'+actor.last_name+'&background=random'" 
+                                             class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-[10px] font-bold text-white group-hover:text-rose-400" x-text="actor.first_name + ' ' + actor.last_name"></div>
+                                        <div class="text-[8px] text-white/30 uppercase" x-text="actor.nationality || 'Unbekannt'"></div>
+                                    </div>
+                                    <i class="bi bi-plus-lg text-rose-500 opacity-0 group-hover:opacity-100 transition-all"></i>
+                                </div>
+                            </template>
                         </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <template x-for="(actor, index) in actors" :key="actor.id">
+                        <div class="flex items-center gap-6 p-4 rounded-3xl bg-white/[0.02] border border-white/5 group hover:border-white/10 transition-all">
+                            <!-- Hidden Inputs for Form Submission -->
+                            <input type="hidden" :name="'actors['+index+'][id]'" :value="actor.id">
+                            
+                            <div class="w-12 h-16 rounded-xl bg-white/5 overflow-hidden flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
+                                <img :src="actor.profile_path ? (actor.profile_path.startsWith('http') ? actor.profile_path : '/storage/'+actor.profile_path) : 'https://ui-avatars.com/api/?name='+actor.first_name+'+'+actor.last_name+'&background=random'" 
+                                     class="w-full h-full object-cover">
+                            </div>
+                            
+                            <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                <div class="md:col-span-1">
+                                    <div class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1 italic">Name</div>
+                                    <div class="text-xs font-bold text-white" x-text="actor.first_name + ' ' + actor.last_name"></div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <div class="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Rolle / Charakter</div>
+                                    <input type="text" :name="'actors['+index+'][role]'" x-model="actor.pivot.role"
+                                           class="w-full bg-black/20 border border-white/5 rounded-xl py-2 px-4 text-xs text-white focus:outline-none focus:border-rose-500/50 transition-all font-medium">
+                                </div>
+                                <div class="md:col-span-1 flex items-center justify-end gap-4">
+                                    <div class="text-right">
+                                        <div class="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Hauptrolle</div>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" :name="'actors['+index+'][is_main_role]'" value="1" x-model="actor.pivot.is_main_role" class="sr-only peer">
+                                            <div class="w-9 h-5 bg-white/5 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/20 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-500 peer-checked:after:bg-white shadow-inner"></div>
+                                        </label>
+                                    </div>
+                                    <button type="button" @click="removeActor(index)" class="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-white/20 hover:bg-rose-500/20 hover:text-rose-500 transition-all">
+                                        <i class="bi bi-trash text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Sort Order (Hidden) -->
+                            <input type="hidden" :name="'actors['+index+'][sort_order]'" :value="index">
+                        </div>
+                    </template>
+                    
+                    <div x-show="actors.length === 0" class="text-center py-12 rounded-[2rem] border-2 border-dashed border-white/5 text-white/20">
+                        <i class="bi bi-person-slash text-4xl block mb-4"></i>
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em]">Keine Darsteller zugewiesen</p>
                     </div>
                 </div>
             </div>
@@ -479,11 +536,67 @@
             };
         }
 
+        function actorManagement() {
+            return {
+                searchQuery: '',
+                searchResults: [],
+                loading: false,
+                actors: {!! json_encode($movie->actors()->orderBy('pivot_sort_order')->get()->map(function($actor) {
+                    return [
+                        'id' => $actor->id,
+                        'first_name' => $actor->first_name,
+                        'last_name' => $actor->last_name,
+                        'profile_path' => $actor->profile_path,
+                        'pivot' => [
+                            'role' => $actor->pivot->role,
+                            'is_main_role' => (bool)$actor->pivot->is_main_role,
+                            'sort_order' => $actor->pivot->sort_order
+                        ]
+                    ];
+                })) !!},
+
+                searchActors() {
+                    if (this.searchQuery.length < 2) {
+                        this.searchResults = [];
+                        return;
+                    }
+                    this.loading = true;
+                    fetch(`{{ route('admin.actors.search') }}?q=${encodeURIComponent(this.searchQuery)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            // Filter out already added actors
+                            const existingIds = this.actors.map(a => a.id);
+                            this.searchResults = data.filter(a => !existingIds.includes(a.id));
+                            this.loading = false;
+                        });
+                },
+
+                addActor(actor) {
+                    this.actors.push({
+                        ...actor,
+                        pivot: {
+                            role: '',
+                            is_main_role: false,
+                            sort_order: this.actors.length
+                        }
+                    });
+                    this.searchQuery = '';
+                    this.searchResults = [];
+                },
+
+                removeActor(index) {
+                    this.actors.splice(index, 1);
+                }
+            };
+        }
+
         if (window.Alpine) {
             Alpine.data('tmdbSearch', tmdbSearch);
+            Alpine.data('actorManagement', actorManagement);
         } else {
             document.addEventListener('alpine:init', () => {
                 Alpine.data('tmdbSearch', tmdbSearch);
+                Alpine.data('actorManagement', actorManagement);
             });
         }
     </script>

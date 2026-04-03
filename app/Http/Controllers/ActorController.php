@@ -67,7 +67,9 @@ class ActorController extends Controller
             ->when($query, function ($q) use ($query) {
                 $q->where(function ($sub) use ($query) {
                     $sub->where('first_name', 'like', "%{$query}%")
-                        ->orWhere('last_name', 'like', "%{$query}%");
+                        ->orWhere('last_name', 'like', "%{$query}%")
+                        ->orWhereRaw("first_name || ' ' || last_name LIKE ?", ["%{$query}%"])
+                        ->orWhereRaw("last_name || ' ' || first_name LIKE ?", ["%{$query}%"]);
                 });
             })
             ->when($letter && preg_match('/^[A-Z#]$/', $letter), function ($q) use ($letter) {

@@ -141,7 +141,7 @@
                         
                         <div class="rounded-[2rem] overflow-hidden shadow-inner bg-black/20" x-init="initQuill()">
                             <div id="biography-editor"></div>
-                            <input type="hidden" name="biography" x-model="formData.biography">
+                            <input type="hidden" name="bio" x-model="formData.bio">
                         </div>
                     </div>
 
@@ -166,7 +166,7 @@
             return {
                 quill: null,
                 formData: {
-                    biography: {!! json_encode(old('biography', $actor->biography)) !!}
+                    bio: {!! json_encode(old('bio', $actor->bio)) !!}
                 },
                 initQuill() {
                     const setup = () => {
@@ -184,12 +184,12 @@
                             placeholder: 'Schreiben Sie hier die Biografie...'
                         });
 
-                        if (this.formData.biography) {
-                            this.quill.root.innerHTML = this.formData.biography;
+                        if (this.formData.bio) {
+                            this.quill.root.innerHTML = this.formData.bio;
                         }
 
                         this.quill.on('text-change', () => {
-                            this.formData.biography = this.quill.root.innerHTML;
+                            this.formData.bio = this.quill.root.innerHTML;
                         });
                     };
 

@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () use ($profilePath) {
         Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('dashboard');
         Route::resource('movies', \App\Http\Controllers\Admin\MovieController::class);
         Route::resource('actors', \App\Http\Controllers\Admin\ActorController::class);
+        Route::get('actors-search', [\App\Http\Controllers\Admin\ActorController::class, 'search'])->name('actors.search');
 
         Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');

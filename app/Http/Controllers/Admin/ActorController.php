@@ -19,7 +19,9 @@ class ActorController extends Controller
             $search = $request->q;
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', '%'.$search.'%')
-                    ->orWhere('last_name', 'like', '%'.$search.'%');
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhereRaw("first_name || ' ' || last_name LIKE ?", ["%{$search}%"])
+                    ->orWhereRaw("last_name || ' ' || first_name LIKE ?", ["%{$search}%"]);
             });
         }
         $actors = $query->withCount('movies')
@@ -28,6 +30,28 @@ class ActorController extends Controller
             ->paginate(20);
 
         return view('admin.actors.index', compact('actors'));
+    }
+
+    /**
+     * Search actors for JSON response (Manual assignment).
+     */
+    public function search(Request $request)
+    {
+        $search = $request->get('q');
+        if (strlen($search) < 2) {
+            return response()->json([]);
+        }
+
+        $actors = Actor::where(function ($q) use ($search) {
+            $q->where('first_name', 'like', "%{$search}%")
+                ->orWhere('last_name', 'like', "%{$search}%")
+                ->orWhereRaw("first_name || ' ' || last_name LIKE ?", ["%{$search}%"])
+                ->orWhereRaw("last_name || ' ' || first_name LIKE ?", ["%{$search}%"]);
+        })
+        ->limit(10)
+        ->get();
+
+        return response()->json($actors);
     }
 
     /**
