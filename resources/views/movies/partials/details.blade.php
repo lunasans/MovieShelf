@@ -1,6 +1,15 @@
 <style>
-    .prose-movie p, .prose-movie div { margin-bottom: 1rem; display: block; }
-    .prose-movie p:last-child, .prose-movie div:last-child { margin-bottom: 0; }
+    .prose-movie {
+        white-space: pre-wrap !important;
+        word-wrap: break-word;
+        display: block !important;
+    }
+    .prose-movie p, .prose-movie div { 
+        margin-bottom: 1.5rem !important; 
+        display: block !important; 
+        line-height: 1.8;
+    }
+    .prose-movie p:last-child, .prose-movie div:last-child { margin-bottom: 0 !important; }
     .prose-movie h1, .prose-movie h2, .prose-movie h3, .prose-movie h4 { 
         margin-top: 1.5rem; 
         margin-bottom: 0.75rem; 
@@ -15,6 +24,19 @@
     .prose-movie li { margin-bottom: 0.25rem; }
     .prose-movie strong { font-weight: bold; color: white; }
     .prose-movie u { text-decoration: underline; text-underline-offset: 4px; }
+    .prose-movie .ql-align-center { text-align: center; }
+    .prose-movie .ql-align-right { text-align: right; }
+    .prose-movie .ql-align-justify { text-align: justify; }
+    .prose-movie .ql-size-small { font-size: 0.75em; }
+    .prose-movie .ql-size-large { font-size: 1.5em; }
+    .prose-movie .ql-size-huge { font-size: 2.5em; }
+    .prose-movie blockquote {
+        border-left: 4px solid #3b82f6;
+        padding-left: 1.5rem;
+        margin-left: 0;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.6);
+    }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
@@ -182,7 +204,7 @@
                 </h3>
                 <div class="relative">
                     <div class="absolute -left-8 top-0 bottom-0 w-1 bg-blue-600 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.5)] opacity-50"></div>
-                    <div class="text-white/80 leading-relaxed text-xl lg:text-2xl font-medium italic prose-movie max-w-5xl tracking-tight">
+                    <div class="text-white/80 leading-relaxed text-xl lg:text-2xl font-medium prose-movie max-w-5xl tracking-tight" style="white-space: pre-wrap !important;">
                         {!! \App\Services\ShortcodeService::parse($movie->overview) !!}
                     </div>
                 </div>
@@ -298,7 +320,7 @@
                                  x-collapse
                                  class="border-t border-white/5 bg-black/20">
                                 @if($season->overview)
-                                    <div class="p-4 text-[11px] text-gray-400 border-b border-white/5 italic">
+                                    <div class="p-4 text-[11px] text-gray-400 border-b border-white/5 italic prose-movie">
                                         {!! \App\Services\ShortcodeService::parse($season->overview) !!}
                                     </div>
                                 @endif
@@ -310,7 +332,7 @@
                                                 <h4 class="text-xs font-bold text-white">{{ $episode->title }}</h4>
                                             </div>
                                             @if($episode->overview)
-                                                <p class="text-[10px] text-gray-500 leading-relaxed ml-10 line-clamp-2">
+                                                <p class="text-[10px] text-gray-500 leading-relaxed ml-10 line-clamp-2 prose-movie">
                                                     {!! \App\Services\ShortcodeService::parse($episode->overview) !!}
                                                 </p>
                                             @endif

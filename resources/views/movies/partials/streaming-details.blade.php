@@ -1,3 +1,44 @@
+<style>
+    .prose-movie {
+        white-space: pre-wrap !important;
+        word-wrap: break-word;
+        display: block !important;
+    }
+    .prose-movie p, .prose-movie div { 
+        margin-bottom: 1.5rem !important; 
+        display: block !important; 
+        line-height: 1.8;
+    }
+    .prose-movie p:last-child, .prose-movie div:last-child { margin-bottom: 0 !important; }
+    .prose-movie h1, .prose-movie h2, .prose-movie h3, .prose-movie h4 { 
+        margin-top: 1.5rem; 
+        margin-bottom: 0.75rem; 
+        font-weight: bold; 
+        display: block;
+        color: white;
+    }
+    .prose-movie h1:first-child, .prose-movie h2:first-child, .prose-movie p:first-child { margin-top: 0; }
+    .prose-movie ul, .prose-movie ol { margin-bottom: 1rem; padding-left: 1.5rem; display: block; }
+    .prose-movie ul { list-style-type: disc; }
+    .prose-movie ol { list-style-type: decimal; }
+    .prose-movie li { margin-bottom: 0.25rem; }
+    .prose-movie strong { font-weight: bold; color: white; }
+    .prose-movie u { text-decoration: underline; text-underline-offset: 4px; }
+    .prose-movie .ql-align-center { text-align: center; }
+    .prose-movie .ql-align-right { text-align: right; }
+    .prose-movie .ql-align-justify { text-align: justify; }
+    .prose-movie .ql-size-small { font-size: 0.75em; }
+    .prose-movie .ql-size-large { font-size: 1.5em; }
+    .prose-movie .ql-size-huge { font-size: 2.5em; }
+    .prose-movie blockquote {
+        border-left: 4px solid #ef4444;
+        padding-left: 1.5rem;
+        margin-left: 0;
+        font-style: italic;
+        color: rgba(255, 255, 255, 0.6);
+    }
+</style>
+
 <div class="relative min-h-screen text-white overflow-x-hidden"
      x-data="{
         showTrailer: false,
@@ -114,7 +155,7 @@
                         {{ __('Storyline') }}
                         <div class="h-1 w-12 bg-red-600 rounded-full"></div>
                     </h3>
-                    <div class="text-xl text-white/80 leading-relaxed font-medium">
+                    <div class="text-lg md:text-xl text-white/80 leading-relaxed font-medium prose-movie" style="white-space: pre-wrap !important;">
                         {!! \App\Services\ShortcodeService::parse($movie->overview) ?: __('No description available for this cinematic piece.') !!}
                     </div>
                     
@@ -193,7 +234,7 @@
                                                         <h4 class="text-sm font-black text-white uppercase group-hover/episode:text-emerald-400 transition-colors italic tracking-tight">{{ $episode->title }}</h4>
                                                     </div>
                                                     @if($episode->overview)
-                                                        <p class="text-[11px] text-white/40 leading-relaxed ml-16 line-clamp-3 font-medium italic">
+                                                        <p class="text-[11px] text-white/40 leading-relaxed ml-16 line-clamp-3 font-medium italic prose-movie">
                                                             {!! \App\Services\ShortcodeService::parse($episode->overview) !!}
                                                         </p>
                                                     @endif

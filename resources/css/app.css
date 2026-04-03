@@ -179,6 +179,34 @@ h1, h2, h3, h4, h5, h6 {
 .prose-movie li {
     margin-bottom: 0.25rem;
 }
+
+/* Quill Specific Formatting */
+.prose-movie .ql-align-center { text-align: center; }
+.prose-movie .ql-align-right { text-align: right; }
+.prose-movie .ql-align-justify { text-align: justify; }
+.prose-movie .ql-size-small { font-size: 0.75em; }
+.prose-movie .ql-size-large { font-size: 1.5em; }
+.prose-movie .ql-size-huge { font-size: 2.5em; }
+.prose-movie blockquote {
+    border-left: 4px solid #3b82f6;
+    padding-left: 1.5rem;
+    margin-left: 0;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.6);
+}
+.prose-movie code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+.prose-movie pre {
+    background: #1e293b;
+    padding: 1rem;
+    border-radius: 12px;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
 /* Streaming Layout Specifics */
 .layout-streaming {
     display: block !important;

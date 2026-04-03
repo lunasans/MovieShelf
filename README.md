@@ -173,7 +173,14 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.4.0)
+## 🚀 Letzte Änderungen (v2.4.1)
+
+- **Quill Formatting Recovery**: Vollständige Wiederherstellung aller Editor-Formatierungen (Fett, Kursiv, Listen, Ausrichtung, Textgrößen) in der Detailansicht.
+- **Smart Line Break Handling**: Einführung von `white-space: pre-wrap` um sicherzustellen, dass sowohl HTML-Absätze als auch einfache Zeilenumbrüche (Plain Text) korrekt dargestellt werden.
+- **Improved Readability**: Entfernung von unnötigen Italic-Styles in den Detail-Texten für eine klarere und modernere Typografie.
+- **Consistency Fixes**: Angleichung der Storyline-Darstellung zwischen Streaming- und Classic-Layout für ein einheitliches Benutzererlebnis.
+
+## 🚀 Version v2.4.0 (Historie)
 
 - **Manual Backdrop & Cover Upload**: Administratoren können nun eigene Backdrop- und Cover-Bilder direkt in der Filmbearbeitung hochladen, um TMDb-Daten zu korrigieren oder zu ergänzen.
 - **Improved Backdrop Logic**: Behebung von Problemen bei der Backdrop-Anzeige (z.B. Alien-Saga), indem manuelle Uploads die automatische Fallback-Logik priorisiert überschreiben.
