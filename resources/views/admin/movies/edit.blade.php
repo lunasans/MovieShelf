@@ -78,7 +78,7 @@
             </button>
         </div>
 
-        <form action="{{ route('admin.movies.update', $movie) }}" method="POST" class="space-y-8">
+        <form action="{{ route('admin.movies.update', $movie) }}" method="POST" enctype="multipart/form-data" class="space-y-8">
             @csrf
             @method('PUT')
 
@@ -153,6 +153,66 @@
                 </div>
             </div>
 
+            <!-- Visuals Section -->
+            <div class="glass p-8 rounded-3xl border-white/5 shadow-2xl">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <i class="bi bi-image text-emerald-400"></i>
+                    Cover & Backdrop
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Cover Upload -->
+                    <div class="space-y-4">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Cover Image</label>
+                        <div class="relative group aspect-[2/3] rounded-2xl overflow-hidden bg-white/5 border border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-all"
+                             @click="$refs.coverInput.click()">
+                            
+                            <!-- Preview -->
+                            <template x-if="coverPreview || formData.cover_id">
+                                <img :src="coverPreview || getImageUrl(formData.cover_id, 'cover')" 
+                                     class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                                     :class="coverPreview ? 'opacity-100' : 'opacity-60'">
+                            </template>
+
+                            <div class="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
+                                <i class="bi bi-cloud-arrow-up text-3xl text-emerald-400"></i>
+                                <span class="text-xs font-bold text-white/50 uppercase tracking-tighter">Klicke zum Hochladen</span>
+                                <span class="text-[10px] text-white/30 uppercase tracking-widest bg-black/50 px-3 py-1 rounded-full backdrop-blur-md border border-white/10" x-show="coverPreview">Neue Datei gewählt</span>
+                            </div>
+
+                            <input type="file" name="cover_upload" x-ref="coverInput" class="hidden" accept="image/*" @change="handleFileChange($event, 'cover')">
+                        </div>
+                        @error('cover_upload') <p class="text-red-400 text-[10px] mt-1 text-center font-bold uppercase tracking-widest">{{ $message }}</p> @enderror
+                        <p class="text-[10px] text-gray-500 text-center uppercase tracking-widest font-bold">Empfohlen: 500x750px (JPG/PNG)</p>
+                    </div>
+
+                    <!-- Backdrop Upload -->
+                    <div class="space-y-4">
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Backdrop Image</label>
+                        <div class="relative group aspect-video rounded-2xl overflow-hidden bg-white/5 border border-white/10 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-all"
+                             @click="$refs.backdropInput.click()">
+                            
+                            <!-- Preview -->
+                            <template x-if="backdropPreview || formData.backdrop_id">
+                                <img :src="backdropPreview || getImageUrl(formData.backdrop_id, 'backdrop')" 
+                                     class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                                     :class="backdropPreview ? 'opacity-100' : 'opacity-60'">
+                            </template>
+
+                            <div class="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
+                                <i class="bi bi-cloud-arrow-up text-3xl text-emerald-400"></i>
+                                <span class="text-xs font-bold text-white/50 uppercase tracking-tighter">Klicke zum Hochladen</span>
+                                <span class="text-[10px] text-white/30 uppercase tracking-widest bg-black/50 px-3 py-1 rounded-full backdrop-blur-md border border-white/10" x-show="backdropPreview">Neue Datei gewählt</span>
+                            </div>
+
+                            <input type="file" name="backdrop_upload" x-ref="backdropInput" class="hidden" accept="image/*" @change="handleFileChange($event, 'backdrop')">
+                        </div>
+                        @error('backdrop_upload') <p class="text-red-400 text-[10px] mt-1 text-center font-bold uppercase tracking-widest">{{ $message }}</p> @enderror
+                        <p class="text-[10px] text-gray-500 text-center uppercase tracking-widest font-bold">Empfohlen: 1920x1080px (JPG/PNG)</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Media Section -->
             <div class="glass p-8 rounded-3xl border-white/5 shadow-2xl">
                 <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -197,34 +257,34 @@
              class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
              style="display: none;"
              x-cloak>
-            <div class="glass w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 max-h-[90vh] flex flex-col" @click.away="showModal = false">
-                <div class="p-8 border-b border-white/10 flex justify-between items-center bg-white/5">
+            <div class="glass w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 max-h-[90vh] flex flex-col" @click.away="showModal = false">
+                <div class="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
                     <div>
-                        <h2 class="text-2xl font-black text-white leading-tight">TMDb Suche</h2>
+                        <h2 class="text-xl font-black text-white leading-tight">TMDb Suche</h2>
                         <p class="text-white/50 text-[10px] uppercase font-bold tracking-widest mt-1">Informationen synchronisieren</p>
                     </div>
                     <button @click="showModal = false" class="text-white/30 hover:text-white transition-colors">
-                        <i class="bi bi-x-lg text-2xl"></i>
+                        <i class="bi bi-x-lg text-xl"></i>
                     </button>
                 </div>
 
-                <div class="p-8 pb-4">
+                <div class="p-5 pb-1">
                     <div class="relative">
                         <input
                             type="text"
                             x-model="searchQuery"
                             @input.debounce.500ms="search()"
                             placeholder="Titel suchen..."
-                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all"
                         >
-                        <div class="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-3">
+                        <div class="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-3">
                             <div x-show="loading" class="animate-spin h-5 w-5 border-2 border-purple-500 border-t-transparent rounded-full"></div>
                             <i class="bi bi-search text-white/20"></i>
                         </div>
                     </div>
                 </div>
 
-                <div class="overflow-y-auto p-8 pt-0 flex-1">
+                <div class="overflow-y-auto p-5 pt-0 flex-1">
                     <div class="grid grid-cols-1 gap-4">
                         <template x-for="item in results" :key="item.id">
                             <div @click="selectItem(item)" class="group flex items-center gap-4 p-4 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer">
@@ -277,6 +337,36 @@
                     tmdb_id: {!! json_encode(old('tmdb_id', $movie->tmdb_id)) !!},
                     cover_id: {!! json_encode(old('cover_id', $movie->cover_id)) !!},
                     backdrop_id: {!! json_encode(old('backdrop_id', $movie->backdrop_id)) !!}
+                },
+                coverPreview: null,
+                backdropPreview: null,
+                initialCoverUrl: {!! json_encode($movie->cover_url) !!},
+                initialBackdropUrl: {!! json_encode($movie->backdrop_url) !!},
+
+                getImageUrl(id, type) {
+                    if (!id) return null;
+                    if (id.startsWith('http')) return id;
+                    if (id.startsWith('/')) {
+                        const base = type === 'cover' ? 'https://image.tmdb.org/t/p/w500' : 'https://image.tmdb.org/t/p/w1280';
+                        return base + id;
+                    }
+                    if (id.includes('/')) return `/storage/${id}`;
+                    return type === 'cover' ? this.initialCoverUrl : this.initialBackdropUrl;
+                },
+
+                handleFileChange(event, type) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            if (type === 'cover') {
+                                this.coverPreview = e.target.result;
+                            } else {
+                                this.backdropPreview = e.target.result;
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
                 },
 
                 initQuill() {

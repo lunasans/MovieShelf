@@ -81,8 +81,11 @@ class MovieController extends Controller
             'tmdb_id' => 'nullable|integer',
             'cover_id' => 'nullable|string',
             'backdrop_id' => 'nullable|string',
+            'cover_upload' => 'nullable|image|max:4096',
+            'backdrop_upload' => 'nullable|image|max:10240',
         ]);
 
+        $this->handleManualUploads($validated, $request);
         $this->handleImageDownloads($validated);
 
         if (! empty($validated['tmdb_id'])) {
@@ -109,6 +112,23 @@ class MovieController extends Controller
             if ($filename) {
                 $validated['backdrop_id'] = $filename;
             }
+        }
+    }
+
+    protected function handleManualUploads(array &$validated, Request $request)
+    {
+        if ($request->hasFile('cover_upload')) {
+            $file = $request->file('cover_upload');
+            $filename = 'covers/custom_'.time().'.'.$file->getClientOriginalExtension();
+            Storage::disk('public')->put($filename, file_get_contents($file->getRealPath()));
+            $validated['cover_id'] = $filename;
+        }
+
+        if ($request->hasFile('backdrop_upload')) {
+            $file = $request->file('backdrop_upload');
+            $filename = 'backdrops/custom_'.time().'.'.$file->getClientOriginalExtension();
+            Storage::disk('public')->put($filename, file_get_contents($file->getRealPath()));
+            $validated['backdrop_id'] = $filename;
         }
     }
 

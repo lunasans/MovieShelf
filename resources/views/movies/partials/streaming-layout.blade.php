@@ -74,11 +74,11 @@
                             @blur="isSearchFocused = false"
                             @keydown.window.prevent.slash="if($event.target.tagName !== 'INPUT' && $event.target.tagName !== 'TEXTAREA') { $el.querySelector('input').focus() }"
                             placeholder="{{ __('What do you want to watch today?') }}"
-                            class="w-full bg-white/10 border-y border-white/20 py-8 px-12 pl-24 focus:ring-0 focus:border-blue-500/50 text-2xl md:text-3xl transition-all placeholder:text-gray-400 backdrop-blur-3xl group-hover:bg-white/15 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] text-white font-light tracking-wide outline-none"
+                            class="w-full bg-white/10 border-y border-white/20 py-4 px-12 pl-20 focus:ring-0 focus:border-blue-500/50 text-xl md:text-2xl transition-all placeholder:text-gray-400 backdrop-blur-3xl group-hover:bg-white/15 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] text-white font-light tracking-wide outline-none"
                             :class="isSearchFocused ? 'bg-white/20 border-blue-500/50 shadow-[0_0_80px_rgba(59,130,246,0.3)]' : ''"
                         >
                         <div class="absolute left-10 top-1/2 -translate-y-1/2 flex items-center justify-center transition-all duration-500" :class="isSearchFocused ? 'scale-110 text-blue-400' : 'text-gray-500'">
-                            <i class="bi bi-search text-4xl group-hover:text-blue-400 transition-colors"></i>
+                            <i class="bi bi-search text-2xl group-hover:text-blue-400 transition-colors"></i>
                         </div>
                         
                         <!-- Shortcut Hint -->

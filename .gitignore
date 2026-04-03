@@ -35,3 +35,4 @@ pub/
 .bin/
 **/*.tscom
 
+.agents/rules/zugangdaten.md

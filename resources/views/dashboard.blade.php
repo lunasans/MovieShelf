@@ -322,20 +322,20 @@
             <div class="contents">
                 <!-- Film-Liste Area (Left Column) -->
         <section class="film-list-area shadow-2xl">
-                <div class="flex flex-col gap-8 mb-12">
+                <div class="flex flex-col gap-6 mb-4">
                     <!-- Search Bar Section -->
-                    <div class="relative group max-w-2xl px-2">
+                    <div class="relative group max-w-lg px-2">
                         <form action="{{ route('dashboard') }}" method="GET" class="relative transition-all duration-500 ease-in-out">
                             <input type="text" name="q" value="{{ request('q') }}"
                                 @focus="isSearchFocused = true"
                                 @blur="isSearchFocused = false"
                                 @keydown.window.prevent.slash="if($event.target.tagName !== 'INPUT' && $event.target.tagName !== 'TEXTAREA') { $el.querySelector('input').focus() }"
                                 placeholder="{{ __('Search in your library...') }}"
-                                class="w-full bg-white/10 border border-white/20 rounded-[2rem] py-5 px-8 pl-16 focus:ring-8 focus:ring-blue-500/20 focus:border-blue-500/50 text-lg transition-all placeholder:text-gray-400 backdrop-blur-2xl group-hover:bg-white/15 shadow-2xl text-white"
+                                class="w-full bg-white/10 border border-white/20 rounded-[2rem] py-2 px-6 pl-14 focus:ring-8 focus:ring-blue-500/20 focus:border-blue-500/50 text-base transition-all placeholder:text-gray-400 backdrop-blur-2xl group-hover:bg-white/15 shadow-2xl text-white"
                                 :class="isSearchFocused ? 'bg-white/20 border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.3)]' : ''"
                             >
                             <div class="absolute left-6 top-1/2 -translate-y-1/2 flex items-center justify-center transition-transform duration-300" :class="isSearchFocused ? 'scale-110' : ''">
-                                <i class="bi bi-search text-2xl text-gray-500 group-hover:text-blue-400 transition-colors" :class="isSearchFocused ? 'text-blue-400' : ''"></i>
+                                <i class="bi bi-search text-xl text-gray-500 group-hover:text-blue-400 transition-colors" :class="isSearchFocused ? 'text-blue-400' : ''"></i>
                             </div>
                             
                             <!-- Shortcut Hint -->

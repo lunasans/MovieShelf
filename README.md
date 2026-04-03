@@ -1,7 +1,7 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
 
 
-# MovieShelf v2.3.3 - Dein digitales Filmregal
+# MovieShelf v2.4.0 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -173,7 +173,15 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.3.3)
+## 🚀 Letzte Änderungen (v2.4.0)
+
+- **Manual Backdrop & Cover Upload**: Administratoren können nun eigene Backdrop- und Cover-Bilder direkt in der Filmbearbeitung hochladen, um TMDb-Daten zu korrigieren oder zu ergänzen.
+- **Improved Backdrop Logic**: Behebung von Problemen bei der Backdrop-Anzeige (z.B. Alien-Saga), indem manuelle Uploads die automatische Fallback-Logik priorisiert überschreiben.
+- **Refined Search UI**: Die Suchleisten auf dem Dashboard (Streaming & Classic) sowie in der Administration wurden deutlich kompakter und eleganter gestaltet.
+- **Compact TMDb Modal**: Das Suchfenster für TMDb-Importe wurde verkleinert, um den Workflow bei der Filmbearbeitung zu verbessern.
+- **UI Polishing**: Reduzierte Abstände und optimierte Schriftgrößen im gesamten Navigations- und Suchbereich für einen hochwertigeren Look.
+
+## 🚀 Version v2.3.3 (Historie)
 
 - **Immersive Cinematic Detail View**: Umstellung auf eine vollflächige, kinoreife Detailansicht (`movies/ID`) anstelle von AJAX-Panels für ein beeindruckendes Benutzererlebnis.
 - **Interaktiver Serien-Support**: Neues, ausklappbares Accordion-System für Staffeln und Episoden inklusive Inhaltsangaben pro Folge.
@@ -250,9 +258,9 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 2.3.3 - Laravel Framework Edition
+**Version**: 2.4.0 - Laravel Framework Edition
 
-**Letztes Update**: 1. April 2026  
+**Letztes Update**: 3. April 2026  
 **Status**: Aktiv entwickelt
 
 *Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
