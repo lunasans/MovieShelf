@@ -33,13 +33,31 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12 pt-10 border-t border-white/10">
                     <div class="space-y-1">
                         <div class="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Build-Version</div>
-                        <div class="text-2xl font-black text-white tracking-tight">v{{ config('app.version') }} <span class="text-rose-500/40 text-xs ml-2 font-mono">({{ $currentBranch }})</span></div>
+                        <div class="text-2xl font-black text-white tracking-tight">
+                            v{{ config('app.version') }} 
+                            <span class="text-rose-500/40 text-xs ml-2 font-mono">({{ $currentBranch }} @ {{ $currentCommit }})</span>
+                        </div>
                     </div>
                     <div class="space-y-1">
                         <div class="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Letzter Check</div>
                         <div class="text-2xl font-black text-white tracking-tight">{{ date('d. M Y') }} <span class="text-white/20 text-xs ml-2">{{ date('H:i') }}</span></div>
                     </div>
                 </div>
+
+                @if(!empty($formattedChanges))
+                <div class="mt-12 pt-10 border-t border-white/10">
+                    <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-6">Letzte Änderungen</h3>
+                    <div class="space-y-4">
+                        @foreach($formattedChanges as $change)
+                        <div class="flex items-center gap-4 group">
+                            <div class="font-mono text-[10px] text-rose-500/50 bg-rose-500/5 px-2 py-1 rounded-lg border border-rose-500/10">{{ $change['hash'] }}</div>
+                            <div class="text-xs text-white/60 font-medium tracking-tight group-hover:text-white transition-colors capitalize">{{ $change['msg'] }}</div>
+                            <div class="ml-auto text-[10px] text-white/10 font-bold uppercase tracking-widest whitespace-nowrap">{{ $change['date'] }}</div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
 
                 <div class="mt-12 flex flex-wrap gap-4">
                     <form action="{{ route('admin.update.check') }}" method="POST">

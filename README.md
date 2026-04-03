@@ -1,7 +1,7 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
 
 
-# MovieShelf v2.5.4 - Dein digitales Filmregal
+# MovieShelf v2.5.5 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -173,7 +173,12 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.5.4)
+## 🚀 Letzte Änderungen (v2.5.5)
+
+- **Improved**: Die System-Update-Seite im Admin-Bereich zeigt nun wieder den aktuellen Commit-Hash und die letzten 5 Änderungen aus dem Git-Log an.
+- **Visual**: Optimiertes Layout der Update-Ansicht für bessere Übersicht über den Systemstatus.
+
+## 🚀 Version v2.5.4 (Historie)
 
 - **Fixed**: Massive Bereinigung fehlerhafter Schauspieler-Zuweisungen.
 - **Improved**: Der Actor-Bot wurde durch einen Namensvalidierungs-Check abgesichert, um falsche Merges und IDs in Zukunft zu verhindern.
