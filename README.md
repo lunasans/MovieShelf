@@ -1,7 +1,5 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
-
-
-# MovieShelf v2.5.5 - Dein digitales Filmregal
+# MovieShelf v2.5.6 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -173,7 +171,12 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.5.5)
+## 🚀 Letzte Änderungen (2.5.6)
+
+- **New Feature**: Browser-basierter Arbeitsmodus für den Actor-Bot. Der Bot arbeitet nun auch ohne Terminal-Worker weiter, solange die Admin-Seite geöffnet bleibt.
+- **Improved**: Automatisches Fortschritts-Frontend für den Bot mit AJAX-Steuerung.
+
+## 🚀 Version v2.5.5 (Historie)
 
 - **Improved**: Die System-Update-Seite im Admin-Bereich zeigt nun wieder den aktuellen Commit-Hash und die letzten 5 Änderungen aus dem Git-Log an.
 - **Visual**: Optimiertes Layout der Update-Ansicht für bessere Übersicht über den Systemstatus.
@@ -301,7 +304,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version**: 2.5.1 - Laravel Framework Edition
+**Version:** 2.5.7  - Laravel Framework Edition
 
 **Letztes Update**: 3. April 2026  
 **Status**: Aktiv entwickelt

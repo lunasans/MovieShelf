@@ -89,6 +89,14 @@ class TmdbService
     }
 
     /**
+     * Get combined credits (movies and TV) for a person
+     */
+    public function getPersonCombinedCredits(int $personId): array
+    {
+        return $this->executeRequest("/person/{$personId}/combined_credits", [], 'TMDb Person Combined Credits Error');
+    }
+
+    /**
      * Search for a person by name
      */
     public function searchPerson(string $query, int $page = 1): array

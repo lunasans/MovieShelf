@@ -190,12 +190,76 @@ class ActorBotService
                 'status' => 'success',
                 'message' => 'Fehlende Felder via API aktualisiert.',
             ]);
-        } else {
+        }
+
+        // Always run cleanup/validation if we have a TMDB ID
+        $this->validateAndPruneMovies($actor, $botRun);
+    }
+
+    /**
+     * Verifies current movie associations against TMDb credits and removes mismatches.
+     */
+    protected function validateAndPruneMovies(Actor $actor, BotRun $botRun): void
+    {
+        if (!$actor->tmdb_id) {
+            return;
+        }
+
+        $credits = $this->tmdb->getPersonCombinedCredits($actor->tmdb_id);
+        
+        if (isset($credits['error']) || !isset($credits['cast'])) {
+            return;
+        }
+
+        // Get all TMDb IDs from credits (both movies and TV)
+        $tmdbCastIds = collect($credits['cast'])->pluck('id')->unique()->toArray();
+        
+        // Also get titles for cases where local movies don't have tmdb_id yet
+        $tmdbCastTitles = collect($credits['cast'])->map(function($c) {
+            return strtolower($c['title'] ?? $c['name'] ?? '');
+        })->filter()->unique()->toArray();
+
+        $localMovies = $actor->movies;
+        $detachedCount = 0;
+
+        foreach ($localMovies as $movie) {
+            $isFound = false;
+
+            // 1. Check by TMDb ID (most reliable)
+            if ($movie->tmdb_id && in_array((int)$movie->tmdb_id, $tmdbCastIds)) {
+                $isFound = true;
+            } 
+            
+            // 2. Fallback: Check by Title (case-insensitive)
+            if (!$isFound) {
+                $localTitle = strtolower($movie->title);
+                if (in_array($localTitle, $tmdbCastTitles)) {
+                    $isFound = true;
+                }
+            }
+
+            // 3. Special Case: Boxsets might have children that don't have individual credits
+            // but the parent might. This is complex, so we stick to 1 & 2 for now.
+
+            if (!$isFound) {
+                $actor->movies()->detach($movie->id);
+                $detachedCount++;
+                
+                BotLog::create([
+                    'bot_run_id' => $botRun->id,
+                    'actor_id' => $actor->id,
+                    'status' => 'info',
+                    'message' => "Zuordnung zu '{$movie->title}' (ID: {$movie->id}) entfernt: Nicht in TMDb-Credits gefunden.",
+                ]);
+            }
+        }
+
+        if ($detachedCount > 0) {
             BotLog::create([
                 'bot_run_id' => $botRun->id,
                 'actor_id' => $actor->id,
-                'status' => 'skipped',
-                'message' => 'Daten bereits vollständig oder keine neuen auf TMDb.',
+                'status' => 'success',
+                'message' => "Bereinigung: {$detachedCount} fehlerhafte Film-Zuordnungen entfernt.",
             ]);
         }
     }

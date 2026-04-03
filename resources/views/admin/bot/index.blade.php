@@ -32,10 +32,12 @@
 
                 @if($currentRun)
                     <div class="space-y-8" id="bot-status-container" data-run-id="{{ $currentRun->id }}">
-                        <div class="p-5 bg-black/20 rounded-2xl border border-white/5">
-                            <p class="text-xs text-white/40 font-medium leading-relaxed italic">
+                        <div class="p-5 bg-black/20 rounded-2xl border border-white/5 relative overflow-hidden">
+                            <div class="absolute inset-0 bg-rose-500/5 animate-pulse pointer-events-none"></div>
+                            <p class="text-xs text-white/40 font-medium leading-relaxed italic relative z-10">
                                 <i class="bi bi-info-circle-fill text-rose-500 mr-2"></i> 
-                                Der Bot läuft als autonomer Prozess. Du kannst diese Seite jederzeit verlassen.
+                                <span class="text-white/60 font-bold">Browser-Modus Aktiv:</span> Der Bot wird direkt durch dieses Fenster gesteuert. 
+                                <span class="block mt-1 text-[10px] opacity-70">Die Seite muss für den Fortschritt ohne externen Worker (Terminal) geöffnet bleiben.</span>
                             </p>
                         </div>
 
@@ -172,7 +174,14 @@
         <script>
             @if($currentRun)
                 let statusInterval = setInterval(function() {
-                    fetch('{{ route('admin.bot.status') }}')
+                    // We call 'process' instead of 'status' to keep the bot moving in the browser
+                    fetch('{{ route('admin.bot.process') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    })
                         .then(response => response.json())
                         .then(data => {
                             if (data.running) {
@@ -185,7 +194,7 @@
                             }
                         })
                         .catch(() => {});
-                }, 3000);
+                }, 4000); // Poll/Process every 4 seconds
             @endif
 
             const modal = document.getElementById('logsModal');

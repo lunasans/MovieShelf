@@ -40,8 +40,23 @@ class BotController extends Controller
 
     public function process(Request $request)
     {
-        // Removed: Ajax polling logic deleted
-        return response()->json(['status' => 'error'], 404);
+        $currentRun = BotRun::where('status', 'running')->first();
+        if (!$currentRun) {
+            return response()->json(['running' => false, 'status' => 'inactive']);
+        }
+
+        $botService = app(\App\Services\ActorBotService::class);
+        
+        // Small chunk size for browser requests to avoid timeouts
+        $hasMore = $botService->processChunk($currentRun, 5); 
+
+        return response()->json([
+            'running' => true,
+            'status' => 'running',
+            'hasMore' => $hasMore,
+            'total' => $currentRun->total_actors,
+            'processed' => $currentRun->processed_actors,
+        ]);
     }
 
     public function cancel(Request $request)
