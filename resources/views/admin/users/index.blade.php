@@ -87,10 +87,14 @@
         </div>
 
         <!-- Add User Modal -->
-        <template x-if="showAddModal">
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-6">
+        <template x-teleport="body">
+            <div x-show="showAddModal" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-6"
+                 x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                 <div class="absolute inset-0 bg-black/80 backdrop-blur-md" @click="showAddModal = false"></div>
-                <div class="glass relative w-full max-w-md p-10 rounded-[3rem] border-white/10 shadow-3xl animate-in zoom-in-95 duration-300">
+                <div class="glass relative w-full max-w-md p-10 rounded-[3rem] border-white/10 shadow-3xl"
+                     x-show="showAddModal"
+                     x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
                     <h2 class="text-3xl font-black text-white mb-8 tracking-tight">Neuer Benutzer</h2>
                     <form action="{{ route('admin.users.store') }}" method="POST" class="space-y-6">
                         @csrf
@@ -125,10 +129,14 @@
         </template>
 
         <!-- Edit User Modal -->
-        <template x-if="showEditModal">
-            <div class="fixed inset-0 z-50 flex items-center justify-center p-6">
+        <template x-teleport="body">
+            <div x-show="showEditModal" x-cloak class="fixed inset-0 z-[9999] flex items-center justify-center p-6"
+                 x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                 <div class="absolute inset-0 bg-black/80 backdrop-blur-md" @click="showEditModal = false"></div>
-                <div class="glass relative w-full max-w-md p-10 rounded-[3rem] border-white/10 shadow-3xl animate-in zoom-in-95 duration-300">
+                <div class="glass relative w-full max-w-md p-10 rounded-[3rem] border-white/10 shadow-3xl"
+                     x-show="showEditModal"
+                     x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
                     <h2 class="text-3xl font-black text-white mb-8 tracking-tight">Profil bearbeiten</h2>
                     <form :action="'{{ url('admin/users') }}/' + editingUser.id" method="POST" class="space-y-6">
                         @csrf

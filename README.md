@@ -1,5 +1,5 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
-# MovieShelf v2.6.2 - Dein digitales Filmregal
+# MovieShelf v2.6.3 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -171,7 +171,17 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.6.2)
+## 🚀 Letzte Änderungen (v2.6.3)
+
+- **Fixed**: Benutzer-Modals (Bearbeiten/Hinzufügen) liefen hinter Header und Sidebar. Lösung: `x-teleport="body"` befreit Modals aus dem `z-10` Stacking-Context.
+- **Fixed**: Einstellungsseite vollständig wiederhergestellt — fehlende Felder aus dem v2-dev Branch zurückportiert:
+  - **Allgemein**: `Standard Gast-Layout`, `Boxset Quick-View Stil`, `Datenmigration V1.5` Toggle
+  - **Rechtliches**: Cookie-Banner Sektion (Toggle + Bannertext)
+  - **Signatur**: `Cache-Zeit`, `Titel/Jahr/Bewertung anzeigen` Checkboxen, 3 Banner-Vorschauen mit BBCode/Markdown Links, `Neueste (Erscheinungsjahr)` Option
+  - **E-Mail / Server** (vorher "Server"): `Benutzername`, `Passwort`, `Verschlüsselung`, `Absender-Email`, `Absender-Name`, `SendMail` Option, Test-Mail-Button
+- **Fixed**: Tab-Name von "Server" zu "E-Mail / Server" korrigiert.
+
+## 🚀 Version v2.6.2 (Historie)
 
 - **Improved**: Verwendete 2FA Backup-Codes werden im Profil durchgestrichen dargestellt (mit rotem Rand und "verwendet"-Badge statt komplett entfernt).
 - **Improved**: Zähler zeigt nun "X von 8 Codes verfügbar · Y verwendet" an.
@@ -329,9 +339,9 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version:** 2.6.2  - Laravel Framework Edition
+**Version:** 2.6.3  - Laravel Framework Edition
 
-**Letztes Update**: 3. April 2026  
+**Letztes Update**: 4. April 2026  
 **Status**: Aktiv entwickelt
 
 *Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
