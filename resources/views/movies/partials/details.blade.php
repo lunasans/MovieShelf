@@ -1,45 +1,4 @@
-<style>
-    .prose-movie {
-        white-space: pre-wrap !important;
-        word-wrap: break-word;
-        display: block !important;
-    }
-    .prose-movie p, .prose-movie div { 
-        margin-bottom: 1.5rem !important; 
-        display: block !important; 
-        line-height: 1.8;
-    }
-    .prose-movie p:last-child, .prose-movie div:last-child { margin-bottom: 0 !important; }
-    .prose-movie h1, .prose-movie h2, .prose-movie h3, .prose-movie h4 { 
-        margin-top: 1.5rem; 
-        margin-bottom: 0.75rem; 
-        font-weight: bold; 
-        display: block;
-        color: white;
-    }
-    .prose-movie h1:first-child, .prose-movie h2:first-child, .prose-movie p:first-child { margin-top: 0; }
-    .prose-movie ul, .prose-movie ol { margin-bottom: 1rem; padding-left: 1.5rem; display: block; }
-    .prose-movie ul { list-style-type: disc; }
-    .prose-movie ol { list-style-type: decimal; }
-    .prose-movie li { margin-bottom: 0.25rem; }
-    .prose-movie strong { font-weight: bold; color: white; }
-    .prose-movie u { text-decoration: underline; text-underline-offset: 4px; }
-    .prose-movie .ql-align-center { text-align: center; }
-    .prose-movie .ql-align-right { text-align: right; }
-    .prose-movie .ql-align-justify { text-align: justify; }
-    .prose-movie .ql-size-small { font-size: 0.75em; }
-    .prose-movie .ql-size-large { font-size: 1.5em; }
-    .prose-movie .ql-size-huge { font-size: 2.5em; }
-    .prose-movie blockquote {
-        border-left: 4px solid #3b82f6;
-        padding-left: 1.5rem;
-        margin-left: 0;
-        font-style: italic;
-        color: rgba(255, 255, 255, 0.6);
-    }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
+
 
 <div class="{{ $layoutMode === 'streaming' ? 'streaming-movie-details animate-in fade-in slide-in-from-bottom-8 duration-700' : 'animate-in fade-in slide-in-from-right-4 duration-500' }}"
      x-data="{

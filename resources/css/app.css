@@ -164,27 +164,31 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Typography for Editor Content (Quill/Shortcodes) */
-.prose-movie p {
-    margin-bottom: 1rem;
+.prose-movie {
+    white-space: pre-wrap !important;
+    word-wrap: break-word;
+    display: block !important;
 }
-.prose-movie p:last-child {
-    margin-bottom: 0;
+.prose-movie p, .prose-movie div { 
+    margin-bottom: 1.5rem !important; 
+    display: block !important; 
+    line-height: 1.8;
 }
-.prose-movie ul, .prose-movie ol {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
+.prose-movie p:last-child, .prose-movie div:last-child { margin-bottom: 0 !important; }
+.prose-movie h1, .prose-movie h2, .prose-movie h3, .prose-movie h4 { 
+    margin-top: 1.5rem; 
+    margin-bottom: 0.75rem; 
+    font-weight: bold; 
+    display: block;
+    color: white;
 }
-.prose-movie ul {
-    list-style-type: disc;
-}
-.prose-movie ol {
-    list-style-type: decimal;
-}
-.prose-movie li {
-    margin-bottom: 0.25rem;
-}
-
-/* Quill Specific Formatting */
+.prose-movie h1:first-child, .prose-movie h2:first-child, .prose-movie p:first-child { margin-top: 0; }
+.prose-movie ul, .prose-movie ol { margin-bottom: 1rem; padding-left: 1.5rem; display: block; }
+.prose-movie ul { list-style-type: disc; }
+.prose-movie ol { list-style-type: decimal; }
+.prose-movie li { margin-bottom: 0.25rem; }
+.prose-movie strong { font-weight: bold; color: white; }
+.prose-movie u { text-decoration: underline; text-underline-offset: 4px; }
 .prose-movie .ql-align-center { text-align: center; }
 .prose-movie .ql-align-right { text-align: right; }
 .prose-movie .ql-align-justify { text-align: justify; }
