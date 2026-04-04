@@ -1,5 +1,5 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
-# MovieShelf v2.6.3 - Dein digitales Filmregal
+# MovieShelf v2.6.4 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -171,7 +171,12 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (v2.6.3)
+## 🚀 Letzte Änderungen (v2.6.4)
+
+- **Fixed**: Quill Rich-Text Editor für die Filmhandlung (Overview/Storyline) im Movie-Edit-Bereich wiederhergestellt. Das HTML-Element, das Hidden-Input und der `initQuill()`-Aufruf fehlten im Template.
+- **Fixed**: Trailer-URL Eingabefeld im Movie-Edit-Bereich wiederhergestellt.
+
+## 🚀 Version v2.6.3 (Historie)
 
 - **Fixed**: Benutzer-Modals (Bearbeiten/Hinzufügen) liefen hinter Header und Sidebar. Lösung: `x-teleport="body"` befreit Modals aus dem `z-10` Stacking-Context.
 - **Fixed**: Einstellungsseite vollständig wiederhergestellt — fehlende Felder aus dem v2-dev Branch zurückportiert:
@@ -339,7 +344,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version:** 2.6.3  - Laravel Framework Edition
+**Version:** 2.6.4  - Laravel Framework Edition
 
 **Letztes Update**: 4. April 2026  
 **Status**: Aktiv entwickelt

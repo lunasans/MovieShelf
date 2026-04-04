@@ -194,6 +194,30 @@
                 </div>
             </div>
 
+            <!-- Storyline / Overview Section -->
+            <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden" x-init="initQuill()">
+                <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 to-transparent pointer-events-none"></div>
+                <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-10 flex items-center gap-3">
+                    <i class="bi bi-card-text text-rose-500"></i>
+                    Handlung & Details
+                </h3>
+
+                <div class="space-y-8">
+                    <div>
+                        <label class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Filmhandlung / Storyline</label>
+                        <div id="overview-editor"></div>
+                        <input type="hidden" name="overview" x-model="formData.overview">
+                    </div>
+
+                    <div>
+                        <label for="trailer_url" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Trailer URL (YouTube)</label>
+                        <input type="url" name="trailer_url" id="trailer_url" x-model="formData.trailer_url"
+                               placeholder="https://www.youtube.com/watch?v=..."
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                    </div>
+                </div>
+            </div>
+
             <!-- Actors Section -->
             <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden" x-data="actorManagement()">
                 <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 to-transparent pointer-events-none"></div>
