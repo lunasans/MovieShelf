@@ -135,6 +135,12 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <div>
+                        <label for="created_at" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Hinzugefügt am:</label>
+                        <input type="datetime-local" name="created_at" id="created_at" x-model="formData.created_at"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all font-bold">
+                    </div>
                 </div>
             </div>
 
@@ -393,7 +399,8 @@
                     overview: {!! json_encode(old('overview', $movie->overview)) !!},
                     tmdb_id: {!! json_encode(old('tmdb_id', $movie->tmdb_id)) !!},
                     cover_id: {!! json_encode(old('cover_id', $movie->cover_id)) !!},
-                    backdrop_id: {!! json_encode(old('backdrop_id', $movie->backdrop_id)) !!}
+                    backdrop_id: {!! json_encode(old('backdrop_id', $movie->backdrop_id)) !!},
+                    created_at: {!! json_encode(old('created_at', $movie->created_at ? $movie->created_at->format('Y-m-d\TH:i') : null)) !!}
                 },
                 coverPreview: null,
                 backdropPreview: null,

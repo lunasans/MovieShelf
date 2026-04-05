@@ -1,5 +1,5 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
-# MovieShelf v2.6.6 - Dein digitales Filmregal
+# MovieShelf v2.7.0 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -171,7 +171,11 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (2.6.6)
+## 🚀 Letzte Änderungen (2.7.0)
+
+- **New Feature**: "Hinzugefügt am:" (created_at) in der Filmbearbeitung nun editierbar. Administratoren können das Datum und die Uhrzeit, wann ein Film zur Sammlung hinzugefügt wurde, manuell anpassen.
+
+## 🚀 Version v2.6.6 (Historie)
 
 - **Fixed**: Globale Lösung für Zeilenumbrüche in Biografien und Handlungsbeschreibungen. Die `prose-movie` CSS-Klasse wurde in die `app.css` verschoben und um `white-space: pre-wrap` erweitert, um auch einfache Zeilenumbrüche (`\n`) aus der Datenbank korrekt darzustellen.
 
@@ -348,9 +352,9 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version:** 2.6.6  - Laravel Framework Edition
+**Version:** 2.7.0  - Laravel Framework Edition
 
-**Letztes Update**: 4. April 2026  
+**Letztes Update**: 5. April 2026  
 **Status**: Aktiv entwickelt
 
 *Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
