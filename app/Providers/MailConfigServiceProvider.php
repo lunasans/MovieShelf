@@ -22,15 +22,39 @@ class MailConfigServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Only attempt to load settings if the table exists
-        if (!Schema::hasTable('settings')) {
+        try {
+            // Check if it's a central connection and if the database file exists (for SQLite)
+            $connection = Config::get('database.default');
+            $dbPath = Config::get("database.connections.{$connection}.database");
+
+            if (!$dbPath) {
+                return;
+            }
+
+            if (Config::get("database.connections.{$connection}.driver") === 'sqlite' && 
+                $dbPath !== ':memory:' && 
+                !file_exists($dbPath)) {
+                return;
+            }
+
+            // Wrap Schema check in try-catch because SQLiteConnector can throw 
+            // if the path is invalid before it even attempts the query
+            try {
+                if (!Schema::hasTable('settings')) {
+                    return;
+                }
+            } catch (\Throwable $e) {
+                return;
+            }
+
+            $mailSettings = Setting::where('group', 'mail')->pluck('value', 'key');
+
+            if ($mailSettings->isNotEmpty()) {
+                $this->applyMailSettings($mailSettings);
+            }
+        } catch (\Throwable $e) {
+            // Silently fail during boot if database is not ready
             return;
-        }
-
-        $mailSettings = Setting::where('group', 'mail')->pluck('value', 'key');
-
-        if ($mailSettings->isNotEmpty()) {
-            $this->applyMailSettings($mailSettings);
         }
     }
 
