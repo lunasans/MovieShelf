@@ -63,6 +63,9 @@ Route::middleware('auth')->group(function () use ($profilePath) {
     // Admin Area
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('dashboard');
+        Route::get('movies/sync-logs', [\App\Http\Controllers\Admin\TrailerSyncController::class, 'index'])->name('movies.sync-logs');
+        Route::get('movies/sync-logs/{run}', [\App\Http\Controllers\Admin\TrailerSyncController::class, 'show'])->name('movies.sync-logs.show');
+        Route::post('movies/smart-trailer', [\App\Http\Controllers\Admin\MovieController::class, 'smartTrailerSync'])->name('movies.smart-trailer');
         Route::resource('movies', \App\Http\Controllers\Admin\MovieController::class);
         Route::resource('actors', \App\Http\Controllers\Admin\ActorController::class);
         Route::get('actors-search', [\App\Http\Controllers\Admin\ActorController::class, 'search'])->name('actors.search');

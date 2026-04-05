@@ -13,6 +13,41 @@
                     <i class="bi bi-cloud-arrow-down-fill text-lg"></i>
                     TMDb Import
                 </a>
+                <form action="{{ route('admin.movies.smart-trailer') }}" method="POST">
+                    @csrf
+                    <div class="flex flex-col gap-2">
+                        <button type="submit" class="px-8 py-3.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-2xl font-black text-xs uppercase tracking-widest border border-rose-500/20 transition-all flex items-center gap-3">
+                            <i class="bi bi-play-circle-fill text-lg"></i>
+                            Smart Trailer Sync
+                        </button>
+                        @if($lastRun = \App\Models\Setting::get('smart_trailer_last_run'))
+                            @php
+                                $status = \App\Models\Setting::get('smart_trailer_last_status', 'success');
+                                $results = json_decode(\App\Models\Setting::get('smart_trailer_last_results', '[]'), true);
+                                $error = \App\Models\Setting::get('smart_trailer_last_error');
+                            @endphp
+                            <div class="flex flex-col px-2">
+                                <span class="text-[9px] text-white/20 font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                                    @if($status === 'success')
+                                        <i class="bi bi-check-circle-fill text-emerald-500"></i>
+                                    @else
+                                        <i class="bi bi-exclamation-circle-fill text-rose-500" title="{{ $error }}"></i>
+                                    @endif
+                                    Zuletzt: {{ \Carbon\Carbon::parse($lastRun)->format('d.m.Y H:i') }}
+                                </span>
+                                @if(isset($results['updated']))
+                                    <span class="text-[8px] text-white/10 font-bold uppercase tracking-widest mt-0.5">
+                                        {{ $results['updated'] }} Trailer aktualisiert
+                                    </span>
+                                @endif
+                                <a href="{{ route('admin.movies.sync-logs') }}" class="text-[8px] text-rose-500/60 hover:text-rose-400 font-black uppercase tracking-widest mt-1.5 flex items-center gap-1 transition-colors">
+                                    <i class="bi bi-list-ul"></i>
+                                    Protokoll & Verlauf
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </form>
             </div>
 
             <div class="flex flex-col md:flex-row items-center gap-6 w-full xl:w-auto">

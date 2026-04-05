@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::job(new SendTelemetryJob)->weekly();
+Schedule::command('movies:smart-trailer')->dailyAt('03:00');

@@ -1,5 +1,5 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
-# MovieShelf v2.7.0 - Dein digitales Filmregal
+# MovieShelf v2.9.2 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -171,7 +171,33 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (2.7.0)
+## 🚀 Letzte Änderungen (2.9.2)
+
+- **Fixed**: Kleinere Fehlerbehebungen im Sync-Protokoll und Optimierung der Datenbankabfragen für große Sammlungen.
+
+## 🚀 Version v2.9.1 (Historie)
+
+- **New**: Detailliertes Protokollierungssystem für den "Smart Trailer Sync". Jeder Sync-Lauf wird nun mit Einzelheiten pro Film gespeichert.
+- **New**: Neue Admin-Ansichten für den Sync-Verlauf und detaillierte Einzel-Logs.
+- **Improved**: Intelligente Trailer-Erkennungslogik (v2.8.3 Verbesserungen integriert).
+
+## 🚀 Version v2.9.0 (Historie)
+
+- **Improved**: Intelligente Trailer-Erkennung ("Smart Trailer Sync") erkennt nun auch Videos, die bei TMDb als "Clip" oder "Teaser" markiert sind, sofern sie "Trailer" im Namen tragen (löst Probleme bei Filmen wie *Idiocracy*).
+- **Improved**: Detailliertes Status-Tracking für den Sync (Anzeige von Erfolg/Fehler mit Icons und Anzahl der aktualisierten Trailer).
+
+## 🚀 Version v2.8.2 (Historie)
+
+## 🚀 Version v2.8.1 (Historie)
+
+- **Improved**: "Smart Trailer Sync" um automatische Zeitplanung (Cronjob/Scheduler) erweitert.
+- **Improved**: Anzeige des letzten Ausführungszeitpunkts direkt unter dem Sync-Button in der Filmbearbeitung.
+
+## 🚀 Version v2.8.0 (Historie)
+
+- **New Feature**: "Smart Trailer Sync" hinzugefügt. Ein neuer Button in der Filmbearbeitung und ein Artisan-Befehl (`movies:smart-trailer`) erlauben es, fehlende Trailer-URLs automatisch über die TMDb-API zu ergänzen. Dabei werden deutsche Trailer bevorzugt.
+
+## 🚀 Version v2.7.0 (Historie)
 
 - **New Feature**: "Hinzugefügt am:" (created_at) in der Filmbearbeitung nun editierbar. Administratoren können das Datum und die Uhrzeit, wann ein Film zur Sammlung hinzugefügt wurde, manuell anpassen.
 
@@ -352,7 +378,7 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version:** 2.7.0  - Laravel Framework Edition
+**Version:** 2.9.2  - Laravel Framework Edition
 
 **Letztes Update**: 5. April 2026  
 **Status**: Aktiv entwickelt

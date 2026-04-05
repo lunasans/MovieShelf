@@ -40,6 +40,9 @@ class AdminController extends Controller
                 ->get(),
             'missingTmdbCount' => Movie::where('is_deleted', false)->whereNull('tmdb_id')->count(),
             'missingCoverCount' => Movie::where('is_deleted', false)->whereNull('cover_id')->count(),
+            'missingTrailerCount' => Movie::where('is_deleted', false)->whereNotNull('tmdb_id')->where(function($q) {
+                $q->whereNull('trailer_url')->orWhere('trailer_url', '');
+            })->count(),
             'totalUsers' => User::count(),
             'visitsToday' => Counter::where('page', 'daily:'.now()->format('Y-m-d'))->value('visits') ?? 0,
             'visitsTotal' => Counter::where('page', 'all')->value('visits') ?? 0,

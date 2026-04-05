@@ -32,6 +32,12 @@ class MovieController extends Controller
             $query->whereNull('cover_id');
         }
 
+        if ($request->filter === 'missing_trailer') {
+            $query->whereNotNull('tmdb_id')->where(function($q) {
+                $q->whereNull('trailer_url')->orWhere('trailer_url', '');
+            });
+        }
+
         $perPage = \App\Models\Setting::get('items_per_page', 20);
         $movies = $query->orderBy('title')->paginate($perPage);
 
@@ -262,5 +268,30 @@ class MovieController extends Controller
         $this->logMovieActivity($movie, 'MOVIE_DELETE');
 
         return redirect()->route('admin.movies.index')->with('success', 'Film gelöscht.');
+    }
+
+    /**
+     * Trigger the Smart Trailer Sync via Artisan command.
+     */
+    public function smartTrailerSync()
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('movies:smart-trailer');
+            $output = \Illuminate\Support\Facades\Artisan::output();
+
+            // Match "Fertig! X von Y Filmen wurden aktualisiert."
+            if (preg_match('/Fertig! (\d+) von (\d+) Filmen wurden aktualisiert./', $output, $matches)) {
+                $count = $matches[1];
+                $message = $count > 0 
+                    ? "Smart Trailer Sync beendet. {$count} neue Trailer wurden hinzugefügt."
+                    : "Smart Trailer Sync beendet. Es wurden keine neuen Trailer gefunden.";
+                
+                return back()->with('success', $message);
+            }
+
+            return back()->with('success', 'Smart Trailer Sync beendet.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Fehler beim Trailer-Sync: ' . $e->getMessage());
+        }
     }
 }

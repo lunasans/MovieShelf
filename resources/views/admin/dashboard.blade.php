@@ -193,6 +193,35 @@
                                 <i class="bi bi-arrow-right-short text-2xl"></i>
                             </a>
                         </div>
+                        <div class="flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 group hover:border-indigo-500/30 transition-all">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                    <i class="bi bi-play-btn text-lg"></i>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <div class="text-sm font-black text-white">{{ $stats['missingTrailerCount'] }}</div>
+                                        @if($lastStatus = \App\Models\Setting::get('smart_trailer_last_status'))
+                                            <i class="bi {{ $lastStatus === 'success' ? 'bi-check-circle-fill text-emerald-500' : 'bi-exclamation-circle-fill text-rose-500' }} text-[10px]" title="{{ $lastStatus === 'error' ? \App\Models\Setting::get('smart_trailer_last_error') : '' }}"></i>
+                                        @endif
+                                    </div>
+                                    <div class="text-[10px] text-white/30 font-bold uppercase tracking-widest">Ohne Trailer</div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-1">
+                                <div class="flex items-center gap-3">
+                                    <a href="{{ route('admin.movies.sync-logs') }}" class="text-white/10 hover:text-white transition-colors" title="Sync-Verlauf anzeigen">
+                                        <i class="bi bi-list-ul text-lg"></i>
+                                    </a>
+                                    <a href="{{ route('admin.movies.index', ['filter' => 'missing_trailer']) }}" class="text-white/20 hover:text-white transition-colors">
+                                        <i class="bi bi-arrow-right-short text-2xl"></i>
+                                    </a>
+                                </div>
+                                @if($lastRun = \App\Models\Setting::get('smart_trailer_last_run'))
+                                    <span class="text-[8px] text-white/10 font-bold uppercase tracking-widest">{{ \Carbon\Carbon::parse($lastRun)->diffForHumans() }}</span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
