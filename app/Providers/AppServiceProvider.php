@@ -20,10 +20,44 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Dynamically override Mail Configuration from Central Admin
-        // We use the central connection to ensure mail settings are always loaded from the main config
-        // Defensive check: Only try to load settings if the table exists to avoid migration failures
-        if (class_exists(\App\Models\Setting::class) && \Illuminate\Support\Facades\Schema::connection('central')->hasTable('settings')) {
+        // TOTAL SAFETY WRAPPER: During boot, we MUST NOT crash because of database issues.
+        // This is necessary to allow 'php artisan migrate' to run even if the DB is missing or invalid.
+        try {
+            $this->bootDatabaseSettings();
+        } catch (\Throwable $e) {
+            // Silently ignore all DB errors during boot
+        }
+
+        try {
+            $this->bootViewComposers();
+        } catch (\Throwable $e) {
+            // Silently ignore all view errors during boot
+        }
+    }
+
+    /**
+     * Boot database-specific settings with extreme safety.
+     */
+    protected function bootDatabaseSettings(): void
+    {
+        $connection = config('database.default');
+        $centralDbPath = config("database.connections.{$connection}.database");
+        
+        // Failsafe: If no path or SQLite file missing/empty, we skip everything
+        if (!$centralDbPath || (config("database.connections.{$connection}.driver") === 'sqlite' && 
+            $centralDbPath !== ':memory:' && 
+            (!file_exists($centralDbPath) || filesize($centralDbPath) === 0))) {
+            return;
+        }
+
+        // Secondary safety: Wrap the schema check itself
+        try {
+            $hasSettings = \Illuminate\Support\Facades\Schema::connection('central')->hasTable('settings');
+        } catch (\Throwable $e) {
+            return;
+        }
+
+        if (class_exists(\App\Models\Setting::class) && $hasSettings) {
             \Illuminate\Support\Facades\Config::set([
                 'mail.mailers.smtp.host' => \App\Models\Setting::on('central')->get('mail_host', config('mail.mailers.smtp.host')),
                 'mail.mailers.smtp.port' => \App\Models\Setting::on('central')->get('mail_port', config('mail.mailers.smtp.port')),
@@ -34,7 +68,13 @@ class AppServiceProvider extends ServiceProvider
                 'mail.from.name' => \App\Models\Setting::on('central')->get('mail_from_name', config('mail.from.name')),
             ]);
         }
+    }
 
+    /**
+     * Boot view composers with safety.
+     */
+    protected function bootViewComposers(): void
+    {
         view()->composer(['components.footer', 'layouts.admin', 'layouts.app', 'dashboard'], function ($view) {
             // Only execute tenant-specific logic if tenancy is initialized and NOT a central domain
             if (!function_exists('tenancy') || !tenancy()->initialized || in_array(request()->getHost(), config('tenancy.central_domains'))) {
@@ -58,14 +98,14 @@ class AppServiceProvider extends ServiceProvider
                         ->filter()
                         ->unique()
                         ->count(),
-                    'total_visits' => $totalCounter->visits,
-                    'daily_visits' => $dailyCounter->visits,
+                    'total_visits' => $totalCounter->visits ?? 0,
+                    'daily_visits' => $dailyCounter->visits ?? 0,
                 ];
             });
 
             // Fallback for safety during cache transitions
-            $stats['total_visits'] = $stats['total_visits'] ?? $totalCounter->visits;
-            $stats['daily_visits'] = $stats['daily_visits'] ?? $dailyCounter->visits;
+            $stats['total_visits'] = $stats['total_visits'] ?? ($totalCounter->visits ?? 0);
+            $stats['daily_visits'] = $stats['daily_visits'] ?? ($dailyCounter->visits ?? 0);
 
             $view->with('footerStats', $stats);
         });
