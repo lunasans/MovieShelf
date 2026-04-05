@@ -16,11 +16,14 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
     <div class="grid grid-cols-2 lg:grid-cols-3 items-center gap-4 text-white">
         <!-- Logo Section (Left) -->
         <div class="flex-shrink-0 flex items-center">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-4 group">
-                <x-application-logo class="h-12 w-auto drop-shadow-md group-hover:scale-110 transition-transform duration-500" />
                 <div>
                     <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-indigo-400 transition-colors hidden sm:block">
-                        {{ \App\Models\Setting::get('site_title', 'MovieShelf') }}
+                        @php
+                            $currentHost = request()->getHost();
+                            $isCentral = in_array($currentHost, ['localhost', '127.0.0.1', 'movieshelf.info']);
+                            $siteTitle = $isCentral ? \App\Models\Setting::get('saas_name', 'MovieShelf Cloud') : \App\Models\Setting::get('site_title', 'MovieShelf');
+                        @endphp
+                        {{ $siteTitle }}
                     </h2>
                     <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-indigo-400 transition-colors sm:hidden">
                         MS
@@ -34,23 +37,46 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
 
         <!-- Center Navigation (Desktop) -->
         <div class="hidden lg:flex items-center justify-center gap-2">
+            @if(Route::has('dashboard'))
             <a href="{{ route('dashboard') }}"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('dashboard') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-house-fill mr-2"></i> {{ __('Start') }}
             </a>
+            @endif
+
+            @if(Route::has('actors.index'))
             <a href="{{ route('actors.index') }}"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('actors.index') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-people-fill mr-2"></i> {{ __('Actors') }}
             </a>
+            @endif
+
+            @if(Route::has('movies.trailers'))
             <a href="{{ route('movies.trailers') }}"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('movies.trailers') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-play-circle mr-2"></i> {{ __('Trailers') }}
             </a>
+            @endif
+
+            @if(Route::has('dashboard'))
             <a href="{{ route('dashboard', ['stats' => 1]) }}"
                 @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('stats-open') } else { window.location.href = $el.href }"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('statistics') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-bar-chart-fill mr-2"></i> {{ __('Statistics') }}
             </a>
+            @endif
+
+            @php
+                $currentHost = request()->getHost();
+                $isCentral = in_array($currentHost, ['localhost', '127.0.0.1', 'movieshelf.info']);
+            @endphp
+
+            @if($isCentral && Route::has('admin.settings'))
+            <a href="{{ route('admin.settings') }}"
+                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('admin.settings') ? 'bg-white/10' : '' }}">
+                <i class="bi bi-gear-fill mr-2"></i> {{ __('SaaS Settings') }}
+            </a>
+            @endif
         </div>
 
         <!-- Search & User Section (Right) -->
@@ -59,6 +85,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
             <div class="flex items-center gap-4">
 
                 <!-- Language Switcher -->
+                @if(Route::has('lang.switch'))
                 <div class="flex items-center gap-2 px-2 border-r border-white/10 mr-2">
                     <a href="{{ route('lang.switch', 'de') }}"
                        class="text-[10px] font-black transition-all {{ app()->getLocale() == 'de' ? 'text-blue-400 scale-110' : 'text-gray-500 hover:text-white' }}"
@@ -72,6 +99,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                         EN
                     </a>
                 </div>
+                @endif
 
                 <!-- Auth Section -->
                 @auth
@@ -101,6 +129,13 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                                     <i class="bi bi-speedometer2 text-sm opacity-50"></i> 
                                     <span>{{ __('Admin Panel') }}</span>
                                 </x-dropdown-link>
+
+                                @if($isCentral && Route::has('admin.settings'))
+                                <x-dropdown-link :href="route('admin.settings')" class="rounded-xl flex items-center gap-3">
+                                    <i class="bi bi-gear-fill text-sm opacity-50"></i> 
+                                    <span>{{ __('SaaS Settings') }}</span>
+                                </x-dropdown-link>
+                                @endif
 
                                 <div class="h-px bg-white/5 mx-2 my-1"></div>
 
@@ -138,25 +173,34 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
          x-transition:enter-end="opacity-100 translate-y-0"
          class="lg:hidden mt-4 pt-4 border-t border-white/10 space-y-2">
         
+        @if(Route::has('dashboard'))
         <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="rounded-xl"> 
              {{ __('Start') }}
         </x-responsive-nav-link>
+        @endif
 
+        @if(Route::has('actors.index'))
         <a href="{{ route('actors.index') }}" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('actors.index') ? 'bg-white/10' : '' }}">
             <i class="bi bi-people-fill mr-2"></i> {{ __('Actors') }}
         </a>
+        @endif
 
+        @if(Route::has('movies.trailers'))
         <a href="{{ route('movies.trailers') }}" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('movies.trailers') ? 'bg-white/10' : '' }}">
             <i class="bi bi-play-circle mr-2"></i> {{ __('Trailers') }}
         </a>
+        @endif
 
+        @if(Route::has('dashboard'))
         <a href="{{ route('dashboard', ['stats' => 1]) }}"
             @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('stats-open'); open = false } else { window.location.href = $el.href }"
             class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('statistics') ? 'bg-white/10' : '' }}">
             <i class="bi bi-bar-chart-fill mr-2"></i> {{ __('Statistics') }}
         </a>
+        @endif
 
         <!-- Mobile Search -->
+        @if(Route::has('dashboard'))
         <div class="pt-2 px-2">
             <form action="{{ route('dashboard') }}" method="GET" class="relative">
                 <input type="text" name="q" value="{{ request('q') }}"
@@ -165,5 +209,6 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                 <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
             </form>
         </div>
+        @endif
     </div>
 </nav>

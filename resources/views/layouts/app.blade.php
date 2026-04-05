@@ -85,7 +85,11 @@
                 {{ $slot }}
             </main>
 
-            <x-footer :is-streaming="$isStreaming" />
+            @if(Route::has('dashboard'))
+                <x-footer :is-streaming="$isStreaming" />
+            @else
+                <x-saas-footer />
+            @endif
         </div>
 
         @if(!$isStreaming)

@@ -23,9 +23,7 @@ class TmdbImportService
         $this->tmdb = $tmdb;
     }
 
-    /**
-     * Import a movie from TMDb.
-     */
+    /* Import a movie from TMDb. */
     public function importMovie(int $tmdbId)
     {
         $details = $this->tmdb->getMovieDetails($tmdbId);

@@ -1,0 +1,279 @@
+@extends('admin.layout')
+
+@section('title', 'SaaS Einstellungen | MovieShelf Mastery')
+
+@section('page-title', 'Plattform-Einstellungen')
+
+@section('content')
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    
+    <!-- Settings Form -->
+
+    <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-8" x-data="{ activeTab: 'branding' }">
+        @csrf
+        
+        <!-- Tab Navigation -->
+        <div class="flex flex-wrap items-center gap-2 p-2 glass rounded-2xl border border-white/10 mb-8">
+            <button type="button" @click="activeTab = 'branding'" 
+                    :class="activeTab === 'branding' ? 'bg-rose-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+                    class="px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <i class="bi bi-brush"></i>
+                Branding
+            </button>
+            <button type="button" @click="activeTab = 'onboarding'" 
+                    :class="activeTab === 'onboarding' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+                    class="px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <i class="bi bi-person-plus"></i>
+                Onboarding
+            </button>
+            <button type="button" @click="activeTab = 'defaults'" 
+                    :class="activeTab === 'defaults' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+                    class="px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <i class="bi bi-gear-wide-connected"></i>
+                Standards
+            </button>
+            <button type="button" @click="activeTab = 'mail'" 
+                    :class="activeTab === 'mail' ? 'bg-sky-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+                    class="px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <i class="bi bi-envelope-at"></i>
+                E-Mail
+            </button>
+        </div>
+
+        <div x-show="activeTab === 'branding'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300">
+            <!-- Branding Section -->
+            <div class="glass rounded-[2rem] border border-white/10 overflow-hidden">
+            <div class="px-8 py-6 border-b border-white/10 bg-white/5">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-rose-500/20 rounded-2xl flex items-center justify-center border border-rose-500/30">
+                        <i class="bi bi-brush text-rose-500 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-white uppercase tracking-tight">SaaS Branding</h2>
+                        <p class="text-gray-400 text-sm font-medium">Name und Identität der Plattform</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Plattform Name</label>
+                    <input type="text" name="saas_name" value="{{ $settings['saas_name'] }}" 
+                           class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 text-white transition-all outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Support E-Mail</label>
+                    <input type="email" name="support_email" value="{{ $settings['support_email'] }}" 
+                           class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 text-white transition-all outline-none">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Landing Page Headline</label>
+                    <input type="text" name="saas_headline" value="{{ $settings['saas_headline'] }}" 
+                           class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 text-white transition-all outline-none">
+                </div>
+            </div>
+        </div>
+        </div>
+        
+        <div x-show="activeTab === 'onboarding'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300" x-cloak>
+            <!-- Onboarding Section -->
+            <div class="glass rounded-[2rem] border border-white/10 overflow-hidden">
+            <div class="px-8 py-6 border-b border-white/10 bg-white/5">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center border border-blue-500/30">
+                        <i class="bi bi-person-plus text-blue-500 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-white uppercase tracking-tight">Onboarding Flow</h2>
+                        <p class="text-gray-400 text-sm font-medium">Wie neue Tenants aktiviert werden</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-4 ms-1">Aktivierungs-Modus</label>
+                        
+                        <div class="grid grid-cols-1 gap-4">
+                            <label class="relative flex items-center p-4 cursor-pointer glass border border-white/10 rounded-2xl group hover:bg-white/5 transition-all">
+                                <input type="radio" name="onboarding_mode" value="manual" {{ $settings['onboarding_mode'] == 'manual' ? 'checked' : '' }} class="hidden peer">
+                                <div class="w-6 h-6 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-rose-500 peer-checked:bg-rose-500 transition-all">
+                                    <div class="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                </div>
+                                <div class="ms-4">
+                                    <span class="block text-sm font-bold text-white group-hover:text-rose-400 transition-colors">Manuelle Prüfung (Empfohlen)</span>
+                                    <span class="block text-xs text-gray-500">Du musst jedes Filmregal manuell im Dashboard freischalten.</span>
+                                </div>
+                            </label>
+
+                            <label class="relative flex items-center p-4 cursor-pointer glass border border-white/10 rounded-2xl group hover:bg-white/5 transition-all">
+                                <input type="radio" name="onboarding_mode" value="auto" {{ $settings['onboarding_mode'] == 'auto' ? 'checked' : '' }} class="hidden peer">
+                                <div class="w-6 h-6 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-500 transition-all">
+                                    <div class="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                </div>
+                                <div class="ms-4">
+                                    <span class="block text-sm font-bold text-white group-hover:text-green-400 transition-colors">Sofort-Aktivierung</span>
+                                    <span class="block text-xs text-gray-500">Tenants werden sofort nach der Registrierung freigeschaltet.</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="bg-rose-500/5 rounded-3xl border border-rose-500/10 p-6">
+                        <h3 class="text-rose-500 font-bold mb-2 flex items-center gap-2">
+                            <i class="bi bi-info-circle-fill"></i>
+                            Wichtiger Hinweis
+                        </h3>
+                        <p class="text-sm text-gray-400 leading-relaxed">
+                            Die manuelle Prüfung schützt deine Serverressourcen vor Spam-Registrierungen. Bei der Sofort-Aktivierung erhält der Nutzer direkt nach Absenden des Formulars Zugriff auf sein Regal.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div x-show="activeTab === 'defaults'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300" x-cloak>
+            <!-- Default Tenant Configuration -->
+            <div class="glass rounded-[2rem] border border-white/10 overflow-hidden">
+            <div class="px-8 py-6 border-b border-white/10 bg-white/5">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-indigo-500/20 rounded-2xl flex items-center justify-center border border-indigo-500/30">
+                        <i class="bi bi-gear-wide-connected text-indigo-500 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-white uppercase tracking-tight">Default Tenant Config</h2>
+                        <p class="text-gray-400 text-sm font-medium">Standard-Einstellungen für neue Filmregale</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Default Layout -->
+                <div class="space-y-4">
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-4 ms-1">Standard Layout</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="relative flex items-center p-3 cursor-pointer glass border border-white/10 rounded-xl group hover:bg-white/5 transition-all">
+                            <input type="radio" name="default_tenant_layout" value="classic" {{ $settings['default_tenant_layout'] == 'classic' ? 'checked' : '' }} class="hidden peer">
+                            <div class="w-5 h-5 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-indigo-500 peer-checked:bg-indigo-500 transition-all">
+                                <div class="w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                            </div>
+                            <span class="ms-3 text-sm font-bold text-white">Classic</span>
+                        </label>
+                        <label class="relative flex items-center p-3 cursor-pointer glass border border-white/10 rounded-xl group hover:bg-white/5 transition-all">
+                            <input type="radio" name="default_tenant_layout" value="streaming" {{ $settings['default_tenant_layout'] == 'streaming' ? 'checked' : '' }} class="hidden peer">
+                            <div class="w-5 h-5 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-indigo-500 peer-checked:bg-indigo-500 transition-all">
+                                <div class="w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                            </div>
+                            <span class="ms-3 text-sm font-bold text-white">Streaming</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Default Language -->
+                <div class="space-y-4">
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-4 ms-1">Standard Sprache</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="relative flex items-center p-3 cursor-pointer glass border border-white/10 rounded-xl group hover:bg-white/5 transition-all">
+                            <input type="radio" name="default_tenant_language" value="de" {{ $settings['default_tenant_language'] == 'de' ? 'checked' : '' }} class="hidden peer">
+                            <div class="w-5 h-5 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-indigo-500 peer-checked:bg-indigo-500 transition-all">
+                                <div class="w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                            </div>
+                            <span class="ms-3 text-sm font-bold text-white">Deutsch</span>
+                        </label>
+                        <label class="relative flex items-center p-3 cursor-pointer glass border border-white/10 rounded-xl group hover:bg-white/5 transition-all">
+                            <input type="radio" name="default_tenant_language" value="en" {{ $settings['default_tenant_language'] == 'en' ? 'checked' : '' }} class="hidden peer">
+                            <div class="w-5 h-5 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-indigo-500 peer-checked:bg-indigo-500 transition-all">
+                                <div class="w-1.5 h-1.5 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                            </div>
+                            <span class="ms-3 text-sm font-bold text-white">English</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div x-show="activeTab === 'mail'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300" x-cloak>
+            <!-- E-Mail Service (SMTP) -->
+            <div class="glass rounded-[2rem] border border-white/10 overflow-hidden">
+            <div class="px-8 py-6 border-b border-white/10 bg-white/5">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-sky-500/20 rounded-2xl flex items-center justify-center border border-sky-500/30">
+                        <i class="bi bi-envelope-at text-sky-500 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-white uppercase tracking-tight">E-Mail Service (SMTP)</h2>
+                        <p class="text-gray-400 text-sm font-medium">Zentraler Mail-Versand für die gesamte Plattform</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-8 space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">SMTP Host</label>
+                        <input type="text" name="mail_host" value="{{ $settings['mail_host'] }}" placeholder="z.B. smtp.mailtrap.io"
+                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Port</label>
+                        <input type="number" name="mail_port" value="{{ $settings['mail_port'] }}" placeholder="587"
+                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Username</label>
+                        <input type="text" name="mail_username" value="{{ $settings['mail_username'] }}" 
+                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Password</label>
+                        <input type="password" name="mail_password" value="{{ $settings['mail_password'] }}" 
+                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Encryption</label>
+                        <select name="mail_encryption" class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none appearance-none">
+                            <option value="tls" {{ $settings['mail_encryption'] == 'tls' ? 'selected' : '' }}>TLS (Empfohlen)</option>
+                            <option value="ssl" {{ $settings['mail_encryption'] == 'ssl' ? 'selected' : '' }}>SSL</option>
+                            <option value="null" {{ $settings['mail_encryption'] == 'null' ? 'selected' : '' }}>Keine</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Sender Email</label>
+                        <input type="email" name="mail_from_address" value="{{ $settings['mail_from_address'] }}" placeholder="noreply@movieshelf.info"
+                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Sender Name</label>
+                        <input type="text" name="mail_from_name" value="{{ $settings['mail_from_name'] }}" placeholder="MovieShelf Magic"
+                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                    </div>
+                </div>
+
+                <div class="bg-sky-500/5 rounded-2xl border border-sky-500/10 p-4 flex items-start gap-4">
+                    <i class="bi bi-info-circle text-sky-500 mt-1"></i>
+                    <p class="text-[11px] text-gray-400 leading-relaxed">
+                        ⚠️ **Hinweis**: Falls diese Felder leer bleiben, nutzt das System die Standardwerte aus der `.env`-Konfigurationsdatei. Achte darauf, dass dein Mail-Provider den Versand von dieser Domain erlaubt.
+                    </p>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="flex justify-end pt-4">
+            <button type="submit" class="px-12 py-4 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-rose-900/40 transition-all transform active:scale-95 flex items-center gap-3">
+                <i class="bi bi-save2-fill"></i>
+                Einstellungen Speichern
+            </button>
+        </div>
+    </form>
+</div>
+@endsection

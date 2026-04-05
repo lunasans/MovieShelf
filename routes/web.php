@@ -1,122 +1,32 @@
 <?php
 
-use App\Http\Controllers\MovieController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
-$profilePath = '/profile';
+/*
+|--------------------------------------------------------------------------
+| Central Web Routes
+|--------------------------------------------------------------------------
+|
+| These routes are for the central application (movieshelf.info).
+| No tenant logic should be placed here.
+|
+*/
 
-Route::get('/', function () {
-    return redirect()->route('dashboard');
-});
+// Landing Page (SaaS Home)
+Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
+Route::get('/api/check-subdomain', [\App\Http\Controllers\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain');
+Route::post('/claim', [\App\Http\Controllers\RegisterTenantController::class, 'store'])->name('tenant.register');
+Route::get('/activate/{token}', [\App\Http\Controllers\RegisterTenantController::class, 'activate'])->name('tenant.activate');
 
-Route::get('/dashboard', [MovieController::class, 'index'])
-    ->name('dashboard');
-
-Route::get('/movies/random', [MovieController::class, 'random'])
-    ->name('movies.random');
-
-Route::get('/lang/{locale}', function ($locale) {
-    if (in_array($locale, ['de', 'en'])) {
-        session(['locale' => $locale]);
-    }
-
-    return back();
-})->name('lang.switch');
-
-Route::get('/movies/{movie}', [MovieController::class, 'show'])
-    ->name('movies.show');
-
-Route::get('/movies/{movie}/details', [MovieController::class, 'details'])
-    ->name('movies.details');
-
-Route::get('/movies/{movie}/boxset', [MovieController::class, 'boxset'])
-    ->name('movies.boxset');
-
-Route::get('/actors', [\App\Http\Controllers\ActorController::class, 'index'])->name('actors.index');
-Route::get('/actors/{actor}', [\App\Http\Controllers\ActorController::class, 'show'])->name('actors.show');
-Route::get('/actors/{actor}/details', [\App\Http\Controllers\ActorController::class, 'details'])->name('actors.details');
-Route::get('/trailers', [\App\Http\Controllers\TrailerController::class, 'index'])->name('movies.trailers');
-Route::get('/impressum', [\App\Http\Controllers\ImpressumController::class, 'index'])->name('impressum');
-
-Route::get('/statistics', [\App\Http\Controllers\StatsController::class, 'index'])->name('statistics');
-Route::post('/theme/save', [\App\Http\Controllers\ThemeController::class, 'save'])->name('theme.save');
-
-Route::middleware('auth')->group(function () use ($profilePath) {
-    Route::get($profilePath, [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch($profilePath, [ProfileController::class, 'update'])->name('profile.update');
-    Route::patch('/profile/settings', [ProfileController::class, 'updateSettings'])->name('profile.settings.update');
-    Route::post('/profile/layout', [ProfileController::class, 'toggleLayout'])->name('profile.layout.toggle');
-    Route::delete($profilePath, [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // 2FA Routes
-    Route::post('/two-factor-authentication', [TwoFactorController::class, 'enable'])->name('two-factor.enable');
-    Route::post('/two-factor-confirmation', [TwoFactorController::class, 'confirm'])->name('two-factor.confirm');
-    Route::delete('/two-factor-authentication', [TwoFactorController::class, 'disable'])->name('two-factor.disable');
-    Route::get('/two-factor-challenge', [TwoFactorController::class, 'challenge'])->name('two-factor.challenge');
-    Route::post('/two-factor-challenge', [TwoFactorController::class, 'verify'])->name('two-factor.verify');
-    Route::post('/two-factor-recovery-codes', [TwoFactorController::class, 'regenerateCodes'])->name('two-factor.recovery-codes');
-
-    Route::post('/movies/{movie}/watched', [\App\Http\Controllers\MovieWatchedController::class, 'toggle'])->name('movies.watched.toggle');
-
-    // Admin Area
-    Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('dashboard');
-        Route::get('movies/sync-logs', [\App\Http\Controllers\Admin\TrailerSyncController::class, 'index'])->name('movies.sync-logs');
-        Route::get('movies/sync-logs/{run}', [\App\Http\Controllers\Admin\TrailerSyncController::class, 'show'])->name('movies.sync-logs.show');
-        Route::post('movies/smart-trailer', [\App\Http\Controllers\Admin\MovieController::class, 'smartTrailerSync'])->name('movies.smart-trailer');
-        Route::resource('movies', \App\Http\Controllers\Admin\MovieController::class);
-        Route::resource('actors', \App\Http\Controllers\Admin\ActorController::class);
-        Route::get('actors-search', [\App\Http\Controllers\Admin\ActorController::class, 'search'])->name('actors.search');
-
-        Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
-        Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
-        Route::post('settings/test-mail', [\App\Http\Controllers\Admin\SettingController::class, 'testMail'])->name('settings.test-mail');
-
-        // TMDb Import
-        Route::get('tmdb', [\App\Http\Controllers\Admin\TmdbImportController::class, 'index'])->name('tmdb.index');
-        Route::get('tmdb/search', [\App\Http\Controllers\Admin\TmdbImportController::class, 'search'])->name('tmdb.search');
-        Route::get('tmdb/details', [\App\Http\Controllers\Admin\TmdbImportController::class, 'details'])->name('tmdb.details');
-        Route::post('tmdb/import', [\App\Http\Controllers\Admin\TmdbImportController::class, 'import'])->name('tmdb.import');
-        Route::get('tmdb/update-list', [\App\Http\Controllers\Admin\TmdbImportController::class, 'getMoviesForUpdate'])->name('tmdb.update-list');
-        Route::post('tmdb/bulk-update', [\App\Http\Controllers\Admin\TmdbImportController::class, 'bulkUpdate'])->name('tmdb.bulk-update');
-        Route::get('tmdb/unlinked-list', [\App\Http\Controllers\Admin\TmdbImportController::class, 'getUnlinkedMovies'])->name('tmdb.unlinked-list');
-        Route::post('tmdb/auto-link', [\App\Http\Controllers\Admin\TmdbImportController::class, 'autoLinkMovie'])->name('tmdb.auto-link');
-
-        // XML Import
-        Route::get('import', [\App\Http\Controllers\Admin\XmlImportController::class, 'index'])->name('import.index');
-        Route::post('import', [\App\Http\Controllers\Admin\XmlImportController::class, 'import'])->name('import.post');
-        Route::delete('import/{filename}', [\App\Http\Controllers\Admin\XmlImportController::class, 'destroy'])->name('import.destroy');
-
-        // Users
-        Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
-
-        // System Update
-        Route::get('update', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'index'])->name('update.index');
-        Route::post('update/check', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'check'])->name('update.check');
-        Route::post('update/run', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'update'])->name('update.run');
-        Route::post('update/settings', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'saveSettings'])->name('update.settings.save');
-
-        // Bot
-        Route::get('bot', [\App\Http\Controllers\Admin\BotController::class, 'index'])->name('bot.index');
-        Route::post('bot/start', [\App\Http\Controllers\Admin\BotController::class, 'start'])->name('bot.start');
-        Route::post('bot/process', [\App\Http\Controllers\Admin\BotController::class, 'process'])->name('bot.process');
-        Route::post('bot/cancel', [\App\Http\Controllers\Admin\BotController::class, 'cancel'])->name('bot.cancel');
-        Route::get('bot/status', [\App\Http\Controllers\Admin\BotController::class, 'status'])->name('bot.status');
-        Route::get('bot/{botRun}/logs', [\App\Http\Controllers\Admin\BotController::class, 'logs'])->name('bot.logs');
-
-        // Migration v1 -> v2
-        Route::get('migration', [\App\Http\Controllers\Admin\MigrationController::class, 'index'])->name('migration.index');
-        Route::post('migration/run', [\App\Http\Controllers\Admin\MigrationController::class, 'run'])->name('migration.run');
-
-        // Statistics
-        Route::get('stats', [\App\Http\Controllers\Admin\StatsController::class, 'index'])->name('stats.index');
-
-        // Installation Statistics (Master only, gitignored)
-        if (class_exists(\App\Http\Controllers\Admin\InstallationStatsController::class)) {
-            Route::get('installations', [\App\Http\Controllers\Admin\InstallationStatsController::class, 'index'])->name('installations.index');
-        }
+// Master Routes (Global ACP)
+Route::middleware(['web', 'auth'])->group(function () {
+    Route::prefix('admin')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'index'])->name('admin.dashboard');
+        Route::get('/tenants', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'tenants'])->name('admin.tenants');
+        Route::post('/tenants/{tenant}/activate', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'activate'])->name('admin.tenants.activate');
+        Route::delete('/tenants/{tenant}/delete', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'delete'])->name('admin.tenants.delete');
+        Route::get('/settings', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'settings'])->name('admin.settings');
+        Route::post('/settings', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'updateSettings'])->name('admin.settings.update');
     });
 
     // Telemetry API (Master only, gitignored)
@@ -124,6 +34,10 @@ Route::middleware('auth')->group(function () use ($profilePath) {
         Route::post('api/telemetry', [\App\Http\Controllers\Api\TelemetryStoreController::class, 'store'])->name('api.telemetry');
     }
 });
-// Signatur-Banner
-Route::get('/signature', [\App\Http\Controllers\SignatureController::class, 'show'])->name('signature');
+
+// Avoid 500 on central /register
+Route::get('/register', function () {
+    return redirect()->route('landing');
+});
+
 require __DIR__.'/auth.php';

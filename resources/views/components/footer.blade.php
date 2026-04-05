@@ -3,6 +3,16 @@
     'isStreaming' => false
 ])
 
+@php
+    $footerStats = $footerStats ?? [
+        'total_films' => 0,
+        'total_actors' => 0,
+        'total_genres' => 0,
+        'daily_visits' => 0,
+        'total_visits' => 0,
+    ];
+@endphp
+
 <footer class="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 
     {{ $isStreaming ? 'mt-32 pb-20 px-12 md:px-20 border-t border-white/5 bg-gradient-to-t from-[#0c0c0e] to-transparent' : ($compact ? 'py-10 px-12' : 'mt-20 pb-10 px-8') }}">
     
@@ -17,12 +27,14 @@
                                ($isStreaming ? "text-white/40 hover:text-rose-500" : "text-gray-500 hover:text-rose-500");
                 @endphp
 
+                @if(Route::has('dashboard'))
                 <a href="{{ route('dashboard', ['impressum' => 1]) }}"
                    @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('impressum-open') } else { window.location.href = $el.href }"
                    class="{{ $navClass }}">
                     <i class="bi bi-info-circle"></i>
                     {{ __('Imprint') }}
                 </a>
+                @endif
                 
                 <a href="#" class="{{ $navClass }}">
                     <i class="bi bi-shield-lock"></i>

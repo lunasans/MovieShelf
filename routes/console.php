@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 
 Schedule::job(new SendTelemetryJob)->weekly();
 Schedule::command('movies:smart-trailer')->dailyAt('03:00');
+Schedule::command('app:cleanup-unactivated-tenants')->daily();
