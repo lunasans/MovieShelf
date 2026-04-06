@@ -133,26 +133,26 @@
                             
                             <!-- Master Identity -->
                             <div class="md:col-span-8 ultra-glass p-16 md:p-24 rounded-[3rem] space-y-16">
-                                <div class="text-[12px] text-gray-500 font-black tracking-[1.5em] uppercase border-b border-black/5 pb-6">MASTER IDENTITY</div>
-                                <div class="grid md:grid-cols-2 gap-16">
+                                <div class="text-[12px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100 pb-4 mb-12">MASTER IDENTITY</div>
+                                <div class="grid md:grid-cols-2 gap-12">
                                     <div class="space-y-4">
-                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Vorname Nachname</label>
-                                        <input type="text" name="name" placeholder="MAX MUSTERMANN" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                                        <label class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Vorname Nachname</label>
+                                        <input type="text" name="name" placeholder="Max Mustermann" required class="w-full bg-gray-50/50 border border-gray-100 p-3 md:p-4 text-base md:text-lg text-[#222222] font-medium rounded-lg outline-none focus:border-orange-600/30 focus:ring-4 focus:ring-orange-600/5 transition-all">
                                     </div>
                                     <div class="space-y-4">
-                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">E-Mail</label>
-                                        <input type="email" name="email" placeholder="[info@movieshelf.info]" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                                        <label class="text-[11px] font-bold uppercase tracking-wider text-gray-400">E-Mail</label>
+                                        <input type="email" name="email" placeholder="info@movieshelf.info" required class="w-full bg-gray-50/50 border border-gray-100 p-3 md:p-4 text-base md:text-lg text-[#222222] font-medium rounded-lg outline-none focus:border-orange-600/30 focus:ring-4 focus:ring-orange-600/5 transition-all">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Authority Lock -->
-                            <div class="md:col-span-4 ultra-glass p-16 md:p-24 rounded-[3rem] space-y-16">
-                                <div class="text-[12px] text-gray-500 font-black tracking-[1.5em] uppercase border-b border-black/5 pb-6">LOCK</div>
+                            <div class="md:col-span-4 ultra-glass p-16 md:p-24 rounded-lg space-y-12">
+                                <div class="text-[12px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100 pb-4 mb-12">LOCK</div>
                                 <div class="space-y-8">
                                     <div class="space-y-4">
-                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Passwort</label>
-                                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                                        <label class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Passwort</label>
+                                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-gray-50/50 border border-gray-100 p-3 md:p-4 text-base md:text-lg text-[#222222] font-medium rounded-lg outline-none focus:border-orange-600/30 focus:ring-4 focus:ring-orange-600/5 transition-all">
                                     </div>
                                 </div>
                             </div>
@@ -162,8 +162,8 @@
                                 <button type="submit" class="w-full bg-[#CC4B06] text-white py-4 md:py-6 font-bold uppercase text-[11px] tracking-widest hover:bg-[#A33C05] transition-all duration-300 rounded-[8px] shadow-lg shadow-orange-600/20 transform hover:-translate-y-1" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
                                     INITIALIZE CLOUD
                                 </button>
-                                <div class="flex justify-center gap-48 mt-24 text-[16px] text-gray-400 font-black tracking-[3em] uppercase italic">
-                                    <span>Infinite Power</span>
+                                <div class="flex justify-center gap-16 mt-12 text-[10px] font-bold uppercase tracking-widest text-gray-300">
+                                    <span>Cloud Performance</span>
                                     <span>•</span>
                                     <span>Apex Core</span>
                                 </div>
@@ -198,7 +198,7 @@
             @foreach([
                 ['icon' => 'stack', 'title' => 'Infinite<br>Storage', 'text' => '.', 'color' => 'bg-black'],
                 ['icon' => 'shield-check', 'title' => 'VIP<br>Privacy', 'text' => '', 'color' => 'bg-rose-600'],
-                ['icon' => 'cpu-fill', 'title' => 'Apex<br>Engine', 'text' => ', 'color' => 'bg-indigo-600']
+                ['icon' => 'cpu-fill', 'title' => 'Apex<br>Engine', 'text' => '', 'color' => 'bg-indigo-600']
             ] as $item)
             <div class="ultra-glass p-32 rounded-[5rem] flex flex-col space-y-16 hover:-translate-y-12 transition-all duration-1000 group" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
                 <div class="w-40 h-40 {{ $item['color'] }} text-white flex items-center justify-center rounded-[3rem] shadow-4xl group-hover:rotate-12 transition-all duration-1000">
