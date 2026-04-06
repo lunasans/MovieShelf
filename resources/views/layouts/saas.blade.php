@@ -14,33 +14,37 @@
         :root {
             --accent: #e11d48;
             --accent-glow: rgba(225, 29, 72, 0.4);
+            --platinum-bg: #F9F9FB;
+            --platinum-text: #050505;
         }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #050505; 
-            color: white;
+            background-color: var(--platinum-bg); 
+            color: var(--platinum-text);
             overflow-x: hidden;
         }
         h1, h2, h3, h4 { font-family: 'Inter', sans-serif; }
         
         .glass {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.4);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
         }
 
         .mesh-bg {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background: #050505;
+            background: var(--platinum-bg);
         }
         
         .mesh-circle {
             position: absolute;
             border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.15;
+            filter: blur(120px);
+            opacity: 0.08;
         }
 
         .animate-reveal {
@@ -57,23 +61,22 @@
 <body class="antialiased selection:bg-rose-600 selection:text-white">
 
     <div class="mesh-bg">
-        <div class="mesh-circle bg-rose-600 w-[600px] h-[600px] -top-40 -left-40 animate-pulse"></div>
-        <div class="mesh-circle bg-indigo-600 w-[500px] h-[500px] bottom-0 -right-20 opacity-10"></div>
-        <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 contrast-150 brightness-150"></div>
+        <div class="mesh-circle bg-rose-600 w-[800px] h-[800px] -top-80 -left-60 animate-pulse"></div>
+        <div class="mesh-circle bg-indigo-600 w-[600px] h-[600px] bottom-0 -right-40 opacity-5"></div>
     </div>
     
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 right-0 z-50 px-6 py-6" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 20)">
-        <div class="max-w-7xl mx-auto rounded-[2rem] px-8 py-4 flex items-center justify-between transition-all duration-500"
-             :class="scrolled ? 'glass shadow-2xl py-3' : ''">
-            <div class="flex items-center gap-4">
-                <img src="/img/logo/logo_small.png" alt="Logo" class="h-10 drop-shadow-[0_0_15px_rgba(225,29,72,0.5)]">
-                <span class="text-2xl font-black tracking-tighter italic">MOVIE<span class="text-rose-600">SHELF</span></span>
+        <div class="max-w-7xl mx-auto rounded-[2.5rem] px-10 py-5 flex items-center justify-between transition-all duration-700"
+             :class="scrolled ? 'glass shadow-2xl py-4' : 'bg-transparent'">
+            <div class="flex items-center gap-5">
+                <img src="/img/logo/logo_small.png" alt="Logo" class="h-12 bg-black/5 p-1 rounded-lg">
+                <span class="text-3xl font-black tracking-tighter italic text-[#050505]">MOVIE<span class="text-rose-600">SHELF</span></span>
             </div>
-            <div class="hidden md:flex items-center gap-10 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
-                <a href="#features" class="hover:text-white transition-colors">Features</a>
-                <a href="#stats" class="hover:text-white transition-colors">Insights</a>
-                <a href="/login" class="bg-white text-black px-8 py-3 rounded-full font-black hover:bg-rose-600 hover:text-white transition-all active:scale-95 shadow-xl">
+            <div class="hidden md:flex items-center gap-12 text-[10px] font-black uppercase tracking-[0.4em] text-gray-500">
+                <a href="#features" class="hover:text-black transition-colors">Features</a>
+                <a href="#stats" class="hover:text-black transition-colors">Insights</a>
+                <a href="/login" class="bg-[#050505] text-white px-10 py-4 rounded-full font-black hover:bg-rose-600 transition-all active:scale-95 shadow-xl">
                     LOGIN
                 </a>
             </div>
@@ -82,24 +85,24 @@
 
     @yield('content')
 
-    <footer class="py-20 border-t border-white/5 relative overflow-hidden">
-        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-16 relative z-10">
-            <div class="space-y-6">
-                <div class="flex items-center gap-3">
-                    <img src="/img/logo/logo_small.png" alt="Logo" class="h-6">
-                    <span class="font-black tracking-tighter italic uppercase">MovieShelf</span>
+    <footer class="py-32 border-t border-black/5 relative overflow-hidden bg-white/50">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-24 relative z-10">
+            <div class="space-y-8">
+                <div class="flex items-center gap-4">
+                    <img src="/img/logo/logo_small.png" alt="Logo" class="h-8 bg-black/5 p-1 rounded-md">
+                    <span class="font-black tracking-tighter italic uppercase text-2xl text-[#050505]">MovieShelf</span>
                 </div>
-                <p class="text-gray-500 text-sm font-semibold leading-relaxed">
+                <p class="text-gray-400 text-sm font-semibold leading-relaxed">
                     Elevating movie collections to a cinematic cloud experience.
                 </p>
             </div>
             <div class="md:col-span-2"></div>
-            <div class="flex flex-col items-end gap-6">
-                <div class="flex gap-4">
-                    <a href="#" class="w-12 h-12 glass rounded-2xl flex items-center justify-center hover:bg-rose-600 transition-all"><i class="bi bi-github"></i></a>
-                    <a href="#" class="w-12 h-12 glass rounded-2xl flex items-center justify-center hover:bg-rose-600 transition-all"><i class="bi bi-twitter-x"></i></a>
+            <div class="flex flex-col items-end gap-10">
+                <div class="flex gap-6">
+                    <a href="#" class="w-14 h-14 bg-black/5 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-rose-600 hover:text-white transition-all"><i class="bi bi-github text-2xl"></i></a>
+                    <a href="#" class="w-14 h-14 bg-black/5 rounded-2xl flex items-center justify-center text-gray-400 hover:bg-rose-600 hover:text-white transition-all"><i class="bi bi-twitter-x text-2xl"></i></a>
                 </div>
-                <div class="text-gray-600 text-[10px] font-black uppercase tracking-[0.5em]">
+                <div class="text-gray-400 text-[10px] font-black uppercase tracking-[0.6em]">
                     © 2026 RENÉ NEUHAUS
                 </div>
             </div>
