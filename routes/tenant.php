@@ -41,6 +41,7 @@ $serveImage = function ($path) {
             if (file_exists($f)) {
                 return response()->file($f, [
                     'X-Storage-Proxy' => 'hit',
+                    'X-Storage-Route' => 'hit',
                     'Cache-Control' => 'no-cache, private'
                 ]);
             }
