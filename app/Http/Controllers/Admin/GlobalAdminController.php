@@ -19,7 +19,7 @@ class GlobalAdminController extends Controller
 
         $recent_tenants = Tenant::latest()->take(5)->get();
 
-        return view('admin.dashboard', compact('stats', 'recent_tenants'));
+        return view('admin.saas_dashboard', compact('stats', 'recent_tenants'));
     }
 
     public function tenants()
