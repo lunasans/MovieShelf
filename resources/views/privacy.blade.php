@@ -76,7 +76,22 @@
             </div>
 
             <div>
-                <h3 class="text-xl font-bold text-[#222222] mb-2">4.4 Deine Rechte</h3>
+                <h3 class="text-xl font-bold text-[#222222] mb-2">4.4 App-Informationen und Leistung (Google Play Richtlinien)</h3>
+                <p>
+                    Zur Sicherstellung der Stabilität und zur Fehlerbehebung erfassen wir, insbesondere bei der Nutzung unserer mobilen Anwendung (Android-App), technische Leistungsdaten. Diese Daten sind in der Regel anonymisiert und lassen sich nicht direkt auf deine Person zurückführen:
+                </p>
+                <ul class="list-disc pl-6 mt-2 space-y-2">
+                    <li><strong>Absturzprotokolle (Crash Logs):</strong> Wenn die App oder der Server unerwartet beendet wird, erhalten wir einen automatisierten Fehlerbericht (z. B. Angaben zum Gerätetyp, Betriebssystemversion und den Code, der den Absturz verursacht hat), um den Fehler schnellstmöglich zu beheben.</li>
+                    <li><strong>Diagnosedaten:</strong> Technische Informationen über Ladezeiten, Netzwerkfehler oder Speicherprobleme, um die App-Performance zu optimieren.</li>
+                    <li><strong>Andere App-Leistungsdaten:</strong> Generelle Metriken zur Stabilität der App und API-Verbindungen.</li>
+                </ul>
+                <p class="mt-4">
+                    Diese Datenerhebung erfolgt aufgrund unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an einer sicheren und fehlerfreien Bereitstellung des Dienstes. Wir teilen diese Rohdaten <strong>nicht</strong> mit Werbenetzwerken oder Dritt-Trackern.
+                </p>
+            </div>
+
+            <div>
+                <h3 class="text-xl font-bold text-[#222222] mb-2">4.5 Deine Rechte</h3>
                 <p>
                     Du hast jederzeit das Recht auf Auskunft über deine gespeicherten personenbezogenen Daten, deren Herkunft, Empfänger und den Zweck der Datenverarbeitung. Weiterhin hast du ein Recht auf Berichtigung, Sperrung oder <strong>Löschung</strong> dieser Daten.
                     <br><br>
