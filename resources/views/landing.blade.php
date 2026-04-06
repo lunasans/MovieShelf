@@ -32,7 +32,7 @@
     
     .bg-parallax-text {
         position: absolute;
-        font-size: 32rem;
+        font-size: 16rem;
         font-weight: 900;
         text-transform: uppercase;
         color: rgba(0,0,0,0.015);
@@ -85,16 +85,16 @@
         <div class="space-y-48 reveal-delay-1">
             <div class="inline-flex items-center gap-10 px-12 py-5 border border-black/5 bg-white/60 backdrop-blur-2xl rounded-full text-[13px] font-black tracking-[1.5em] uppercase text-gray-500 shadow-2xl" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
                 <span class="w-4 h-4 bg-rose-600 rounded-full animate-pulse shadow-xl shadow-rose-600/60"></span>
-                APEX ULTIMATE PROTOCOL v2.10.3
+                ULTRA PREMIUM • ELITE PROTOCOL • V2.10.4
             </div>
             
-            <h1 class="text-[14rem] md:text-[28rem] font-black uppercase italic monument-text tracking-[-0.09em] leading-[0.7] mb-32">
+            <h1 class="text-[6rem] md:text-[12rem] font-black uppercase italic monument-text tracking-[-0.09em] leading-[0.7] mb-32">
                 PLATINUM <br>
                 <span class="italic font-light opacity-15 tracking-[-0.02em]">APEX.</span>
             </h1>
             
             <div class="max-w-6xl mx-auto space-y-24">
-                <p class="text-5xl text-gray-400 font-medium tracking-tighter leading-tight reveal-delay-2">
+                <p class="text-xl md:text-2xl text-gray-400 font-medium tracking-tighter leading-tight reveal-delay-2">
                     Jenseits von Exzellenz. Das absolute Maximum digitaler Sammlerkunst. <br>
                     Dein filmisches Monument wartet auf Initialisierung.
                 </p>
@@ -126,8 +126,8 @@
                     <form action="{{ route('tenant.register') }}" method="POST" class="max-w-7xl mx-auto">
                         @csrf
                         
-                        <div class="ultra-slot flex items-center p-12 md:p-20 relative" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                            <span class="text-gray-200 font-black text-5xl italic select-none mr-12 opacity-30 tracking-[1em] md:tracking-[2em]">PROTO://</span>
+                        <div class="ultra-slot flex items-center p-8 md:p-12 relative" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                            <span class="text-gray-200 font-black text-2xl md:text-4xl italic select-none mr-12 opacity-30 tracking-[1em] md:tracking-[2em]">PROTO://</span>
                             
                             <input type="text" 
                                     id="subdomain"
@@ -137,18 +137,18 @@
                                     placeholder="WÄHLE DEINEN TITEL" 
                                     required 
                                     autocomplete="off"
-                                    class="w-full text-[#050505] font-black text-6xl md:text-[14rem] uppercase italic platinum-input tracking-tighter p-0 focus:ring-0">
+                                    class="w-full text-[#050505] font-black text-4xl md:text-[8rem] uppercase italic platinum-input tracking-tighter p-0 focus:ring-0">
                             
                             <div class="flex items-center gap-16 ml-12">
-                                <span class="text-gray-100 font-bold text-6xl hidden lg:inline select-none tracking-[-0.1em]">.MSF.INFO</span>
+                                <span class="text-gray-100 font-bold text-3xl md:text-5xl hidden lg:inline select-none tracking-[-0.1em]">.MSF.INFO</span>
                                 <template x-if="checking">
                                     <div class="w-6 h-32 bg-rose-600 animate-pulse rounded-full shadow-[0_0_50px_rgba(225,29,72,0.5)]"></div>
                                 </template>
                                 <template x-if="!checking && available === true">
-                                    <i class="bi bi-star-fill text-emerald-500 text-[12rem] animate-reveal"></i>
+                                    <i class="bi bi-star-fill text-emerald-500 text-6xl md:text-[8rem] animate-reveal"></i>
                                 </template>
                                 <template x-if="!checking && available === false">
-                                    <i class="bi bi-shield-lock-fill text-rose-600 text-[12rem] animate-reveal"></i>
+                                    <i class="bi bi-shield-lock-fill text-rose-600 text-6xl md:text-[8rem] animate-reveal"></i>
                                 </template>
                             </div>
                         </div>
@@ -162,11 +162,11 @@
                                 <div class="grid md:grid-cols-2 gap-20">
                                     <div class="space-y-8">
                                         <label class="text-[13px] font-black uppercase tracking-[1em] text-gray-400">Full Name</label>
-                                        <input type="text" name="name" placeholder="MAX MUSTERMANN" required class="w-full bg-black/5 p-16 text-5xl text-[#050505] font-black uppercase italic rounded-[3rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                                        <input type="text" name="name" placeholder="MAX MUSTERMANN" required class="w-full bg-black/5 p-12 text-xl md:text-2xl text-[#050505] font-black uppercase italic rounded-[2rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
                                     <div class="space-y-8">
                                         <label class="text-[13px] font-black uppercase tracking-[1em] text-gray-400">Secure Mail</label>
-                                        <input type="email" name="email" placeholder="VIP@CINEMA.INFO" required class="w-full bg-black/5 p-16 text-5xl text-[#050505] font-black uppercase italic rounded-[3rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                                        <input type="email" name="email" placeholder="VIP@CINEMA.INFO" required class="w-full bg-black/5 p-12 text-xl md:text-2xl text-[#050505] font-black uppercase italic rounded-[2rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
                                 </div>
                             </div>
@@ -177,14 +177,14 @@
                                 <div class="space-y-12">
                                     <div class="space-y-6">
                                         <label class="text-[13px] font-black uppercase tracking-[1em] text-gray-400">Apex Key</label>
-                                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-black/5 p-16 text-5xl text-[#050505] font-black uppercase italic rounded-[3rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-black/5 p-12 text-xl md:text-2xl text-[#050505] font-black uppercase italic rounded-[2rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- INITIALIZE THE APEX -->
                             <div class="md:col-span-12 pt-20">
-                                <button type="submit" class="w-full bg-[#050505] text-white py-24 font-black uppercase italic text-8xl tracking-[-0.05em] hover:bg-[#FF0032] transition-all duration-1200 shadow-[0_150px_300px_-50px_rgba(0,0,0,0.3)] rounded-[5rem] transform hover:-translate-y-8" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                                <button type="submit" class="w-full bg-[#050505] text-white py-16 md:py-20 font-black uppercase italic text-4xl md:text-6xl tracking-[-0.05em] hover:bg-[#FF0032] transition-all duration-1200 shadow-[0_150px_300px_-50px_rgba(0,0,0,0.3)] rounded-[3rem] md:rounded-[4rem] transform hover:-translate-y-8" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
                                     INITIALIZE APEX
                                 </button>
                                 <div class="flex justify-center gap-48 mt-24 text-[16px] text-gray-400 font-black tracking-[3em] uppercase italic">
@@ -206,7 +206,7 @@
     <div class="max-w-[1900px] mx-auto space-y-64">
         
         <div class="text-center space-y-16 animate-reveal">
-            <h2 class="text-[14rem] md:text-[24rem] font-black italic uppercase monument-text tracking-tighter">The Gallery.</h2>
+            <h2 class="text-[6rem] md:text-[10rem] font-black italic uppercase monument-text tracking-tighter">The Gallery.</h2>
             <div class="w-[600px] h-3 bg-[#FF0032] mx-auto rounded-full shadow-[0_0_100px_rgba(225,29,72,0.8)]"></div>
         </div>
         
@@ -214,8 +214,8 @@
             <img src="{{ asset('img/screenshots/hero.png') }}" class="absolute inset-0 w-full h-full object-cover transform scale-110 group-hover:scale-100 transition-all duration-3000 opacity-20 group-hover:opacity-100 filter contrast-125">
             <div class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
             <div class="absolute bottom-48 left-48 space-y-12 animate-reveal">
-                <h3 class="text-8xl font-black uppercase italic text-[#000] tracking-[-0.05em]">4K Retina Performance.</h3>
-                <p class="text-4xl text-gray-500 font-medium max-w-5xl leading-tight">Keine Kompromisse. Nur pure Schärfe und Geschwindigkeit für deine exklusive Sammlung.</p>
+                <h3 class="text-4xl md:text-6xl font-black uppercase italic text-[#000] tracking-[-0.05em]">4K Retina Performance.</h3>
+                <p class="text-xl md:text-2xl text-gray-500 font-medium max-w-5xl leading-tight">Keine Kompromisse. Nur pure Schärfe und Geschwindigkeit für deine exklusive Sammlung.</p>
             </div>
         </div>
         
@@ -229,27 +229,27 @@
                 <div class="w-40 h-40 {{ $item['color'] }} text-white flex items-center justify-center rounded-[3rem] shadow-4xl group-hover:rotate-12 transition-all duration-1000">
                     <i class="bi bi-{{ $item['icon'] }} text-7xl"></i>
                 </div>
-                <h4 class="text-7xl font-black uppercase italic monument-text tracking-[-0.08em] leading-[0.8]">{!! $item['title'] !!}.</h4>
-                <p class="text-gray-500 font-medium text-3xl tracking-tighter leading-relaxed">{{ $item['text'] }}</p>
+                <h4 class="text-3xl md:text-4xl font-black uppercase italic monument-text tracking-[-0.08em] leading-[0.8]">{!! $item['title'] !!}.</h4>
+                <p class="text-gray-500 font-medium text-base md:text-lg tracking-tighter leading-relaxed">{{ $item['text'] }}</p>
             </div>
             @endforeach
         </div>
 
         <!-- THE ULTIMATE ASCENSION -->
         <div class="text-center space-y-64 py-96 relative overflow-hidden">
-            <h2 class="text-[14rem] md:text-[32rem] font-black italic uppercase monument-text leading-none tracking-[-0.1em] opacity-90 reveal-delay-2">ASCEND.</h2>
+            <h2 class="text-[8rem] md:text-[14rem] font-black italic uppercase monument-text leading-none tracking-[-0.1em] opacity-90 reveal-delay-2">ASCEND.</h2>
             
             <div class="pt-48">
                 <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
                         class="inline-flex items-center gap-32 p-6 border border-black/5 bg-white/60 backdrop-blur-3xl group hover:shadow-[0_150px_300px_rgba(0,0,0,0.25)] transition-all duration-1000 rounded-[5rem]"
                         @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                    <span class="bg-[#050505] text-white px-48 py-20 font-black uppercase italic text-7xl group-hover:bg-[#FF0032] transition-all duration-1000 rounded-[4rem]">JOIN THE ELITE</span>
-                    <i class="bi bi-arrow-up-right text-black text-8xl mr-32 group-hover:translate-x-12 group-hover:-translate-y-12 transition-all duration-1200"></i>
+                    <span class="bg-[#050505] text-white px-24 md:px-32 py-10 md:py-16 font-black uppercase italic text-3xl md:text-4xl group-hover:bg-[#FF0032] transition-all duration-1000 rounded-[3rem]">JOIN THE ELITE</span>
+                    <i class="bi bi-arrow-up-right text-black text-4xl md:text-6xl mr-16 md:mr-32 group-hover:translate-x-8 group-hover:-translate-y-8 transition-all duration-1200"></i>
                 </button>
             </div>
             
             <div class="pt-64 text-[18px] font-black uppercase tracking-[4em] text-gray-300">
-                ULTRA PREMIUM • ELITE PROTOCOL • V2.10.3
+                ULTRA PREMIUM • ELITE PROTOCOL • V2.10.4
             </div>
         </div>
     </div>

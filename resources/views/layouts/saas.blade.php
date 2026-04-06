@@ -151,7 +151,7 @@
                 </div>
                 <p class="text-gray-400 text-xl font-semibold leading-relaxed">
                     Elevating movie collections to a cinematic cloud experience. <br>
-                    Platinum Apex: Ultimate Edition v2.10.3
+                    Platinum Apex: Ultimate Edition v2.10.4
                 </p>
             </div>
             <div class="md:col-span-2"></div>
