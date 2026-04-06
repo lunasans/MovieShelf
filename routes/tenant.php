@@ -120,8 +120,7 @@ Route::middleware([
     Route::get('/signature', [\App\Http\Controllers\SignatureController::class, 'show'])->name('signature');
 
     // Storage Proxy for Tenants (supports tenant-specific AND global fallback assets)
-    // We use /t-storage/ as a prefix to bypass Nginx's hardcoded /storage/ rule on the server.
-    Route::get('/{prefix}/{path}', function ($prefix, $path) {
+    Route::get('/storage/{path}', function ($path) {
         $path = str_replace('..', '', $path);
         
         // 1. Check Tenant Storage (e.g., custom covers)
@@ -137,7 +136,7 @@ Route::middleware([
         }
 
         abort(404);
-    })->where('prefix', 'storage|t-storage')->where('path', '.*');
+    })->where('path', '.*');
     
     // Auth Routes for Tenants
     require __DIR__.'/auth.php';

@@ -26,6 +26,18 @@ Route::get('/api/check-subdomain', [\App\Http\Controllers\RegisterTenantControll
 Route::post('/claim', [\App\Http\Controllers\RegisterTenantController::class, 'store'])->name('tenant.register');
 Route::get('/activate/{token}', [\App\Http\Controllers\RegisterTenantController::class, 'activate'])->name('tenant.activate');
 
+// Central Storage Proxy (Required when public/storage symlink is removed)
+Route::get('/storage/{path}', function ($path) {
+    $path = str_replace('..', '', $path);
+    $fullPath = base_path("storage/app/public/$path");
+
+    if (file_exists($fullPath)) {
+        return response()->file($fullPath);
+    }
+
+    abort(404);
+})->where('path', '.*');
+
 // Master Routes (Global ACP)
 Route::middleware(['web', 'auth'])->group(function () {
     Route::prefix('admin')->group(function () {

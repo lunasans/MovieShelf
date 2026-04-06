@@ -135,7 +135,7 @@ class Movie extends Model
         // Modern approach: ID is a path (e.g. covers/abc.jpg)
         elseif (str_contains($id, '/') && str_contains($id, '.')) {
             if ($disk->exists($id)) {
-                $url = '/t-storage/' . $id;
+                $url = '/storage/' . $id;
             } elseif ($centralDisk->exists($id)) {
                 $url = '/storage/' . $id;
             }
@@ -146,7 +146,7 @@ class Movie extends Model
         }
         // Fallback: Check if the ID itself exists as a file
         elseif ($disk->exists($id)) {
-             $url = '/t-storage/' . $id;
+             $url = '/storage/' . $id;
         } elseif ($centralDisk->exists($id)) {
              $url = '/storage/' . $id;
         }
@@ -171,7 +171,7 @@ class Movie extends Model
         // Try standard extension first
         $path = "$folder/$id$suffix.jpg";
         if ($disk->exists($path)) {
-            return '/t-storage/' . $path;
+            return '/storage/' . $path;
         }
         if ($centralDisk->exists($path)) {
             return '/storage/' . $path;
@@ -182,7 +182,7 @@ class Movie extends Model
         foreach ($extensions as $ext) {
             $fallbackPath = "$folder/$id$suffix$ext";
             if ($disk->exists($fallbackPath)) {
-                return '/t-storage/' . $fallbackPath;
+                return '/storage/' . $fallbackPath;
             }
             if ($centralDisk->exists($fallbackPath)) {
                 return '/storage/' . $fallbackPath;
@@ -192,7 +192,7 @@ class Movie extends Model
         // Try without suffix as a last resort
         if ($suffix !== '') {
             if ($disk->exists("$folder/$id.jpg")) {
-                return '/t-storage/' . "$folder/$id.jpg";
+                return '/storage/' . "$folder/$id.jpg";
             }
             if ($centralDisk->exists("$folder/$id.jpg")) {
                 return '/storage/' . "$folder/$id.jpg";
