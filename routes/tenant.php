@@ -13,55 +13,55 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Storage Proxy for Tenants (supports tenant-specific AND global fallback assets)
-Route::get('/media/{path}', function ($path) {
+// --- ULTIMATE IMAGE RESOLUTION PROXY ---
+$serveImage = function ($path) {
     $path = str_replace('..', '', $path);
-    
+    $tenantId = tenancy()->tenant->id;
     $tryPaths = [$path];
-    if (str_starts_with($path, 'cover/')) {
-        $tryPaths[] = str_replace('cover/', 'covers/', $path);
-    } elseif (str_starts_with($path, 'covers/')) {
-        $tryPaths[] = str_replace('covers/', 'cover/', $path);
-    } elseif (str_starts_with($path, 'backdrop/')) {
-        $tryPaths[] = str_replace('backdrop/', 'backdrops/', $path);
-    } elseif (str_starts_with($path, 'backdrops/')) {
-        $tryPaths[] = str_replace('backdrops/', 'backdrop/', $path);
+    
+    // Add folder variants (cover/covers, backdrop/backdrops)
+    if (str_contains($path, 'cover')) {
+        $tryPaths[] = 'covers/' . basename($path);
+        $tryPaths[] = 'cover/' . basename($path);
+        $tryPaths[] = basename($path); // also try root if it's already covers/something
+    } elseif (str_contains($path, 'backdrop')) {
+        $tryPaths[] = 'backdrops/' . basename($path);
+        $tryPaths[] = 'backdrop/' . basename($path);
+        $tryPaths[] = basename($path);
+    } elseif (str_contains($path, 'actor')) {
+        $tryPaths[] = 'actors/' . basename($path);
     }
 
-    foreach ($tryPaths as $tryPath) {
-        // 1. Check Tenant Storage
-        // Use the absolute base path to be 100% sure
-        $tenantId = tenancy()->tenant->id;
-        $tenantPath = base_path("storage/tenant{$tenantId}/app/public/{$tryPath}");
-        
-        if (file_exists($tenantPath)) {
-            return response()->file($tenantPath, [
-                'X-Storage-Proxy' => 'tenant',
-                'Cache-Control' => 'public, max-age=31536000',
-            ]);
-        }
-
-        // 2. Fallback to Central Storage
-        $centralPath = base_path("storage/app/public/{$tryPath}");
-        if (file_exists($centralPath)) {
-            return response()->file($centralPath, [
-                'X-Storage-Proxy' => 'central',
-                'Cache-Control' => 'public, max-age=31536000',
-            ]);
+    foreach (array_unique($tryPaths) as $tp) {
+        $files = [
+            base_path("storage/tenant{$tenantId}/app/public/{$tp}"),
+            base_path("storage/app/public/{$tp}")
+        ];
+        foreach ($files as $f) {
+            if (file_exists($f)) {
+                return response()->file($f, [
+                    'X-Storage-Proxy' => 'hit',
+                    'Cache-Control' => 'no-cache, private'
+                ]);
+            }
         }
     }
-
     return response('File not found', 404, ['X-Storage-Proxy' => 'fail']);
+};
+
+// Catch /media/{path}
+Route::get('/media/{path}', function ($path) use ($serveImage) {
+    return $serveImage($path);
 })->where('path', '.*');
 
-// Safety Net: Catch images requested at the root (without /media/ prefix)
-Route::get('/{filename}', function ($filename) {
-    // Only intercept common image extensions to avoid breaking other routes
-    if (preg_match('/\.(jpg|jpeg|png|webp|gif|svg)$/i', $filename)) {
-        return redirect()->to('/media/' . $filename);
+// Catch root level images (e.g. rene.movieshelf.info/tmdb_abc.jpg)
+Route::get('/{file}', function ($file) use ($serveImage) {
+    if (preg_match('/\.(jpg|jpeg|png|webp|gif|svg)$/i', $file)) {
+        return $serveImage($file);
     }
     abort(404);
-})->where('filename', '^tmdb_.*|.*\.(jpg|jpeg|png|webp|gif|svg)$');
+})->where('file', '.*\.(jpg|jpeg|png|webp|gif|svg)$');
+
 
 Route::middleware([
     'tenant.activated',
