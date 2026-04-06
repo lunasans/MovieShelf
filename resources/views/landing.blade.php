@@ -191,11 +191,16 @@
                                 Hilf uns dabei, die MovieShelf Android App zu perfektionieren. Werde einer unserer ersten Tester und gestalte die Zukunft deiner Filmsammlung mit.
                             </p>
                             
-                            <div class="flex flex-col md:flex-row items-center justify-center gap-4">
-                                <a href="mailto:support@movieshelf.info?subject=Android%20Beta%20Test" class="inline-flex items-center gap-3 px-8 py-3 bg-[#222222] text-white rounded-lg text-sm font-bold hover:bg-[#050505] transition-all">
+                            <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                                <a href="mailto:support@movieshelf.info?subject=Android%20Beta%20Test" class="inline-flex items-center gap-3 px-8 py-3 bg-[#222222] text-white rounded-lg text-sm font-bold hover:bg-[#050505] transition-all h-[52px]">
                                     <i class="bi bi-envelope-fill"></i>
                                     Jetzt bewerben
                                 </a>
+                                
+                                <a href="https://play.google.com/store/apps/details?id=at.neuhaus.movieshelf&hl=de-DE&ah=TjcyMibHpYK5SRSIxlVkja_d-Vw" target="_blank" class="transition-transform hover:scale-105 active:scale-95">
+                                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/de_badge_web_generic.png" alt="Get it on Google Play" class="h-[78px] -my-[13px]">
+                                </a>
+                                
                                 <span class="text-gray-400 text-sm font-medium">oder schreib an: <span class="text-[#222222] font-bold">support@movieshelf.info</span></span>
                             </div>
                         </div>
