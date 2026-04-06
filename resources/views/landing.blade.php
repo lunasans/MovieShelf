@@ -129,7 +129,7 @@
                         </div>
 
                         <!-- APEX BENTO - THE ULTIMATE REVEAL -->
-                        <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-2000" x-transition:enter-start="opacity-0 translate-y-96 scale-90 blur-[100px]" x-transition:enter-end="opacity-100 translate-y-0 scale-100 blur-0" class="mt-64 grid grid-cols-1 md:grid-cols-12 gap-16 text-left">
+                        <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-2000" x-transition:enter-start="opacity-0 translate-y-96 scale-90 blur-[100px]" x-transition:enter-end="opacity-100 translate-y-0 scale-100 blur-0" class="mt-12 grid grid-cols-1 md:grid-cols-12 gap-16 text-left">
                             
                             <!-- Master Identity -->
                             <div class="md:col-span-8 ultra-glass p-16 md:p-24 rounded-[3rem] space-y-16">
