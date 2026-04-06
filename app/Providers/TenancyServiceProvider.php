@@ -128,8 +128,8 @@ class TenancyServiceProvider extends ServiceProvider
 
         if (!in_array($currentHost, $centralDomains)) {
             Route::middleware([
-                'web',
                 'tenancy',
+                'web',
                 \App\Http\Middleware\EnsureTenantIsActivated::class,
                 \App\Http\Middleware\SetLocale::class,
                 \App\Http\Middleware\TwoFactorMiddleware::class,
