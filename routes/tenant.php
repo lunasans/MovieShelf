@@ -14,13 +14,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Storage Proxy for Tenants (supports tenant-specific AND global fallback assets)
-// Put this first to bypass any middleware that might redirect or block asset requests.
 Route::get('/media/{path}', function ($path) {
     $path = str_replace('..', '', $path);
     
     $tryPaths = [$path];
-    
-    // Add singular/plural variants for robustness
     if (str_starts_with($path, 'cover/')) {
         $tryPaths[] = str_replace('cover/', 'covers/', $path);
     } elseif (str_starts_with($path, 'covers/')) {
@@ -32,16 +29,25 @@ Route::get('/media/{path}', function ($path) {
     }
 
     foreach ($tryPaths as $tryPath) {
-        // 1. Check Tenant Storage (scoped by stancl/tenancy)
-        $tenantPath = storage_path("app/public/$tryPath");
+        // 1. Check Tenant Storage
+        // Use the absolute base path to be 100% sure
+        $tenantId = tenancy()->tenant->id;
+        $tenantPath = base_path("storage/tenant{$tenantId}/app/public/{$tryPath}");
+        
         if (file_exists($tenantPath)) {
-            return response()->file($tenantPath, ['X-Storage-Proxy' => 'tenant']);
+            return response()->file($tenantPath, [
+                'X-Storage-Proxy' => 'tenant',
+                'Cache-Control' => 'public, max-age=31536000',
+            ]);
         }
 
         // 2. Fallback to Central Storage
-        $centralPath = base_path("storage/app/public/$tryPath");
+        $centralPath = base_path("storage/app/public/{$tryPath}");
         if (file_exists($centralPath)) {
-            return response()->file($centralPath, ['X-Storage-Proxy' => 'central']);
+            return response()->file($centralPath, [
+                'X-Storage-Proxy' => 'central',
+                'Cache-Control' => 'public, max-age=31536000',
+            ]);
         }
     }
 
