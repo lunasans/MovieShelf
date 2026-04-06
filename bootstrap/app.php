@@ -27,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $middleware->alias([
-            'tenancy' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomainOrSubdomain::class,
+            'tenancy' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
             'prevent-central-access' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
             'tenant.activated' => \App\Http\Middleware\CheckTenantActivation::class,
         ]);
