@@ -278,7 +278,7 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=&quot;csrf-token&quot;]').getAttribute('content')
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
                         })
                         .then(response => response.json())
