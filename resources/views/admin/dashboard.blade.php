@@ -40,11 +40,11 @@
                 </div>
                 <span class="text-[10px] font-black text-white uppercase tracking-[0.2em]">Neuer Film</span>
             </a>
-            <a href="{{ route('admin.update.index') }}" class="glass p-6 rounded-3xl border-white/5 bg-gradient-to-br from-amber-500/10 to-transparent flex flex-col items-center justify-center gap-3 group hover:border-amber-500/50 transition-all text-center hover:-translate-y-1">
+            <a href="{{ route('admin.users.index') }}" class="glass p-6 rounded-3xl border-white/5 bg-gradient-to-br from-amber-500/10 to-transparent flex flex-col items-center justify-center gap-3 group hover:border-amber-500/50 transition-all text-center hover:-translate-y-1">
                 <div class="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform shadow-lg shadow-amber-500/10">
-                    <i class="bi bi-arrow-repeat text-2xl"></i>
+                    <i class="bi bi-people text-2xl"></i>
                 </div>
-                <span class="text-[10px] font-black text-white uppercase tracking-[0.2em]">Update</span>
+                <span class="text-[10px] font-black text-white uppercase tracking-[0.2em]">Benutzer</span>
             </a>
             <a href="{{ route('admin.stats.index') }}" class="glass p-6 rounded-3xl border-white/5 bg-gradient-to-br from-rose-500/10 to-transparent flex flex-col items-center justify-center gap-3 group hover:border-rose-500/50 transition-all text-center hover:-translate-y-1">
                 <div class="w-14 h-14 rounded-2xl bg-rose-500/20 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform shadow-lg shadow-rose-500/10">
