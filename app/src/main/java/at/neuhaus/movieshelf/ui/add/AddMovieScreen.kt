@@ -1,11 +1,15 @@
 package at.neuhaus.movieshelf.ui.add
 
-import androidx.compose.foundation.clickable
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Search
@@ -15,9 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -90,13 +96,37 @@ fun AddMovieScreen(
     onMovieImported: () -> Unit
 ) {
     val viewModel: AddMovieViewModel = viewModel()
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    
+    var showScanner by remember { mutableStateOf(false) }
+    
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            showScanner = true
+        } else {
+            viewModel.error = "Kamera-Berechtigung erforderlich"
+        }
+    }
 
     LaunchedEffect(viewModel.error) {
         viewModel.error?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.error = null
         }
+    }
+
+    if (showScanner) {
+        CameraScanner(
+            onDetected = { text ->
+                viewModel.onSearchQueryChange(text)
+                showScanner = false
+            },
+            onClose = { showScanner = false }
+        )
+        return
     }
 
     Scaffold(
@@ -112,24 +142,47 @@ fun AddMovieScreen(
                             }
                         }
                     )
-                    OutlinedTextField(
-                        value = viewModel.searchQuery,
-                        onValueChange = { viewModel.onSearchQueryChange(it) },
-                        placeholder = { Text("TMDb durchsuchen...") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                        trailingIcon = {
-                            if (viewModel.searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                                    Icon(Icons.Default.Close, contentDescription = "Löschen")
-                                }
-                            }
-                        },
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        singleLine = true,
-                        shape = MaterialTheme.shapes.medium
-                    )
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = viewModel.searchQuery,
+                            onValueChange = { viewModel.onSearchQueryChange(it) },
+                            placeholder = { Text("TMDb durchsuchen...") },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            trailingIcon = {
+                                if (viewModel.searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                        Icon(Icons.Default.Close, contentDescription = "Löschen")
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        
+                        Spacer(Modifier.width(8.dp))
+                        
+                        FilledIconButton(
+                            onClick = {
+                                when (PackageManager.PERMISSION_GRANTED) {
+                                    ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) -> {
+                                        showScanner = true
+                                    }
+                                    else -> {
+                                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.size(56.dp)
+                        ) {
+                            Icon(Icons.Default.CameraAlt, contentDescription = "Scan Titel")
+                        }
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
@@ -245,7 +298,6 @@ fun TmdbMovieItem(item: Map<String, Any>, onImport: () -> Unit) {
             IconButton(onClick = onImport) {
                 Icon(Icons.Default.Download, contentDescription = "Importieren", tint = MaterialTheme.colorScheme.primary)
             }
-        },
-        modifier = Modifier.clickable { onImport() }
+        }
     )
 }

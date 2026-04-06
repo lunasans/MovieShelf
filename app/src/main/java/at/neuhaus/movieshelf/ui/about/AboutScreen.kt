@@ -6,10 +6,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +29,15 @@ fun AboutScreen(onBack: () -> Unit) {
     val uriHandler = LocalUriHandler.current
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
 
+    // Versionsname sicher aus BuildConfig lesen
+    val appVersion = remember { 
+        try {
+            BuildConfig.VERSION_NAME
+        } catch (e: Exception) {
+            "1.4.0" 
+        }
+    }
+
     LaunchedEffect(Unit) {
         try {
             val info = RetrofitClient.api.getServerInfo()
@@ -37,6 +48,7 @@ fun AboutScreen(onBack: () -> Unit) {
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text("Über MovieShelf") },
@@ -78,8 +90,7 @@ fun AboutScreen(onBack: () -> Unit) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("App Version", fontWeight = FontWeight.Bold)
-                        // Hier wird nun automatisch die Version aus Gradle geladen
-                        Text(BuildConfig.VERSION_NAME)
+                        Text(appVersion)
                     }
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 8.dp),
@@ -99,7 +110,11 @@ fun AboutScreen(onBack: () -> Unit) {
 
             // GitHub Link
             OutlinedButton(
-                onClick = { uriHandler.openUri("https://github.com/lunasans/MovieShelf") },
+                onClick = { 
+                    try {
+                        uriHandler.openUri("https://github.com/lunasans/MovieShelf") 
+                    } catch (_: Exception) {}
+                },
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(12.dp)
             ) {
