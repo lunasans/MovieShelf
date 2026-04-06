@@ -3,79 +3,106 @@
 @section('content')
 <style>
     :root {
-        --void-black: #050505;
-        --void-gray: #111111;
-        --void-border: rgba(255, 255, 255, 0.08);
-        --void-accent: #FF0032;
+        --platinum-bg: #F9F9FB;
+        --platinum-border: rgba(255, 255, 255, 0.6);
+        --platinum-accent: #FF0032;
+        --platinum-text: #050505;
+        --charcoal-mute: #444444;
     }
-    body { background-color: var(--void-black); color: white; }
+    body { background-color: var(--platinum-bg); color: var(--platinum-text); }
     .bento-card {
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(255, 255, 255, 0.3);
         backdrop-filter: blur(40px);
         -webkit-backdrop-filter: blur(40px);
-        border: 1px solid var(--void-border);
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        border: 1px solid var(--platinum-border);
+        box-shadow: 0 40px 100px -20px rgba(0,0,0,0.05);
     }
-    .blade-input {
-        background: transparent;
-        border-bottom: 2px solid var(--void-border);
+    .glass-blade {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0,0,0,0.05);
+        border-bottom: 2px solid rgba(0,0,0,0.1);
         transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .blade-input:focus-within {
-        border-bottom-color: var(--void-accent);
+    .glass-blade:focus-within {
+        background: rgba(255, 255, 255, 0.6);
+        border-bottom-color: var(--platinum-accent);
+        transform: translateY(-2px);
+        box-shadow: 0 30px 60px -15px rgba(0,0,0,0.08);
     }
     .monument-text {
         letter-spacing: -0.05em;
         line-height: 0.85;
-        background: linear-gradient(to bottom, #ffffff 40%, #999999 100%);
+        background: linear-gradient(to bottom, #050505 40%, #666666 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
-    .glow-leak {
+    .bloom-light {
         position: fixed;
-        top: 0; left: 0;
+        top: -10%; left: 0;
         width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at 50% 0%, rgba(255, 0, 50, 0.08) 0%, transparent 70%);
+        height: 50%;
+        background: radial-gradient(circle at 50% 0%, rgba(255, 0, 50, 0.03) 0%, transparent 70%);
         pointer-events: none;
         z-index: 0;
     }
     .animate-reveal {
-        animation: reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: reveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     @keyframes reveal {
-        from { opacity: 0; transform: translateY(30px) scale(0.98); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
+        from { opacity: 0; transform: translateY(40px) scale(0.97); filter: blur(10px); }
+        to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
     }
     [x-cloak] { display: none !important; }
+    
+    /* Luxury Input Styles */
+    .platinum-input {
+        background: rgba(0, 0, 0, 0.02);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.4s ease;
+    }
+    .platinum-input:focus {
+        background: #ffffff;
+        border-color: var(--platinum-accent);
+    }
 </style>
 
-<div class="glow-leak"></div>
+<div class="bloom-light"></div>
 
 <!-- Hero Section -->
 <section class="relative pt-32 pb-20 px-6 min-h-screen flex items-center overflow-hidden z-10">
-    <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-24 items-center relative z-10">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-16 items-center relative z-10">
+        
+        <!-- Flash Messages Overlay -->
+        <div class="col-span-12 mb-10 translate-y-8 animate-reveal">
+            @if (session('success'))
+                <div class="bento-card p-6 border-emerald-500/20 text-emerald-600 rounded-xl flex items-center gap-4">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span class="font-bold uppercase tracking-widest text-[10px]">{{ session('success') }}</span>
+                </div>
+            @endif
+        </div>
         
         <!-- Left Column: Monumental Content -->
-        <div class="space-y-20 animate-reveal">
-            <div class="inline-flex items-center gap-3 px-4 py-1.5 border border-white/5 bg-white/5 rounded-md text-[10px] font-black tracking-[0.6em] uppercase text-gray-500">
-                <span class="w-1.5 h-1.5 bg-rose-600 rounded-full shadow-[0_0_10px_#ff0032]"></span>
-                System Core v2.10
+        <div class="lg:col-span-8 space-y-24 animate-reveal">
+            <div class="inline-flex items-center gap-4 px-6 py-2 border border-black/5 bg-white shadow-sm rounded-full text-[9px] font-black tracking-[0.8em] uppercase text-gray-400">
+                <span class="w-2 h-2 bg-rose-600 rounded-full animate-pulse"></span>
+                Platinum Protocol v2.10
             </div>
             
-            <h1 class="text-8xl md:text-[10rem] font-black uppercase italic monument-text tracking-tighter">
+            <h1 class="text-8xl md:text-[12rem] font-black uppercase italic monument-text tracking-tighter leading-none">
+                BRIGHT <br>
                 MONUMENT <br>
-                OF YOUR <br>
-                <span class="italic font-light opacity-50">CINEMA.</span>
+                <span class="italic font-light opacity-30">PLATINUM.</span>
             </h1>
             
-            <p class="text-xl text-gray-500 max-w-lg leading-relaxed font-medium tracking-tight">
-                Ein digitales Denkmal für deine Filmsammlung. <br>
-                Präzises Hosting. Monumentales Design. <br>
-                Exklusiv für Sammler.
+            <p class="text-2xl text-[#666666] max-w-2xl leading-relaxed font-medium tracking-tight">
+                Ein leuchtendes Denkmal für deine Privatsammlung. <br>
+                Reinheit in Design. Monumentale Skalierung. <br>
+                Exklusiv für den anspruchsvollen Sammler.
             </p>
 
-            <!-- VOID COMMANDER -->
+            <!-- PLATINUM COMMANDER -->
             <div x-data="{ 
                 subdomain: '{{ old('subdomain') }}', 
                 available: {{ old('subdomain') ? 'true' : 'null' }}, 
@@ -102,9 +129,13 @@
                 <form action="{{ route('tenant.register') }}" method="POST" class="relative">
                     @csrf
                     
-                    <!-- THE BLADE INPUT -->
-                    <div class="relative group max-w-4xl">
-                        <div class="blade-input flex items-end pb-6 transition-all group-focus-within:pb-12">
+                    <!-- THE GLASS BLADE INPUT -->
+                    <div class="relative group max-w-5xl">
+                        <div class="glass-blade flex items-center p-4 md:p-8 rounded-2xl md:rounded-[2.5rem]">
+                            <div class="flex items-center gap-6 text-gray-300 font-black text-2xl italic select-none mr-8">
+                                <span class="hidden md:inline opacity-30 tracking-[0.4em]">PLATINUM://</span>
+                            </div>
+                            
                             <input type="text" 
                                     id="subdomain"
                                     name="subdomain" 
@@ -113,118 +144,136 @@
                                     placeholder="IDENTITÄT WÄHLEN" 
                                     required 
                                     autocomplete="off"
-                                    class="bg-transparent border-none focus:ring-0 text-white font-black w-full placeholder:text-gray-900 tracking-[-0.05em] text-4xl md:text-8xl uppercase italic p-0 ring-0 mt-2 outline-none">
+                                    class="bg-transparent border-none focus:ring-0 text-[#050505] font-black w-full placeholder:text-gray-200 tracking-[-0.05em] text-4xl md:text-8xl uppercase italic p-0 ring-0 outline-none">
                             
-                            <div class="flex items-center gap-6 ml-4 pb-4">
-                                <span class="text-gray-900 font-bold text-xl md:text-3xl hidden md:inline select-none">.MOVIESHELF.INFO</span>
+                            <div class="flex items-center gap-6 ml-4">
+                                <span class="text-gray-200 font-bold text-xl md:text-3xl hidden md:inline select-none tracking-tighter">.MOVIESHELF.INFO</span>
                                 <div class="flex items-center justify-center">
                                     <template x-if="checking">
-                                        <div class="w-1.5 h-10 bg-rose-600 animate-pulse"></div>
+                                        <div class="w-2 h-12 bg-rose-600 animate-pulse rounded-full"></div>
                                     </template>
                                     <template x-if="!checking && available === true">
-                                        <i class="bi bi-check-lg text-emerald-500 text-5xl animate-reveal"></i>
+                                        <i class="bi bi-check-lg text-emerald-500 text-6xl animate-reveal"></i>
                                     </template>
                                     <template x-if="!checking && available === false">
-                                        <i class="bi bi-x-lg text-rose-600 text-5xl animate-reveal"></i>
+                                        <i class="bi bi-x-lg text-rose-600 text-6xl animate-reveal"></i>
                                     </template>
                                 </div>
                             </div>
                         </div>
                         
-                        <div x-show="available === false" x-cloak class="mt-6 text-rose-600 font-black text-[12px] uppercase tracking-[0.6em] animate-reveal">
-                            Besetzt • Identität bereits vergeben
+                        <div x-show="available === false" x-cloak class="mt-8 text-rose-600 font-black text-[12px] uppercase tracking-[0.8em] animate-reveal flex items-center gap-4">
+                            <i class="bi bi-shield-x"></i> Identität bereits vergeben
                         </div>
                     </div>
 
-                    <!-- BENTO CONFIGURATION -->
-                    <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 translate-y-20 blur-xl" x-transition:enter-end="opacity-100 translate-y-0 blur-0" class="mt-32 grid grid-cols-1 md:grid-cols-6 gap-6 max-w-5xl">
+                    <!-- BENTO CONFIGURATION - BEYOND LIGHT -->
+                    <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 translate-y-32 blur-2xl" x-transition:enter-end="opacity-100 translate-y-0 blur-0" class="mt-32 grid grid-cols-1 md:grid-cols-6 gap-8 max-w-6xl">
                         
-                        <div class="md:col-span-4 bento-card p-16 space-y-12 rounded-xl">
-                            <div class="text-[11px] text-gray-500 font-black tracking-[0.6em] uppercase flex items-center gap-4">
-                                <div class="w-1.5 h-1.5 bg-rose-600 rounded-full"></div>
-                                Identity Verification
+                        <!-- Account Details -->
+                        <div class="md:col-span-4 bento-card p-16 space-y-12 rounded-[2.5rem]">
+                            <div class="text-[11px] text-gray-400 font-black tracking-[0.8em] uppercase flex items-center gap-6">
+                                <div class="w-12 h-[1px] bg-rose-600/30"></div>
+                                Verify Identity
                             </div>
-                            <div class="grid md:grid-cols-2 gap-10">
-                                <input type="text" name="name" placeholder="FULL NAME" required autocomplete="name" class="bg-white/5 border border-white/5 p-8 text-xl text-white font-black uppercase italic focus:border-white/20 focus:ring-0 transition-all outline-none">
-                                <input type="email" name="email" placeholder="EMAIL ADDRESS" required autocomplete="email" class="bg-white/5 border border-white/5 p-8 text-xl text-white font-black uppercase italic focus:border-white/20 focus:ring-0 transition-all outline-none">
+                            <div class="grid md:grid-cols-2 gap-12">
+                                <div class="space-y-3">
+                                    <label class="text-[9px] font-black uppercase tracking-[0.4em] text-gray-400 ml-4">Full Name</label>
+                                    <input type="text" name="name" placeholder="MAX MUSTERMANN" required autocomplete="name" class="w-full platinum-input p-10 text-2xl text-[#050505] font-black uppercase italic rounded-3xl outline-none transition-all">
+                                </div>
+                                <div class="space-y-3">
+                                    <label class="text-[9px] font-black uppercase tracking-[0.4em] text-gray-400 ml-4">Mail Address</label>
+                                    <input type="email" name="email" placeholder="MAX@CINEMA.INFO" required autocomplete="email" class="w-full platinum-input p-10 text-2xl text-[#050505] font-black uppercase italic rounded-3xl outline-none transition-all">
+                                </div>
                             </div>
-                            <input type="text" name="username" placeholder="CODENAME (USERNAME)" required autocomplete="username" class="w-full bg-white/5 border border-white/5 p-8 text-xl text-white font-black uppercase italic focus:border-white/20 focus:ring-0 transition-all outline-none">
+                            <div class="space-y-3">
+                                <label class="text-[9px] font-black uppercase tracking-[0.4em] text-gray-400 ml-4">System Codename</label>
+                                <input type="text" name="username" placeholder="SAMMLER_01" required autocomplete="username" class="w-full platinum-input p-10 text-2xl text-[#050505] font-black uppercase italic rounded-3xl outline-none transition-all">
+                            </div>
                         </div>
 
-                        <div class="md:col-span-2 bento-card p-16 flex flex-col justify-between rounded-xl">
-                            <div class="text-[11px] text-gray-500 font-black tracking-[0.6em] uppercase mb-12 flex items-center gap-4">
-                                <div class="w-1.5 h-1.5 bg-rose-600 rounded-full"></div>
-                                Access Key
+                        <!-- Security Block -->
+                        <div class="md:col-span-2 bento-card p-16 flex flex-col justify-between rounded-[2.5rem]">
+                            <div class="text-[11px] text-gray-400 font-black tracking-[0.8em] uppercase mb-12 flex items-center gap-6">
+                                <div class="w-12 h-[1px] bg-rose-600/30"></div>
+                                Access
                             </div>
-                            <div class="space-y-6">
-                                <input type="password" name="password" placeholder="PASSWORD" required autocomplete="new-password" class="w-full bg-white/5 border border-white/5 p-8 text-xl text-white font-black uppercase italic focus:border-white/20 focus:ring-0 transition-all outline-none">
-                                <input type="password" name="password_confirmation" placeholder="RE-VERIFY" required autocomplete="new-password" class="w-full bg-white/5 border border-white/5 p-8 text-xl text-white font-black uppercase italic focus:border-white/20 focus:ring-0 transition-all outline-none">
+                            <div class="space-y-8">
+                                <div class="space-y-3">
+                                    <label class="text-[9px] font-black uppercase tracking-[0.4em] text-gray-400 ml-4">Password</label>
+                                    <input type="password" name="password" placeholder="••••••••" required autocomplete="new-password" class="w-full platinum-input p-10 text-2xl text-[#050505] font-black uppercase italic rounded-3xl outline-none transition-all">
+                                </div>
+                                <div class="space-y-3">
+                                    <label class="text-[9px] font-black uppercase tracking-[0.4em] text-gray-400 ml-4">Verify</label>
+                                    <input type="password" name="password_confirmation" placeholder="••••••••" required autocomplete="new-password" class="w-full platinum-input p-10 text-2xl text-[#050505] font-black uppercase italic rounded-3xl outline-none transition-all">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="md:col-span-6">
-                            <button type="submit" class="w-full bg-white text-black py-12 font-black uppercase italic text-5xl tracking-tighter hover:bg-[#FF0032] hover:text-white transition-all duration-700 shadow-2xl">
-                                INITIALIZE ENGINE
+                        <!-- INITIALIZE ACTION -->
+                        <div class="md:col-span-6 pt-10">
+                            <button type="submit" class="w-full bg-[#050505] text-white py-14 font-black uppercase italic text-5xl tracking-tighter hover:bg-[#FF0032] transition-all duration-700 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.1)] rounded-[2.5rem]">
+                                INITIALIZE INSTANCE
                             </button>
+                            <div class="flex justify-center gap-16 mt-12 text-[10px] text-gray-400 font-black tracking-[1em] uppercase italic">
+                                <span>Pure Platinum</span>
+                                <span>•</span>
+                                <span>Monument Core</span>
+                                <span>•</span>
+                                <span>Secure</span>
+                            </div>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Right Column: Product Showcase -->
-        <div class="relative hidden lg:block group">
-            <div class="absolute -inset-20 bg-rose-900/10 blur-[150px] rounded-full pointer-events-none group-hover:opacity-20 transition-all duration-1000"></div>
-            
-            <div class="relative z-10 bento-card p-4 rounded-xl shadow-[0_100px_150px_-50px_rgba(0,0,0,1)] transform -rotate-1 group-hover:rotate-0 transition-all duration-1000 border-white/5">
-                <div class="h-10 flex items-center px-6 gap-2 border-b border-white/5 bg-white/5">
-                    <div class="w-2.5 h-2.5 rounded-full bg-white/10"></div>
-                    <div class="w-2.5 h-2.5 rounded-full bg-white/10"></div>
-                    <div class="w-2.5 h-2.5 rounded-full bg-white/10"></div>
-                </div>
-                <img src="{{ asset('img/screenshots/hero.png') }}" alt="MovieShelf Dashboard" class="w-full h-auto grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700">
+        <!-- Right Column (Showcase Floating) -->
+        <div class="lg:col-span-4 hidden lg:block group">
+            <div class="relative z-10 bento-card p-4 rounded-[3rem] shadow-[0_100px_150px_-50px_rgba(0,0,0,0.1)] transform rotate-2 group-hover:rotate-0 transition-all duration-1000 border-white">
+                <img src="{{ asset('img/screenshots/hero.png') }}" alt="MovieShelf Dashboard" class="w-full h-auto grayscale opacity-10 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000">
             </div>
         </div>
     </div>
 </section>
 
-<!-- Bento Grid Showcase -->
+<!-- Insights Section -->
 <section class="py-60 px-6 relative z-10">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10">
         
-        <!-- Box 1: Analytics -->
-        <div class="md:col-span-8 bento-card p-20 flex flex-col justify-end space-y-12 min-h-[600px] group overflow-hidden relative">
-            <img src="{{ asset('img/screenshots/stats.png') }}" class="absolute top-0 right-0 w-2/3 h-auto grayscale opacity-20 transform translate-x-20 -translate-y-20 group-hover:grayscale-0 group-hover:opacity-40 transition-all duration-1000 pointer-events-none">
+        <!-- Big Card 1 -->
+        <div class="md:col-span-8 bento-card p-24 flex flex-col justify-end space-y-12 min-h-[700px] group overflow-hidden relative rounded-[4rem]">
+            <img src="{{ asset('img/screenshots/stats.png') }}" class="absolute top-0 right-0 w-2/3 h-auto opacity-5 transform translate-x-10 -translate-y-10 group-hover:opacity-20 transition-all duration-1000 pointer-events-none">
             
-            <div class="relative z-10 space-y-6">
-                <h2 class="text-6xl font-black italic uppercase monument-text">Insights. <br>In Echtzeit.</h2>
-                <p class="text-xl text-gray-500 max-w-md font-medium tracking-tight border-l-2 border-rose-600 pl-8">Erhalte chirurgische Präzision über deine Sammlung. Medientypen, Genre-Analytics und Meilensteine.</p>
+            <div class="relative z-10 space-y-10">
+                <h2 class="text-7xl font-black italic uppercase monument-text">Insights. <br>Pure Klarheit.</h2>
+                <p class="text-2xl text-gray-500 max-w-lg font-medium tracking-tight border-l-[3px] border-rose-600 pl-10">Präzision in jeder Statistik. Behalte den Überblick über dein filmisches Archiv mit monumentaler Einfachheit.</p>
             </div>
         </div>
 
-        <!-- Box 2: Retina Grid -->
-        <div class="md:col-span-4 bento-card p-16 flex flex-col space-y-12 group bg-gradient-to-br from-rose-600/5 to-transparent">
-            <div class="w-20 h-20 bg-white/5 border border-white/10 flex items-center justify-center rounded-xl">
-                <i class="bi bi-grid-3x3-gap text-rose-600 text-4xl"></i>
+        <!-- Small Card (Retina) -->
+        <div class="md:col-span-4 bento-card p-20 flex flex-col space-y-12 group bg-gradient-to-br from-white to-transparent rounded-[4rem]">
+            <div class="w-24 h-24 bg-rose-600 text-white flex items-center justify-center rounded-3xl shadow-2xl shadow-rose-600/20">
+                <i class="bi bi-grid-3x3-gap text-5xl"></i>
             </div>
-            <h2 class="text-4xl font-black italic uppercase monument-text">Retina <br>Cinematic Grid.</h2>
-            <p class="text-gray-500 font-medium leading-relaxed tracking-tight">Nur pures, visuelles Kino-Feeling für deine gesamte Bibliothek. Keine Listen. Keine Tabellen. Nur Fokus.</p>
+            <h2 class="text-5xl font-black italic uppercase monument-text leading-tight">Retina <br>Gallery Layout.</h2>
+            <p class="text-gray-500 font-medium text-xl leading-relaxed tracking-tight leading-relaxed">Purer Fokus auf das Cover. Keine Ablenkung. Nur dein Film, in seiner reinsten Form.</p>
         </div>
 
-        <!-- Final Push -->
-        <div class="md:col-span-12 py-48 text-center space-y-16">
-            <div class="w-px h-32 bg-gradient-to-b from-rose-600 to-transparent mx-auto"></div>
-            <h2 class="text-7xl md:text-[10rem] font-black italic uppercase monument-text leading-none">Start Your <br>Monument.</h2>
+        <!-- The Final Stand -->
+        <div class="md:col-span-12 py-60 text-center space-y-20">
+            <div class="w-[200px] h-1 bg-gradient-to-r from-transparent via-rose-600/20 to-transparent mx-auto"></div>
+            <h2 class="text-8xl md:text-[14rem] font-black italic uppercase monument-text leading-none tracking-[-0.08em]">Start Your <br>Monument.</h2>
             
-            <div class="pt-12">
-                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="inline-flex items-center gap-10 p-1 border border-white/10 group">
-                    <span class="bg-white text-black px-16 py-8 font-black uppercase italic text-3xl group-hover:bg-[#FF0032] group-hover:text-white transition-all">IDENTITY SICHERN</span>
-                    <i class="bi bi-arrow-up-right text-white text-3xl mr-12 group-hover:translate-x-3 group-hover:-translate-y-3 transition-all"></i>
+            <div class="pt-10">
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="inline-flex items-center gap-12 p-2 border border-black/5 bg-white group hover:shadow-2xl transition-all rounded-full">
+                    <span class="bg-[#050505] text-white px-20 py-10 font-black uppercase italic text-3xl group-hover:bg-[#FF0032] transition-all rounded-full">IDENTITÄT SICHERN</span>
+                    <i class="bi bi-arrow-up-right text-black text-4xl mr-12 group-hover:translate-x-4 group-hover:-translate-y-4 transition-all"></i>
                 </button>
             </div>
             
-            <div class="pt-12 text-[11px] font-black uppercase tracking-[1em] text-gray-800">
-                System Core v2.10.1 • Available Now
+            <div class="pt-20 text-[11px] font-black uppercase tracking-[1.5em] text-gray-300">
+                Platinum Engine v2.10.1 • Authorized Access Only
             </div>
         </div>
     </div>
