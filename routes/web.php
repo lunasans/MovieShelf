@@ -22,6 +22,11 @@ Route::get('/debug-domain', function () {
         'tenancy_initialized' => function_exists('tenancy') && tenancy()->initialized,
     ];
 });
+
+Route::get('/privacy', function () {
+    return view('privacy');
+})->name('privacy');
+
 Route::get('/api/check-subdomain', [\App\Http\Controllers\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain');
 Route::post('/claim', [\App\Http\Controllers\RegisterTenantController::class, 'store'])->name('tenant.register');
 Route::get('/activate/{token}', [\App\Http\Controllers\RegisterTenantController::class, 'activate'])->name('tenant.activate');

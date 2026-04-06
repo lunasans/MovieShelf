@@ -145,8 +145,9 @@
                     <a href="#" class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 hover:bg-[#CC4B06] hover:text-white transition-all"><i class="bi bi-github text-xl"></i></a>
                     <a href="#" class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 hover:bg-[#CC4B06] hover:text-white transition-all"><i class="bi bi-twitter-x text-xl"></i></a>
                 </div>
-                <div class="text-gray-400 text-[10px] font-bold uppercase tracking-[0.5em]">
-                    © 2026 RENÉ NEUHAUS • APEX ULTIMATE PROTOCOL
+                <div class="flex flex-col items-end gap-2 text-gray-400 text-[10px] font-bold uppercase tracking-[0.5em] text-right mt-4">
+                    <span>© 2026 RENÉ NEUHAUS</span>
+                    <a href="{{ route('privacy') }}" class="hover:text-[#CC4B06] transition-colors">DATENSCHUTZ & NUTZUNGSBEDINGUNGEN</a>
                 </div>
             </div>
         </div>
