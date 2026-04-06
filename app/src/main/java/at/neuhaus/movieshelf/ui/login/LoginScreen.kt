@@ -18,8 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import at.neuhaus.movieshelf.R
@@ -65,8 +67,20 @@ fun LoginScreen(
                     text = if (viewModel.is2faRequired) "Zwei-Faktor-Check" else "Anmelden",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 24.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
+                
+                if (!viewModel.is2faRequired) {
+                    Text(
+                        text = "Du kannst dir auf https://movieshelf.info eine eigene MovieShelf anlegen.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                    )
+                } else {
+                    Spacer(Modifier.height(16.dp))
+                }
 
                 AnimatedContent(targetState = viewModel.is2faRequired, label = "LoginMode") { is2fa ->
                     if (is2fa) {
@@ -82,7 +96,10 @@ fun LoginScreen(
                                 label = { Text("2FA Code") },
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = { Icon(Icons.Default.Pin, contentDescription = null) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number,
+                                    imeAction = ImeAction.Done
+                                ),
                                 singleLine = true
                             )
                         }
@@ -94,7 +111,10 @@ fun LoginScreen(
                                 label = { Text("E-Mail") },
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Email,
+                                    imeAction = ImeAction.Next
+                                ),
                                 singleLine = true
                             )
 
@@ -107,7 +127,10 @@ fun LoginScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                                 visualTransformation = PasswordVisualTransformation(),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password,
+                                    imeAction = ImeAction.Done
+                                ),
                                 singleLine = true
                             )
                         }

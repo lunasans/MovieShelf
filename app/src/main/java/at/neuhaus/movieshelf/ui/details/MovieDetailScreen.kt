@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
@@ -43,10 +45,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import at.neuhaus.movieshelf.data.SessionManager
 import at.neuhaus.movieshelf.data.api.RetrofitClient
 import at.neuhaus.movieshelf.data.model.Actor
 import at.neuhaus.movieshelf.data.model.Movie
 import coil.compose.AsyncImage
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MovieDetailViewModel(private val movieId: Int) : ViewModel() {
@@ -63,8 +67,14 @@ class MovieDetailViewModel(private val movieId: Int) : ViewModel() {
             isLoading = true
             error = null
             try {
-                val response = RetrofitClient.api.getMovie(movieId)
-                movie = response.data
+                if (SessionManager.isDemo) {
+                    delay(500)
+                    movie = getDemoMovies().find { it.id == movieId }
+                    if (movie == null) error = "Film nicht gefunden"
+                } else {
+                    val response = RetrofitClient.api.getMovie(movieId)
+                    movie = response.data
+                }
             } catch (e: Exception) {
                 error = "Fehler beim Laden der Details: ${e.message}"
             } finally {
@@ -73,7 +83,67 @@ class MovieDetailViewModel(private val movieId: Int) : ViewModel() {
         }
     }
 
+    private fun getDemoMovies(): List<Movie> {
+        return listOf(
+            Movie(
+                id = 1,
+                title = "Inception",
+                year = 2010,
+                rating = "8.8",
+                genre = "Sci-Fi",
+                overview = "Ein Dieb, der Geheimnisse aus dem Unterbewusstsein stiehlt. {!Actor}Leonardo DiCaprio} spielt die Hauptrolle.",
+                coverUrl = "res:inception_cover",
+                backdropUrl = "res:inception_backdrop",
+                runtime = 148,
+                director = "Christopher Nolan",
+                actors = listOf(Actor(id = 1, name = "Leonardo DiCaprio", role = "Dom Cobb")),
+                viewCount = 5,
+                isWatched = true,
+                tmdbId = "27205",
+                trailerUrl = "https://www.youtube.com/watch?v=YoHD9XEInc0"
+            ),
+            Movie(
+                id = 2,
+                title = "The Dark Knight",
+                year = 2008,
+                rating = "9.0",
+                genre = "Action",
+                overview = "Batman kämpft gegen den Joker in Gotham City. {!Actor}Christian Bale} ist Batman.",
+                coverUrl = "res:dark_knight_cover",
+                backdropUrl = "res:dark_knight_backdrop",
+                runtime = 152,
+                director = "Christopher Nolan",
+                actors = listOf(Actor(id = 2, name = "Christian Bale", role = "Bruce Wayne / Batman")),
+                viewCount = 10,
+                isWatched = true,
+                tmdbId = "155",
+                trailerUrl = "https://www.youtube.com/watch?v=EXeTwQWaywY"
+            ),
+            Movie(
+                id = 3,
+                title = "Interstellar",
+                year = 2014,
+                rating = "8.7",
+                genre = "Sci-Fi",
+                overview = "Eine Reise durch ein Wurmloch zur Rettung der Menschheit. {!Actor}Matthew McConaughey} führt die Mission an.",
+                coverUrl = "res:interstellar_cover",
+                backdropUrl = "res:interstellar_backdrop",
+                runtime = 169,
+                director = "Christopher Nolan",
+                actors = listOf(Actor(id = 3, name = "Matthew McConaughey", role = "Cooper")),
+                viewCount = 8,
+                isWatched = true,
+                tmdbId = "157336",
+                trailerUrl = "https://www.youtube.com/watch?v=zSWdZVtXT7E"
+            )
+        )
+    }
+
     fun toggleWatched() {
+        if (SessionManager.isDemo) {
+            movie = movie?.copy(isWatched = !(movie?.isWatched ?: false))
+            return
+        }
         val currentMovie = movie ?: return
         viewModelScope.launch {
             try {
@@ -107,6 +177,7 @@ fun MovieDetailScreen(
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
 
     val headerHeightPx = with(density) { 350.dp.toPx() }
     val toolbarAlpha = (scrollState.value / (headerHeightPx * 0.8f)).coerceIn(0f, 1f)
@@ -197,9 +268,19 @@ fun MovieDetailScreen(
                 ) {
                     val backdropUrl = movie.backdropUrl ?: movie.coverUrl
                     if (backdropUrl != null) {
-                        val fullUrl = if (backdropUrl.startsWith("http")) backdropUrl else "${RetrofitClient.baseUrl}${backdropUrl}"
+                        val model: Any? = remember(backdropUrl) {
+                            when {
+                                backdropUrl.startsWith("res:") -> {
+                                    val resName = backdropUrl.substringAfter("res:")
+                                    val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
+                                    if (resId != 0) resId else null
+                                }
+                                backdropUrl.startsWith("http") -> backdropUrl
+                                else -> RetrofitClient.baseUrl.removeSuffix("/") + "/" + backdropUrl.removePrefix("/")
+                            }
+                        }
                         AsyncImage(
-                            model = fullUrl,
+                            model = model,
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
@@ -419,6 +500,7 @@ fun MetadataItem(
 
 @Composable
 fun BoxsetMovieItem(movie: Movie, onClick: () -> Unit) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -428,9 +510,19 @@ fun BoxsetMovieItem(movie: Movie, onClick: () -> Unit) {
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             if (movie.coverUrl != null) {
-                val imageUrl = if (movie.coverUrl.startsWith("http")) movie.coverUrl else "${RetrofitClient.baseUrl}${movie.coverUrl}"
+                val model: Any? = remember(movie.coverUrl) {
+                    when {
+                        movie.coverUrl.startsWith("res:") -> {
+                            val resName = movie.coverUrl.substringAfter("res:")
+                            val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
+                            if (resId != 0) resId else null
+                        }
+                        movie.coverUrl.startsWith("http") -> movie.coverUrl
+                        else -> RetrofitClient.baseUrl.removeSuffix("/") + "/" + movie.coverUrl.removePrefix("/")
+                    }
+                }
                 AsyncImage(
-                    model = imageUrl,
+                    model = model,
                     contentDescription = movie.title,
                     modifier = Modifier.width(70.dp).fillMaxHeight(),
                     contentScale = ContentScale.Crop
@@ -460,6 +552,7 @@ fun BoxsetMovieItem(movie: Movie, onClick: () -> Unit) {
 
 @Composable
 fun ActorRowItem(actor: Actor, onClick: () -> Unit) {
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -473,9 +566,19 @@ fun ActorRowItem(actor: Actor, onClick: () -> Unit) {
             color = MaterialTheme.colorScheme.surfaceVariant
         ) {
             if (actor.imageUrl != null) {
-                val fullUrl = if (actor.imageUrl.startsWith("http")) actor.imageUrl else "${RetrofitClient.baseUrl}${actor.imageUrl}"
+                val model: Any? = remember(actor.imageUrl) {
+                    when {
+                        actor.imageUrl.startsWith("res:") -> {
+                            val resName = actor.imageUrl.substringAfter("res:")
+                            val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
+                            if (resId != 0) resId else null
+                        }
+                        actor.imageUrl.startsWith("http") -> actor.imageUrl
+                        else -> RetrofitClient.baseUrl.removeSuffix("/") + "/" + actor.imageUrl.removePrefix("/")
+                    }
+                }
                 AsyncImage(
-                    model = fullUrl,
+                    model = model,
                     contentDescription = actor.name,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop

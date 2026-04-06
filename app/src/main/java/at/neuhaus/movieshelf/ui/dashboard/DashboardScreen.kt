@@ -1,5 +1,6 @@
 package at.neuhaus.movieshelf.ui.dashboard
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -17,96 +18,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import at.neuhaus.movieshelf.R
 import at.neuhaus.movieshelf.data.api.RetrofitClient
 import at.neuhaus.movieshelf.data.model.Movie
 import coil.compose.AsyncImage
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-
-class DashboardViewModel : ViewModel() {
-    var movies by mutableStateOf<List<Movie>>(emptyList())
-    var isLoading by mutableStateOf(false)
-    var isRefreshing by mutableStateOf(false)
-    var error by mutableStateOf<String?>(null)
-    
-    var searchQuery by mutableStateOf("")
-    var selectedTab by mutableIntStateOf(0) // 0 = Neu, 1 = Alle
-    private var searchJob: Job? = null
-
-    init {
-        loadMovies()
-    }
-
-    fun loadMovies(refresh: Boolean = false) {
-        viewModelScope.launch {
-            if (refresh) isRefreshing = true else isLoading = true
-            error = null
-            try {
-                val response = RetrofitClient.api.getMovies(
-                    page = 1,
-                    perPage = if (selectedTab == 1) 1000 else 20
-                )
-                
-                val resultList = response.data ?: emptyList()
-                
-                // Filtere Filme, die Teil eines Boxsets sind (boxsetParentId != null)
-                val filteredList = resultList.filter { it.boxsetParentId == null }
-                
-                movies = if (selectedTab == 0) {
-                    filteredList.sortedByDescending { it.id }
-                } else {
-                    filteredList.sortedBy { it.title?.lowercase() ?: "" }
-                }
-            } catch (e: Exception) {
-                error = "Fehler beim Laden der Filme: ${e.message}"
-            } finally {
-                isLoading = false
-                isRefreshing = false
-            }
-        }
-    }
-
-    fun onTabSelected(index: Int) {
-        selectedTab = index
-        loadMovies()
-    }
-
-    fun onSearchQueryChange(newQuery: String) {
-        searchQuery = newQuery
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            delay(500) // Debounce
-            if (newQuery.isBlank()) {
-                loadMovies()
-            } else {
-                performSearch(newQuery)
-            }
-        }
-    }
-
-    private suspend fun performSearch(query: String) {
-        isLoading = true
-        error = null
-        try {
-            val response = RetrofitClient.api.searchMovies(query)
-            val resultList = response.data ?: emptyList()
-            movies = resultList.sortedBy { it.title?.lowercase() ?: "" }
-        } catch (e: Exception) {
-            error = "Suche fehlgeschlagen: ${e.message}"
-        } finally {
-            isLoading = false
-        }
-    }
-}
+import coil.compose.AsyncImagePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -231,6 +153,7 @@ fun DashboardScreen(
 
 @Composable
 fun MovieItem(movie: Movie, onClick: () -> Unit) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .padding(4.dp)
@@ -247,23 +170,33 @@ fun MovieItem(movie: Movie, onClick: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 if (movie.coverUrl != null) {
-                    val imageUrl = if (movie.coverUrl.startsWith("http")) {
-                        movie.coverUrl
-                    } else {
-                        RetrofitClient.baseUrl.removeSuffix("/") + "/" + movie.coverUrl.removePrefix("/")
+                    val model: Any? = remember(movie.coverUrl) {
+                        when {
+                            movie.coverUrl.startsWith("res:") -> {
+                                val resName = movie.coverUrl.substringAfter("res:")
+                                val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
+                                if (resId != 0) resId else null
+                            }
+                            movie.coverUrl.startsWith("http") -> movie.coverUrl
+                            else -> RetrofitClient.baseUrl.removeSuffix("/") + "/" + movie.coverUrl.removePrefix("/")
+                        }
                     }
 
                     var imageError by remember { mutableStateOf(false) }
                     var imageLoading by remember { mutableStateOf(true) }
 
                     AsyncImage(
-                        model = imageUrl,
+                        model = model,
                         contentDescription = movie.title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
                         onState = { state ->
-                            imageLoading = state is coil.compose.AsyncImagePainter.State.Loading
-                            imageError = state is coil.compose.AsyncImagePainter.State.Error
+                            imageLoading = state is AsyncImagePainter.State.Loading
+                            imageError = state is AsyncImagePainter.State.Error
+                            if (state is AsyncImagePainter.State.Error) {
+                                Log.e("CoilError", "Fehler beim Laden von ${movie.title}: ${state.result.throwable.message}")
+                                state.result.throwable.printStackTrace()
+                            }
                         }
                     )
                     

@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import at.neuhaus.movieshelf.data.SessionManager
 import at.neuhaus.movieshelf.data.api.RetrofitClient
 import at.neuhaus.movieshelf.data.model.User
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class ProfileViewModel : ViewModel() {
@@ -28,7 +29,6 @@ class ProfileViewModel : ViewModel() {
             user = cachedUser
             name = cachedUser.name ?: ""
             email = cachedUser.email ?: ""
-            // 2FA ist aktiv, wenn entweder das Flag gesetzt ist ODER ein Bestätigungsdatum existiert
             twoFactorEnabled = cachedUser.twoFactorEnabled == true || cachedUser.twoFactorConfirmedAt != null
         }
         loadProfile()
@@ -39,16 +39,23 @@ class ProfileViewModel : ViewModel() {
             if (user == null) isLoading = true
             error = null
             try {
-                // Der Server liefert hier direkt das User-Objekt (flach)
-                val updatedUser = RetrofitClient.api.getUser()
-                
-                user = updatedUser
-                name = updatedUser.name ?: ""
-                email = updatedUser.email ?: ""
-                twoFactorEnabled = updatedUser.twoFactorEnabled == true || updatedUser.twoFactorConfirmedAt != null
-                SessionManager.user = updatedUser
-                
-                Log.d("ProfileViewModel", "Profile successfully loaded: ${updatedUser.name}")
+                if (SessionManager.isDemo) {
+                    delay(500)
+                    val demoUser = User(id = 1, name = "Demo User", email = "demo@movieshelf.info", twoFactorEnabled = false)
+                    user = demoUser
+                    name = demoUser.name ?: ""
+                    email = demoUser.email ?: ""
+                    twoFactorEnabled = false
+                    SessionManager.user = demoUser
+                } else {
+                    val updatedUser = RetrofitClient.api.getUser()
+                    user = updatedUser
+                    name = updatedUser.name ?: ""
+                    email = updatedUser.email ?: ""
+                    twoFactorEnabled = updatedUser.twoFactorEnabled == true || updatedUser.twoFactorConfirmedAt != null
+                    SessionManager.user = updatedUser
+                }
+                Log.d("ProfileViewModel", "Profile successfully loaded")
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Failed to load profile", e)
                 if (user == null) {
@@ -61,6 +68,15 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun updateProfile() {
+        if (SessionManager.isDemo) {
+            viewModelScope.launch {
+                isSaving = true
+                delay(500)
+                successMessage = "Demo-Profil kann nicht dauerhaft geändert werden!"
+                isSaving = false
+            }
+            return
+        }
         val currentUser = user ?: return
         viewModelScope.launch {
             isSaving = true
@@ -74,7 +90,6 @@ class ProfileViewModel : ViewModel() {
                 )
                 val response = RetrofitClient.api.updateUser(updatedUser)
                 
-                // Nach dem Update liefert der Server (PUT) evtl. wieder den Wrapper
                 response.user?.let {
                     user = it
                     SessionManager.user = it

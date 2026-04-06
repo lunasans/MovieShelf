@@ -24,20 +24,20 @@ data class StatsResponse(
 
 data class Movie(
     val id: Int,
-    val title: String?,
-    val year: Int?,
-    val rating: String?,
-    val genre: String?,
-    val overview: String?,
-    val runtime: Int?,
-    val director: String?,
-    @SerializedName("cover_url") val coverUrl: String?,
-    @SerializedName("backdrop_url") val backdropUrl: String?,
-    @SerializedName("trailer_url") val trailerUrl: String?,
-    @SerializedName("view_count") val viewCount: Int?,
-    @SerializedName("is_watched") val isWatched: Boolean?,
-    @SerializedName("actors", alternate = ["cast", "credits"]) val actors: List<Actor>?,
-    @SerializedName("tmdb_id") val tmdbId: String?,
+    val title: String? = null,
+    val year: Int? = null,
+    val rating: String? = null,
+    val genre: String? = null,
+    val overview: String? = null,
+    val runtime: Int? = null,
+    val director: String? = null,
+    @SerializedName("cover_url") val coverUrl: String? = null,
+    @SerializedName("backdrop_url") val backdropUrl: String? = null,
+    @SerializedName("trailer_url") val trailerUrl: String? = null,
+    @SerializedName("view_count") val viewCount: Int? = null,
+    @SerializedName("is_watched") val isWatched: Boolean? = null,
+    @SerializedName("actors", alternate = ["cast", "credits"]) val actors: List<Actor>? = null,
+    @SerializedName("tmdb_id") val tmdbId: String? = null,
     @SerializedName("rating_age") val ratingAge: Int? = null,
     // Felder für Boxsets
     @SerializedName("is_boxset") val isBoxset: Boolean? = false,
@@ -46,11 +46,11 @@ data class Movie(
 )
 
 data class Actor(
-    val id: Int?,
-    @SerializedName("name", alternate = ["full_name", "actor_name", "display_name"]) val name: String?,
-    @SerializedName("image_url", alternate = ["profile_path", "profile_url", "photo_url"]) val imageUrl: String?,
-    @SerializedName("role", alternate = ["character"]) val role: String?,
-    @SerializedName("is_main_role") val isMainRole: Boolean?,
+    val id: Int? = null,
+    @SerializedName("name", alternate = ["full_name", "actor_name", "display_name"]) val name: String? = null,
+    @SerializedName("image_url", alternate = ["profile_path", "profile_url", "photo_url"]) val imageUrl: String? = null,
+    @SerializedName("role", alternate = ["character"]) val role: String? = null,
+    @SerializedName("is_main_role") val isMainRole: Boolean? = null,
     @SerializedName("movies") val movies: List<Movie>? = null,
     @SerializedName("bio", alternate = ["biography"]) val biography: String? = null,
     @SerializedName("birth_date", alternate = ["birthday"]) val birthDate: String? = null,
@@ -120,8 +120,8 @@ data class LoginResponse(
 
 data class User(
     val id: Int,
-    val name: String?,
-    val email: String?,
+    val name: String? = null,
+    val email: String? = null,
     @SerializedName("two_factor_enabled") val twoFactorEnabled: Boolean? = false,
     @SerializedName("two_factor_confirmed_at") val twoFactorConfirmedAt: String? = null
 )
@@ -131,6 +131,6 @@ data class UserUpdateResponse(
 )
 
 data class ServerInfo(
-    @SerializedName("app_name") val appName: String?,
-    val version: String?
+    @SerializedName("app_name") val appName: String? = null,
+    val version: String? = null
 )

@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Warning
@@ -95,6 +96,7 @@ class SetupViewModel(private val dataStoreManager: DataStoreManager) : ViewModel
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetupScreen(
     dataStoreManager: DataStoreManager,
@@ -102,8 +104,26 @@ fun SetupScreen(
 ) {
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val viewModel: SetupViewModel = viewModel(factory = SetupViewModel.Factory(dataStoreManager))
+    
+    // Prüfen, ob bereits eine URL gespeichert ist, um den Zurück-Button anzuzeigen
+    val savedUrl by dataStoreManager.serverUrl.collectAsState(initial = null)
+    val canGoBack = !savedUrl.isNullOrBlank()
 
-    Scaffold { padding ->
+    Scaffold(
+        topBar = {
+            if (canGoBack) {
+                TopAppBar(
+                    title = { },
+                    navigationIcon = {
+                        IconButton(onClick = onSetupComplete) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                )
+            }
+        }
+    ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
