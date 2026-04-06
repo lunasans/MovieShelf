@@ -35,7 +35,13 @@ class TmdbImportService
 
         try {
             return DB::transaction(function () use ($details, $tmdbId) {
-                $movie = Movie::create([
+                $movie = Movie::where('tmdb_id', $tmdbId)
+                    ->where(function($q) {
+                        $q->where('tmdb_type', 'movie')->orWhereNull('tmdb_type');
+                    })
+                    ->first();
+
+                $data = [
                     'title' => $details['title'],
                     'year' => isset($details['release_date']) ? (int) substr($details['release_date'], 0, 4) : null,
                     'rating' => $details['vote_average'] ?? null,
@@ -44,13 +50,19 @@ class TmdbImportService
                     'overview' => $details['overview'] ?? null,
                     'director' => $this->extractDirector($details),
                     'trailer_url' => $this->extractTrailer($details),
-                    'collection_type' => 'Blu-ray',
                     'rating_age' => $this->extractRating($details),
-                    'user_id' => auth()->id(),
                     'tmdb_id' => $tmdbId,
                     'tmdb_type' => 'movie',
                     'tmdb_json' => $details,
-                ]);
+                ];
+
+                if ($movie) {
+                    $movie->update($data);
+                } else {
+                    $data['collection_type'] = 'Blu-ray';
+                    $data['user_id'] = auth()->id();
+                    $movie = Movie::create($data);
+                }
 
                 $this->handleImages($movie, $details);
                 $this->handleActors($movie, $details);
@@ -75,7 +87,9 @@ class TmdbImportService
 
         try {
             return DB::transaction(function () use ($details, $tmdbId, $requestedSeasons) {
-                $movie = Movie::create([
+                $movie = Movie::where('tmdb_id', $tmdbId)->where('tmdb_type', 'tv')->first();
+
+                $data = [
                     'title' => $details['name'],
                     'year' => isset($details['first_air_date']) ? (int) substr($details['first_air_date'], 0, 4) : null,
                     'rating' => $details['vote_average'] ?? null,
@@ -84,13 +98,19 @@ class TmdbImportService
                     'overview' => $details['overview'] ?? null,
                     'director' => $this->extractCreator($details),
                     'trailer_url' => $this->extractTrailer($details),
-                    'collection_type' => 'Serie',
                     'rating_age' => $this->extractRating($details),
-                    'user_id' => auth()->id(),
                     'tmdb_id' => $tmdbId,
                     'tmdb_type' => 'tv',
                     'tmdb_json' => $details,
-                ]);
+                ];
+
+                if ($movie) {
+                    $movie->update($data);
+                } else {
+                    $data['collection_type'] = 'Serie';
+                    $data['user_id'] = auth()->id();
+                    $movie = Movie::create($data);
+                }
 
                 $this->handleImages($movie, $details);
                 $this->handleActors($movie, $details);

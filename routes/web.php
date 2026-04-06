@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 $profilePath = '/profile';
 
+
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });

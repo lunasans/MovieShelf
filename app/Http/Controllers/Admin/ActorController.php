@@ -74,6 +74,16 @@ class ActorController extends Controller
             'place_of_birth' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
         ]);
+
+        // Check for duplicates
+        $exists = Actor::where('first_name', $validated['first_name'])
+            ->where('last_name', $validated['last_name'])
+            ->exists();
+
+        if ($exists) {
+            return back()->withInput()->withErrors(['first_name' => 'Ein Schauspieler mit diesem Namen existiert bereits.']);
+        }
+
         $validated['slug'] = Str::slug($validated['first_name'].' '.$validated['last_name']);
         $actor = Actor::create($validated);
 
@@ -100,6 +110,17 @@ class ActorController extends Controller
             'place_of_birth' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
         ]);
+
+        // Check for duplicates (excluding current actor)
+        $exists = Actor::where('first_name', $validated['first_name'])
+            ->where('last_name', $validated['last_name'])
+            ->where('id', '!=', $actor->id)
+            ->exists();
+
+        if ($exists) {
+            return back()->withInput()->withErrors(['first_name' => 'Ein anderer Schauspieler mit diesem Namen existiert bereits.']);
+        }
+
         if ($request->filled('first_name') && $request->filled('last_name')) {
             $validated['slug'] = Str::slug($request->first_name.' '.$request->last_name);
         }

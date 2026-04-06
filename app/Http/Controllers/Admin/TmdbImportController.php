@@ -71,13 +71,19 @@ class TmdbImportController extends Controller
         try {
             if ($mediaType === 'tv') {
                 $movie = $this->importService->importTv((int) $tmdbId, $request->get('seasons', []));
-                $this->logActivity($movie, 'SERIES_IMPORT', ['media_type' => 'tv', 'tmdb_id' => $tmdbId]);
+                $wasUpdated = !($movie->wasRecentlyCreated);
+                $this->logActivity($movie, $wasUpdated ? 'SERIES_UPDATE' : 'SERIES_IMPORT', ['media_type' => 'tv', 'tmdb_id' => $tmdbId]);
             } else {
                 $movie = $this->importService->importMovie((int) $tmdbId);
-                $this->logActivity($movie, 'MOVIE_IMPORT', ['media_type' => 'movie', 'tmdb_id' => $tmdbId]);
+                $wasUpdated = !($movie->wasRecentlyCreated);
+                $this->logActivity($movie, $wasUpdated ? 'MOVIE_UPDATE' : 'MOVIE_IMPORT', ['media_type' => 'movie', 'tmdb_id' => $tmdbId]);
             }
 
-            return redirect()->route('admin.movies.index')->with('success', "Import erfolgreich: '{$movie->title}'");
+            $msg = $wasUpdated 
+                ? "Film/Serie '{$movie->title}' existierte bereits und wurde aktualisiert." 
+                : "Import erfolgreich: '{$movie->title}'";
+
+            return redirect()->route('admin.movies.index')->with('success', $msg);
         } catch (\Exception $e) {
             return back()->with('error', 'Fehler beim Import: '.$e->getMessage());
         }
