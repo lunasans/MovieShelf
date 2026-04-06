@@ -120,7 +120,7 @@ Route::middleware([
     Route::get('/signature', [\App\Http\Controllers\SignatureController::class, 'show'])->name('signature');
 
     // Storage Proxy for Tenants (supports tenant-specific AND global fallback assets)
-    Route::get('/storage/{path}', function ($path) {
+    Route::get('/media/{path}', function ($path) {
         $path = str_replace('..', '', $path);
         
         $tryPaths = [$path];

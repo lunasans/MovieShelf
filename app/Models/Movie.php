@@ -132,10 +132,10 @@ class Movie extends Model
         // 1. Check if the ID itself exists locally as a file (Tenant or Central)
         // This handles cases like 'tmdb_xyz.jpg' or 'cover/tmdb_xyz.jpg' stored locally.
         if ($disk->exists($id)) {
-            return '/storage/' . $id;
+            return '/media/' . $id;
         }
         if ($centralDisk->exists($id)) {
-            return '/storage/' . $id;
+            return '/media/' . $id;
         }
 
         // 2. Check for TMDb logic (Remote fallback)
@@ -151,9 +151,9 @@ class Movie extends Model
         // 4. Modern approach: ID is a path (e.g. covers/abc.jpg)
         if (str_contains($id, '/') && str_contains($id, '.')) {
             if ($disk->exists($id)) {
-                return '/storage/' . $id;
+                return '/media/' . $id;
             } elseif ($centralDisk->exists($id)) {
-                return '/storage/' . $id;
+                return '/media/' . $id;
             }
         } 
 
@@ -185,10 +185,10 @@ class Movie extends Model
             // Try standard extension first
             $path = "$folder/$id$suffix.jpg";
             if ($disk->exists($path)) {
-                return '/storage/' . $path;
+                return '/media/' . $path;
             }
             if ($centralDisk->exists($path)) {
-                return '/storage/' . $path;
+                return '/media/' . $path;
             }
 
             // Fallback extensions
@@ -196,20 +196,20 @@ class Movie extends Model
             foreach ($extensions as $ext) {
                 $fallbackPath = "$folder/$id$suffix$ext";
                 if ($disk->exists($fallbackPath)) {
-                    return '/storage/' . $fallbackPath;
+                    return '/media/' . $fallbackPath;
                 }
                 if ($centralDisk->exists($fallbackPath)) {
-                    return '/storage/' . $fallbackPath;
+                    return '/media/' . $fallbackPath;
                 }
             }
 
             // Try without suffix as a last resort
             if ($suffix !== '') {
                 if ($disk->exists("$folder/$id.jpg")) {
-                    return '/storage/' . "$folder/$id.jpg";
+                    return '/media/' . "$folder/$id.jpg";
                 }
                 if ($centralDisk->exists("$folder/$id.jpg")) {
-                    return '/storage/' . "$folder/$id.jpg";
+                    return '/media/' . "$folder/$id.jpg";
                 }
             }
         }

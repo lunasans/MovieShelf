@@ -27,7 +27,7 @@ Route::post('/claim', [\App\Http\Controllers\RegisterTenantController::class, 's
 Route::get('/activate/{token}', [\App\Http\Controllers\RegisterTenantController::class, 'activate'])->name('tenant.activate');
 
 // Central Storage Proxy (Required when public/storage symlink is removed)
-Route::get('/storage/{path}', function ($path) {
+Route::get('/media/{path}', function ($path) {
     $path = str_replace('..', '', $path);
     
     $tryPaths = [$path];
