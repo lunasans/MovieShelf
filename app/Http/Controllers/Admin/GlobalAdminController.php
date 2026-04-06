@@ -88,4 +88,27 @@ class GlobalAdminController extends Controller
 
         return back()->with('success', 'Einstellungen wurden erfolgreich gespeichert.');
     }
+
+    public function testMail(Request $request)
+    {
+        try {
+            $to = $request->get('email', auth()->user()->email ?? 'admin@movieshelf.info');
+            \Illuminate\Support\Facades\Mail::send('emails.test', [], function ($message) use ($to) {
+                $message->to($to)->subject(config('app.name').': SMTP Verbindungstest (Central)');
+            });
+
+            return response()->json(['success' => true, 'message' => 'Die HTML Test-Email wurde erfolgreich versendet an '.$to]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Central Mail Test failed: '.$e->getMessage());
+
+            $errorMessage = $e->getMessage();
+            if (str_contains($errorMessage, 'authentication failed')) {
+                $errorMessage = 'Authentifizierung fehlgeschlagen. Bitte prüfe Benutzername und Passwort.';
+            } elseif (str_contains($errorMessage, 'Connection could not be established')) {
+                $errorMessage = 'Verbindung zum SMTP-Server fehlgeschlagen. Bitte prüfe Host und Port.';
+            }
+
+            return response()->json(['success' => false, 'message' => 'Fehler: '.$errorMessage], 500);
+        }
+    }
 }

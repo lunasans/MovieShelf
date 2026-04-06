@@ -35,6 +35,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::delete('/tenants/{tenant}/delete', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'delete'])->name('admin.tenants.delete');
         Route::get('/settings', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'settings'])->name('admin.settings');
         Route::post('/settings', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'updateSettings'])->name('admin.settings.update');
+        Route::post('/settings/test-mail', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'testMail'])->name('admin.settings.test-mail');
     });
 
     // Telemetry API (Master only, gitignored)

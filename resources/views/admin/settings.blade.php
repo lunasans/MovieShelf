@@ -260,9 +260,54 @@
 
                 <div class="bg-sky-500/5 rounded-2xl border border-sky-500/10 p-4 flex items-start gap-4">
                     <i class="bi bi-info-circle text-sky-500 mt-1"></i>
-                    <p class="text-[11px] text-gray-400 leading-relaxed">
+                    <p class="text-[11px] text-gray-400 leading-relaxed drop-shadow-md">
                         ⚠️ **Hinweis**: Falls diese Felder leer bleiben, nutzt das System die Standardwerte aus der `.env`-Konfigurationsdatei. Achte darauf, dass dein Mail-Provider den Versand von dieser Domain erlaubt.
                     </p>
+                </div>
+
+                <div class="mt-4 flex flex-col items-center border-t border-white/10 pt-6" x-data="{
+                    testing: false,
+                    testStatus: null,
+                    testMessage: '',
+                    testMail() {
+                        if(this.testing) return;
+                        this.testing = true;
+                        this.testStatus = null;
+                        
+                        fetch('{{ route('admin.settings.test-mail') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=&quot;csrf-token&quot;]').getAttribute('content')
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            this.testing = false;
+                            this.testStatus = data.success ? 'success' : 'error';
+                            this.testMessage = data.message;
+                        })
+                        .catch(error => {
+                            this.testing = false;
+                            this.testStatus = 'error';
+                            this.testMessage = 'Ein Fehler ist aufgetreten: ' + error.message;
+                        });
+                    }
+                }">
+                    <button type="button" @click="testMail()" :disabled="testing" 
+                            class="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold text-white transition-all flex items-center gap-2">
+                        <i class="bi bi-send" x-show="!testing"></i>
+                        <i class="bi bi-arrow-repeat animate-spin" x-show="testing" style="display: none;"></i>
+                        <span x-text="testing ? 'Sende Test-E-Mail...' : 'Verbindung Testen'">Verbindung Testen</span>
+                    </button>
+                    
+                    <div x-show="testStatus" x-cloak class="mt-4 text-sm font-medium py-2 px-4 rounded-xl text-center"
+                         :class="{
+                             'bg-green-500/10 text-green-400 border border-green-500/20': testStatus === 'success',
+                             'bg-red-500/10 text-red-400 border border-red-500/20': testStatus === 'error'
+                         }">
+                        <span x-text="testMessage"></span>
+                    </div>
                 </div>
             </div>
         </div>
