@@ -107,11 +107,13 @@
                              </div>
                              
                              <input type="text" 
+                                    id="subdomain"
                                     name="subdomain" 
                                     x-model="subdomain" 
                                     @input.debounce.500ms="checkAvailability()"
                                     placeholder="dein-name" 
                                     required 
+                                    autocomplete="off"
                                     class="bg-transparent border-none focus:ring-0 text-white font-black w-full placeholder:text-gray-800 tracking-tighter text-2xl md:text-4xl uppercase italic p-0">
                              
                              <div class="flex items-center gap-4">
@@ -133,27 +135,26 @@
                     <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0" class="glass p-10 rounded-[3rem] space-y-8 border-rose-500/20">
                         <div class="grid md:grid-cols-2 gap-6">
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Vollständiger Name</label>
-                                <input type="text" name="name" placeholder="MAX MUSTERMANN" required class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
+                                <label for="reg_name" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Vollständiger Name</label>
+                                <input type="text" id="reg_name" name="name" placeholder="MAX MUSTERMANN" required autocomplete="name" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">E-Mail Adresse</label>
-                                <input type="email" name="email" placeholder="MAX@MAIL.DE" required class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
+                                <label for="reg_email" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">E-Mail Adresse</label>
+                                <input type="email" id="reg_email" name="email" placeholder="MAX@MAIL.DE" required autocomplete="email" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
                             </div>
                         </div>
-                        <div class="grid md:grid-cols-3 gap-6">
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Username</label>
-                                <input type="text" name="username" placeholder="SAMMLER7" required class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
+                        <div class="grid md:grid-cols-3 gap-6"                             <div class="space-y-2">
+                                <label for="reg_username" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Username</label>
+                                <input type="text" id="reg_username" name="username" placeholder="SAMMLER7" required autocomplete="username" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Passwort</label>
-                                <input type="password" name="password" placeholder="••••••••" required class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
+                                <label for="reg_password" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Passwort</label>
+                                <input type="password" id="reg_password" name="password" placeholder="••••••••" required autocomplete="new-password" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Wiederholen</label>
-                                <input type="password" name="password_confirmation" placeholder="••••••••" required class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
-                            </div>
+                                <label for="reg_password_confirmation" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Wiederholen</label>
+                                <input type="password" id="reg_password_confirmation" name="password_confirmation" placeholder="••••••••" required autocomplete="new-password" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
+                            </div>                            </div>
                         </div>
                         <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 text-white py-6 rounded-2xl font-black uppercase italic text-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-rose-900/60 tracking-tighter">
                             JETZT INSTANZ AKTIVIEREN
