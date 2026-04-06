@@ -1,6 +1,28 @@
 @extends('layouts.saas')
 
 @section('content')
+<style>
+    .glass-dark {
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .shadow-glow {
+        box-shadow: 0 0 30px rgba(225, 29, 72, 0.3);
+    }
+    .animate-gradient {
+        background-size: 200% 200%;
+        animation: gradient-move 4s ease infinite;
+    }
+    @keyframes gradient-move {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    [x-cloak] { display: none !important; }
+</style>
+
 <!-- Hero Section -->
 <section class="relative pt-32 pb-20 px-6 min-h-screen flex items-center overflow-hidden">
     <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
@@ -45,25 +67,26 @@
         </div>
         
         <!-- Left Column: High-Impact Content -->
-        <div class="space-y-10 animate-reveal">
-            <div class="inline-flex items-center gap-3 px-5 py-2 glass rounded-full text-rose-500 text-[10px] font-black tracking-[0.4em] uppercase border-rose-500/20">
-                <span class="w-2 h-2 bg-rose-600 rounded-full animate-pulse shadow-[0_0_15px_#e11d48]"></span>
-                Next-Gen Cloud Engine
+        <div class="space-y-12 animate-reveal">
+            <div class="inline-flex items-center gap-4 px-6 py-2.5 glass-dark rounded-full text-rose-500 text-[12px] font-black tracking-[0.5em] uppercase border-rose-500/30">
+                <span class="w-2.5 h-2.5 bg-rose-600 rounded-full animate-pulse shadow-[0_0_20px_#e11d48]"></span>
+                Next-Gen Cloud Engine v2.0
             </div>
             
-            <h1 class="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85] italic uppercase italic">
+            <h1 class="text-7xl md:text-9xl font-black tracking-tighter leading-[0.8] italic uppercase text-white">
                 Dein Herz. <br>
-                <span class="text-rose-600 drop-shadow-[0_0_15px_rgba(225,29,72,0.3)]">Deine Filme.</span><br>
-                Deine Cloud.
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-rose-400 drop-shadow-[0_15px_30px_rgba(225,29,72,0.4)]">Deine Filme.</span><br>
+                Deine Freiheit.
             </h1>
             
-            <p class="text-xl text-gray-400 max-w-lg leading-relaxed font-semibold">
-                Sichere dir dein persönliches digitales Filmregal. <br>
-                Dedizierte Datenbank. Blitzschnelles Hosting. <br>
-                Reinrassiges Cinematic-Design.
+            <p class="text-2xl text-gray-400/80 max-w-xl leading-relaxed font-bold tracking-tight">
+                Erlebe die exklusivste Form deiner Filmsammlung. <br>
+                Eigene Datenbank. Cinematic Branding. <br>
+                Absolut <span class="text-white italic">privat.</span>
             </p>
 
-            <!-- Browser-Styled Subdomain Input -->
+
+            <!-- --- CINEMATIC COMMAND CENTER --- -->
             <div x-data="{ 
                 subdomain: '{{ old('subdomain') }}', 
                 available: {{ old('subdomain') ? 'true' : 'null' }}, 
@@ -85,96 +108,145 @@
                         this.checking = false;
                     }
                 }
-            }" class="space-y-8">
+            }" class="space-y-12">
                 
-                <form action="{{ route('tenant.register') }}" method="POST" class="space-y-6">
+                <form action="{{ route('tenant.register') }}" method="POST" class="space-y-12 relative">
                     @csrf
                     
                     @if ($errors->any())
-                        <div class="p-6 glass border-rose-500/50 text-rose-500 rounded-[2rem] text-xs font-black uppercase tracking-widest leading-loose">
+                        <div class="p-8 glass-dark border-rose-600/50 text-rose-500 rounded-[2.5rem] text-sm font-black uppercase tracking-widest leading-loose shadow-[0_0_50px_rgba(225,29,72,0.2)]">
                             @foreach ($errors->all() as $error)
-                                <div class="flex items-center gap-3"><i class="bi bi-exclamation-triangle-fill"></i>{{ $error }}</div>
+                                <div class="flex items-center gap-4"><i class="bi bi-exclamation-triangle-fill"></i>{{ $error }}</div>
                             @endforeach
                         </div>
                     @endif
 
-                    <!-- Visual Browser Bar -->
-                    <div class="glass p-2 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(225,29,72,0.2)] border-white/10 group focus-within:ring-2 focus-within:ring-rose-500/50 transition-all duration-500">
-                        <div class="flex items-center px-6 h-16 md:h-24">
-                             <div class="flex items-center gap-4 text-gray-700 font-black text-xl italic select-none mr-6">
-                                <span class="hidden md:inline opacity-30">HTTPS://</span>
-                                <i class="bi bi-shield-lock-fill text-emerald-500/40"></i>
-                             </div>
-                             
-                             <div class="flex-1 relative">
-                                <input type="text" 
-                                        id="subdomain"
-                                        name="subdomain" 
-                                        x-model="subdomain" 
-                                        @input.debounce.500ms="checkAvailability()"
-                                        placeholder="DEIN-NAME" 
-                                        required 
-                                        autocomplete="off"
-                                        class="bg-transparent border-none focus:ring-0 text-white font-black w-full placeholder:text-gray-900 tracking-tighter text-2xl md:text-5xl uppercase italic p-0 mb-1">
-                                <div class="h-1 w-full bg-gradient-to-r from-rose-600/50 via-rose-600/10 to-transparent rounded-full transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-700 origin-left"></div>
-                             </div>
-                             
-                             <div class="flex items-center gap-6 ml-4">
-                                <span class="text-gray-800 font-black text-xl md:text-2xl hidden md:inline select-none opacity-40">.{{ parse_url(config('app.url'), PHP_URL_HOST) }}</span>
-                                <div class="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10 shadow-inner">
-                                    <template x-if="checking">
-                                        <i class="bi bi-arrow-repeat animate-spin text-rose-500 text-2xl"></i>
-                                    </template>
-                                    <template x-if="!checking && available === true">
-                                        <i class="bi bi-check2 text-emerald-500 text-3xl animate-reveal"></i>
-                                    </template>
-                                    <template x-if="!checking && available === false">
-                                        <i class="bi bi-x text-rose-600 text-3xl animate-reveal"></i>
-                                    </template>
-                                    <template x-if="available === null && !checking">
-                                        <div class="w-2 h-2 bg-gray-800 rounded-full"></div>
-                                    </template>
+                    <!-- THE FLOATING COMMAND BAR -->
+                    <div class="relative group">
+                        <div class="absolute -inset-1.5 bg-gradient-to-r from-rose-600 via-rose-400 to-rose-600 rounded-[3rem] blur-md opacity-20 group-focus-within:opacity-60 transition duration-1000 group-focus-within:duration-200"></div>
+                        <div class="relative bg-black/40 backdrop-blur-3xl p-4 rounded-[3rem] shadow-2xl border border-white/10 transition-all duration-500">
+                            <div class="flex items-center h-20 md:h-32 px-10">
+                                <div class="flex items-center gap-6 text-gray-700 font-black text-2xl italic select-none mr-8">
+                                    <span class="hidden md:inline opacity-10">HTTPS://</span>
+                                    <div class="w-1.5 h-10 bg-white/5 rounded-full"></div>
+                                    <i class="bi bi-shield-lock-fill text-emerald-500/40"></i>
                                 </div>
-                             </div>
+                                
+                                <div class="flex-1 relative">
+                                    <input type="text" 
+                                            id="subdomain"
+                                            name="subdomain" 
+                                            x-model="subdomain" 
+                                            @input.debounce.500ms="checkAvailability()"
+                                            placeholder="RESERVIERE-DEIN-SHELF" 
+                                            required 
+                                            autocomplete="off"
+                                            class="bg-transparent border-none focus:ring-0 text-white font-black w-full placeholder:text-gray-900 tracking-tighter text-3xl md:text-7xl uppercase italic p-0 mb-2">
+                                    
+                                    <!-- PROGRESS BAR INDICATOR -->
+                                    <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                        <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 transition-all duration-1000" :style="'width: ' + (subdomain.length > 0 ? (Math.min(subdomain.length / 15 * 100, 100)) : 0) + '%'"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center gap-8 ml-8">
+                                    <span class="text-gray-900 font-black text-2xl md:text-3xl hidden md:inline select-none">.MOVIESHELF.INFO</span>
+                                    <div class="w-20 h-20 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center shadow-inner group-focus-within:border-rose-500/50 transition-all group-focus-within:bg-rose-500/5">
+                                        <template x-if="checking">
+                                            <i class="bi bi-arrow-repeat animate-spin text-rose-500 text-4xl"></i>
+                                        </template>
+                                        <template x-if="!checking && available === true">
+                                            <i class="bi bi-check2 text-emerald-500 text-5xl animate-reveal shadow-glow"></i>
+                                        </template>
+                                        <template x-if="!checking && available === false">
+                                            <i class="bi bi-x text-rose-600 text-5xl animate-reveal"></i>
+                                        </template>
+                                        <template x-if="available === null && !checking">
+                                            <div class="w-4 h-4 bg-white/10 rounded-full animate-pulse"></div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- PREMIUM TAKEN MESSAGE -->
+                        <div x-show="available === false" x-cloak x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="absolute -bottom-10 left-12 z-20">
+                            <div class="bg-black/80 backdrop-blur-md border border-rose-600/30 text-rose-500 px-8 py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-4">
+                                <span class="w-2 h-2 bg-rose-600 rounded-full animate-ping"></span>
+                                <span class="text-[11px] font-black uppercase tracking-[0.5em] italic">Identität bereits vergeben</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Enhanced Taken Message -->
-                    <div x-show="available === false" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-                        <div class="inline-flex items-center gap-3 px-6 py-3 glass border-rose-500/30 text-rose-500 rounded-2xl ml-6 shadow-xl">
-                            <i class="bi bi-exclamation-circle-fill animate-pulse"></i>
-                            <span class="text-[10px] font-black uppercase tracking-[0.3em]">Dieser Name ist leider schon vergeben</span>
-                        </div>
-                    </div>
+                    <!-- --- THE PREMIUM CONFIGURATOR CARD --- -->
+                    <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-1000 delay-100" x-transition:enter-start="opacity-0 scale-95 -translate-y-20 blur-xl" x-transition:enter-end="opacity-100 scale-100 translate-y-0 blur-0" class="relative z-20">
+                        <div class="absolute -inset-1 bg-gradient-to-b from-rose-600/20 to-transparent rounded-[4rem] blur-2xl"></div>
+                        <div class="relative bg-black/60 backdrop-blur-3xl p-16 rounded-[4rem] border border-white/5 shadow-[0_100px_150px_-50px_rgba(0,0,0,1)] overflow-hidden">
+                            <!-- Background Glows -->
+                            <div class="absolute top-0 right-0 w-96 h-96 bg-rose-600/10 blur-[130px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                            <div class="absolute bottom-0 left-0 w-64 h-64 bg-rose-600/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
+                            
+                            <div class="relative z-10 space-y-16">
+                                <!-- Heading Block -->
+                                <div class="flex items-center gap-10">
+                                    <div class="w-24 h-24 bg-gradient-to-br from-rose-700 to-rose-600 rounded-3xl flex items-center justify-center text-white text-5xl shadow-[0_20px_40px_rgba(225,29,72,0.4)] border border-rose-500/50">
+                                        <i class="bi bi-layers-half"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-5xl font-black uppercase italic tracking-tighter text-white leading-none">Setup abschließen</h3>
+                                        <p class="text-rose-500/60 font-black text-sm tracking-[0.5em] uppercase mt-2">Personalize Your Cinematic Engine</p>
+                                    </div>
+                                </div>
 
-                    <!-- Revealed Expanded Form -->
-                    <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-500" x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0" class="glass p-10 rounded-[3rem] space-y-8 border-rose-500/20">
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <label for="reg_name" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Vollständiger Name</label>
-                                <input type="text" id="reg_name" name="name" placeholder="MAX MUSTERMANN" required autocomplete="name" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
-                            </div>
-                            <div class="space-y-2">
-                                <label for="reg_email" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">E-Mail Adresse</label>
-                                <input type="email" id="reg_email" name="email" placeholder="MAX@MAIL.DE" required autocomplete="email" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
+                                <!-- Personal Identity Grid -->
+                                <div class="grid md:grid-cols-2 gap-12">
+                                    <div class="space-y-4">
+                                        <div class="flex items-center gap-3 ml-6 mb-1">
+                                            <i class="bi bi-person-circle text-rose-500/50"></i>
+                                            <label for="reg_name" class="text-[11px] font-black text-gray-500 uppercase tracking-[0.6em]">Voller Name</label>
+                                        </div>
+                                        <input type="text" id="reg_name" name="name" placeholder="MAX MUSTERMANN" required autocomplete="name" class="w-full bg-white/5 border-white/10 rounded-3xl px-10 py-7 text-2xl text-white font-black uppercase italic focus:ring-0 focus:border-rose-500/50 focus:bg-white/10 placeholder:text-gray-900 transition-all duration-500">
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div class="flex items-center gap-3 ml-6 mb-1">
+                                            <i class="bi bi-envelope-at text-rose-500/50"></i>
+                                            <label for="reg_email" class="text-[11px] font-black text-gray-500 uppercase tracking-[0.6em]">Privat Mail</label>
+                                        </div>
+                                        <input type="email" id="reg_email" name="email" placeholder="MAX@CINEMA.INFO" required autocomplete="email" class="w-full bg-white/5 border-white/10 rounded-3xl px-10 py-7 text-2xl text-white font-black uppercase italic focus:ring-0 focus:border-rose-500/50 focus:bg-white/10 placeholder:text-gray-900 transition-all duration-500">
+                                    </div>
+                                </div>
+                                
+                                <!-- Security Grid -->
+                                <div class="grid md:grid-cols-3 gap-10 bg-white/5 p-10 rounded-[3rem] border border-white/5">
+                                    <div class="space-y-4">
+                                        <label for="reg_username" class="text-[10px] font-black text-gray-600 uppercase tracking-[0.5em] ml-4">Codename</label>
+                                        <input type="text" id="reg_username" name="username" placeholder="SAMMLER-01" required autocomplete="username" class="w-full bg-black/40 border-white/10 rounded-2xl px-8 py-6 text-xl text-white font-black uppercase italic focus:ring-0 focus:border-rose-600/50 placeholder:text-gray-900 transition-all">
+                                    </div>
+                                    <div class="space-y-4">
+                                        <label for="reg_password" class="text-[10px] font-black text-gray-600 uppercase tracking-[0.5em] ml-4">Security Key</label>
+                                        <input type="password" id="reg_password" name="password" placeholder="••••••••" required autocomplete="new-password" class="w-full bg-black/40 border-white/10 rounded-2xl px-8 py-6 text-xl text-white font-black uppercase italic focus:ring-0 focus:border-rose-600/50 placeholder:text-gray-900 transition-all">
+                                    </div>
+                                    <div class="space-y-4">
+                                        <label for="reg_password_confirmation" class="text-[10px] font-black text-gray-600 uppercase tracking-[0.5em] ml-4">Verify Key</label>
+                                        <input type="password" id="reg_password_confirmation" name="password_confirmation" placeholder="••••••••" required autocomplete="new-password" class="w-full bg-black/40 border-white/10 rounded-2xl px-8 py-6 text-xl text-white font-black uppercase italic focus:ring-0 focus:border-rose-600/50 placeholder:text-gray-900 transition-all">
+                                    </div>
+                                </div>
+
+                                <!-- HIGH IMPACT LAUNCH BUTTON -->
+                                <div class="pt-6">
+                                    <button type="submit" class="group relative w-full overflow-hidden rounded-[2.5rem] p-px transition-all hover:scale-[1.01] active:scale-95 shadow-[0_50px_100px_-20px_rgba(225,29,72,0.5)]">
+                                        <div class="absolute inset-0 animate-gradient bg-gradient-to-r from-rose-800 via-rose-500 to-rose-800 bg-[length:200%_auto]"></div>
+                                        <div class="relative bg-rose-600 group-hover:bg-transparent transition-colors py-10 rounded-[2.5rem] flex items-center justify-center gap-6">
+                                            <span class="text-white font-black uppercase italic text-4xl tracking-tighter">JETZT INSTANZ STARTEN</span>
+                                            <i class="bi bi-chevron-right text-3xl group-hover:translate-x-3 transition-transform duration-500"></i>
+                                        </div>
+                                    </button>
+                                    <p class="text-center mt-8 text-[11px] font-black uppercase tracking-[0.8em] text-gray-700 animate-pulse">
+                                        Ready For Destination • Dedicated Engine v2.0
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                        <div class="grid md:grid-cols-3 gap-6"                             <div class="space-y-2">
-                                <label for="reg_username" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Username</label>
-                                <input type="text" id="reg_username" name="username" placeholder="SAMMLER7" required autocomplete="username" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
-                            </div>
-                            <div class="space-y-2">
-                                <label for="reg_password" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Passwort</label>
-                                <input type="password" id="reg_password" name="password" placeholder="••••••••" required autocomplete="new-password" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
-                            </div>
-                            <div class="space-y-2">
-                                <label for="reg_password_confirmation" class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] ml-2">Wiederholen</label>
-                                <input type="password" id="reg_password_confirmation" name="password_confirmation" placeholder="••••••••" required autocomplete="new-password" class="w-full bg-white/5 border-white/10 rounded-2xl px-6 py-4 text-white font-black uppercase italic focus:ring-rose-500/50 placeholder:text-gray-800">
-                            </div>                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 text-white py-6 rounded-2xl font-black uppercase italic text-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-2xl shadow-rose-900/60 tracking-tighter">
-                            JETZT INSTANZ AKTIVIEREN
-                        </button>
                     </div>
 
 
