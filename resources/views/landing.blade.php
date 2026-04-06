@@ -57,11 +57,6 @@
     }
 </style>
 
-<!-- Parallax Background Architecture -->
-<div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-    <div class="bg-parallax-text -top-20 -left-60 opacity-30" style="transform: translateY(calc(var(--scroll, 0) * -0.3px))">PLATINUM</div>
-    <div class="bg-parallax-text top-1/2 -right-80 opacity-20 italic" style="transform: translateY(calc(var(--scroll, 0) * -0.6px))">ULTIMATE</div>
-</div>
 
 <!-- Hero Section: The VIP Apex -->
 <section class="relative pt-80 pb-64 px-16 min-h-screen flex items-center z-10 overflow-hidden">
@@ -71,13 +66,12 @@
                 MovieShelf Cloud
             </h1>
             <h2 class="text-2xl md:text-4xl font-bold text-gray-400 mb-20">
-                The smart way to manage your collection.
+                Dein digitales Filmregal
             </h2>
             
             <div class="max-w-6xl mx-auto space-y-24">
                 <p class="text-lg text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed reveal-delay-2">
-                    Organize, track, and share your cinematic treasures with a modern, 
-                    high-performance interface designed for the elite collector.
+                    Organisiere, verwalte und teile deine Filmschätze mit einer modernen Oberfläche, die für Sammler entwickelt wurde.
                 </p>
                 
                 <!-- THE APEX COMMANDER -->
@@ -121,7 +115,7 @@
                                     class="w-full text-[#222222] font-bold text-xl md:text-2xl placeholder-gray-200 platinum-input p-0 focus:ring-0 border-none">
                             
                             <div class="flex items-center gap-6 ml-4">
-                                <span class="text-gray-400 font-bold text-sm md:text-lg hidden lg:inline select-none">.msf.info</span>
+                                <span class="text-gray-400 font-bold text-sm md:text-lg hidden lg:inline select-none">.movieshelf.info</span>
                                 <template x-if="checking">
                                     <div class="w-6 h-32 bg-rose-600 animate-pulse rounded-full shadow-[0_0_50px_rgba(225,29,72,0.5)]"></div>
                                 </template>
@@ -142,12 +136,12 @@
                                 <div class="text-[12px] text-gray-500 font-black tracking-[1.5em] uppercase border-b border-black/5 pb-6">MASTER IDENTITY</div>
                                 <div class="grid md:grid-cols-2 gap-16">
                                     <div class="space-y-4">
-                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Full Name</label>
+                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Vorname Nachname</label>
                                         <input type="text" name="name" placeholder="MAX MUSTERMANN" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
                                     <div class="space-y-4">
-                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Secure Mail</label>
-                                        <input type="email" name="email" placeholder="VIP@CINEMA.INFO" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">E-Mail</label>
+                                        <input type="email" name="email" placeholder="[info@movieshelf.info]" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
                                 </div>
                             </div>
@@ -157,7 +151,7 @@
                                 <div class="text-[12px] text-gray-500 font-black tracking-[1.5em] uppercase border-b border-black/5 pb-6">LOCK</div>
                                 <div class="space-y-8">
                                     <div class="space-y-4">
-                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Apex Key</label>
+                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Passwort</label>
                                         <input type="password" name="password" placeholder="••••••••" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
                                 </div>
@@ -195,16 +189,16 @@
             <img src="{{ asset('img/screenshots/hero.png') }}" class="absolute inset-0 w-full h-full object-cover transform scale-110 group-hover:scale-100 transition-all duration-3000 opacity-20 group-hover:opacity-100 filter contrast-125">
             <div class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
             <div class="absolute bottom-48 left-48 space-y-12 animate-reveal">
-                <h3 class="text-xl md:text-2xl font-bold text-[#222222] mb-4">Pro Performance.</h3>
-                <p class="text-gray-500 font-medium max-w-lg mx-auto">Zero compromise. Pure speed for your movie library.</p>
+                <h3 class="text-xl md:text-2xl font-bold text-[#222222] mb-4"></h3>
+                <p class="text-gray-500 font-medium max-w-lg mx-auto"></p>
             </div>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-24 pb-80">
             @foreach([
-                ['icon' => 'stack', 'title' => 'Infinite<br>Storage', 'text' => 'Skalierung bis an den Rand des Universums.', 'color' => 'bg-black'],
-                ['icon' => 'shield-check', 'title' => 'VIP<br>Privacy', 'text' => 'Absolute Kontrolle. Deine Daten sind dein Monument.', 'color' => 'bg-rose-600'],
-                ['icon' => 'cpu-fill', 'title' => 'Apex<br>Engine', 'text' => 'Zero-Latency Core für blitzschnelle Reaktionen.', 'color' => 'bg-indigo-600']
+                ['icon' => 'stack', 'title' => 'Infinite<br>Storage', 'text' => '.', 'color' => 'bg-black'],
+                ['icon' => 'shield-check', 'title' => 'VIP<br>Privacy', 'text' => '', 'color' => 'bg-rose-600'],
+                ['icon' => 'cpu-fill', 'title' => 'Apex<br>Engine', 'text' => ', 'color' => 'bg-indigo-600']
             ] as $item)
             <div class="ultra-glass p-32 rounded-[5rem] flex flex-col space-y-16 hover:-translate-y-12 transition-all duration-1000 group" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
                 <div class="w-40 h-40 {{ $item['color'] }} text-white flex items-center justify-center rounded-[3rem] shadow-4xl group-hover:rotate-12 transition-all duration-1000">
