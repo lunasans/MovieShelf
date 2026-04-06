@@ -29,13 +29,28 @@ Route::get('/activate/{token}', [\App\Http\Controllers\RegisterTenantController:
 // Central Storage Proxy (Required when public/storage symlink is removed)
 Route::get('/storage/{path}', function ($path) {
     $path = str_replace('..', '', $path);
-    $fullPath = base_path("storage/app/public/$path");
-
-    if (file_exists($fullPath)) {
-        return response()->file($fullPath);
+    
+    $tryPaths = [$path];
+    
+    // Add singular/plural variants for robustness
+    if (str_starts_with($path, 'cover/')) {
+        $tryPaths[] = str_replace('cover/', 'covers/', $path);
+    } elseif (str_starts_with($path, 'covers/')) {
+        $tryPaths[] = str_replace('cover/', 'covers/', $path);
+    } elseif (str_starts_with($path, 'backdrop/')) {
+        $tryPaths[] = str_replace('backdrop/', 'backdrops/', $path);
+    } elseif (str_starts_with($path, 'backdrops/')) {
+        $tryPaths[] = str_replace('backdrops/', 'backdrop/', $path);
     }
 
-    abort(404);
+    foreach ($tryPaths as $tryPath) {
+        $fullPath = base_path("storage/app/public/$tryPath");
+        if (file_exists($fullPath)) {
+            return response()->file($fullPath, ['X-Storage-Proxy' => 'central-web']);
+        }
+    }
+
+    return response('File not found', 404, ['X-Storage-Proxy' => 'fail-web']);
 })->where('path', '.*');
 
 // Master Routes (Global ACP)

@@ -123,19 +123,34 @@ Route::middleware([
     Route::get('/storage/{path}', function ($path) {
         $path = str_replace('..', '', $path);
         
-        // 1. Check Tenant Storage (e.g., custom covers)
-        $tenantPath = storage_path("app/public/$path");
-        if (file_exists($tenantPath)) {
-            return response()->file($tenantPath);
+        $tryPaths = [$path];
+        
+        // Add singular/plural variants for robustness
+        if (str_starts_with($path, 'cover/')) {
+            $tryPaths[] = str_replace('cover/', 'covers/', $path);
+        } elseif (str_starts_with($path, 'covers/')) {
+            $tryPaths[] = str_replace('covers/', 'cover/', $path);
+        } elseif (str_starts_with($path, 'backdrop/')) {
+            $tryPaths[] = str_replace('backdrop/', 'backdrops/', $path);
+        } elseif (str_starts_with($path, 'backdrops/')) {
+            $tryPaths[] = str_replace('backdrops/', 'backdrop/', $path);
         }
 
-        // 2. Fallback to Central Storage (e.g., shared actor images)
-        $centralPath = base_path("storage/app/public/$path");
-        if (file_exists($centralPath)) {
-            return response()->file($centralPath);
+        foreach ($tryPaths as $tryPath) {
+            // 1. Check Tenant Storage (scoped by stancl/tenancy)
+            $tenantPath = storage_path("app/public/$tryPath");
+            if (file_exists($tenantPath)) {
+                return response()->file($tenantPath, ['X-Storage-Proxy' => 'tenant']);
+            }
+
+            // 2. Fallback to Central Storage
+            $centralPath = base_path("storage/app/public/$tryPath");
+            if (file_exists($centralPath)) {
+                return response()->file($centralPath, ['X-Storage-Proxy' => 'central']);
+            }
         }
 
-        abort(404);
+        return response('File not found', 404, ['X-Storage-Proxy' => 'fail']);
     })->where('path', '.*');
     
     // Auth Routes for Tenants
