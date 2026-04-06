@@ -7,26 +7,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         :root {
-            --platinum-bg: #F9F9FB;
-            --platinum-text: #050505;
-            --apex-accent: #FF0032;
+            --platinum-bg: #FFFFFF;
+            --platinum-text: #222222;
+            --apex-accent: #CC4B06;
         }
         
         * { cursor: none !important; } /* Hide system cursor for Apex Gallery */
 
         body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-family: 'Manrope', sans-serif; 
             background-color: var(--platinum-bg); 
             color: var(--platinum-text);
             overflow-x: hidden;
         }
         
-        h1, h2, h3, h4 { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Manrope', sans-serif; }
         
         /* APEX CURSOR */
         #apex-cursor {
@@ -56,19 +56,17 @@
         }
 
         .glass-ultra {
-            background: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(120px);
-            -webkit-backdrop-filter: blur(120px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            filter: url(#platinum-grain);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid #E5E7EB;
         }
 
         .mesh-bg {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background: var(--platinum-bg);
-            filter: url(#platinum-grain);
+            background: #FFFFFF;
         }
         
         .mesh-circle {
@@ -105,36 +103,23 @@
         <div id="apex-cursor-dot"></div>
     </div>
 
-    <!-- GLOBAL GRAIN DEFINITION -->
-    <svg id="grain-filter">
-        <filter id="platinum-grain">
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-            <feColorMatrix type="saturate" values="0" />
-            <feComponentTransfer>
-                <feFuncA type="linear" slope="0.06" />
-            </feComponentTransfer>
-            <feBlend in="SourceGraphic" operator="overlay" />
-        </filter>
-    </svg>
-
+    <!-- Global Mesh Gradient (Subtle) -->
     <div class="mesh-bg">
-        <div class="mesh-circle bg-rose-600 w-[1200px] h-[1200px] -top-[40%] -left-[15%] animate-pulse"></div>
-        <div class="mesh-circle bg-indigo-600 w-[1000px] h-[1000px] bottom-0 -right-[10%] opacity-8"></div>
+        <div class="mesh-circle bg-rose-600/5 w-[1200px] h-[1200px] -top-[40%] -left-[15%] animate-pulse"></div>
+        <div class="mesh-circle bg-indigo-600/5 w-[1000px] h-[1000px] bottom-0 -right-[10%] opacity-8"></div>
     </div>
     
     <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 px-12 py-12" x-data="{ scrolled: false }" @scroll.window="scrolled = (window.pageYOffset > 20)">
-        <div class="max-w-[1900px] mx-auto rounded-[4rem] px-16 py-8 flex items-center justify-between transition-all duration-1200"
-             :class="scrolled ? 'glass-ultra shadow-4xl py-6 scale-[0.98]' : 'bg-transparent'">
-            <div class="flex items-center gap-8" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                <img src="/img/logo/logo_small.png" alt="Logo" class="h-16 bg-black/5 p-3 rounded-2xl">
-                <span class="text-5xl font-black tracking-tighter italic text-[#050505] uppercase">MOVIE<span class="text-rose-600">SHELF</span></span>
+    <nav class="fixed top-0 left-0 right-0 z-50 px-8 py-6">
+        <div class="max-w-[1400px] mx-auto rounded-[8px] px-8 py-4 flex items-center justify-between transition-all duration-1200 glass-ultra shadow-sm">
+            <div class="flex items-center gap-4" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                <img src="/img/logo/logo_small.png" alt="Logo" class="h-10 bg-black/5 p-2 rounded-lg">
+                <span class="text-2xl font-black tracking-tight text-[#222222]">MOVIE<span class="text-orange-600">SHELF</span></span>
             </div>
-            <div class="hidden md:flex items-center gap-20 text-[12px] font-black uppercase tracking-[0.6em] text-gray-500">
+            <div class="hidden md:flex items-center gap-12 text-[13px] font-bold tracking-tight text-gray-500">
                 <a href="#features" class="hover:text-black transition-colors" @mouseenter="isHovering = true" @mouseleave="isHovering = false">Features</a>
-                <a href="#stats" class="hover:text-black transition-colors" @mouseenter="isHovering = true" @mouseleave="isHovering = false">Insights</a>
-                <a href="/login" class="bg-[#050505] text-white px-16 py-6 rounded-full font-black hover:bg-rose-600 transition-all active:scale-90 shadow-2xl" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                    PLATINUM ACCESS
+                <a href="/login" class="bg-[#CC4B06] text-white px-8 py-3 rounded-[8px] font-bold text-[11px] hover:bg-[#A33C05] transition-all active:scale-95" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                    GET STARTED
                 </a>
             </div>
         </div>
@@ -142,25 +127,25 @@
 
     @yield('content')
 
-    <footer class="py-64 border-t border-black/5 relative overflow-hidden bg-white/50 glass-ultra">
-        <div class="max-w-[1900px] mx-auto px-12 grid md:grid-cols-4 gap-40 relative z-10">
-            <div class="space-y-12">
-                <div class="flex items-center gap-6">
-                    <img src="/img/logo/logo_small.png" alt="Logo" class="h-12 bg-black/5 p-3 rounded-2xl">
-                    <span class="font-black tracking-tighter italic uppercase text-4xl text-[#050505]">MovieShelf</span>
+    <footer class="py-32 border-t border-gray-100 bg-white">
+        <div class="max-w-[1400px] mx-auto px-8 grid md:grid-cols-4 gap-20">
+            <div class="space-y-6">
+                <div class="flex items-center gap-4">
+                    <img src="/img/logo/logo_small.png" alt="Logo" class="h-10 p-1">
+                    <span class="font-extrabold text-2xl text-[#222222]">MovieShelf</span>
                 </div>
-                <p class="text-gray-400 text-xl font-semibold leading-relaxed">
+                <p class="text-gray-500 text-sm font-medium leading-relaxed">
                     Elevating movie collections to a cinematic cloud experience. <br>
                     Platinum Apex: Ultimate Edition v2.10.4
                 </p>
             </div>
             <div class="md:col-span-2"></div>
-            <div class="flex flex-col items-end gap-16">
-                <div class="flex gap-10">
-                    <a href="#" class="w-20 h-20 bg-black/5 rounded-[2.5rem] flex items-center justify-center text-gray-400 hover:bg-rose-600 hover:text-white transition-all"><i class="bi bi-github text-4xl"></i></a>
-                    <a href="#" class="w-20 h-20 bg-black/5 rounded-[2.5rem] flex items-center justify-center text-gray-400 hover:bg-rose-600 hover:text-white transition-all"><i class="bi bi-twitter-x text-4xl"></i></a>
+            <div class="flex flex-col items-end gap-10">
+                <div class="flex gap-6">
+                    <a href="#" class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 hover:bg-[#CC4B06] hover:text-white transition-all"><i class="bi bi-github text-xl"></i></a>
+                    <a href="#" class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 hover:bg-[#CC4B06] hover:text-white transition-all"><i class="bi bi-twitter-x text-xl"></i></a>
                 </div>
-                <div class="text-gray-400 text-[12px] font-black uppercase tracking-[1em]">
+                <div class="text-gray-400 text-[10px] font-bold uppercase tracking-[0.5em]">
                     © 2026 RENÉ NEUHAUS • APEX ULTIMATE PROTOCOL
                 </div>
             </div>
