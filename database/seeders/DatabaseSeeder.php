@@ -15,7 +15,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Default Admin User
+        // Only seed the central database with a default admin
+        // Tenants will have their own admins created during registration
+        if (function_exists('tenancy') && tenancy()->initialized) {
+            return;
+        }
+
+        // Default Admin User (Central only)
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@movieshelf.com',
