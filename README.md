@@ -174,6 +174,7 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 ## 🚀 Letzte Änderungen (2.10.0)
 
 - **New**: Prüfung auf doppelte Einträge für Schauspieler (Name) und Filme (TMDb ID) hinzugefügt.
+- **Improved**: Unterstützung für Dubletten-Handling in der API (`POST /api/tmdb/import`) mit Status-Rückmeldung (`is_updated`).
 - **Improved**: Bestehende Doubletten in der Filmdatenbank wurden automatisch bereinigt und werden nun beim TMDb-Import synchronisiert statt neu angelegt.
 - **Security**: Unique-Constraints auf Datenbankebene für `tmdb_id` (Filme & Schauspieler) eingeführt.
 - **Fixed**: Manuelles Anlegen von Schauspielern prüft nun vorab auf existierende Namen.

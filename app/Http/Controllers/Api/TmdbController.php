@@ -74,7 +74,16 @@ class TmdbController extends Controller
                 $movie = $this->importService->importMovie((int) $tmdbId);
             }
 
-            return new MovieResource($movie);
+            $wasUpdated = !($movie->wasRecentlyCreated);
+
+            return (new MovieResource($movie))->additional([
+                'meta' => [
+                    'is_updated' => $wasUpdated,
+                    'message' => $wasUpdated 
+                        ? "Film/Serie '{$movie->title}' existierte bereits und wurde aktualisiert." 
+                        : "Import erfolgreich: '{$movie->title}'"
+                ]
+            ]);
         } catch (\Exception $e) {
             Log::error('API TmdbImport Error: '.$e->getMessage());
             return response()->json(['error' => 'Fehler beim Import: '.$e->getMessage()], 500);
