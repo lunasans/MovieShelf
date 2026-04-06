@@ -75,7 +75,7 @@
                     }
                     this.checking = true;
                     try {
-                        const response = await fetch(`/api/check-subdomain?name=${this.subdomain}`);
+                        const response = await fetch('{{ route('api.check.subdomain') }}?name=' + this.subdomain);
                         const data = await response.json();
                         this.available = data.available;
                         this.subdomain = data.slug;
@@ -124,7 +124,7 @@
                                 <template x-if="!checking && available === false">
                                     <i class="bi bi-x-circle-fill text-rose-600 text-2xl"></i>
                                 </template>
-                                <span class="text-gray-700 font-black text-lg md:text-xl hidden md:inline select-none">.localhost:8000</span>
+                                <span class="text-gray-700 font-black text-lg md:text-xl hidden md:inline select-none">.{{ parse_url(config('app.url'), PHP_URL_HOST) }}</span>
                              </div>
                         </div>
                     </div>

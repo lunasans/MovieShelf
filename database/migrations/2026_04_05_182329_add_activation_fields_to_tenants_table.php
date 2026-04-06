@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            $table->string('activation_token', 64)->nullable()->after('email');
-            $table->timestamp('activated_at')->nullable()->after('activation_token');
+            if (!Schema::hasColumn('tenants', 'activation_token')) {
+                $table->string('activation_token', 64)->nullable()->after('email');
+            }
+            if (!Schema::hasColumn('tenants', 'activated_at')) {
+                $table->timestamp('activated_at')->nullable()->after('activation_token');
+            }
         });
     }
 

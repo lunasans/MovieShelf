@@ -5,6 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Models\Setting;
+use App\Mail\TenantWelcome;
 
 class RegisterTenantController extends Controller
 {
@@ -21,10 +27,7 @@ class RegisterTenantController extends Controller
             return response()->json(['available' => null]);
         }
 
-        $centralDomain = request()->getHost();
-        if ($centralDomain === '127.0.0.1') {
-            $centralDomain = 'localhost'; // test.localhost resolves automatically on Windows
-        }
+        $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
         $fullDomain = $subdomain . '.' . $centralDomain;
 
         $exists = \Stancl\Tenancy\Database\Models\Domain::where('domain', $fullDomain)->exists() || Tenant::where('id', $subdomain)->exists();
@@ -40,10 +43,7 @@ class RegisterTenantController extends Controller
         $subdomain = Str::slug($request->subdomain);
         $token = Str::random(64);
         
-        $centralDomain = request()->getHost();
-        if ($centralDomain === '127.0.0.1') {
-            $centralDomain = 'localhost';
-        }
+        $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
         $fullDomain = $subdomain . '.' . $centralDomain;
 
         $request->validate([
@@ -54,37 +54,41 @@ class RegisterTenantController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        if (\Stancl\Tenancy\Database\Models\Domain::where('domain', $subdomain)->exists() || Tenant::where('id', $subdomain)->exists()) {
+        if (\Stancl\Tenancy\Database\Models\Domain::where('domain', $fullDomain)->exists() || Tenant::where('id', $subdomain)->exists()) {
             return back()->withErrors(['subdomain' => 'Dieser Name ist leider schon vergeben.'])->withInput();
         }
 
+        // 0. Generate URLs before entering tenant context
+        $activationUrl = route('tenant.activate', ['token' => $token]);
+        $tempTenant = new Tenant(['id' => $subdomain]);
+        $tenantUrl = $this->getTenantUrl($tempTenant);
+
         // 1. Create the Tenant (Status: Inactive)
-        $tenant = Tenant::create([
-            'id' => $subdomain,
-            'tenancy_db_driver' => 'sqlite',
-            'activation_token' => $token,
-            'activated_at' => null,
-            'email' => $request->email,
-        ]);
+        $tenant = new Tenant();
+        $tenant->id = $subdomain;
+        $tenant->email = $request->email;
+        $tenant->activation_token = $token;
+        $tenant->activated_at = null;
+        $tenant->save();
 
         $tenant->domains()->create([
             'domain' => $fullDomain,
         ]);
 
-        // 2.5 Apply Default Settings from Central Admin
-        $defaultLayout = \App\Models\Setting::get('default_tenant_layout', 'classic');
-        $defaultLanguage = \App\Models\Setting::get('default_tenant_language', 'de');
+        // 2. Apply Default Settings from Central Admin
+        $defaultLayout = Setting::get('default_tenant_layout', 'classic');
+        $defaultLanguage = Setting::get('default_tenant_language', 'de');
 
         $tenant->run(function () use ($defaultLayout, $defaultLanguage) {
-            \DB::table('settings')->updateOrInsert(
+            DB::table('settings')->updateOrInsert(
                 ['key' => 'site_layout'],
                 ['value' => $defaultLayout, 'group' => 'pwa', 'updated_at' => now()]
             );
-            \DB::table('settings')->updateOrInsert(
+            DB::table('settings')->updateOrInsert(
                 ['key' => 'app_language'],
                 ['value' => $defaultLanguage, 'group' => 'pwa', 'updated_at' => now()]
             );
-            \DB::table('settings')->updateOrInsert(
+            DB::table('settings')->updateOrInsert(
                 ['key' => 'site_title'],
                 ['value' => 'Mein MovieShelf', 'group' => 'pwa', 'updated_at' => now()]
             );
@@ -95,18 +99,15 @@ class RegisterTenantController extends Controller
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
-            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'password' => Hash::make($request->password),
         ];
 
         $tenant->run(function () use ($userData) {
-            \App\Models\User::create($userData);
+            User::create($userData);
         });
 
         // 4. Send Activation Email
-        $activationUrl = route('tenant.activate', ['token' => $token]);
-        $tenantUrl = $this->getTenantUrl($tenant);
-        
-        \Illuminate\Support\Facades\Mail::to($request->email)->send(new \App\Mail\TenantWelcome($tenant, new \App\Models\User($userData), $activationUrl, $tenantUrl));
+        Mail::to($request->email)->send(new TenantWelcome($tenant, new User($userData), $activationUrl, $tenantUrl));
 
         return redirect()->route('landing')->with('success', 'Dein MovieShelf wurde erfolgreich reserviert! Bitte schaue in dein E-Mail Postfach (' . $request->email . '), um dein Filmregal freizuschalten.');
     }
@@ -129,9 +130,10 @@ class RegisterTenantController extends Controller
     protected function getTenantUrl($tenant)
     {
         $domainRecord = $tenant->domains()->first();
-        $hostname = $domainRecord ? $domainRecord->domain : $tenant->id . '.localhost';
+        $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
+        $hostname = $domainRecord ? $domainRecord->domain : $tenant->id . '.' . $centralDomain;
         
         $port = request()->getPort();
-        return 'http://' . $hostname . ($port && $port != 80 && $port != 443 ? ':' . $port : '') . '/login';
+        return 'https://' . $hostname . ($port && $port != 80 && $port != 443 ? ':' . $port : '') . '/login';
     }
 }

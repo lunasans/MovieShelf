@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\Route;
 
 // Landing Page (SaaS Home)
 Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
+Route::get('/debug-domain', function () {
+    return [
+        'hostname' => request()->getHost(),
+        'is_central' => in_array(request()->getHost(), config('tenancy.central_domains')),
+        'central_domains' => config('tenancy.central_domains'),
+        'tenancy_initialized' => function_exists('tenancy') && tenancy()->initialized,
+    ];
+});
 Route::get('/api/check-subdomain', [\App\Http\Controllers\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain');
 Route::post('/claim', [\App\Http\Controllers\RegisterTenantController::class, 'store'])->name('tenant.register');
 Route::get('/activate/{token}', [\App\Http\Controllers\RegisterTenantController::class, 'activate'])->name('tenant.activate');

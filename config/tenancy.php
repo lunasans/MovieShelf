@@ -16,11 +16,10 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => [
-        '127.0.0.1',
-        'localhost',
-        'movieshelf.info',
-    ],
+    'central_domains' => array_merge(
+        config('app.env') !== 'production' ? ['127.0.0.1', 'localhost'] : [],
+        explode(',', env('CENTRAL_DOMAINS', 'movieshelf.info,www.movieshelf.info'))
+    ),
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.

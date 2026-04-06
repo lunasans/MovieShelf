@@ -22,28 +22,28 @@ class MailConfigServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // 1. Initial load for central context
+        $this->loadMailSettings();
+
+        // 2. React to tenancy initialization
+        \Illuminate\Support\Facades\Event::listen(\Stancl\Tenancy\Events\TenancyInitialized::class, function () {
+            $this->loadMailSettings();
+        });
+
+        // 3. React to tenancy reverting back
+        \Illuminate\Support\Facades\Event::listen(\Stancl\Tenancy\Events\TenancyEnded::class, function () {
+            $this->loadMailSettings();
+        });
+    }
+
+    /**
+     * Load mail settings from the current database and re-initialize the Mail Manager.
+     */
+    protected function loadMailSettings(): void
+    {
         try {
-            // Check if it's a central connection and if the database file exists (for SQLite)
-            $connection = Config::get('database.default');
-            $dbPath = Config::get("database.connections.{$connection}.database");
-
-            if (!$dbPath) {
-                return;
-            }
-
-            if (Config::get("database.connections.{$connection}.driver") === 'sqlite' && 
-                $dbPath !== ':memory:' && 
-                !file_exists($dbPath)) {
-                return;
-            }
-
-            // Wrap Schema check in try-catch because SQLiteConnector can throw 
-            // if the path is invalid before it even attempts the query
-            try {
-                if (!Schema::hasTable('settings')) {
-                    return;
-                }
-            } catch (\Throwable $e) {
+            // Check if tables exist
+            if (!Schema::hasTable('settings')) {
                 return;
             }
 
@@ -51,9 +51,14 @@ class MailConfigServiceProvider extends ServiceProvider
 
             if ($mailSettings->isNotEmpty()) {
                 $this->applyMailSettings($mailSettings);
+
+                // IMPORTANT: In Laravel 11/12, the MailManager and individual mailers must be purged
+                // to reflect the configuration changes immediately in the current request.
+                \Illuminate\Support\Facades\Mail::purge(\Illuminate\Support\Facades\Config::get('mail.default'));
+                app()->forgetInstance('mail.manager');
             }
         } catch (\Throwable $e) {
-            // Silently fail during boot if database is not ready
+            // Silently fail if database is not ready
             return;
         }
     }

@@ -20,7 +20,8 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                     <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-indigo-400 transition-colors hidden sm:block">
                         @php
                             $currentHost = request()->getHost();
-                            $isCentral = in_array($currentHost, ['localhost', '127.0.0.1', 'movieshelf.info']);
+                            $centralDomains = explode(',', env('CENTRAL_DOMAINS', 'movieshelf.info,www.movieshelf.info'));
+                            $isCentral = in_array($currentHost, array_merge(['localhost', '127.0.0.1'], $centralDomains));
                             $siteTitle = $isCentral ? \App\Models\Setting::get('saas_name', 'MovieShelf Cloud') : \App\Models\Setting::get('site_title', 'MovieShelf');
                         @endphp
                         {{ $siteTitle }}

@@ -118,14 +118,11 @@ class TenancyServiceProvider extends ServiceProvider
 
     protected function mapRoutes()
     {
-        foreach (config('tenancy.central_domains') as $domain) {
-            Route::middleware('web')
-                ->domain($domain)
-                ->group(base_path('routes/web.php'));
-        }
+        // Central routes are always registered.
+        Route::middleware('web')
+            ->group(base_path('routes/web.php'));
 
-        // Only register tenant routes if we're not on a central domain.
-        // This prevents the 'NotASubdomainException' when accessing the central domain.
+        // Tenant routes are loaded if we're NOT on a central domain.
         $centralDomains = config('tenancy.central_domains');
         $currentHost = request()->getHost();
 

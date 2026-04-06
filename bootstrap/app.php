@@ -21,6 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'login',
         ]);
 
+        $middleware->redirectTo(
+            guests: '/login',
+            users: '/admin'
+        );
+
         $middleware->alias([
             'tenancy' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomainOrSubdomain::class,
             'prevent-central-access' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,

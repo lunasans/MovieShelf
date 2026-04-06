@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('language')->default('de')->after('password');
-            $table->string('layout')->default('classic')->after('language');
-        });
+        if (!Schema::hasColumn('users', 'language')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('language')->default('de')->after('password');
+                $table->string('layout')->default('classic')->after('language');
+            });
+        }
     }
 
     /**

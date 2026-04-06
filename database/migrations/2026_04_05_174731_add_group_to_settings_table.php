@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('settings', function (Blueprint $table) {
-            $table->string('group', 50)->default('general')->after('value');
-            $table->index('group', 'idx_group');
-        });
+        if (!Schema::hasColumn('settings', 'group')) {
+            Schema::table('settings', function (Blueprint $table) {
+                $table->string('group', 50)->default('general')->after('value');
+                $table->index('group', 'idx_group');
+            });
+        }
     }
 
     /**
