@@ -119,16 +119,23 @@ Route::middleware([
     // Signatur-Banner
     Route::get('/signature', [\App\Http\Controllers\SignatureController::class, 'show'])->name('signature');
 
-    // Storage Proxy for Tenants (to support hardcoded /storage/ paths)
+    // Storage Proxy for Tenants (supports tenant-specific AND global fallback assets)
     Route::get('/storage/{path}', function ($path) {
         $path = str_replace('..', '', $path);
-        $fullPath = storage_path("app/public/$path");
-
-        if (!file_exists($fullPath)) {
-            abort(404);
+        
+        // 1. Check Tenant Storage (e.g., custom covers)
+        $tenantPath = storage_path("app/public/$path");
+        if (file_exists($tenantPath)) {
+            return response()->file($tenantPath);
         }
 
-        return response()->file($fullPath);
+        // 2. Fallback to Central Storage (e.g., shared actor images)
+        $centralPath = base_path("storage/app/public/$path");
+        if (file_exists($centralPath)) {
+            return response()->file($centralPath);
+        }
+
+        abort(404);
     })->where('path', '.*');
     
     // Auth Routes for Tenants
