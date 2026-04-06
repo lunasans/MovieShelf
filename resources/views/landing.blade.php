@@ -85,7 +85,7 @@
         <div class="space-y-48 reveal-delay-1">
             <div class="inline-flex items-center gap-10 px-12 py-5 border border-black/5 bg-white/60 backdrop-blur-2xl rounded-full text-[13px] font-black tracking-[1.5em] uppercase text-gray-500 shadow-2xl" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
                 <span class="w-4 h-4 bg-rose-600 rounded-full animate-pulse shadow-xl shadow-rose-600/60"></span>
-                ULTRA PREMIUM • ELITE PROTOCOL • V2.10.4
+                MovieShelf Cloud  • V2.10.4
             </div>
             
             <h1 class="text-[6rem] md:text-[12rem] font-black uppercase italic monument-text tracking-[-0.09em] leading-[0.7] mb-32">
@@ -249,7 +249,7 @@
             </div>
             
             <div class="pt-64 text-[18px] font-black uppercase tracking-[4em] text-gray-300">
-                ULTRA PREMIUM • ELITE PROTOCOL • V2.10.4
+                MovieShelf Cloud • V2.10.4
             </div>
         </div>
     </div>
