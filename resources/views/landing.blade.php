@@ -171,6 +171,36 @@
                         </div>
                     </form>
                 </div>
+
+                <!-- Android Beta Tester Recruitment -->
+                <div class="mt-24 max-w-4xl mx-auto animate-reveal reveal-delay-3">
+                    <div class="bg-gray-50 border border-gray-100 rounded-2xl p-8 md:p-10 text-center relative overflow-hidden group">
+                        <div class="absolute -right-20 -top-20 w-64 h-64 bg-orange-600/5 rounded-full blur-3xl group-hover:bg-orange-600/10 transition-all duration-1000"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="inline-flex items-center gap-3 px-4 py-2 bg-orange-50 text-orange-700 rounded-full text-[10px] font-bold uppercase tracking-widest mb-6">
+                                <span class="relative flex h-2 w-2">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                                </span>
+                                Android Beta Phase
+                            </div>
+                            
+                            <h3 class="text-2xl md:text-3xl font-bold text-[#222222] mb-4">Werde Beta-Tester!</h3>
+                            <p class="text-gray-500 font-medium mb-8 max-w-xl mx-auto leading-relaxed">
+                                Hilf uns dabei, die MovieShelf Android App zu perfektionieren. Werde einer unserer ersten Tester und gestalte die Zukunft deiner Filmsammlung mit.
+                            </p>
+                            
+                            <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                                <a href="mailto:support@movieshelf.info?subject=Android%20Beta%20Test" class="inline-flex items-center gap-3 px-8 py-3 bg-[#222222] text-white rounded-lg text-sm font-bold hover:bg-[#050505] transition-all">
+                                    <i class="bi bi-envelope-fill"></i>
+                                    Jetzt bewerben
+                                </a>
+                                <span class="text-gray-400 text-sm font-medium">oder schreib an: <span class="text-[#222222] font-bold">support@movieshelf.info</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

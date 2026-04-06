@@ -56,7 +56,7 @@
                     <li>Deinen Vor- und Nachnamen</li>
                     <li>Deine E-Mail-Adresse (erforderlich für Login und Passwort-Wiederherstellung)</li>
                     <li>Dein verschlüsseltes Passwort (bcrypt-Hash, für uns nicht einsehbar)</li>
-                    <li>Die von dir gewählte Wunsch-Subdomain (z.B. user.movieshelf.info)</li>
+                    <li>Persönliche Identifikatoren wie deine <strong>Konto-ID</strong> (interne Datenbank-ID) und dein <strong>Kontoname</strong> (die von dir gewählte Wunsch-Subdomain, z.B. user.movieshelf.info) zur eindeutigen Zuordnung deines Accounts.</li>
                     <li>Sämtliche von dir aktiv in die Datenbank eingetragenen Filme, Tags, Bewertungen und Einstellungen.</li>
                 </ul>
             </div>
@@ -83,6 +83,7 @@
                 <ul class="list-disc pl-6 mt-2 space-y-2">
                     <li><strong>Absturzprotokolle (Crash Logs):</strong> Wenn die App oder der Server unerwartet beendet wird, erhalten wir einen automatisierten Fehlerbericht (z. B. Angaben zum Gerätetyp, Betriebssystemversion und den Code, der den Absturz verursacht hat), um den Fehler schnellstmöglich zu beheben.</li>
                     <li><strong>Diagnosedaten:</strong> Technische Informationen über Ladezeiten, Netzwerkfehler oder Speicherprobleme, um die App-Performance zu optimieren.</li>
+                    <li><strong>Persönliche IDs in Protokollen:</strong> In bestimmten Fehlerfällen kann deine <strong>Konto-ID</strong> oder dein <strong>Kontoname</strong> an Absturzprotokolle angehängt werden, um ein spezifisches Problem deinem Account zuzuordnen und gezielt beheben zu können.</li>
                     <li><strong>Andere App-Leistungsdaten:</strong> Generelle Metriken zur Stabilität der App und API-Verbindungen.</li>
                 </ul>
                 <p class="mt-4">
