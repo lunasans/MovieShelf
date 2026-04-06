@@ -166,10 +166,7 @@
                             class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">System</span> </div> <a
                         href="{{ route('admin.users.index') }}"
                         class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.users.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
-                        <i class="bi bi-person-badge-fill"></i> <span class="font-bold text-sm">Benutzer</span> </a> <a
-                        href="{{ route('admin.update.index') }}"
-                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.update.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
-                        <i class="bi bi-arrow-repeat"></i> <span class="font-bold text-sm">System Update</span> </a>
+                        <i class="bi bi-person-badge-fill"></i> <span class="font-bold text-sm">Benutzer</span>  </a>
                     <a href="{{ route('admin.bot.index') }}"
                         class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.bot.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
                         <i class="bi bi-robot"></i> <span class="font-bold text-sm">Actor Bot</span> </a>

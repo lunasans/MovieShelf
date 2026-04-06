@@ -97,11 +97,7 @@ Route::middleware([
             // Users
             Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
 
-            // System Update
-            Route::get('update', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'index'])->name('update.index');
-            Route::post('update/check', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'check'])->name('update.check');
-            Route::post('update/run', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'update'])->name('update.run');
-            Route::post('update/settings', [\App\Http\Controllers\Admin\SystemUpdateController::class, 'saveSettings'])->name('update.settings.save');
+
 
             // Bot
             Route::get('bot', [\App\Http\Controllers\Admin\BotController::class, 'index'])->name('bot.index');
