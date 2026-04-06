@@ -99,35 +99,51 @@
                     @endif
 
                     <!-- Visual Browser Bar -->
-                    <div class="glass p-2 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(225,29,72,0.15)] border-white/10 group focus-within:ring-2 focus-within:ring-rose-500/50 transition-all">
-                        <div class="flex items-center px-6 h-16 md:h-20">
-                             <div class="flex items-center gap-4 text-gray-700 font-black text-xl italic select-none mr-4">
-                                <span class="hidden md:inline">https://</span>
-                                <i class="bi bi-shield-lock-fill text-emerald-500/50"></i>
+                    <div class="glass p-2 rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(225,29,72,0.2)] border-white/10 group focus-within:ring-2 focus-within:ring-rose-500/50 transition-all duration-500">
+                        <div class="flex items-center px-6 h-16 md:h-24">
+                             <div class="flex items-center gap-4 text-gray-700 font-black text-xl italic select-none mr-6">
+                                <span class="hidden md:inline opacity-30">HTTPS://</span>
+                                <i class="bi bi-shield-lock-fill text-emerald-500/40"></i>
                              </div>
                              
-                             <input type="text" 
-                                    id="subdomain"
-                                    name="subdomain" 
-                                    x-model="subdomain" 
-                                    @input.debounce.500ms="checkAvailability()"
-                                    placeholder="dein-name" 
-                                    required 
-                                    autocomplete="off"
-                                    class="bg-transparent border-none focus:ring-0 text-white font-black w-full placeholder:text-gray-800 tracking-tighter text-2xl md:text-4xl uppercase italic p-0">
-                             
-                             <div class="flex items-center gap-4">
-                                <template x-if="checking">
-                                    <i class="bi bi-arrow-repeat animate-spin text-rose-500 text-2xl"></i>
-                                </template>
-                                <template x-if="!checking && available === true">
-                                    <i class="bi bi-check-circle-fill text-emerald-500 text-2xl animate-bounce"></i>
-                                </template>
-                                <template x-if="!checking && available === false">
-                                    <i class="bi bi-x-circle-fill text-rose-600 text-2xl"></i>
-                                </template>
-                                <span class="text-gray-700 font-black text-lg md:text-xl hidden md:inline select-none">.{{ parse_url(config('app.url'), PHP_URL_HOST) }}</span>
+                             <div class="flex-1 relative">
+                                <input type="text" 
+                                        id="subdomain"
+                                        name="subdomain" 
+                                        x-model="subdomain" 
+                                        @input.debounce.500ms="checkAvailability()"
+                                        placeholder="DEIN-NAME" 
+                                        required 
+                                        autocomplete="off"
+                                        class="bg-transparent border-none focus:ring-0 text-white font-black w-full placeholder:text-gray-900 tracking-tighter text-2xl md:text-5xl uppercase italic p-0 mb-1">
+                                <div class="h-1 w-full bg-gradient-to-r from-rose-600/50 via-rose-600/10 to-transparent rounded-full transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-700 origin-left"></div>
                              </div>
+                             
+                             <div class="flex items-center gap-6 ml-4">
+                                <span class="text-gray-800 font-black text-xl md:text-2xl hidden md:inline select-none opacity-40">.{{ parse_url(config('app.url'), PHP_URL_HOST) }}</span>
+                                <div class="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10 shadow-inner">
+                                    <template x-if="checking">
+                                        <i class="bi bi-arrow-repeat animate-spin text-rose-500 text-2xl"></i>
+                                    </template>
+                                    <template x-if="!checking && available === true">
+                                        <i class="bi bi-check2 text-emerald-500 text-3xl animate-reveal"></i>
+                                    </template>
+                                    <template x-if="!checking && available === false">
+                                        <i class="bi bi-x text-rose-600 text-3xl animate-reveal"></i>
+                                    </template>
+                                    <template x-if="available === null && !checking">
+                                        <div class="w-2 h-2 bg-gray-800 rounded-full"></div>
+                                    </template>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Taken Message -->
+                    <div x-show="available === false" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="inline-flex items-center gap-3 px-6 py-3 glass border-rose-500/30 text-rose-500 rounded-2xl ml-6 shadow-xl">
+                            <i class="bi bi-exclamation-circle-fill animate-pulse"></i>
+                            <span class="text-[10px] font-black uppercase tracking-[0.3em]">Dieser Name ist leider schon vergeben</span>
                         </div>
                     </div>
 
@@ -161,9 +177,7 @@
                         </button>
                     </div>
 
-                    <p x-show="available === false" x-cloak class="text-rose-500 text-[10px] font-black uppercase tracking-[0.5em] text-center">
-                        <i class="bi bi-x-circle-fill mr-2"></i> Dieser Name ist leider schon vergeben.
-                    </p>
+
                 </form>
             </div>
         </div>
