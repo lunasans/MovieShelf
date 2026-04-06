@@ -194,20 +194,56 @@
             </div>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-24 pb-80">
-            @foreach([
-                ['icon' => 'stack', 'title' => 'Infinite<br>Storage', 'text' => '.', 'color' => 'bg-black'],
-                ['icon' => 'shield-check', 'title' => 'VIP<br>Privacy', 'text' => '', 'color' => 'bg-rose-600'],
-                ['icon' => 'cpu-fill', 'title' => 'Apex<br>Engine', 'text' => '', 'color' => 'bg-indigo-600']
-            ] as $item)
-            <div class="ultra-glass p-32 rounded-[5rem] flex flex-col space-y-16 hover:-translate-y-12 transition-all duration-1000 group" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                <div class="w-40 h-40 {{ $item['color'] }} text-white flex items-center justify-center rounded-[3rem] shadow-4xl group-hover:rotate-12 transition-all duration-1000">
-                    <i class="bi bi-{{ $item['icon'] }} text-7xl"></i>
-                </div>
-                <h4 class="text-xl md:text-2xl font-black uppercase italic monument-text tracking-[-0.05em] leading-tight">{!! $item['title'] !!}.</h4>
-                <p class="text-gray-500 font-medium text-sm md:text-base tracking-tighter leading-relaxed">{{ $item['text'] }}</p>
+        <!-- Feature Comparison (No Prices) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto pb-40 px-4 md:px-0">
+            
+            <!-- Self Hosted Tier -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-8 md:p-10 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                <h3 class="text-3xl font-extrabold text-[#222222] mb-2 text-center">Self-Hosted</h3>
+                <p class="text-gray-500 text-sm mb-10 text-center">Volle Kontrolle auf deiner eigenen Hardware.</p>
+                
+                <ul class="space-y-5 mb-10 flex-grow">
+                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
+                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> 100% Datenkontrolle
+                    </li>
+                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
+                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Eigener Speicherplatz
+                    </li>
+                    <li class="flex items-center text-[15px] font-medium text-gray-400">
+                        <i class="bi bi-check-circle-fill text-gray-200 mr-4 text-lg"></i> Eigene Server-Wartung nötig
+                    </li>
+                    <li class="flex items-center text-[15px] font-medium text-gray-400">
+                        <i class="bi bi-check-circle-fill text-gray-200 mr-4 text-lg"></i> Manuelle Updates & Backups
+                    </li>
+                </ul>
+                
+                <a href="https://github.com/lunasans/MovieShelf" target="_blank" rel="noopener noreferrer" class="w-full py-4 border border-gray-300 rounded-lg text-[15px] font-bold text-[#222222] hover:bg-gray-50 transition-colors text-center block">Source Code</a>
             </div>
-            @endforeach
+
+            <!-- Cloud Tier -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-8 md:p-10 flex flex-col shadow-xl relative transform md:-translate-y-2">
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[10px] uppercase tracking-widest font-bold px-4 py-1 rounded-full">RECOMMENDED</div>
+                <h3 class="text-3xl font-extrabold text-[#222222] mb-2 text-center">MovieShelf Cloud</h3>
+                <p class="text-gray-500 text-sm mb-10 text-center">Der sofort einsatzbereite Service ohne Aufwand.</p>
+                
+                <ul class="space-y-5 mb-10 flex-grow">
+                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
+                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Sofort ohne Setup nutzbar
+                    </li>
+                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
+                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Automatische Updates & Backups
+                    </li>
+                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
+                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Globale Erreichbarkeit
+                    </li>
+                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
+                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Kostenloses Hosting inklusive
+                    </li>
+                </ul>
+                
+                <button onclick="document.getElementById('subdomain').focus()" class="w-full py-4 bg-[#050505] text-white rounded-lg text-[15px] font-bold shadow-md hover:bg-gray-800 transition-colors">Cloud registrieren</button>
+            </div>
+
         </div>
 
         <!-- CTA Section -->
