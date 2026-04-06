@@ -22,8 +22,8 @@
     }
     
     .monument-text {
-        letter-spacing: -0.07em;
-        line-height: 0.75;
+        letter-spacing: -0.04em;
+        line-height: 1.1;
         background: linear-gradient(180deg, #050505 10%, #999999 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -88,13 +88,13 @@
                 MovieShelf Cloud  • V2.10.4
             </div>
             
-            <h1 class="text-[6rem] md:text-[12rem] font-black uppercase italic monument-text tracking-[-0.09em] leading-[0.7] mb-32">
+            <h1 class="text-[4rem] md:text-[8rem] font-black uppercase italic monument-text tracking-[-0.05em] mb-16">
                 PLATINUM <br>
                 <span class="italic font-light opacity-15 tracking-[-0.02em]">APEX.</span>
             </h1>
             
             <div class="max-w-6xl mx-auto space-y-24">
-                <p class="text-xl md:text-2xl text-gray-400 font-medium tracking-tighter leading-tight reveal-delay-2">
+                <p class="text-lg md:text-xl text-gray-400 font-medium tracking-tighter leading-relaxed reveal-delay-2">
                     Jenseits von Exzellenz. Das absolute Maximum digitaler Sammlerkunst. <br>
                     Dein filmisches Monument wartet auf Initialisierung.
                 </p>
@@ -126,8 +126,8 @@
                     <form action="{{ route('tenant.register') }}" method="POST" class="max-w-7xl mx-auto">
                         @csrf
                         
-                        <div class="ultra-slot flex items-center p-8 md:p-12 relative" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                            <span class="text-gray-200 font-black text-2xl md:text-4xl italic select-none mr-12 opacity-30 tracking-[1em] md:tracking-[2em]">PROTO://</span>
+                        <div class="ultra-slot flex items-center p-6 md:p-10 relative" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                            <span class="text-gray-200 font-black text-xl md:text-2xl italic select-none mr-12 opacity-30 tracking-[0.5em] md:tracking-[1em]">PROTO://</span>
                             
                             <input type="text" 
                                     id="subdomain"
@@ -137,18 +137,18 @@
                                     placeholder="WÄHLE DEINEN TITEL" 
                                     required 
                                     autocomplete="off"
-                                    class="w-full text-[#050505] font-black text-4xl md:text-[8rem] uppercase italic platinum-input tracking-tighter p-0 focus:ring-0">
+                                    class="w-full text-[#050505] font-black text-2xl md:text-6xl uppercase italic platinum-input tracking-tighter p-0 focus:ring-0">
                             
                             <div class="flex items-center gap-16 ml-12">
-                                <span class="text-gray-100 font-bold text-3xl md:text-5xl hidden lg:inline select-none tracking-[-0.1em]">.MSF.INFO</span>
+                                <span class="text-gray-100 font-bold text-xl md:text-2xl hidden lg:inline select-none tracking-[-0.1em]">.MSF.INFO</span>
                                 <template x-if="checking">
                                     <div class="w-6 h-32 bg-rose-600 animate-pulse rounded-full shadow-[0_0_50px_rgba(225,29,72,0.5)]"></div>
                                 </template>
                                 <template x-if="!checking && available === true">
-                                    <i class="bi bi-star-fill text-emerald-500 text-6xl md:text-[8rem] animate-reveal"></i>
+                                    <i class="bi bi-star-fill text-emerald-500 text-3xl md:text-4xl animate-reveal"></i>
                                 </template>
                                 <template x-if="!checking && available === false">
-                                    <i class="bi bi-shield-lock-fill text-rose-600 text-6xl md:text-[8rem] animate-reveal"></i>
+                                    <i class="bi bi-shield-lock-fill text-rose-600 text-3xl md:text-4xl animate-reveal"></i>
                                 </template>
                             </div>
                         </div>
@@ -157,34 +157,34 @@
                         <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-2000" x-transition:enter-start="opacity-0 translate-y-96 scale-90 blur-[100px]" x-transition:enter-end="opacity-100 translate-y-0 scale-100 blur-0" class="mt-64 grid grid-cols-1 md:grid-cols-12 gap-16 text-left">
                             
                             <!-- Master Identity -->
-                            <div class="md:col-span-8 ultra-glass p-32 rounded-[5rem] space-y-24">
-                                <div class="text-[16px] text-gray-500 font-black tracking-[2em] uppercase border-b border-black/5 pb-10">MASTER IDENTITY</div>
-                                <div class="grid md:grid-cols-2 gap-20">
-                                    <div class="space-y-8">
-                                        <label class="text-[13px] font-black uppercase tracking-[1em] text-gray-400">Full Name</label>
-                                        <input type="text" name="name" placeholder="MAX MUSTERMANN" required class="w-full bg-black/5 p-12 text-xl md:text-2xl text-[#050505] font-black uppercase italic rounded-[2rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                            <div class="md:col-span-8 ultra-glass p-16 md:p-24 rounded-[3rem] space-y-16">
+                                <div class="text-[12px] text-gray-500 font-black tracking-[1.5em] uppercase border-b border-black/5 pb-6">MASTER IDENTITY</div>
+                                <div class="grid md:grid-cols-2 gap-16">
+                                    <div class="space-y-4">
+                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Full Name</label>
+                                        <input type="text" name="name" placeholder="MAX MUSTERMANN" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
-                                    <div class="space-y-8">
-                                        <label class="text-[13px] font-black uppercase tracking-[1em] text-gray-400">Secure Mail</label>
-                                        <input type="email" name="email" placeholder="VIP@CINEMA.INFO" required class="w-full bg-black/5 p-12 text-xl md:text-2xl text-[#050505] font-black uppercase italic rounded-[2rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                                    <div class="space-y-4">
+                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Secure Mail</label>
+                                        <input type="email" name="email" placeholder="VIP@CINEMA.INFO" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Authority Lock -->
-                            <div class="md:col-span-4 ultra-glass p-32 rounded-[5rem] space-y-24">
-                                <div class="text-[16px] text-gray-500 font-black tracking-[2em] uppercase border-b border-black/5 pb-10">LOCK</div>
-                                <div class="space-y-12">
-                                    <div class="space-y-6">
-                                        <label class="text-[13px] font-black uppercase tracking-[1em] text-gray-400">Apex Key</label>
-                                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-black/5 p-12 text-xl md:text-2xl text-[#050505] font-black uppercase italic rounded-[2rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                            <div class="md:col-span-4 ultra-glass p-16 md:p-24 rounded-[3rem] space-y-16">
+                                <div class="text-[12px] text-gray-500 font-black tracking-[1.5em] uppercase border-b border-black/5 pb-6">LOCK</div>
+                                <div class="space-y-8">
+                                    <div class="space-y-4">
+                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Apex Key</label>
+                                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-black/5 p-8 md:p-12 text-lg md:text-xl text-[#050505] font-black uppercase italic rounded-[1.5rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- INITIALIZE THE APEX -->
                             <div class="md:col-span-12 pt-20">
-                                <button type="submit" class="w-full bg-[#050505] text-white py-16 md:py-20 font-black uppercase italic text-4xl md:text-6xl tracking-[-0.05em] hover:bg-[#FF0032] transition-all duration-1200 shadow-[0_150px_300px_-50px_rgba(0,0,0,0.3)] rounded-[3rem] md:rounded-[4rem] transform hover:-translate-y-8" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                                <button type="submit" class="w-full bg-[#050505] text-white py-12 md:py-16 font-black uppercase italic text-xl md:text-2xl tracking-[-0.05em] hover:bg-[#FF0032] transition-all duration-1200 shadow-[0_80px_160px_-30px_rgba(0,0,0,0.2)] rounded-[2rem] md:rounded-[3rem] transform hover:-translate-y-4" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
                                     INITIALIZE APEX
                                 </button>
                                 <div class="flex justify-center gap-48 mt-24 text-[16px] text-gray-400 font-black tracking-[3em] uppercase italic">
@@ -206,7 +206,7 @@
     <div class="max-w-[1900px] mx-auto space-y-64">
         
         <div class="text-center space-y-16 animate-reveal">
-            <h2 class="text-[6rem] md:text-[10rem] font-black italic uppercase monument-text tracking-tighter">The Gallery.</h2>
+            <h2 class="text-[3rem] md:text-[5rem] font-black italic uppercase monument-text tracking-tighter">The Gallery.</h2>
             <div class="w-[600px] h-3 bg-[#FF0032] mx-auto rounded-full shadow-[0_0_100px_rgba(225,29,72,0.8)]"></div>
         </div>
         
@@ -214,8 +214,8 @@
             <img src="{{ asset('img/screenshots/hero.png') }}" class="absolute inset-0 w-full h-full object-cover transform scale-110 group-hover:scale-100 transition-all duration-3000 opacity-20 group-hover:opacity-100 filter contrast-125">
             <div class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
             <div class="absolute bottom-48 left-48 space-y-12 animate-reveal">
-                <h3 class="text-4xl md:text-6xl font-black uppercase italic text-[#000] tracking-[-0.05em]">4K Retina Performance.</h3>
-                <p class="text-xl md:text-2xl text-gray-500 font-medium max-w-5xl leading-tight">Keine Kompromisse. Nur pure Schärfe und Geschwindigkeit für deine exklusive Sammlung.</p>
+                <h3 class="text-2xl md:text-4xl font-black uppercase italic text-[#000] tracking-[-0.05em]">4K Retina Performance.</h3>
+                <p class="text-base md:text-lg text-gray-500 font-medium max-w-2xl leading-tight">Keine Kompromisse. Nur pure Schärfe und Geschwindigkeit für deine exklusive Sammlung.</p>
             </div>
         </div>
         
@@ -229,22 +229,22 @@
                 <div class="w-40 h-40 {{ $item['color'] }} text-white flex items-center justify-center rounded-[3rem] shadow-4xl group-hover:rotate-12 transition-all duration-1000">
                     <i class="bi bi-{{ $item['icon'] }} text-7xl"></i>
                 </div>
-                <h4 class="text-3xl md:text-4xl font-black uppercase italic monument-text tracking-[-0.08em] leading-[0.8]">{!! $item['title'] !!}.</h4>
-                <p class="text-gray-500 font-medium text-base md:text-lg tracking-tighter leading-relaxed">{{ $item['text'] }}</p>
+                <h4 class="text-xl md:text-2xl font-black uppercase italic monument-text tracking-[-0.05em] leading-tight">{!! $item['title'] !!}.</h4>
+                <p class="text-gray-500 font-medium text-sm md:text-base tracking-tighter leading-relaxed">{{ $item['text'] }}</p>
             </div>
             @endforeach
         </div>
 
         <!-- THE ULTIMATE ASCENSION -->
         <div class="text-center space-y-64 py-96 relative overflow-hidden">
-            <h2 class="text-[8rem] md:text-[14rem] font-black italic uppercase monument-text leading-none tracking-[-0.1em] opacity-90 reveal-delay-2">ASCEND.</h2>
+            <h2 class="text-[4rem] md:text-[8rem] font-black italic uppercase monument-text leading-none tracking-[-0.08em] opacity-90 reveal-delay-2">ASCEND.</h2>
             
             <div class="pt-48">
                 <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
                         class="inline-flex items-center gap-32 p-6 border border-black/5 bg-white/60 backdrop-blur-3xl group hover:shadow-[0_150px_300px_rgba(0,0,0,0.25)] transition-all duration-1000 rounded-[5rem]"
                         @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                    <span class="bg-[#050505] text-white px-24 md:px-32 py-10 md:py-16 font-black uppercase italic text-3xl md:text-4xl group-hover:bg-[#FF0032] transition-all duration-1000 rounded-[3rem]">JOIN THE ELITE</span>
-                    <i class="bi bi-arrow-up-right text-black text-4xl md:text-6xl mr-16 md:mr-32 group-hover:translate-x-8 group-hover:-translate-y-8 transition-all duration-1200"></i>
+                    <span class="bg-[#050505] text-white px-16 md:px-24 py-8 md:py-12 font-black uppercase italic text-lg md:text-xl group-hover:bg-[#FF0032] transition-all duration-1000 rounded-[2rem]">JOIN THE ELITE</span>
+                    <i class="bi bi-arrow-up-right text-black text-2xl md:text-4xl mr-8 md:mr-16 group-hover:translate-x-4 group-hover:-translate-y-4 transition-all duration-1200"></i>
                 </button>
             </div>
             
