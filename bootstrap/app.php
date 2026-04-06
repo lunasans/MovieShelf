@@ -34,9 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
-            return redirect()->away(config('app.url'));
+            return redirect()->away(config('app.url'))->with('error', 'Dieses MovieShelf existiert leider nicht mehr.');
         });
         $exceptions->render(function (\Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedByPathException $e, $request) {
-            return redirect()->away(config('app.url'));
+            return redirect()->away(config('app.url'))->with('error', 'Dieses MovieShelf existiert leider nicht mehr.');
         });
     })->create();
