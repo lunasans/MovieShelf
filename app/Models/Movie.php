@@ -96,6 +96,8 @@ class Movie extends Model
             $path = 'covers/'.$this->cover_id.'b.jpg';
             if (Storage::disk('public')->exists($path)) {
                 $url = Storage::disk('public')->url($path);
+            } elseif (Storage::disk('central')->exists($path)) {
+                $url = Storage::disk('central')->url($path);
             }
         }
 
