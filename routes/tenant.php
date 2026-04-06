@@ -118,6 +118,18 @@ Route::middleware([
 
     // Signatur-Banner
     Route::get('/signature', [\App\Http\Controllers\SignatureController::class, 'show'])->name('signature');
+
+    // Storage Proxy for Tenants (to support hardcoded /storage/ paths)
+    Route::get('/storage/{path}', function ($path) {
+        $path = str_replace('..', '', $path);
+        $fullPath = storage_path("app/public/$path");
+
+        if (!file_exists($fullPath)) {
+            abort(404);
+        }
+
+        return response()->file($fullPath);
+    })->where('path', '.*');
     
     // Auth Routes for Tenants
     require __DIR__.'/auth.php';
