@@ -54,6 +54,15 @@ Route::get('/media/{path}', function ($path) {
     return response('File not found', 404, ['X-Storage-Proxy' => 'fail']);
 })->where('path', '.*');
 
+// Safety Net: Catch images requested at the root (without /media/ prefix)
+Route::get('/{filename}', function ($filename) {
+    // Only intercept common image extensions to avoid breaking other routes
+    if (preg_match('/\.(jpg|jpeg|png|webp|gif|svg)$/i', $filename)) {
+        return redirect()->to('/media/' . $filename);
+    }
+    abort(404);
+})->where('filename', '^tmdb_.*|.*\.(jpg|jpeg|png|webp|gif|svg)$');
+
 Route::middleware([
     'tenant.activated',
 ])->group(function () {
