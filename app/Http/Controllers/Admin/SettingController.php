@@ -43,14 +43,7 @@ class SettingController extends Controller
             'signature_show_title' => 'nullable|string',
             'signature_show_year' => 'nullable|string',
             'signature_show_rating' => 'nullable|string',
-            'mail_mailer' => 'required|string|in:smtp,log,sendmail',
-            'mail_host' => 'nullable|string|max:255',
-            'mail_port' => 'nullable|integer|min:1|max:65535',
-            'mail_username' => 'nullable|string|max:255',
-            'mail_password' => 'nullable|string|max:255',
-            'mail_encryption' => 'nullable|string|in:tls,ssl,none',
-            'mail_from_address' => 'nullable|email|max:255',
-            'mail_from_name' => 'nullable|string|max:255',
+
             'ignored_update_files' => 'nullable|string',
         ]);
 
