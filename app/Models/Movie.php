@@ -126,32 +126,43 @@ class Movie extends Model
 
         // Check for absolute URLs
         if (str_starts_with($id, 'http')) {
-            $url = $id;
+            return $id;
         } 
-        // Check for direct TMDb paths (start with /)
-        elseif (str_starts_with($id, '/')) {
-            $url = $this->resolveTmdbUrl($id, $type);
-        } 
-        // Modern approach: ID is a path (e.g. covers/abc.jpg)
-        elseif (str_contains($id, '/') && str_contains($id, '.')) {
-            if ($disk->exists($id)) {
-                $url = '/storage/' . $id;
-            } elseif ($centralDisk->exists($id)) {
-                $url = '/storage/' . $id;
-            }
-        } 
-        // Legacy: Use the structured legacy path with fallback extensions
-        elseif (($legacyUrl = $this->resolveLegacyStorageUrl($id, $type)) !== null) {
-            $url = $legacyUrl;
+        
+        // 1. Check if the ID itself exists locally as a file (Tenant or Central)
+        // This handles cases like 'tmdb_xyz.jpg' or 'cover/tmdb_xyz.jpg' stored locally.
+        if ($disk->exists($id)) {
+            return '/storage/' . $id;
         }
-        // Fallback: Check if the ID itself exists as a file
-        elseif ($disk->exists($id)) {
-             $url = '/storage/' . $id;
-        } elseif ($centralDisk->exists($id)) {
-             $url = '/storage/' . $id;
+        if ($centralDisk->exists($id)) {
+            return '/storage/' . $id;
         }
 
-        return $url;
+        // 2. Check for TMDb logic (Remote fallback)
+        if (str_starts_with($id, 'tmdb_')) {
+            return 'https://image.tmdb.org/t/p/' . ($type === 'cover' ? 'w500' : 'original') . '/' . substr($id, 5);
+        }
+
+        // 3. Direct TMDb paths (start with /)
+        if (str_starts_with($id, '/')) {
+            return $this->resolveTmdbUrl($id, $type);
+        } 
+
+        // 4. Modern approach: ID is a path (e.g. covers/abc.jpg)
+        if (str_contains($id, '/') && str_contains($id, '.')) {
+            if ($disk->exists($id)) {
+                return '/storage/' . $id;
+            } elseif ($centralDisk->exists($id)) {
+                return '/storage/' . $id;
+            }
+        } 
+
+        // 5. Legacy: Use the structured legacy path with fallback extensions
+        if (($legacyUrl = $this->resolveLegacyStorageUrl($id, $type)) !== null) {
+            return $legacyUrl;
+        }
+
+        return null;
     }
 
     protected function resolveTmdbUrl($id, $type)
@@ -163,39 +174,43 @@ class Movie extends Model
 
     protected function resolveLegacyStorageUrl($id, $type)
     {
-        $folder = $type === 'cover' ? 'covers' : 'backdrops';
-        $suffix = $type === 'cover' ? 'f' : '';
         $disk = Storage::disk('public');
         $centralDisk = Storage::disk('central');
+        
+        // Check both singular and plural versions for flexibility (e.g. cover vs covers)
+        $folders = ($type === 'cover') ? ['covers', 'cover'] : ['backdrops', 'backdrop'];
+        $suffix = ($type === 'cover') ? 'f' : '';
 
-        // Try standard extension first
-        $path = "$folder/$id$suffix.jpg";
-        if ($disk->exists($path)) {
-            return '/storage/' . $path;
-        }
-        if ($centralDisk->exists($path)) {
-            return '/storage/' . $path;
-        }
+        foreach ($folders as $folder) {
+            // Try standard extension first
+            $path = "$folder/$id$suffix.jpg";
+            if ($disk->exists($path)) {
+                return '/storage/' . $path;
+            }
+            if ($centralDisk->exists($path)) {
+                return '/storage/' . $path;
+            }
 
-        // Fallback extensions
-        $extensions = ['.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.webp'];
-        foreach ($extensions as $ext) {
-            $fallbackPath = "$folder/$id$suffix$ext";
-            if ($disk->exists($fallbackPath)) {
-                return '/storage/' . $fallbackPath;
+            // Fallback extensions
+            $extensions = ['.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.webp'];
+            foreach ($extensions as $ext) {
+                $fallbackPath = "$folder/$id$suffix$ext";
+                if ($disk->exists($fallbackPath)) {
+                    return '/storage/' . $fallbackPath;
+                }
+                if ($centralDisk->exists($fallbackPath)) {
+                    return '/storage/' . $fallbackPath;
+                }
             }
-            if ($centralDisk->exists($fallbackPath)) {
-                return '/storage/' . $fallbackPath;
-            }
-        }
 
-        // Try without suffix as a last resort
-        if ($suffix !== '') {
-            if ($disk->exists("$folder/$id.jpg")) {
-                return '/storage/' . "$folder/$id.jpg";
-            }
-            if ($centralDisk->exists("$folder/$id.jpg")) {
-                return '/storage/' . "$folder/$id.jpg";
+            // Try without suffix as a last resort
+            if ($suffix !== '') {
+                if ($disk->exists("$folder/$id.jpg")) {
+                    return '/storage/' . "$folder/$id.jpg";
+                }
+                if ($centralDisk->exists("$folder/$id.jpg")) {
+                    return '/storage/' . "$folder/$id.jpg";
+                }
             }
         }
 
