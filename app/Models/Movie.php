@@ -120,6 +120,7 @@ class Movie extends Model
 
         $url = null;
         $disk = Storage::disk('public');
+        $centralDisk = Storage::disk('central');
 
         // Check for absolute URLs
         if (str_starts_with($id, 'http')) {
@@ -129,17 +130,23 @@ class Movie extends Model
         elseif (str_starts_with($id, '/')) {
             $url = $this->resolveTmdbUrl($id, $type);
         } 
-        // Modern approach: ID is a path containing a dot and a slash (e.g. covers/abc.jpg)
-        elseif (str_contains($id, '/') && str_contains($id, '.') && $disk->exists($id)) {
-            $url = $disk->url($id);
+        // Modern approach: ID is a path (e.g. covers/abc.jpg)
+        elseif (str_contains($id, '/') && str_contains($id, '.')) {
+            if ($disk->exists($id)) {
+                $url = $disk->url($id);
+            } elseif ($centralDisk->exists($id)) {
+                $url = $centralDisk->url($id);
+            }
         } 
         // Legacy: Use the structured legacy path with fallback extensions
         elseif (($legacyUrl = $this->resolveLegacyStorageUrl($id, $type)) !== null) {
             $url = $legacyUrl;
         }
-        // Fallback: Check if the ID itself exists as a file (any case)
+        // Fallback: Check if the ID itself exists as a file
         elseif ($disk->exists($id)) {
              $url = $disk->url($id);
+        } elseif ($centralDisk->exists($id)) {
+             $url = $centralDisk->url($id);
         }
 
         return $url;
@@ -157,19 +164,26 @@ class Movie extends Model
         $folder = $type === 'cover' ? 'covers' : 'backdrops';
         $suffix = $type === 'cover' ? 'f' : '';
         $disk = Storage::disk('public');
+        $centralDisk = Storage::disk('central');
 
         // Try standard extension first
         $path = "$folder/$id$suffix.jpg";
         if ($disk->exists($path)) {
             return $disk->url($path);
         }
+        if ($centralDisk->exists($path)) {
+            return $centralDisk->url($path);
+        }
 
-        // Fallback extensions (case-sensitive systems or alternative formats)
+        // Fallback extensions
         $extensions = ['.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.webp'];
         foreach ($extensions as $ext) {
             $fallbackPath = "$folder/$id$suffix$ext";
             if ($disk->exists($fallbackPath)) {
                 return $disk->url($fallbackPath);
+            }
+            if ($centralDisk->exists($fallbackPath)) {
+                return $centralDisk->url($fallbackPath);
             }
         }
 
@@ -177,6 +191,9 @@ class Movie extends Model
         if ($suffix !== '') {
             if ($disk->exists("$folder/$id.jpg")) {
                 return $disk->url("$folder/$id.jpg");
+            }
+            if ($centralDisk->exists("$folder/$id.jpg")) {
+                return $centralDisk->url("$folder/$id.jpg");
             }
         }
 

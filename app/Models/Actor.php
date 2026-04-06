@@ -39,17 +39,26 @@ class Actor extends Model
 
         $url = null;
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        $centralDisk = \Illuminate\Support\Facades\Storage::disk('central');
 
         if (str_starts_with($this->profile_path, 'http')) {
             $url = $this->profile_path;
         } elseif (str_starts_with($this->profile_path, '/')) {
             $url = 'https://image.tmdb.org/t/p/w185'.$this->profile_path;
-        } elseif (str_contains($this->profile_path, '/') && str_contains($this->profile_path, '.') && $disk->exists($this->profile_path)) {
-            $url = $disk->url($this->profile_path);
+        } elseif (str_contains($this->profile_path, '/') && str_contains($this->profile_path, '.')) {
+            if ($disk->exists($this->profile_path)) {
+                $url = $disk->url($this->profile_path);
+            } elseif ($centralDisk->exists($this->profile_path)) {
+                $url = $centralDisk->url($this->profile_path);
+            }
         } elseif ($disk->exists('actors/'.$this->profile_path)) {
             $url = $disk->url('actors/'.$this->profile_path);
-        } elseif ($disk->exists($this->profile_path)) { // Direct check if the path itself is valid
+        } elseif ($centralDisk->exists('actors/'.$this->profile_path)) {
+            $url = $centralDisk->url('actors/'.$this->profile_path);
+        } elseif ($disk->exists($this->profile_path)) {
             $url = $disk->url($this->profile_path);
+        } elseif ($centralDisk->exists($this->profile_path)) {
+            $url = $centralDisk->url($this->profile_path);
         }
 
         return $url;
