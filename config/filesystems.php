@@ -41,7 +41,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => '/storage',
+            'url' => '/media',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -50,7 +50,7 @@ return [
         'central' => [
             'driver' => 'local',
             'root' => base_path('storage/app/public'),
-            'url' => '/storage',
+            'url' => '/media',
             'visibility' => 'public',
         ],
 
