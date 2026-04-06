@@ -4,55 +4,56 @@
 <style>
     :root {
         --platinum-bg: #F9F9FB;
-        --platinum-border: rgba(255, 255, 255, 0.8);
+        --platinum-border: rgba(255, 255, 255, 0.9);
         --platinum-accent: #FF0032;
         --platinum-text: #050505;
-        --charcoal-mute: #666666;
+        --charcoal-mute: #888888;
     }
     body { background-color: var(--platinum-bg); color: var(--platinum-text); }
     
     .ultra-glass {
-        background: rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(100px);
-        -webkit-backdrop-filter: blur(100px);
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(120px);
+        -webkit-backdrop-filter: blur(120px);
         border: 1px solid var(--platinum-border);
-        box-shadow: 0 80px 150px -40px rgba(0,0,0,0.08);
+        box-shadow: 0 100px 200px -50px rgba(0,0,0,0.1);
         filter: url(#platinum-grain);
+        transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .monument-text {
-        letter-spacing: -0.06em;
-        line-height: 0.8;
-        background: linear-gradient(180deg, #050505 0%, #888888 100%);
+        letter-spacing: -0.07em;
+        line-height: 0.75;
+        background: linear-gradient(180deg, #050505 10%, #999999 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        filter: drop-shadow(0 20px 40px rgba(0,0,0,0.05));
+        filter: drop-shadow(0 30px 60px rgba(0,0,0,0.08));
     }
     
     .bg-parallax-text {
         position: absolute;
-        font-size: 28rem;
+        font-size: 32rem;
         font-weight: 900;
         text-transform: uppercase;
-        color: rgba(0,0,0,0.02);
+        color: rgba(0,0,0,0.015);
         z-index: 0;
         pointer-events: none;
         white-space: nowrap;
-        filter: blur(2px);
+        filter: blur(4px);
     }
     
     .ultra-slot {
-        background: rgba(0, 0, 0, 0.03);
-        border-radius: 4rem;
-        box-shadow: inset 0 10px 30px rgba(0,0,0,0.05);
-        transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        background: rgba(0, 0, 0, 0.04);
+        border-radius: 5rem;
+        box-shadow: inset 0 15px 40px rgba(0,0,0,0.06);
+        transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
     }
     
     .ultra-slot:focus-within {
         background: #ffffff;
-        box-shadow: inset 0 0 0 2px var(--platinum-accent), 0 60px 120px -20px rgba(0,0,0,0.1);
-        transform: scale(1.02);
+        box-shadow: inset 0 0 0 3px var(--platinum-accent), 0 80px 160px -30px rgba(0,0,0,0.15);
+        transform: scale(1.03) translateY(-10px);
     }
 
     .platinum-input {
@@ -61,43 +62,44 @@
         outline: none;
     }
 
-    .reveal-delay-1 { animation: reveal 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .reveal-delay-2 { animation: reveal 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .reveal-delay-1 { animation: reveal 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .reveal-delay-2 { animation: reveal 2.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .reveal-delay-3 { animation: reveal 3.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
     
     @keyframes reveal {
-        from { opacity: 0; transform: translateY(100px) scale(0.95); filter: blur(30px); }
+        from { opacity: 0; transform: translateY(120px) scale(0.93); filter: blur(40px); }
         to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
     }
 </style>
 
 <!-- Parallax Background Architecture -->
 <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-    <div class="bg-parallax-text -top-10 -left-20 opacity-20" style="transform: translateY(calc(var(--scroll, 0) * -0.2px))">PLATINUM</div>
-    <div class="bg-parallax-text top-1/2 -right-40 opacity-10 italic" style="transform: translateY(calc(var(--scroll, 0) * -0.5px))">ULTRA</div>
+    <div class="bg-parallax-text -top-20 -left-60 opacity-30" style="transform: translateY(calc(var(--scroll, 0) * -0.3px))">PLATINUM</div>
+    <div class="bg-parallax-text top-1/2 -right-80 opacity-20 italic" style="transform: translateY(calc(var(--scroll, 0) * -0.6px))">ULTIMATE</div>
 </div>
 
-<!-- Hero Section: The Horizon -->
-<section class="relative pt-64 pb-48 px-12 min-h-screen flex items-center z-10 overflow-hidden">
-    <div class="max-w-[1800px] mx-auto w-full relative z-10 text-center">
+<!-- Hero Section: The VIP Apex -->
+<section class="relative pt-80 pb-64 px-16 min-h-screen flex items-center z-10 overflow-hidden">
+    <div class="max-w-[1900px] mx-auto w-full relative z-10 text-center">
         
-        <div class="space-y-40 reveal-delay-1">
-            <div class="inline-flex items-center gap-8 px-10 py-4 border border-black/5 bg-white/50 backdrop-blur-md rounded-full text-[11px] font-black tracking-[1.25em] uppercase text-gray-500">
-                <span class="w-3 h-3 bg-rose-600 rounded-full animate-pulse shadow-lg shadow-rose-600/50"></span>
-                Ultra Protocol v2.10.2 / Infinite Horizon
+        <div class="space-y-48 reveal-delay-1">
+            <div class="inline-flex items-center gap-10 px-12 py-5 border border-black/5 bg-white/60 backdrop-blur-2xl rounded-full text-[13px] font-black tracking-[1.5em] uppercase text-gray-500 shadow-2xl" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                <span class="w-4 h-4 bg-rose-600 rounded-full animate-pulse shadow-xl shadow-rose-600/60"></span>
+                APEX ULTIMATE PROTOCOL v2.10.3
             </div>
             
-            <h1 class="text-[12rem] md:text-[22rem] font-black uppercase italic monument-text tracking-[-0.08em] leading-none mb-20">
-                MONUMENT <br>
-                <span class="italic font-light opacity-20">ULTRA.</span>
+            <h1 class="text-[14rem] md:text-[28rem] font-black uppercase italic monument-text tracking-[-0.09em] leading-[0.7] mb-32">
+                PLATINUM <br>
+                <span class="italic font-light opacity-15 tracking-[-0.02em]">APEX.</span>
             </h1>
             
-            <div class="max-w-4xl mx-auto space-y-16">
-                <p class="text-4xl text-gray-500 font-medium tracking-tight leading-relaxed">
-                    Die Architektur der Exzellenz. Reinheit in ihrer extremsten Form. <br>
-                    Dein filmisches Erbe verdient ein Denkmal ohne Grenzen.
+            <div class="max-w-6xl mx-auto space-y-24">
+                <p class="text-5xl text-gray-400 font-medium tracking-tighter leading-tight reveal-delay-2">
+                    Jenseits von Exzellenz. Das absolute Maximum digitaler Sammlerkunst. <br>
+                    Dein filmisches Monument wartet auf Initialisierung.
                 </p>
                 
-                <!-- THE ULTRA MONOLITH SLOT -->
+                <!-- THE APEX COMMANDER -->
                 <div x-data="{ 
                     subdomain: '{{ old('subdomain') }}', 
                     available: {{ old('subdomain') ? 'true' : 'null' }}, 
@@ -119,76 +121,76 @@
                             this.checking = false;
                         }
                     }
-                }" class="pt-20">
+                }" class="pt-32 reveal-delay-3">
                     
-                    <form action="{{ route('tenant.register') }}" method="POST" class="max-w-6xl mx-auto">
+                    <form action="{{ route('tenant.register') }}" method="POST" class="max-w-7xl mx-auto">
                         @csrf
                         
-                        <div class="ultra-slot flex items-center p-10 md:p-14 relative">
-                            <span class="text-gray-300 font-black text-4xl italic select-none mr-10 opacity-40">PLATINUM://</span>
+                        <div class="ultra-slot flex items-center p-12 md:p-20 relative" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                            <span class="text-gray-200 font-black text-5xl italic select-none mr-12 opacity-30 tracking-[1em] md:tracking-[2em]">PROTO://</span>
                             
                             <input type="text" 
                                     id="subdomain"
                                     name="subdomain" 
                                     x-model="subdomain" 
-                                    @input.debounce.800ms="checkAvailability()"
-                                    placeholder="IDENTITÄT WÄHLEN" 
+                                    @input.debounce.1000ms="checkAvailability()"
+                                    placeholder="WÄHLE DEINEN TITEL" 
                                     required 
                                     autocomplete="off"
-                                    class="w-full text-[#050505] font-black text-5xl md:text-[11rem] uppercase italic platinum-input tracking-tighter p-0 focus:ring-0">
+                                    class="w-full text-[#050505] font-black text-6xl md:text-[14rem] uppercase italic platinum-input tracking-tighter p-0 focus:ring-0">
                             
-                            <div class="flex items-center gap-10 ml-10">
-                                <span class="text-gray-200 font-bold text-4xl hidden md:inline select-none tracking-tighter">.MOVIESHELF.INFO</span>
+                            <div class="flex items-center gap-16 ml-12">
+                                <span class="text-gray-100 font-bold text-6xl hidden lg:inline select-none tracking-[-0.1em]">.MSF.INFO</span>
                                 <template x-if="checking">
-                                    <div class="w-4 h-24 bg-rose-600 animate-pulse rounded-full"></div>
+                                    <div class="w-6 h-32 bg-rose-600 animate-pulse rounded-full shadow-[0_0_50px_rgba(225,29,72,0.5)]"></div>
                                 </template>
                                 <template x-if="!checking && available === true">
-                                    <i class="bi bi-patch-check-fill text-emerald-500 text-9xl animate-reveal"></i>
+                                    <i class="bi bi-star-fill text-emerald-500 text-[12rem] animate-reveal"></i>
                                 </template>
                                 <template x-if="!checking && available === false">
-                                    <i class="bi bi-shield-slash-fill text-rose-600 text-9xl animate-reveal"></i>
+                                    <i class="bi bi-shield-lock-fill text-rose-600 text-[12rem] animate-reveal"></i>
                                 </template>
                             </div>
                         </div>
 
-                        <!-- ULTRA BENTO REVEAL -->
-                        <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-1500" x-transition:enter-start="opacity-0 translate-y-64 scale-90 blur-3xl" x-transition:enter-end="opacity-100 translate-y-0 scale-100 blur-0" class="mt-48 grid grid-cols-1 md:grid-cols-12 gap-12 text-left">
+                        <!-- APEX BENTO - THE ULTIMATE REVEAL -->
+                        <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-2000" x-transition:enter-start="opacity-0 translate-y-96 scale-90 blur-[100px]" x-transition:enter-end="opacity-100 translate-y-0 scale-100 blur-0" class="mt-64 grid grid-cols-1 md:grid-cols-12 gap-16 text-left">
                             
-                            <!-- Identity Block -->
-                            <div class="md:col-span-8 ultra-glass p-24 rounded-[4rem] space-y-20">
-                                <div class="text-[14px] text-gray-500 font-black tracking-[1.5em] uppercase border-b border-black/5 pb-10">CORE IDENTITY</div>
-                                <div class="grid md:grid-cols-2 gap-16">
-                                    <div class="space-y-6">
-                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Owner Name</label>
-                                        <input type="text" name="name" placeholder="MAX MUSTERMANN" required class="w-full bg-black/5 p-12 text-4xl text-[#050505] font-black uppercase italic rounded-[2.5rem] outline-none">
+                            <!-- Master Identity -->
+                            <div class="md:col-span-8 ultra-glass p-32 rounded-[5rem] space-y-24">
+                                <div class="text-[16px] text-gray-500 font-black tracking-[2em] uppercase border-b border-black/5 pb-10">MASTER IDENTITY</div>
+                                <div class="grid md:grid-cols-2 gap-20">
+                                    <div class="space-y-8">
+                                        <label class="text-[13px] font-black uppercase tracking-[1em] text-gray-400">Full Name</label>
+                                        <input type="text" name="name" placeholder="MAX MUSTERMANN" required class="w-full bg-black/5 p-16 text-5xl text-[#050505] font-black uppercase italic rounded-[3rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
-                                    <div class="space-y-6">
-                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Protocol Mail</label>
-                                        <input type="email" name="email" placeholder="MAX@CINEMA.INFO" required class="w-full bg-black/5 p-12 text-4xl text-[#050505] font-black uppercase italic rounded-[2.5rem] outline-none">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Authority Block -->
-                            <div class="md:col-span-4 ultra-glass p-24 rounded-[4rem] space-y-20">
-                                <div class="text-[14px] text-gray-500 font-black tracking-[1.5em] uppercase border-b border-black/5 pb-10">AUTHORITY</div>
-                                <div class="space-y-8">
-                                    <div class="space-y-4">
-                                        <label class="text-[11px] font-black uppercase tracking-[0.8em] text-gray-400">Access Key</label>
-                                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-black/5 p-12 text-4xl text-[#050505] font-black uppercase italic rounded-[2.5rem] outline-none">
+                                    <div class="space-y-8">
+                                        <label class="text-[13px] font-black uppercase tracking-[1em] text-gray-400">Secure Mail</label>
+                                        <input type="email" name="email" placeholder="VIP@CINEMA.INFO" required class="w-full bg-black/5 p-16 text-5xl text-[#050505] font-black uppercase italic rounded-[3rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- INITIALIZE MONUMENT -->
-                            <div class="md:col-span-12 pt-16">
-                                <button type="submit" class="w-full bg-[#050505] text-white py-20 font-black uppercase italic text-7xl tracking-[-0.05em] hover:bg-[#FF0032] transition-all duration-1000 shadow-[0_100px_200px_-50px_rgba(0,0,0,0.2)] rounded-[4rem] transform hover:-translate-y-4">
-                                    INITIALIZE MONUMENT
+                            <!-- Authority Lock -->
+                            <div class="md:col-span-4 ultra-glass p-32 rounded-[5rem] space-y-24">
+                                <div class="text-[16px] text-gray-500 font-black tracking-[2em] uppercase border-b border-black/5 pb-10">LOCK</div>
+                                <div class="space-y-12">
+                                    <div class="space-y-6">
+                                        <label class="text-[13px] font-black uppercase tracking-[1em] text-gray-400">Apex Key</label>
+                                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-black/5 p-16 text-5xl text-[#050505] font-black uppercase italic rounded-[3rem] outline-none border border-transparent focus:border-rose-600/30 transition-all">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- INITIALIZE THE APEX -->
+                            <div class="md:col-span-12 pt-20">
+                                <button type="submit" class="w-full bg-[#050505] text-white py-24 font-black uppercase italic text-8xl tracking-[-0.05em] hover:bg-[#FF0032] transition-all duration-1200 shadow-[0_150px_300px_-50px_rgba(0,0,0,0.3)] rounded-[5rem] transform hover:-translate-y-8" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                                    INITIALIZE APEX
                                 </button>
-                                <div class="flex justify-center gap-32 mt-20 text-[13px] text-gray-400 font-black tracking-[2em] uppercase italic">
+                                <div class="flex justify-center gap-48 mt-24 text-[16px] text-gray-400 font-black tracking-[3em] uppercase italic">
                                     <span>Infinite Power</span>
                                     <span>•</span>
-                                    <span>Platinum Core</span>
+                                    <span>Apex Core</span>
                                 </div>
                             </div>
                         </div>
@@ -199,65 +201,55 @@
     </div>
 </section>
 
-<!-- Full Width Immersive Showcase -->
-<section class="py-96 px-12 relative z-10">
-    <div class="max-w-[1900px] mx-auto space-y-48">
+<!-- Immersive Ultimate Gallery -->
+<section class="py-96 px-20 relative z-10" id="features">
+    <div class="max-w-[1900px] mx-auto space-y-64">
         
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-16 items-center">
-            <div class="md:col-span-12 text-center space-y-12 mb-20 animate-reveal">
-                <h2 class="text-[10rem] md:text-[18rem] font-black italic uppercase monument-text tracking-tight mb-10">The Gallery.</h2>
-                <div class="w-[400px] h-2 bg-[#FF0032] mx-auto rounded-full"></div>
-            </div>
-            
-            <div class="md:col-span-12 ultra-glass min-h-[900px] rounded-[6rem] relative overflow-hidden group">
-                <img src="{{ asset('img/screenshots/hero.png') }}" class="absolute inset-0 w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-all duration-2000 opacity-20 group-hover:opacity-100">
-                <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
-                <div class="absolute bottom-32 left-32 space-y-8 animate-reveal">
-                    <h3 class="text-6xl font-black uppercase italic text-[#000]">Retina Engine Performance.</h3>
-                    <p class="text-3xl text-gray-500 font-medium max-w-3xl">Purer Fokus. Absolute Präzision. Deine Sammlung in Platin gegossen.</p>
-                </div>
+        <div class="text-center space-y-16 animate-reveal">
+            <h2 class="text-[14rem] md:text-[24rem] font-black italic uppercase monument-text tracking-tighter">The Gallery.</h2>
+            <div class="w-[600px] h-3 bg-[#FF0032] mx-auto rounded-full shadow-[0_0_100px_rgba(225,29,72,0.8)]"></div>
+        </div>
+        
+        <div class="md:col-span-12 ultra-glass min-h-[1000px] rounded-[8rem] relative overflow-hidden group shadow-4xl" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+            <img src="{{ asset('img/screenshots/hero.png') }}" class="absolute inset-0 w-full h-full object-cover transform scale-110 group-hover:scale-100 transition-all duration-3000 opacity-20 group-hover:opacity-100 filter contrast-125">
+            <div class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
+            <div class="absolute bottom-48 left-48 space-y-12 animate-reveal">
+                <h3 class="text-8xl font-black uppercase italic text-[#000] tracking-[-0.05em]">4K Retina Performance.</h3>
+                <p class="text-4xl text-gray-500 font-medium max-w-5xl leading-tight">Keine Kompromisse. Nur pure Schärfe und Geschwindigkeit für deine exklusive Sammlung.</p>
             </div>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-16 pb-60">
-            <div class="ultra-glass p-24 rounded-[4rem] flex flex-col space-y-12 hover:-translate-y-6 transition-all duration-700">
-                <div class="w-32 h-32 bg-[#050505] text-white flex items-center justify-center rounded-[2.5rem] shadow-2xl">
-                    <i class="bi bi-stack text-6xl"></i>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-24 pb-80">
+            @foreach([
+                ['icon' => 'stack', 'title' => 'Infinite<br>Storage', 'text' => 'Skalierung bis an den Rand des Universums.', 'color' => 'bg-black'],
+                ['icon' => 'shield-check', 'title' => 'VIP<br>Privacy', 'text' => 'Absolute Kontrolle. Deine Daten sind dein Monument.', 'color' => 'bg-rose-600'],
+                ['icon' => 'cpu-fill', 'title' => 'Apex<br>Engine', 'text' => 'Zero-Latency Core für blitzschnelle Reaktionen.', 'color' => 'bg-indigo-600']
+            ] as $item)
+            <div class="ultra-glass p-32 rounded-[5rem] flex flex-col space-y-16 hover:-translate-y-12 transition-all duration-1000 group" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                <div class="w-40 h-40 {{ $item['color'] }} text-white flex items-center justify-center rounded-[3rem] shadow-4xl group-hover:rotate-12 transition-all duration-1000">
+                    <i class="bi bi-{{ $item['icon'] }} text-7xl"></i>
                 </div>
-                <h4 class="text-5xl font-black uppercase italic monument-text tracking-tighter">Scalable <br>Architecture.</h4>
-                <p class="text-gray-500 font-medium text-2xl tracking-tight">Vom ersten Film bis zur unendlichen Bibliothek. Monumentale Skalierung ohne Kompromisse.</p>
+                <h4 class="text-7xl font-black uppercase italic monument-text tracking-[-0.08em] leading-[0.8]">{!! $item['title'] !!}.</h4>
+                <p class="text-gray-500 font-medium text-3xl tracking-tighter leading-relaxed">{{ $item['text'] }}</p>
             </div>
-            
-            <div class="ultra-glass p-24 rounded-[4rem] flex flex-col space-y-12 hover:-translate-y-6 transition-all duration-700">
-                <div class="w-32 h-32 bg-[#FF0032] text-white flex items-center justify-center rounded-[2.5rem] shadow-2xl">
-                    <i class="bi bi-shield-lock-fill text-6xl"></i>
-                </div>
-                <h4 class="text-5xl font-black uppercase italic monument-text tracking-tighter">Maximum <br>Authority.</h4>
-                <p class="text-gray-500 font-medium text-2xl tracking-tight">Absolute Kontrolle über deine Identität. Deine Instanz, deine Regeln, deine Privatsphäre.</p>
-            </div>
-
-            <div class="ultra-glass p-24 rounded-[4rem] flex flex-col space-y-12 hover:-translate-y-6 transition-all duration-700">
-                <div class="w-32 h-32 bg-indigo-600 text-white flex items-center justify-center rounded-[2.5rem] shadow-2xl">
-                    <i class="bi bi-lightning-charge-fill text-6xl"></i>
-                </div>
-                <h4 class="text-5xl font-black uppercase italic monument-text tracking-tighter">Infinite <br>Performance.</h4>
-                <p class="text-gray-500 font-medium text-2xl tracking-tight">Zero Lag. Pure Geschwindigkeit. Ein Erlebnis, das sich so schnell anfühlt wie Licht.</p>
-            </div>
+            @endforeach
         </div>
 
-        <!-- THE FINAL ASCENSION -->
-        <div class="text-center space-y-48 py-80 relative overflow-hidden">
-            <h2 class="text-[12rem] md:text-[24rem] font-black italic uppercase monument-text leading-none tracking-[-0.08em] opacity-80">ASCEND. <br>MONUMENT.</h2>
+        <!-- THE ULTIMATE ASCENSION -->
+        <div class="text-center space-y-64 py-96 relative overflow-hidden">
+            <h2 class="text-[14rem] md:text-[32rem] font-black italic uppercase monument-text leading-none tracking-[-0.1em] opacity-90 reveal-delay-2">ASCEND.</h2>
             
-            <div class="pt-32">
-                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="inline-flex items-center gap-20 p-5 border border-black/5 bg-white/50 backdrop-blur-3xl group hover:shadow-[0_100px_200px_rgba(0,0,0,0.15)] transition-all rounded-[3rem]">
-                    <span class="bg-[#050505] text-white px-32 py-16 font-black uppercase italic text-6xl group-hover:bg-[#FF0032] transition-all rounded-[2.5rem]">SIGN THE PROTOCOL</span>
-                    <i class="bi bi-arrow-up-right text-black text-7xl mr-20 group-hover:translate-x-10 group-hover:-translate-y-10 transition-all duration-700"></i>
+            <div class="pt-48">
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+                        class="inline-flex items-center gap-32 p-6 border border-black/5 bg-white/60 backdrop-blur-3xl group hover:shadow-[0_150px_300px_rgba(0,0,0,0.25)] transition-all duration-1000 rounded-[5rem]"
+                        @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                    <span class="bg-[#050505] text-white px-48 py-20 font-black uppercase italic text-7xl group-hover:bg-[#FF0032] transition-all duration-1000 rounded-[4rem]">JOIN THE ELITE</span>
+                    <i class="bi bi-arrow-up-right text-black text-8xl mr-32 group-hover:translate-x-12 group-hover:-translate-y-12 transition-all duration-1200"></i>
                 </button>
             </div>
             
-            <div class="pt-48 text-[14px] font-black uppercase tracking-[3em] text-gray-300">
-                ULTRA PLATINUM ENGINE • INFINITE HORIZON EDITION
+            <div class="pt-64 text-[18px] font-black uppercase tracking-[4em] text-gray-300">
+                ULTRA PREMIUM • ELITE PROTOCOL • V2.10.3
             </div>
         </div>
     </div>
