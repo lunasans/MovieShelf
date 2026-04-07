@@ -84,7 +84,7 @@ class GlobalAdminController extends Controller
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name' => 'nullable|string|max:255',
             'forbidden_subdomains' => 'nullable|string',
-            'saas_impressum_active' => 'nullable|boolean',
+            'saas_impressum_active' => 'required|in:0,1',
             'saas_impressum_content' => 'nullable|string',
         ]);
 

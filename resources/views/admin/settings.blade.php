@@ -349,7 +349,8 @@
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-4 ms-1">Status</label>
                         <label class="relative flex items-center p-4 cursor-pointer glass border border-white/10 rounded-2xl group hover:bg-white/5 transition-all max-w-md">
                             <input type="hidden" name="saas_impressum_active" value="0">
-                            <input type="checkbox" name="saas_impressum_active" value="1" {{ $settings['saas_impressum_active'] == '1' ? 'checked' : '' }} class="hidden peer">
+                            <input type="checkbox" name="saas_impressum_active" value="1" {{ $settings['saas_impressum_active'] == '1' ? 'checked' : '' }} 
+                                   class="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10 peer">
                             <div class="w-12 h-6 bg-white/10 rounded-full p-1 transition-all peer-checked:bg-emerald-500">
                                 <div class="w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-6"></div>
                             </div>
