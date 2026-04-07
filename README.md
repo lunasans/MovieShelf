@@ -1,13 +1,14 @@
-# MovieShelf 2.12.1
-Registrierungs-Patch & Stabilitäts-Update
+# MovieShelf 2.12.2
+UI-Layering & Premium Aesthetics
 
-## Changelog 2.12.1
-- **Fix**: Registrierung robuster gestaltet (Fehlende Felder 'username' und 'password_confirmation' werden nun automatisch gehandhabt).
-- **Fix**: Mail-Versand bei der Registrierung abgesichert (try-catch), damit Fehlkonfigurationen des Mail-Servers nicht den gesamten Prozess blockieren.
+## Changelog 2.12.2
+- **UI**: Modal-Layering fix (Bestätigungs-Fenster schwebt nun korrekt über allen Elementen).
+- **Design**: "Blass"-Effekt behoben; das Modal hat nun einen dunkleren, hochwertigeren Backdrop mit Blur-Effekt (Cinematic Red Style).
+- **Core**: `@stack('modals')` im Layout integriert für saubere Element-Stapelung.
 
 ---
 
-## Changelog 2.12.0 (Archiv)
+## Changelog 2.12.1 (Archiv)
 - **Fix**: Doppel-Initialisierung des Quill-Editors in Admin-Panel behoben.
 - **Fix**: Zu große Zeilenabstände (Margins) auf der Impressum-Seite korrigiert.
 - **Fix**: Layout-Problem in den Plattform-Einstellungen (E-Mail-Sektion) behoben.
