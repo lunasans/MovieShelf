@@ -12,6 +12,12 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
             <div class="glass p-8 rounded-[2rem] border border-white/10 shadow-2xl">
                 <div class="max-w-xl">
+                    @if (session('status') === 'deletion-email-sent')
+                        <div class="mb-6 p-4 bg-emerald-500/20 border border-emerald-500/50 rounded-xl text-emerald-200 font-medium flex items-center gap-3">
+                            <i class="bi bi-check-circle-fill"></i>
+                            {{ __('Eine Bestätigungs-E-Mail wurde an deine Adresse gesendet. Bitte klicke auf den Link in der Mail, um die Löschung abzuschließen.') }}
+                        </div>
+                    @endif
                     @include('profile.partials.update-profile-information-form')
                 </div>
             </div>

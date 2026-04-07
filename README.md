@@ -1,13 +1,15 @@
-# MovieShelf 2.11.2
-Layout-Fix für das Impressum & Rechtstexte
+# MovieShelf 2.12.0
+Secure Shelf Deletion & Multi-Domain Support
 
-## Changelog 2.11.2
-- **Fix**: Kompaktere Zeilenabstände im Impressum durch Zurücksetzen des Standard-Margins.
-- **Fix**: Optimierte Textfarben auf der Impressum-Seite für bessere Kontraste.
+## Changelog 2.12.0
+- **SaaS**: Neuer, sicherer Löschvorgang für Shelfs über E-Mail-Bestätigung (Signed URLs).
+- **Core**: Vollständige automatische Bereinigung von Datenbank und Medien beim Löschen eines Shelfs.
+- **UI**: Globale Flash-Messages (Success/Error) in der SaaS-Zentrale integriert.
+- **Fix**: Überarbeitung der Begriffe ("Regal" zu "Shelf") in den Lösch-Dialogen.
 
 ---
 
-## Changelog 2.11.1 (Archiv)
+## Changelog 2.11.2 (Archiv)
 - **Fix**: Doppel-Initialisierung des Quill-Editors in Admin-Panel behoben.
 - **Fix**: Zu große Zeilenabstände (Margins) auf der Impressum-Seite korrigiert.
 - **Fix**: Layout-Problem in den Plattform-Einstellungen (E-Mail-Sektion) behoben.

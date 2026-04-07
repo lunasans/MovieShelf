@@ -11,6 +11,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TenantDeletionRequest;
 use Illuminate\View\View;
 use PragmaRX\Google2FALaravel\Facade as Google2FA;
 
@@ -115,14 +118,24 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        $tenant = tenant();
 
-        Auth::logout();
+        if (! $tenant) {
+            // Fallback for non-tenant context (should not happen here)
+            $user->delete();
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return Redirect::to('/');
+        }
 
-        $user->delete();
+        // Generate a signed URL for the central domain
+        // This link is valid for 1 hour.
+        $deletionUrl = URL::signedRoute('central.tenant.forget', ['tenant' => $tenant->id], now()->addHour());
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Send the deletion request email
+        Mail::to($user->email)->send(new TenantDeletionRequest($tenant->id, $deletionUrl));
 
-        return Redirect::to('/');
+        return Redirect::route('profile.edit')->with('status', 'deletion-email-sent');
     }
 }

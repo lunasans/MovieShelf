@@ -123,6 +123,31 @@
                 </a>
             </div>
         </div>
+
+        <!-- Global Flash Messages -->
+        <div class="max-w-[1400px] mx-auto mt-4 px-4 overflow-hidden">
+            @if(session('success'))
+                <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 8000)" 
+                     class="glass-ultra border-l-4 border-emerald-500 p-4 shadow-xl rounded-xl flex items-center justify-between text-emerald-800 font-bold text-sm tracking-tight animate-fade-in">
+                    <div class="flex items-center gap-3">
+                        <i class="bi bi-check-circle-fill text-emerald-500"></i>
+                        <span>{{ session('success') }}</span>
+                    </div>
+                    <button @click="show = false" class="text-emerald-500 hover:text-emerald-700"><i class="bi bi-x-lg"></i></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div x-data="{ show: true }" x-show="show" 
+                     class="glass-ultra border-l-4 border-rose-500 p-4 shadow-xl rounded-xl flex items-center justify-between text-rose-800 font-bold text-sm tracking-tight animate-bounce-in">
+                    <div class="flex items-center gap-3">
+                        <i class="bi bi-exclamation-triangle-fill text-rose-500"></i>
+                        <span>{{ session('error') }}</span>
+                    </div>
+                    <button @click="show = false" class="text-rose-500 hover:text-rose-700"><i class="bi bi-x-lg"></i></button>
+                </div>
+            @endif
+        </div>
     </nav>
 
     @yield('content')

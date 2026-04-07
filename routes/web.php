@@ -38,6 +38,7 @@ Route::get('/impressum', function () {
 Route::get('/api/check-subdomain', [\App\Http\Controllers\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain');
 Route::post('/claim', [\App\Http\Controllers\RegisterTenantController::class, 'store'])->name('tenant.register');
 Route::get('/activate/{token}', [\App\Http\Controllers\RegisterTenantController::class, 'activate'])->name('tenant.activate');
+Route::get('/forget-shelf/{tenant}', [\App\Http\Controllers\CentralDeletionController::class, 'confirm'])->name('central.tenant.forget')->middleware(['signed']);
 
 // Central Storage Proxy (Required when public/storage symlink is removed)
 Route::get('/media/{path}', function ($path) {

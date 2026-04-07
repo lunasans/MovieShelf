@@ -2,18 +2,20 @@
     <header>
         <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
             <i class="bi bi-exclamation-octagon-fill text-rose-500"></i>
-            {{ __('Delete Account') }}
+            {{ __('Shelf & Account löschen') }}
         </h2>
 
         <p class="mt-2 text-sm text-gray-400 font-medium">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted.') }}
+            {{ __('Sobald dein Shelf gelöscht wurde, werden alle Daten (Filme, Cover, Einstellungen) unwiderruflich entfernt.') }}
+            <br>
+            <span class="text-rose-400">{{ __('Nach dem Klick senden wir dir eine Bestätigungs-E-Mail mit einem Löschlink zu.') }}</span>
         </p>
     </header>
 
     <x-danger-button
         x-data=""
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    >{{ __('Delete Account') }}</x-danger-button>
+    >{{ __('Shelf-Löschung anfordern') }}</x-danger-button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
         <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
@@ -21,11 +23,11 @@
             @method('delete')
 
             <h2 class="text-xl font-black text-white tracking-tight mb-2">
-                {{ __('Are you sure you want to delete your account?') }}
+                {{ __('Shelf wirklich löschen?') }}
             </h2>
 
             <p class="text-sm text-gray-400 font-medium">
-                {{ __('Please enter your password to confirm you would like to permanently delete your account.') }}
+                {{ __('Bitte gib dein Passwort ein, um die Löschanfrage per E-Mail zu starten.') }}
             </p>
 
             <div class="mt-6">
@@ -36,7 +38,7 @@
                     name="password"
                     type="password"
                     class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
+                    placeholder="{{ __('Passwort zur Bestätigung') }}"
                 />
 
                 <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
@@ -44,11 +46,11 @@
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('Cancel') }}
+                    {{ __('Abbrechen') }}
                 </x-secondary-button>
 
                 <x-danger-button class="ms-3">
-                    {{ __('Delete Account') }}
+                    {{ __('Löschlink anfordern') }}
                 </x-danger-button>
             </div>
         </form>
