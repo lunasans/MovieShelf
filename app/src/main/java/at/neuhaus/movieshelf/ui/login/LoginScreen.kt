@@ -4,15 +4,12 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Pin
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -21,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,6 +33,8 @@ fun LoginScreen(
     val viewModel: LoginViewModel = viewModel()
     val context = LocalContext.current
     val dataStoreManager = DataStoreManager(context)
+    
+    var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel.loginSuccess) {
         if (viewModel.loginSuccess) {
@@ -71,13 +71,33 @@ fun LoginScreen(
                 )
                 
                 if (!viewModel.is2faRequired) {
-                    Text(
-                        text = "Du kannst dir auf https://movieshelf.info eine eigene MovieShelf anlegen.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                    )
+                    Card(
+                        modifier = Modifier.padding(bottom = 24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Beta-Test / Demo-Zugang",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            SelectionContainer {
+                                Text(
+                                    text = "E-Mail: demo@movieshelf.info\nPasswort: playstore",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
                 } else {
                     Spacer(Modifier.height(16.dp))
                 }
@@ -126,7 +146,15 @@ fun LoginScreen(
                                 label = { Text("Passwort") },
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                                visualTransformation = PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                                    val description = if (passwordVisible) "Passwort ausblenden" else "Passwort anzeigen"
+                                    
+                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                        Icon(imageVector = icon, contentDescription = description)
+                                    }
+                                },
+                                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(
                                     keyboardType = KeyboardType.Password,
                                     imeAction = ImeAction.Done

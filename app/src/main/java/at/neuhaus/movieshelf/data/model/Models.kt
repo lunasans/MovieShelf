@@ -7,7 +7,8 @@ data class MovieResponse(
 )
 
 data class SingleMovieResponse(
-    val data: Movie?
+    val data: Movie?,
+    @SerializedName("is_updated") val isUpdated: Boolean? = false
 )
 
 data class ActorResponse(

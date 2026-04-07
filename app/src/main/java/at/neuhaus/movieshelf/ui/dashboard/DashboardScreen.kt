@@ -170,15 +170,20 @@ fun MovieItem(movie: Movie, onClick: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 if (movie.coverUrl != null) {
-                    val model: Any? = remember(movie.coverUrl) {
+                    val model: Any? = remember(movie.coverUrl, RetrofitClient.baseUrl) {
+                        val url = movie.coverUrl.trim()
                         when {
-                            movie.coverUrl.startsWith("res:") -> {
-                                val resName = movie.coverUrl.substringAfter("res:")
+                            url.startsWith("res:") -> {
+                                val resName = url.substringAfter("res:")
                                 val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
                                 if (resId != 0) resId else null
                             }
-                            movie.coverUrl.startsWith("http") -> movie.coverUrl
-                            else -> RetrofitClient.baseUrl.removeSuffix("/") + "/" + movie.coverUrl.removePrefix("/")
+                            url.startsWith("http") -> url
+                            else -> {
+                                val base = RetrofitClient.baseUrl.removeSuffix("/")
+                                val path = url.removePrefix("/")
+                                "$base/$path"
+                            }
                         }
                     }
 
@@ -194,8 +199,7 @@ fun MovieItem(movie: Movie, onClick: () -> Unit) {
                             imageLoading = state is AsyncImagePainter.State.Loading
                             imageError = state is AsyncImagePainter.State.Error
                             if (state is AsyncImagePainter.State.Error) {
-                                Log.e("CoilError", "Fehler beim Laden von ${movie.title}: ${state.result.throwable.message}")
-                                state.result.throwable.printStackTrace()
+                                Log.e("CoilError", "Fehler beim Laden von ${movie.title}: ${state.result.throwable.message} (URL: $model)")
                             }
                         }
                     )
