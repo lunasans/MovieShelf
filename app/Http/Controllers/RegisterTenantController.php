@@ -30,6 +30,14 @@ class RegisterTenantController extends Controller
         $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
         $fullDomain = $subdomain . '.' . $centralDomain;
 
+        $forbidden = explode(',', Setting::get('forbidden_subdomains', ''));
+        $forbidden = array_map('trim', $forbidden);
+        $forbidden = array_filter($forbidden);
+
+        if (in_array($subdomain, $forbidden)) {
+            return response()->json(['available' => false, 'message' => 'Dieser Name ist reserviert.']);
+        }
+
         $exists = \Stancl\Tenancy\Database\Models\Domain::where('domain', $fullDomain)->exists() || Tenant::where('id', $subdomain)->exists();
 
         return response()->json([
@@ -52,10 +60,19 @@ class RegisterTenantController extends Controller
             'username' => 'required|string|max:255',
             'email' => 'required|string|email|max:255',
             'password' => 'required|string|min:8|confirmed',
+            'terms' => 'accepted',
         ]);
 
         if (\Stancl\Tenancy\Database\Models\Domain::where('domain', $fullDomain)->exists() || Tenant::where('id', $subdomain)->exists()) {
             return back()->withErrors(['subdomain' => 'Dieser Name ist leider schon vergeben.'])->withInput();
+        }
+
+        $forbidden = explode(',', Setting::get('forbidden_subdomains', ''));
+        $forbidden = array_map('trim', $forbidden);
+        $forbidden = array_filter($forbidden);
+
+        if (in_array($subdomain, $forbidden)) {
+            return back()->withErrors(['subdomain' => 'Dieser Name ist leider reserviert.'])->withInput();
         }
 
         // 0. Generate URLs before entering tenant context

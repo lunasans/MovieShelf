@@ -58,6 +58,9 @@ class GlobalAdminController extends Controller
             'mail_encryption' => Setting::get('mail_encryption', 'tls'),
             'mail_from_address' => Setting::get('mail_from_address', ''),
             'mail_from_name' => Setting::get('mail_from_name', ''),
+            'forbidden_subdomains' => Setting::get('forbidden_subdomains', 'admin,api,www,support,mail,test,dev,internal'),
+            'saas_impressum_active' => Setting::get('saas_impressum_active', '0'),
+            'saas_impressum_content' => Setting::get('saas_impressum_content', '<h1>Impressum</h1><p>...</p>'),
         ];
 
         return view('admin.settings', compact('settings'));
@@ -80,6 +83,9 @@ class GlobalAdminController extends Controller
             'mail_encryption' => 'nullable|string|max:20',
             'mail_from_address' => 'nullable|email|max:255',
             'mail_from_name' => 'nullable|string|max:255',
+            'forbidden_subdomains' => 'nullable|string',
+            'saas_impressum_active' => 'nullable|boolean',
+            'saas_impressum_content' => 'nullable|string',
         ]);
 
         foreach ($data as $key => $value) {

@@ -610,12 +610,15 @@
                     const data = await res.json();
                     this.available = data.available;
                     this.subdomain = data.slug;
+                    this.statusMessage = data.message || '';
                 } catch(e) {
                     this.available = null;
                 } finally {
                     this.checking = false;
                 }
-            }
+            },
+            statusMessage: '',
+            acceptedTerms: false
         }" class="fade-up delay-3">
 
             <form action="{{ route('tenant.register') }}" method="POST">
@@ -650,6 +653,12 @@
                     </template>
                 </div>
 
+                <template x-if="!checking && available === false && statusMessage">
+                    <p style="color: #e50914; font-size: 0.75rem; margin-top: 0.5rem; font-weight: 600; text-align: center;">
+                        <i class="bi bi-exclamation-circle"></i> <span x-text="statusMessage"></span>
+                    </p>
+                </template>
+
                 {{-- Registration fields (shown when subdomain is available) --}}
                 <div
                     x-show="available === true"
@@ -673,7 +682,17 @@
                             <input type="password" name="password" placeholder="••••••••" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary">
+
+                    {{-- Terms --}}
+                    <div style="margin: 1.5rem 0; display: flex; align-items: flex-start; gap: 0.75rem; text-align: left;">
+                        <input type="checkbox" name="terms" id="terms" x-model="acceptedTerms" required
+                               style="width: 1.25rem; height: 1.25rem; margin-top: 0.2rem; cursor: pointer; accent-color: var(--accent);">
+                        <label for="terms" style="font-size: 0.85rem; color: var(--muted); cursor: pointer; line-height: 1.5;">
+                            Ich akzeptiere die <a href="/privacy" target="_blank" style="color: var(--accent); text-decoration: underline;">Nutzungsbedingungen</a> und habe die Datenschutzbelehrung gelesen.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary" :disabled="!acceptedTerms" :style="!acceptedTerms ? 'opacity: 0.5; cursor: not-allowed; filter: grayscale(1);' : ''">
                         Cloud einrichten →
                     </button>
                 </div>
@@ -843,7 +862,13 @@
                 class="btn-cta">
             Cloud kostenlos starten <i class="bi bi-arrow-right"></i>
         </button>
-        <p class="footer-note">MovieShelf Cloud · v2.10.4</p>
+        <p class="footer-note">
+            MovieShelf Cloud · v2.10.4
+            @if(\App\Models\Setting::get('saas_impressum_active', '0') == '1')
+                · <a href="{{ route('saas.impressum') }}" style="color: inherit; text-decoration: underline;">Impressum</a>
+            @endif
+            · <a href="/privacy" style="color: inherit; text-decoration: underline;">Datenschutz</a>
+        </p>
     </div>
 </section>
 

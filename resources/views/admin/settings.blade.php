@@ -38,6 +38,12 @@
                 <i class="bi bi-envelope-at"></i>
                 E-Mail
             </button>
+            <button type="button" @click="activeTab = 'legal'" 
+                    :class="activeTab === 'legal' ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+                    class="px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <i class="bi bi-file-earmark-text"></i>
+                Rechtliches
+            </button>
         </div>
 
         <div x-show="activeTab === 'branding'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300">
@@ -129,6 +135,16 @@
                             Die manuelle Prüfung schützt deine Serverressourcen vor Spam-Registrierungen. Bei der Sofort-Aktivierung erhält der Nutzer direkt nach Absenden des Formulars Zugriff auf sein Regal.
                         </p>
                     </div>
+
+                    <div class="md:col-span-2 space-y-4 pt-6 border-t border-white/10">
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Gesperrte Subdomains</label>
+                        <textarea name="forbidden_subdomains" rows="3" 
+                                  placeholder="admin, api, www, support, test, dev..."
+                                  class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 text-white transition-all outline-none font-mono text-sm tracking-widest">{{ $settings['forbidden_subdomains'] }}</textarea>
+                        <p class="text-[10px] text-gray-500 font-medium italic">
+                            💡 Gib hier durch Kommas getrennte Begriffe ein, die Nutzer nicht als Subdomain wählen dürfen.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -196,6 +212,45 @@
         </div>
 
         <div x-show="activeTab === 'mail'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300" x-cloak>
+            <!-- E-Mail Section -->
+        </div>
+
+        <div x-show="activeTab === 'legal'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300" x-cloak x-data="legalSettings()">
+            <!-- Legal Section (Impressum) -->
+            <div class="glass rounded-[2rem] border border-white/10 overflow-hidden">
+                <div class="px-8 py-6 border-b border-white/10 bg-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-emerald-500/20 rounded-2xl flex items-center justify-center border border-emerald-500/30">
+                            <i class="bi bi-file-earmark-text text-emerald-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-black text-white uppercase tracking-tight">Rechtliches & Impressum</h2>
+                            <p class="text-gray-400 text-sm font-medium">Verwalte hier das Impressum der SaaS-Plattform</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-8 space-y-8">
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-4 ms-1">Status</label>
+                        <label class="relative flex items-center p-4 cursor-pointer glass border border-white/10 rounded-2xl group hover:bg-white/5 transition-all max-w-md">
+                            <input type="hidden" name="saas_impressum_active" value="0">
+                            <input type="checkbox" name="saas_impressum_active" value="1" {{ $settings['saas_impressum_active'] == '1' ? 'checked' : '' }} class="hidden peer">
+                            <div class="w-12 h-6 bg-white/10 rounded-full p-1 transition-all peer-checked:bg-emerald-500">
+                                <div class="w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-6"></div>
+                            </div>
+                            <span class="ms-4 text-sm font-bold text-white group-hover:text-emerald-400 transition-colors">Impressum Öffentlich sichtbar</span>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-4 ms-1">Impressum Inhalt (HTML)</label>
+                        <div id="impressum-editor" class="quill-editor" style="min-height: 400px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; color: #fff;"></div>
+                        <input type="hidden" name="saas_impressum_content" id="saas_impressum_content" x-model="formData.saas_impressum_content">
+                    </div>
+                </div>
+            </div>
+        </div>
             <!-- E-Mail Service (SMTP) -->
             <div class="glass rounded-[2rem] border border-white/10 overflow-hidden">
             <div class="px-8 py-6 border-b border-white/10 bg-white/5">
@@ -321,4 +376,63 @@
         </div>
     </form>
 </div>
+@push('styles')
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-toolbar.ql-snow { border: 1px solid rgba(255,255,255,0.1) !important; background: rgba(5,5,5,0.8) !important; border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 15px !important; }
+    .ql-container.ql-snow { border: 1px solid rgba(255,255,255,0.1) !important; border-top: none !important; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; font-family: 'Outfit', sans-serif !important; font-size: 0.95rem !important; }
+    .ql-editor { color: #fff !important; min-height: 300px; line-height: 1.6 !important; }
+    .ql-snow .ql-stroke { stroke: #aaa !important; }
+    .ql-snow .ql-fill { fill: #aaa !important; }
+    .ql-snow .ql-picker { color: #aaa !important; }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script>
+    function legalSettings() {
+        return {
+            formData: {
+                saas_impressum_content: {!! json_encode($settings['saas_impressum_content']) !!}
+            },
+            init() {
+                const setup = () => {
+                    const quill = new Quill('#impressum-editor', {
+                        theme: 'snow',
+                        modules: {
+                            toolbar: [
+                                [{ 'header': [1, 2, 3, false] }],
+                                ['bold', 'italic', 'underline', 'link'],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                ['clean']
+                            ]
+                        },
+                        placeholder: 'Impressum Text hier verfassen...'
+                    });
+
+                    if (this.formData.saas_impressum_content) {
+                        quill.root.innerHTML = this.formData.saas_impressum_content;
+                    }
+
+                    quill.on('text-change', () => {
+                        this.formData.saas_impressum_content = quill.root.innerHTML;
+                    });
+                };
+
+                if (typeof Quill === 'undefined') {
+                    const interval = setInterval(() => {
+                        if (typeof Quill !== 'undefined') {
+                            clearInterval(interval);
+                            setup();
+                        }
+                    }, 50);
+                } else {
+                    this.$nextTick(() => setup());
+                }
+            }
+        }
+    }
+</script>
+@endpush
 @endsection

@@ -31,6 +31,10 @@ Route::get('/account-deletion', function () {
     return view('account-deletion');
 })->name('account-deletion');
 
+Route::get('/impressum', function () {
+    return view('impressum');
+})->name('saas.impressum');
+
 Route::get('/api/check-subdomain', [\App\Http\Controllers\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain');
 Route::post('/claim', [\App\Http\Controllers\RegisterTenantController::class, 'store'])->name('tenant.register');
 Route::get('/activate/{token}', [\App\Http\Controllers\RegisterTenantController::class, 'activate'])->name('tenant.activate');
