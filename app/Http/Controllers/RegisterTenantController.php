@@ -57,9 +57,9 @@ class RegisterTenantController extends Controller
         $request->validate([
             'subdomain' => 'required|string|alpha_dash',
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
+            'username' => 'nullable|string|max:255',
             'email' => 'required|string|email|max:255',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8',
             'terms' => 'accepted',
         ]);
 
@@ -112,9 +112,14 @@ class RegisterTenantController extends Controller
         });
 
         // 3. Create the User inside the Tenant context
+        $username = $request->username ?: Str::slug($request->name, '.');
+        if (empty($username)) {
+            $username = explode('@', $request->email)[0];
+        }
+
         $userData = [
             'name' => $request->name,
-            'username' => $request->username,
+            'username' => $username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ];
@@ -123,8 +128,12 @@ class RegisterTenantController extends Controller
             User::create($userData);
         });
 
-        // 4. Send Activation Email
-        Mail::to($request->email)->send(new TenantWelcome($tenant, new User($userData), $activationUrl, $tenantUrl));
+        // 4. Send Activation Email (Catch failures to prevent 500)
+        try {
+            Mail::to($request->email)->send(new TenantWelcome($tenant, new User($userData), $activationUrl, $tenantUrl));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Registration Mail failed for {$request->email}: " . $e->getMessage());
+        }
 
         return redirect()->route('landing')->with('success', 'Dein MovieShelf wurde erfolgreich reserviert! Bitte schaue in dein E-Mail Postfach (' . $request->email . '), um dein Filmregal freizuschalten.');
     }
