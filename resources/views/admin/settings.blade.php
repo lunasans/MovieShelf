@@ -212,7 +212,121 @@
         </div>
 
         <div x-show="activeTab === 'mail'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300" x-cloak>
-            <!-- E-Mail Section -->
+            <!-- E-Mail Service (SMTP) -->
+            <div class="glass rounded-[2rem] border border-white/10 overflow-hidden">
+                <div class="px-8 py-6 border-b border-white/10 bg-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-sky-500/20 rounded-2xl flex items-center justify-center border border-sky-500/30">
+                            <i class="bi bi-envelope-at text-sky-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-black text-white uppercase tracking-tight">E-Mail Service (SMTP)</h2>
+                            <p class="text-gray-400 text-sm font-medium">Zentraler Mail-Versand für die gesamte Plattform</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-8 space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">SMTP Host</label>
+                            <input type="text" name="mail_host" value="{{ $settings['mail_host'] }}" placeholder="z.B. smtp.mailtrap.io"
+                                   class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Port</label>
+                            <input type="number" name="mail_port" value="{{ $settings['mail_port'] }}" placeholder="587"
+                                   class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Username</label>
+                            <input type="text" name="mail_username" value="{{ $settings['mail_username'] }}" 
+                                   class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Password</label>
+                            <input type="password" name="mail_password" value="{{ $settings['mail_password'] }}" 
+                                   class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Encryption</label>
+                            <select name="mail_encryption" class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none appearance-none">
+                                <option value="tls" {{ $settings['mail_encryption'] == 'tls' ? 'selected' : '' }}>TLS (Empfohlen)</option>
+                                <option value="ssl" {{ $settings['mail_encryption'] == 'ssl' ? 'selected' : '' }}>SSL</option>
+                                <option value="null" {{ $settings['mail_encryption'] == 'null' ? 'selected' : '' }}>Keine</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Sender Email</label>
+                            <input type="email" name="mail_from_address" value="{{ $settings['mail_from_address'] }}" placeholder="noreply@movieshelf.info"
+                                   class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Sender Name</label>
+                            <input type="text" name="mail_from_name" value="{{ $settings['mail_from_name'] }}" placeholder="MovieShelf Magic"
+                                   class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
+                        </div>
+                    </div>
+
+                    <div class="bg-sky-500/5 rounded-2xl border border-sky-500/10 p-4 flex items-start gap-4">
+                        <i class="bi bi-info-circle text-sky-500 mt-1"></i>
+                        <p class="text-[11px] text-gray-400 leading-relaxed drop-shadow-md">
+                            ⚠️ **Hinweis**: Falls diese Felder leer bleiben, nutzt das System die Standardwerte aus der `.env`-Konfigurationsdatei. Achte darauf, dass dein Mail-Provider den Versand von dieser Domain erlaubt.
+                        </p>
+                    </div>
+
+                    <div class="mt-4 flex flex-col items-center border-t border-white/10 pt-6" x-data="{
+                        testing: false,
+                        testStatus: null,
+                        testMessage: '',
+                        testMail() {
+                            if(this.testing) return;
+                            this.testing = true;
+                            this.testStatus = null;
+                            
+                            fetch('{{ route('admin.settings.test-mail') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                this.testing = false;
+                                this.testStatus = data.success ? 'success' : 'error';
+                                this.testMessage = data.message;
+                            })
+                            .catch(error => {
+                                this.testing = false;
+                                this.testStatus = 'error';
+                                this.testMessage = 'Ein Fehler ist aufgetreten: ' + error.message;
+                            });
+                        }
+                    }">
+                        <button type="button" @click="testMail()" :disabled="testing" 
+                                class="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold text-white transition-all flex items-center gap-2">
+                            <i class="bi bi-send" x-show="!testing"></i>
+                            <i class="bi bi-arrow-repeat animate-spin" x-show="testing" style="display: none;"></i>
+                            <span x-text="testing ? 'Sende Test-E-Mail...' : 'Verbindung Testen'">Verbindung Testen</span>
+                        </button>
+                        
+                        <div x-show="testStatus" x-cloak class="mt-4 text-sm font-medium py-2 px-4 rounded-xl text-center"
+                             :class="{
+                                 'bg-green-500/10 text-green-400 border border-green-500/20': testStatus === 'success',
+                                 'bg-red-500/10 text-red-400 border border-red-500/20': testStatus === 'error'
+                             }">
+                            <span x-text="testMessage"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div x-show="activeTab === 'legal'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300" x-cloak x-data="legalSettings()">
@@ -247,121 +361,6 @@
                         <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-4 ms-1">Impressum Inhalt (HTML)</label>
                         <div id="impressum-editor" class="quill-editor" style="min-height: 400px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; color: #fff;"></div>
                         <input type="hidden" name="saas_impressum_content" id="saas_impressum_content" x-model="formData.saas_impressum_content">
-                    </div>
-                </div>
-            </div>
-        </div>
-            <!-- E-Mail Service (SMTP) -->
-            <div class="glass rounded-[2rem] border border-white/10 overflow-hidden">
-            <div class="px-8 py-6 border-b border-white/10 bg-white/5">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-sky-500/20 rounded-2xl flex items-center justify-center border border-sky-500/30">
-                        <i class="bi bi-envelope-at text-sky-500 text-xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-black text-white uppercase tracking-tight">E-Mail Service (SMTP)</h2>
-                        <p class="text-gray-400 text-sm font-medium">Zentraler Mail-Versand für die gesamte Plattform</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="p-8 space-y-8">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">SMTP Host</label>
-                        <input type="text" name="mail_host" value="{{ $settings['mail_host'] }}" placeholder="z.B. smtp.mailtrap.io"
-                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Port</label>
-                        <input type="number" name="mail_port" value="{{ $settings['mail_port'] }}" placeholder="587"
-                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Username</label>
-                        <input type="text" name="mail_username" value="{{ $settings['mail_username'] }}" 
-                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Password</label>
-                        <input type="password" name="mail_password" value="{{ $settings['mail_password'] }}" 
-                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Encryption</label>
-                        <select name="mail_encryption" class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none appearance-none">
-                            <option value="tls" {{ $settings['mail_encryption'] == 'tls' ? 'selected' : '' }}>TLS (Empfohlen)</option>
-                            <option value="ssl" {{ $settings['mail_encryption'] == 'ssl' ? 'selected' : '' }}>SSL</option>
-                            <option value="null" {{ $settings['mail_encryption'] == 'null' ? 'selected' : '' }}>Keine</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Sender Email</label>
-                        <input type="email" name="mail_from_address" value="{{ $settings['mail_from_address'] }}" placeholder="noreply@movieshelf.info"
-                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Sender Name</label>
-                        <input type="text" name="mail_from_name" value="{{ $settings['mail_from_name'] }}" placeholder="MovieShelf Magic"
-                               class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500/50 text-white transition-all outline-none">
-                    </div>
-                </div>
-
-                <div class="bg-sky-500/5 rounded-2xl border border-sky-500/10 p-4 flex items-start gap-4">
-                    <i class="bi bi-info-circle text-sky-500 mt-1"></i>
-                    <p class="text-[11px] text-gray-400 leading-relaxed drop-shadow-md">
-                        ⚠️ **Hinweis**: Falls diese Felder leer bleiben, nutzt das System die Standardwerte aus der `.env`-Konfigurationsdatei. Achte darauf, dass dein Mail-Provider den Versand von dieser Domain erlaubt.
-                    </p>
-                </div>
-
-                <div class="mt-4 flex flex-col items-center border-t border-white/10 pt-6" x-data="{
-                    testing: false,
-                    testStatus: null,
-                    testMessage: '',
-                    testMail() {
-                        if(this.testing) return;
-                        this.testing = true;
-                        this.testStatus = null;
-                        
-                        fetch('{{ route('admin.settings.test-mail') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            this.testing = false;
-                            this.testStatus = data.success ? 'success' : 'error';
-                            this.testMessage = data.message;
-                        })
-                        .catch(error => {
-                            this.testing = false;
-                            this.testStatus = 'error';
-                            this.testMessage = 'Ein Fehler ist aufgetreten: ' + error.message;
-                        });
-                    }
-                }">
-                    <button type="button" @click="testMail()" :disabled="testing" 
-                            class="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold text-white transition-all flex items-center gap-2">
-                        <i class="bi bi-send" x-show="!testing"></i>
-                        <i class="bi bi-arrow-repeat animate-spin" x-show="testing" style="display: none;"></i>
-                        <span x-text="testing ? 'Sende Test-E-Mail...' : 'Verbindung Testen'">Verbindung Testen</span>
-                    </button>
-                    
-                    <div x-show="testStatus" x-cloak class="mt-4 text-sm font-medium py-2 px-4 rounded-xl text-center"
-                         :class="{
-                             'bg-green-500/10 text-green-400 border border-green-500/20': testStatus === 'success',
-                             'bg-red-500/10 text-red-400 border border-red-500/20': testStatus === 'error'
-                         }">
-                        <span x-text="testMessage"></span>
                     </div>
                 </div>
             </div>
