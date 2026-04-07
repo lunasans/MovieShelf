@@ -126,6 +126,7 @@
         }
         .alert-success { background: rgba(5, 150, 105, 0.2); color: #10b981; border: 1px solid #065f46; }
     </style>
+    @stack('styles')
 </head>
 <body>
     <aside>
@@ -152,5 +153,7 @@
 
         @yield('content')
     </main>
+
+    @stack('scripts')
 </body>
 </html>
