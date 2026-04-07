@@ -32,7 +32,7 @@ Route::get('/account-deletion', function () {
 })->name('account-deletion');
 
 Route::get('/impressum', function () {
-    return view('impressum');
+    return view('central_impressum');
 })->name('saas.impressum');
 
 Route::get('/api/check-subdomain', [\App\Http\Controllers\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain');
