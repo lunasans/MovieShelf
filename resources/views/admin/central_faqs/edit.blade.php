@@ -65,10 +65,16 @@
 <script>
     function faqForm() {
         return {
+            initialized: false,
             formData: {
                 answer: {!! json_encode(old('answer', $faq->answer)) !!}
             },
             init() {
+                if (this.initialized) return;
+                this.initialized = true;
+
+                if (document.querySelector('#answer-editor').classList.contains('ql-container')) return;
+
                 const quill = new Quill('#answer-editor', {
                     theme: 'snow',
                     modules: {

@@ -393,11 +393,18 @@
 <script>
     function legalSettings() {
         return {
+            initialized: false,
             formData: {
                 saas_impressum_content: {!! json_encode($settings['saas_impressum_content']) !!}
             },
             init() {
+                if (this.initialized) return;
+                this.initialized = true;
+
                 const setup = () => {
+                    const editorContainer = document.querySelector('#impressum-editor');
+                    if (!editorContainer || editorContainer.classList.contains('ql-container')) return;
+
                     const quill = new Quill('#impressum-editor', {
                         theme: 'snow',
                         modules: {
