@@ -101,5 +101,6 @@
         @if(\App\Models\Setting::get('cookie_banner_enabled', '1') == '1')
             @include('partials.cookie-banner')
         @endif
+        @stack('modals')
     </body>
 </html>

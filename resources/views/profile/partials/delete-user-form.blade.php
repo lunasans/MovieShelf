@@ -17,6 +17,7 @@
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
     >{{ __('Shelf-Löschung anfordern') }}</x-danger-button>
 
+    @push('modals')
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
         <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
             @csrf
@@ -55,4 +56,5 @@
             </div>
         </form>
     </x-modal>
+    @endpush
 </section>
