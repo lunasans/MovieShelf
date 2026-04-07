@@ -863,7 +863,7 @@
             Cloud kostenlos starten <i class="bi bi-arrow-right"></i>
         </button>
         <p class="footer-note">
-            MovieShelf Cloud · v2.12.3
+            MovieShelf Cloud · v2.12.4
             @if(\App\Models\Setting::get('saas_impressum_active', '0') == '1')
                 · <a href="{{ route('saas.impressum') }}" style="color: inherit; text-decoration: underline;">Impressum</a>
             @endif

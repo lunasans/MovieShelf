@@ -1,14 +1,14 @@
-# MovieShelf 2.12.3
-Final Modal Layering & Stacking Fix
+# MovieShelf 2.12.4
+Tenant Deletion Redirect Fix
 
-## Changelog 2.12.3
-- **Fix**: Finaler CSS-Layer-Fix für die gesamte Plattform. Das Modal schwebt nun garantiert über allen `.glass`-Elementen.
-- **UI**: Helligkeit-Korrektur im Modal; der Text ist nun immer klar lesbar und wird nicht vom Backdrop überschattet.
-- **Design**: Backdrop-Optimierung für einen sauberen Cinematic-Look ohne "blasse" Artefakte.
+## Changelog 2.12.4
+- **Fix**: `RouteNotFoundException` behoben, die beim Bestätigen der Regal-Löschung auftrat.
+- **Fix**: Lösch-Links werden nun immer für die zentrale Domain generiert.
+- **Fix**: Nach der Löschung erfolgt ein absoluter Redirect auf die zentrale Startseite, um Kontext-Konflikte zu vermeiden.
 
 ---
 
-## Changelog 2.12.2 (Archiv)
+## Changelog 2.12.3 (Archiv)
 - **Fix**: Doppel-Initialisierung des Quill-Editors in Admin-Panel behoben.
 - **Fix**: Zu große Zeilenabstände (Margins) auf der Impressum-Seite korrigiert.
 - **Fix**: Layout-Problem in den Plattform-Einstellungen (E-Mail-Sektion) behoben.

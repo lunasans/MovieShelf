@@ -36,10 +36,10 @@ class CentralDeletionController extends Controller
 
             Log::info("Tenant {$tenantId} successfully deleted.");
 
-            return redirect()->route('landing')->with('success', "Das Regal '{$tenantId}' wurde erfolgreich und unwiderruflich gelöscht.");
+            return redirect()->away(config('app.url'))->with('success', "Das Regal '{$tenantId}' wurde erfolgreich und unwiderruflich gelöscht.");
         } catch (\Exception $e) {
             Log::error("Error deleting tenant {$tenantId}: " . $e->getMessage());
-            return redirect()->route('landing')->with('error', "Fehler beim Löschen des Regals. Bitte kontaktiere den Support.");
+            return redirect()->away(config('app.url'))->with('error', "Fehler beim Löschen des Regals. Bitte kontaktiere den Support.");
         }
     }
 }

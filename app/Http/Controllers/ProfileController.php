@@ -130,8 +130,10 @@ class ProfileController extends Controller
         }
 
         // Generate a signed URL for the central domain
-        // This link is valid for 1 hour.
+        // This link is valid for 1 hour. We force the central root URL to ensure the link points to the main domain.
+        URL::forceRootUrl(config('app.url'));
         $deletionUrl = URL::signedRoute('central.tenant.forget', ['tenant' => $tenant->id], now()->addHour());
+        URL::forceRootUrl(null);
 
         // Send the deletion request email
         Mail::to($user->email)->send(new TenantDeletionRequest($tenant->id, $deletionUrl));
