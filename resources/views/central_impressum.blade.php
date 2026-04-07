@@ -30,20 +30,20 @@
     .legal-content h1 {
         font-family: 'Fraunces', serif;
         font-size: 3rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         font-weight: 700;
     }
 
     .legal-content h2 {
         font-family: 'Fraunces', serif;
         font-size: 1.5rem;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
         font-weight: 700;
     }
 
     .legal-content p {
-        margin-bottom: 1.25rem;
+        margin-bottom: 0.4rem;
         color: var(--muted);
     }
 
