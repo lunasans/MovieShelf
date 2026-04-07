@@ -43,8 +43,9 @@
     }
 
     .legal-content p {
-        margin-bottom: 0.4rem;
-        color: var(--muted);
+        margin-top: 0;
+        margin-bottom: 0.15rem;
+        color: #4B5563; /* Etwas dunkleres Grau für bessere Lesbarkeit */
     }
 
     .legal-content a {

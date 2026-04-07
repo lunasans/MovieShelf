@@ -1,14 +1,16 @@
-# MovieShelf 2.11.1
-Bugfix-Release für Editor & UI
+# MovieShelf 2.11.2
+Layout-Fix für das Impressum & Rechtstexte
 
-## Changelog 2.11.1
-- **Fix**: Doppel-Initialisierung des Quill-Editors in Admin-Panel behoben.
-- **Fix**: Zu große Zeilenabstände (Margins) auf der Impressum-Seite korrigiert.
-- **Fix**: Layout-Problem in den Plattform-Einstellungen (E-Mail-Sektion) behoben.
+## Changelog 2.11.2
+- **Fix**: Kompaktere Zeilenabstände im Impressum durch Zurücksetzen des Standard-Margins.
+- **Fix**: Optimierte Textfarben auf der Impressum-Seite für bessere Kontraste.
 
 ---
 
-## Changelog 2.11.0 (Archiv)
+## Changelog 2.11.1 (Archiv)
+- **Fix**: Doppel-Initialisierung des Quill-Editors in Admin-Panel behoben.
+- **Fix**: Zu große Zeilenabstände (Margins) auf der Impressum-Seite korrigiert.
+- **Fix**: Layout-Problem in den Plattform-Einstellungen (E-Mail-Sektion) behoben.
 - **SaaS**: Zentrales FAQ-System im Global ACP mit Quill-Integration für die Landingpage.
 - **SaaS**: Verwaltbares Impressum direkt über das Global ACP (aktivierbar/deaktivierbar).
 - **Security**: Subdomain-Blocklist (einstellbar) zur Verhinderung reservierter Namen.
