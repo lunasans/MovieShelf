@@ -1,310 +1,850 @@
 @extends('layouts.saas')
 
 @section('content')
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
     :root {
-        --platinum-bg: #F9F9FB;
-        --platinum-border: rgba(255, 255, 255, 0.9);
-        --platinum-accent: #FF0032;
-        --platinum-text: #050505;
-        --charcoal-mute: #888888;
-    }
-    body { background-color: var(--platinum-bg); color: var(--platinum-text); }
-    
-    .ultra-glass {
-        background: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        transition: all 0.3s ease;
-    }
-    
-    .monument-text {
-        letter-spacing: -0.02em;
-        line-height: 1.2;
-        color: #222222;
-    }
-    
-    .bg-parallax-text {
-        display: none;
-    }
-    
-    .ultra-slot {
-        background: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-    
-    .ultra-slot:focus-within {
-        border-color: var(--apex-accent);
-        box-shadow: 0 0 0 4px rgba(204, 75, 6, 0.1);
+        --accent: #CC4B06;
+        --accent-hover: #A33C05;
+        --text: #1A1A1A;
+        --muted: #6B7280;
+        --border: #E5E7EB;
+        --surface: #F9F9F7;
+        --white: #FFFFFF;
     }
 
-    .platinum-input {
-        background: transparent;
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: var(--white);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Typography ─────────────────────────────────────── */
+    .display {
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+    }
+
+    .display-italic {
+        font-family: 'Fraunces', Georgia, serif;
+        font-style: italic;
+        font-weight: 400;
+    }
+
+    /* ─── Layout helpers ─────────────────────────────────── */
+    .container {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .section { padding: 6rem 0; }
+    .section-sm { padding: 4rem 0; }
+
+    /* ─── Animations ─────────────────────────────────────── */
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up   { animation: fadeUp 0.6s ease both; }
+    .delay-1   { animation-delay: 0.1s; }
+    .delay-2   { animation-delay: 0.22s; }
+    .delay-3   { animation-delay: 0.36s; }
+    .delay-4   { animation-delay: 0.5s; }
+
+    /* ─── Eyebrow label ──────────────────────────────────── */
+    .eyebrow {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+    }
+
+    /* ─── Hero ───────────────────────────────────────────── */
+    .hero {
+        padding: 9rem 0 6rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .hero h1 {
+        font-size: clamp(3rem, 7vw, 5.5rem);
+        margin: 0.5rem 0 1.5rem;
+        color: var(--text);
+    }
+
+    .hero p {
+        font-size: 1.125rem;
+        color: var(--muted);
+        max-width: 480px;
+        margin: 0 auto 3.5rem;
+        line-height: 1.7;
+    }
+
+    /* ─── Subdomain input ────────────────────────────────── */
+    .subdomain-wrap {
+        max-width: 640px;
+        margin: 0 auto;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        background: var(--white);
+        display: flex;
+        align-items: center;
+        padding: 0 1rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        gap: 0;
+    }
+
+    .subdomain-wrap:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(204, 75, 6, 0.08);
+    }
+
+    .subdomain-wrap .prefix,
+    .subdomain-wrap .suffix {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--muted);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .subdomain-wrap input {
+        flex: 1;
         border: none;
         outline: none;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+        background: transparent;
+        padding: 1rem 0.5rem;
+        min-width: 0;
     }
 
-    .reveal-delay-1 { animation: reveal 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .reveal-delay-2 { animation: reveal 2.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-    .reveal-delay-3 { animation: reveal 3.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-    
-    @keyframes reveal {
-        from { opacity: 0; transform: translateY(120px) scale(0.93); filter: blur(40px); }
-        to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    .subdomain-wrap input::placeholder {
+        color: #D1D5DB;
+        font-weight: 400;
     }
+
+    .status-icon {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+    }
+    .status-available { background: #10B981; }
+    .status-taken     { background: #EF4444; }
+    .status-checking  {
+        border: 2px solid var(--accent);
+        border-top-color: transparent;
+        animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Registration form ──────────────────────────────── */
+    .reg-form {
+        margin-top: 2.5rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 640px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: left;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    @media (max-width: 540px) {
+        .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .field label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.4rem;
+    }
+
+    .field input {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.65rem 0.9rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.95rem;
+        background: var(--white);
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(204, 75, 6, 0.08);
+    }
+
+    .btn-primary {
+        display: block;
+        width: 100%;
+        margin-top: 1.25rem;
+        padding: 0.9rem 1.5rem;
+        background: var(--accent);
+        color: var(--white);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover  { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* ─── Screenshot section ─────────────────────────────── */
+    .screenshot-wrap {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--surface);
+    }
+
+    .screenshot-wrap img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    /* ─── Feature grid ───────────────────────────────────── */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .feature-item {
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--white);
+    }
+
+    .feature-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: rgba(204, 75, 6, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-item h3 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0 0 0.35rem;
+        color: var(--text);
+    }
+
+    .feature-item p {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* ─── Comparison cards ───────────────────────────────── */
+    .compare-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        max-width: 760px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 600px) {
+        .compare-grid { grid-template-columns: 1fr; }
+    }
+
+    .plan-card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2rem;
+        background: var(--white);
+        position: relative;
+    }
+
+    .plan-card.featured {
+        border-color: var(--accent);
+        border-width: 2px;
+    }
+
+    .plan-badge {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--accent);
+        color: var(--white);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 3px 12px;
+        border-radius: 20px;
+    }
+
+    .plan-card h3 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin: 0 0 0.4rem;
+        color: var(--text);
+    }
+
+    .plan-card p.sub {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin: 0 0 1.5rem;
+        line-height: 1.5;
+    }
+
+    .plan-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .plan-list li {
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .plan-list li.check { color: var(--text); }
+    .plan-list li.dim   { color: #CBD5E1; }
+
+    .check-icon {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+    }
+
+    li.check .check-icon { background: #1A1A1A; color: #FFF; }
+    li.dim   .check-icon { background: #E5E7EB; color: #E5E7EB; }
+
+    .btn-outline {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text);
+        background: transparent;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .btn-outline:hover { background: var(--surface); }
+
+    .btn-dark {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--white);
+        background: var(--text);
+        text-align: center;
+        cursor: pointer;
+        transition: opacity 0.15s;
+    }
+    .btn-dark:hover { opacity: 0.85; }
+
+    /* ─── Beta section ───────────────────────────────────── */
+    .beta-section {
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .beta-inner {
+        display: flex;
+        align-items: center;
+        gap: 3rem;
+    }
+
+    @media (max-width: 700px) {
+        .beta-inner { flex-direction: column; text-align: center; gap: 1.5rem; }
+    }
+
+    .beta-inner .text { flex: 1; }
+    .beta-inner h2 { font-size: 1.5rem; margin: 0 0 0.4rem; }
+    .beta-inner p  { font-size: 0.9rem; color: var(--muted); margin: 0; line-height: 1.6; }
+
+    .beta-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .pulse-dot {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #D97706;
+        margin-bottom: 0.5rem;
+    }
+
+    .pulse-dot span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #F59E0B;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    /* ─── Divider ────────────────────────────────────────── */
+    .divider {
+        width: 48px;
+        height: 3px;
+        background: var(--accent);
+        border-radius: 2px;
+        margin: 1rem 0 0;
+    }
+    .divider.centered { margin: 1rem auto 0; }
+
+    /* ─── CTA section ────────────────────────────────────── */
+    .cta-section {
+        text-align: center;
+        padding: 7rem 0;
+    }
+
+    .cta-section h2 {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        margin: 0 0 2rem;
+    }
+
+    .btn-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.9rem 2rem;
+        background: var(--accent);
+        color: var(--white);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-cta:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+    .footer-note {
+        margin-top: 3rem;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #CBD5E1;
+    }
+
+    /* ─── FAQ Accordion ──────────────────────────────────── */
+    .faq-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .faq-item {
+        border-bottom: 1px solid var(--border);
+        padding: 1.5rem 0;
+    }
+
+    .faq-question {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        text-align: left;
+        color: var(--text);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+
+    .faq-question:hover { color: var(--accent); }
+
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out, margin-top 0.3s;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .faq-answer a { color: var(--accent); text-decoration: underline; }
+    .faq-answer ul, .faq-answer ol { padding-left: 1.5rem; margin: 1rem 0; }
+    .faq-answer li { margin-bottom: 0.5rem; }
+
+    .faq-item.active .faq-answer {
+        max-height: 500px;
+        margin-top: 1rem;
+    }
+
+    .faq-icon {
+        width: 20px;
+        height: 20px;
+        position: relative;
+        flex-shrink: 0;
+        margin-left: 1rem;
+    }
+
+    .faq-icon::before, .faq-icon::after {
+        content: '';
+        position: absolute;
+        background: currentColor;
+        transition: transform 0.3s;
+        top: 50%;
+        left: 50%;
+    }
+
+    .faq-icon::before { width: 14px; height: 2px; margin-left: -7px; margin-top: -1px; }
+    .faq-icon::after  { width: 2px; height: 14px; margin-left: -1px; margin-top: -7px; }
+
+    .faq-item.active .faq-icon::after { transform: rotate(90deg); opacity: 0; }
+    .faq-item.active .faq-icon::before { transform: rotate(180deg); }
 </style>
 
 
-<!-- Hero Section: The VIP Apex -->
-<section class="relative pt-80 pb-64 px-16 min-h-screen flex items-center z-10 overflow-hidden">
-    <div class="max-w-[1900px] mx-auto w-full relative z-10 text-center">
-        
-            <h1 class="text-4xl md:text-6xl font-extrabold text-[#222222] tracking-tight mb-8">
-                MovieShelf Cloud
-            </h1>
-            <h2 class="text-2xl md:text-4xl font-bold text-gray-400 mb-20">
-                Dein digitales Filmregal
-            </h2>
-            
-            <div class="max-w-6xl mx-auto space-y-24">
-                <p class="text-lg text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed reveal-delay-2">
-                    Organisiere, verwalte und teile deine Filmschätze mit einer modernen Oberfläche, die für Sammler entwickelt wurde.
-                </p>
-                
-                <!-- THE APEX COMMANDER -->
-                <div x-data="{ 
-                    subdomain: '{{ old('subdomain') }}', 
-                    available: {{ old('subdomain') ? 'true' : 'null' }}, 
-                    checking: false,
-                    async checkAvailability() {
-                        if (this.subdomain.length < 3) {
-                            this.available = null;
-                            return;
-                        }
-                        this.checking = true;
-                        try {
-                            const response = await fetch('{{ route('api.check.subdomain') }}?name=' + this.subdomain);
-                            const data = await response.json();
-                            this.available = data.available;
-                            this.subdomain = data.slug;
-                        } catch (e) {
-                            this.available = null;
-                        } finally {
-                            this.checking = false;
-                        }
-                    }
-                }" class="pt-32 reveal-delay-3">
-                    
-                    <form action="{{ route('tenant.register') }}" method="POST" class="max-w-7xl mx-auto">
-                        @csrf
-                        
-                        <div class="ultra-slot flex items-center p-4 md:p-6 relative border border-gray-200" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                            <span class="text-gray-300 font-bold text-sm md:text-base select-none mr-4 tracking-wider">https://</span>
-                            
-                            <input type="text" 
-                                    id="subdomain"
-                                    name="subdomain" 
-                                    x-model="subdomain" 
-                                    @input.debounce.1000ms="checkAvailability()"
-                                    placeholder="your-name" 
-                                    required 
-                                    autocomplete="off"
-                                    class="w-full text-[#222222] font-bold text-xl md:text-2xl placeholder-gray-200 platinum-input p-0 focus:ring-0 border-none">
-                            
-                            <div class="flex items-center gap-6 ml-4">
-                                <span class="text-gray-400 font-bold text-sm md:text-lg hidden lg:inline select-none">.movieshelf.info</span>
-                                <template x-if="checking">
-                                    <div class="w-6 h-32 bg-rose-600 animate-pulse rounded-full shadow-[0_0_50px_rgba(225,29,72,0.5)]"></div>
-                                </template>
-                                <template x-if="!checking && available === true">
-                                    <i class="bi bi-star-fill text-emerald-500 text-3xl md:text-4xl animate-reveal"></i>
-                                </template>
-                                <template x-if="!checking && available === false">
-                                    <i class="bi bi-shield-lock-fill text-rose-600 text-3xl md:text-4xl animate-reveal"></i>
-                                </template>
-                            </div>
+{{-- ═══════════════════════════════════════════════════════ HERO ═══════════════════════════════════════════════════════ --}}
+<section class="hero">
+    <div class="container">
+
+        <span class="eyebrow fade-up">MovieShelf Cloud</span>
+
+        <h1 class="display fade-up delay-1">
+            Dein digitales<br>
+            <span class="display-italic">Filmregal.</span>
+        </h1>
+
+        <p class="fade-up delay-2">
+            Organisiere, verwalte und teile deine Filmsammlung –
+            modern, schnell und ohne technischen Aufwand.
+        </p>
+
+        {{-- ── Subdomain Form ────────────────────────────── --}}
+        <div x-data="{
+            subdomain: '{{ old('subdomain') }}',
+            available: {{ old('subdomain') ? 'true' : 'null' }},
+            checking: false,
+            async checkAvailability() {
+                if (this.subdomain.length < 3) { this.available = null; return; }
+                this.checking = true;
+                try {
+                    const res  = await fetch('{{ route('api.check.subdomain') }}?name=' + this.subdomain);
+                    const data = await res.json();
+                    this.available = data.available;
+                    this.subdomain = data.slug;
+                } catch(e) {
+                    this.available = null;
+                } finally {
+                    this.checking = false;
+                }
+            }
+        }" class="fade-up delay-3">
+
+            <form action="{{ route('tenant.register') }}" method="POST">
+                @csrf
+
+                {{-- URL input row --}}
+                <div class="subdomain-wrap">
+                    <span class="prefix">https://</span>
+                    <input
+                        type="text"
+                        id="subdomain"
+                        name="subdomain"
+                        x-model="subdomain"
+                        @input.debounce.900ms="checkAvailability()"
+                        placeholder="dein-name"
+                        required
+                        autocomplete="off"
+                    >
+                    <span class="suffix">.movieshelf.info</span>
+                    <template x-if="checking">
+                        <div class="status-icon status-checking" style="margin-left:.75rem"></div>
+                    </template>
+                    <template x-if="!checking && available === true">
+                        <div class="status-icon status-available" style="margin-left:.75rem">
+                            <i class="bi bi-check" style="color:#fff;font-size:12px;line-height:20px;width:20px;text-align:center;display:block"></i>
                         </div>
-
-                        <!-- APEX BENTO - THE ULTIMATE REVEAL -->
-                        <div x-show="available === true" x-cloak x-transition:enter="transition ease-out duration-2000" x-transition:enter-start="opacity-0 translate-y-96 scale-90 blur-[100px]" x-transition:enter-end="opacity-100 translate-y-0 scale-100 blur-0" class="mt-12 grid grid-cols-1 md:grid-cols-12 gap-16 text-left">
-                            
-                            <!-- Master Identity -->
-                            <div class="md:col-span-8 ultra-glass p-16 md:p-24 rounded-[3rem] space-y-16">
-                                <div class="text-[12px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100 pb-4 mb-12">MASTER IDENTITY</div>
-                                <div class="grid md:grid-cols-2 gap-12">
-                                    <div class="space-y-4">
-                                        <label class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Vorname Nachname</label>
-                                        <input type="text" name="name" placeholder="Max Mustermann" required class="w-full bg-gray-50/50 border border-gray-100 p-3 md:p-4 text-base md:text-lg text-[#222222] font-medium rounded-lg outline-none focus:border-orange-600/30 focus:ring-4 focus:ring-orange-600/5 transition-all">
-                                    </div>
-                                    <div class="space-y-4">
-                                        <label class="text-[11px] font-bold uppercase tracking-wider text-gray-400">E-Mail</label>
-                                        <input type="email" name="email" placeholder="info@movieshelf.info" required class="w-full bg-gray-50/50 border border-gray-100 p-3 md:p-4 text-base md:text-lg text-[#222222] font-medium rounded-lg outline-none focus:border-orange-600/30 focus:ring-4 focus:ring-orange-600/5 transition-all">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Authority Lock -->
-                            <div class="md:col-span-4 ultra-glass p-16 md:p-24 rounded-lg space-y-12">
-                                <div class="text-[12px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100 pb-4 mb-12">LOCK</div>
-                                <div class="space-y-8">
-                                    <div class="space-y-4">
-                                        <label class="text-[11px] font-bold uppercase tracking-wider text-gray-400">Passwort</label>
-                                        <input type="password" name="password" placeholder="••••••••" required class="w-full bg-gray-50/50 border border-gray-100 p-3 md:p-4 text-base md:text-lg text-[#222222] font-medium rounded-lg outline-none focus:border-orange-600/30 focus:ring-4 focus:ring-orange-600/5 transition-all">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- INITIALIZE THE APEX -->
-                            <div class="md:col-span-12 pt-20">
-                                <button type="submit" class="w-full bg-[#CC4B06] text-white py-4 md:py-6 font-bold uppercase text-[11px] tracking-widest hover:bg-[#A33C05] transition-all duration-300 rounded-[8px] shadow-lg shadow-orange-600/20 transform hover:-translate-y-1" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                                    INITIALIZE CLOUD
-                                </button>
-                                <div class="flex justify-center gap-16 mt-12 text-[10px] font-bold uppercase tracking-widest text-gray-300">
-                                    <span>Cloud Performance</span>
-                                    <span>•</span>
-                                    <span>Apex Core</span>
-                                </div>
-                            </div>
+                    </template>
+                    <template x-if="!checking && available === false">
+                        <div class="status-icon status-taken" style="margin-left:.75rem">
+                            <i class="bi bi-x" style="color:#fff;font-size:12px;line-height:20px;width:20px;text-align:center;display:block"></i>
                         </div>
-                    </form>
+                    </template>
                 </div>
 
-                <!-- Android Beta Tester Recruitment -->
-                <div class="mt-24 max-w-4xl mx-auto animate-reveal reveal-delay-3">
-                    <div class="bg-gray-50 border border-gray-100 rounded-2xl p-8 md:p-10 text-center relative overflow-hidden group">
-                        <div class="absolute -right-20 -top-20 w-64 h-64 bg-orange-600/5 rounded-full blur-3xl group-hover:bg-orange-600/10 transition-all duration-1000"></div>
-                        
-                        <div class="relative z-10">
-                            <div class="inline-flex items-center gap-3 px-4 py-2 bg-orange-50 text-orange-700 rounded-full text-[10px] font-bold uppercase tracking-widest mb-6">
-                                <span class="relative flex h-2 w-2">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                                </span>
-                                Android Beta Phase
-                            </div>
-                            
-                            <h3 class="text-2xl md:text-3xl font-bold text-[#222222] mb-4">Werde Beta-Tester!</h3>
-                            <p class="text-gray-500 font-medium mb-8 max-w-xl mx-auto leading-relaxed">
-                                Hilf uns dabei, die MovieShelf Android App zu perfektionieren. Werde einer unserer ersten Tester und gestalte die Zukunft deiner Filmsammlung mit.
-                            </p>
-                            
-                            <div class="flex flex-col md:flex-row items-center justify-center gap-6">
-                                <a href="mailto:support@movieshelf.info?subject=Android%20Beta%20Test" class="inline-flex items-center gap-3 px-8 py-3 bg-[#222222] text-white rounded-lg text-sm font-bold hover:bg-[#050505] transition-all h-[52px]">
-                                    <i class="bi bi-envelope-fill"></i>
-                                    Jetzt bewerben
-                                </a>
-                                
-                                <a href="https://play.google.com/store/apps/details?id=at.neuhaus.movieshelf&hl=de-DE&ah=TjcyMibHpYK5SRSIxlVkja_d-Vw" target="_blank" class="transition-transform hover:scale-105 active:scale-95">
-                                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/de_badge_web_generic.png" alt="Get it on Google Play" class="h-[78px] -my-[13px]">
-                                </a>
-                                
-                                <span class="text-gray-400 text-sm font-medium">oder schreib an: <span class="text-[#222222] font-bold">support@movieshelf.info</span></span>
-                            </div>
+                {{-- Registration fields (shown when subdomain is available) --}}
+                <div
+                    x-show="available === true"
+                    x-cloak
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    class="reg-form"
+                >
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>Vor- & Nachname</label>
+                            <input type="text" name="name" placeholder="Max Mustermann" required>
                         </div>
+                        <div class="field">
+                            <label>E-Mail</label>
+                            <input type="email" name="email" placeholder="max@example.com" required>
+                        </div>
+                        <div class="field">
+                            <label>Passwort</label>
+                            <input type="password" name="password" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        Cloud einrichten →
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</section>
+
+
+{{-- ═══════════════════════════════════════════════════════ SCREENSHOT ═══════════════════════════════════════════════════════ --}}
+<section class="section">
+    <div class="container">
+        <div class="screenshot-wrap">
+            <img src="{{ asset('img/screenshots/hero.png') }}" alt="MovieShelf Oberfläche">
+        </div>
+    </div>
+</section>
+
+
+{{-- ═══════════════════════════════════════════════════════ FEATURES ═══════════════════════════════════════════════════════ --}}
+<section class="section-sm" id="features" style="border-top:1px solid var(--border)">
+    <div class="container">
+        <div style="text-align:center; margin-bottom:3rem">
+            <span class="eyebrow">Features</span>
+            <h2 class="display" style="font-size:clamp(1.8rem,4vw,2.8rem);margin:.5rem 0 0">Was MovieShelf kann.</h2>
+            <div class="divider centered"></div>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon"><i class="bi bi-collection-play"></i></div>
+                <h3>Filmsammlung</h3>
+                <p>Alle deine Filme auf einen Blick, sortiert und durchsuchbar.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="bi bi-phone"></i></div>
+                <h3>Android App</h3>
+                <p>Native Android-App für unterwegs – dein Regal immer dabei.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="bi bi-arrow-repeat"></i></div>
+                <h3>Auto-Updates</h3>
+                <p>Immer die neuste Version – ohne manuellen Aufwand.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                <h3>Backups inklusive</h3>
+                <p>Deine Daten sind sicher und jederzeit wiederherstellbar.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{{-- ═══════════════════════════════════════════════════════ COMPARE ═══════════════════════════════════════════════════════ --}}
+<section class="section" style="border-top:1px solid var(--border)">
+    <div class="container">
+        <div style="text-align:center; margin-bottom:3rem">
+            <span class="eyebrow">Optionen</span>
+            <h2 class="display" style="font-size:clamp(1.8rem,4vw,2.8rem);margin:.5rem 0 0">Cloud oder Self-Hosted.</h2>
+            <div class="divider centered"></div>
+        </div>
+
+        <div class="compare-grid">
+
+            {{-- Self-Hosted --}}
+            <div class="plan-card">
+                <h3>Self-Hosted</h3>
+                <p class="sub">Volle Kontrolle auf deiner eigenen Hardware.</p>
+                <ul class="plan-list">
+                    <li class="check"><span class="check-icon bi bi-check" style="font-size:9px"></span>100 % Datenkontrolle</li>
+                    <li class="check"><span class="check-icon bi bi-check" style="font-size:9px"></span>Eigener Speicherplatz</li>
+                    <li class="dim"><span class="check-icon bi bi-check" style="font-size:9px"></span>Server-Wartung nötig</li>
+                    <li class="dim"><span class="check-icon bi bi-check" style="font-size:9px"></span>Manuelle Updates</li>
+                </ul>
+                <a href="https://github.com/lunasans/MovieShelf" target="_blank" rel="noopener" class="btn-outline">
+                    Source Code ansehen
+                </a>
+            </div>
+
+            {{-- Cloud --}}
+            <div class="plan-card featured">
+                <div class="plan-badge">Empfohlen</div>
+                <h3>MovieShelf Cloud</h3>
+                <p class="sub">Sofort nutzbar – ohne Setup, ohne Aufwand.</p>
+                <ul class="plan-list">
+                    <li class="check"><span class="check-icon bi bi-check" style="font-size:9px"></span>Sofort einsatzbereit</li>
+                    <li class="check"><span class="check-icon bi bi-check" style="font-size:9px"></span>Automatische Updates</li>
+                    <li class="check"><span class="check-icon bi bi-check" style="font-size:9px"></span>Automatische Backups</li>
+                    <li class="check"><span class="check-icon bi bi-check" style="font-size:9px"></span>Kostenloses Hosting</li>
+                </ul>
+                <button onclick="document.getElementById('subdomain').focus(); window.scrollTo({top:0,behavior:'smooth'})" class="btn-dark">
+                    Jetzt registrieren
+                </button>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+{{-- ═══════════════════════════════════════════════════════ ANDROID BETA ═══════════════════════════════════════════════════════ --}}
+<section class="section-sm beta-section">
+    <div class="container">
+        <div class="beta-inner">
+            <div class="text">
+                <div class="pulse-dot"><span></span>Android Beta</div>
+                <h2 class="display" style="font-size:1.6rem;margin:.25rem 0 .4rem">Werde Beta-Tester!</h2>
+                <p>Hilf uns die MovieShelf Android App zu perfektionieren und gestalte die Zukunft deiner Filmsammlung mit.</p>
+            </div>
+            <div class="beta-actions">
+                <a href="mailto:support@movieshelf.info?subject=Android%20Beta%20Test"
+                   class="btn-outline" style="display:inline-flex;align-items:center;gap:8px;padding:.65rem 1.25rem;width:auto">
+                    <i class="bi bi-envelope"></i> Jetzt bewerben
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=at.neuhaus.movieshelf&hl=de-DE"
+                   target="_blank" rel="noopener">
+                    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/de_badge_web_generic.png"
+                         alt="Get it on Google Play" style="height:52px;display:block">
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{{-- ═══════════════════════════════════════════════════════ FAQ ═══════════════════════════════════════════════════════ --}}
+@if(isset($faqs) && $faqs->count() > 0)
+<section class="section" id="faq" style="background: var(--surface); border-top:1px solid var(--border)">
+    <div class="container">
+        <div style="text-align:center; margin-bottom:4rem">
+            <span class="eyebrow">Fragen</span>
+            <h2 class="display" style="font-size:clamp(1.8rem,4vw,2.8rem);margin:.5rem 0 0">Antworten auf deine Fragen.</h2>
+            <div class="divider centered"></div>
+        </div>
+
+        <div class="faq-container" x-data="{ active: null }">
+            @foreach($faqs as $faq)
+            <div class="faq-item" :class="{ 'active': active === {{ $loop->index }} }">
+                <button class="faq-question" @click="active = (active === {{ $loop->index }} ? null : {{ $loop->index }})">
+                    <span>{{ $faq->question }}</span>
+                    <div class="faq-icon"></div>
+                </button>
+                <div class="faq-answer" x-show="active === {{ $loop->index }}" x-collapse>
+                    <div class="py-4">
+                        {!! $faq->answer !!}
                     </div>
                 </div>
             </div>
+            @endforeach
         </div>
     </div>
 </section>
+@endif
 
-<!-- Immersive Ultimate Gallery -->
-<section class="py-96 px-20 relative z-10" id="features">
-    <div class="max-w-[1900px] mx-auto space-y-64">
-        
-        <div class="text-center space-y-16 animate-reveal">
-            <h2 class="text-3xl md:text-5xl font-extrabold text-[#222222] tracking-tight">The Experience.</h2>
-            <div class="w-24 h-1 bg-[#CC4B06] mx-auto rounded-full mt-6"></div>
-        </div>
-        
-        <div class="md:col-span-12 ultra-glass min-h-[1000px] rounded-[8rem] relative overflow-hidden group shadow-4xl" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-            <img src="{{ asset('img/screenshots/hero.png') }}" class="absolute inset-0 w-full h-full object-cover transform scale-110 group-hover:scale-100 transition-all duration-3000 opacity-20 group-hover:opacity-100 filter contrast-125">
-            <div class="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent"></div>
-            <div class="absolute bottom-48 left-48 space-y-12 animate-reveal">
-                <h3 class="text-xl md:text-2xl font-bold text-[#222222] mb-4"></h3>
-                <p class="text-gray-500 font-medium max-w-lg mx-auto"></p>
-            </div>
-        </div>
-        
-        <!-- Feature Comparison (No Prices) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto pb-40 px-4 md:px-0">
-            
-            <!-- Self Hosted Tier -->
-            <div class="bg-white border border-gray-200 rounded-2xl p-8 md:p-10 flex flex-col shadow-sm hover:shadow-md transition-shadow">
-                <h3 class="text-3xl font-extrabold text-[#222222] mb-2 text-center">Self-Hosted</h3>
-                <p class="text-gray-500 text-sm mb-10 text-center">Volle Kontrolle auf deiner eigenen Hardware.</p>
-                
-                <ul class="space-y-5 mb-10 flex-grow">
-                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
-                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> 100% Datenkontrolle
-                    </li>
-                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
-                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Eigener Speicherplatz
-                    </li>
-                    <li class="flex items-center text-[15px] font-medium text-gray-400">
-                        <i class="bi bi-check-circle-fill text-gray-200 mr-4 text-lg"></i> Eigene Server-Wartung nötig
-                    </li>
-                    <li class="flex items-center text-[15px] font-medium text-gray-400">
-                        <i class="bi bi-check-circle-fill text-gray-200 mr-4 text-lg"></i> Manuelle Updates & Backups
-                    </li>
-                </ul>
-                
-                <a href="https://github.com/lunasans/MovieShelf" target="_blank" rel="noopener noreferrer" class="w-full py-4 border border-gray-300 rounded-lg text-[15px] font-bold text-[#222222] hover:bg-gray-50 transition-colors text-center block">Source Code</a>
-            </div>
 
-            <!-- Cloud Tier -->
-            <div class="bg-white border border-gray-200 rounded-2xl p-8 md:p-10 flex flex-col shadow-xl relative transform md:-translate-y-2">
-                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-[10px] uppercase tracking-widest font-bold px-4 py-1 rounded-full">RECOMMENDED</div>
-                <h3 class="text-3xl font-extrabold text-[#222222] mb-2 text-center">MovieShelf Cloud</h3>
-                <p class="text-gray-500 text-sm mb-10 text-center">Der sofort einsatzbereite Service ohne Aufwand.</p>
-                
-                <ul class="space-y-5 mb-10 flex-grow">
-                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
-                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Sofort ohne Setup nutzbar
-                    </li>
-                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
-                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Automatische Updates & Backups
-                    </li>
-                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
-                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Globale Erreichbarkeit
-                    </li>
-                    <li class="flex items-center text-[15px] font-medium text-[#222222]">
-                        <i class="bi bi-check-circle-fill text-black mr-4 text-lg"></i> Kostenloses Hosting inklusive
-                    </li>
-                </ul>
-                
-                <button onclick="document.getElementById('subdomain').focus()" class="w-full py-4 bg-[#050505] text-white rounded-lg text-[15px] font-bold shadow-md hover:bg-gray-800 transition-colors">Cloud registrieren</button>
-            </div>
-
-        </div>
-
-        <!-- CTA Section -->
-        <div class="text-center space-y-12 py-32">
-            <h2 class="text-4xl md:text-6xl font-extrabold text-[#222222] tracking-tight">Ready to start?</h2>
-            
-            <div class="pt-12">
-                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
-                        class="inline-flex items-center gap-6 px-10 py-4 bg-[#CC4B06] text-white group hover:shadow-xl transition-all duration-300 rounded-[8px]"
-                        @mouseenter="isHovering = true" @mouseleave="isHovering = false">
-                    <span class="font-bold uppercase text-[11px] tracking-widest">JOIN THE CLOUD</span>
-                    <i class="bi bi-arrow-right text-lg group-hover:translate-x-2 transition-all"></i>
-                </button>
-            </div>
-            
-            <div class="pt-16 text-[10px] font-bold uppercase tracking-[0.4em] text-gray-300">
-                MovieShelf Cloud • V2.10.4
-            </div>
-        </div>
+{{-- ═══════════════════════════════════════════════════════ CTA ═══════════════════════════════════════════════════════ --}}
+<section class="cta-section">
+    <div class="container">
+        <span class="eyebrow">Loslegen</span>
+        <h2 class="display" style="margin:.5rem 0 2rem">
+            Bereit für dein<br>
+            <span class="display-italic">digitales Filmregal?</span>
+        </h2>
+        <button onclick="document.getElementById('subdomain').focus(); window.scrollTo({top:0,behavior:'smooth'})"
+                class="btn-cta">
+            Cloud kostenlos starten <i class="bi bi-arrow-right"></i>
+        </button>
+        <p class="footer-note">MovieShelf Cloud · v2.10.4</p>
     </div>
 </section>
-
-<script>
-    window.addEventListener('scroll', () => {
-        document.body.style.setProperty('--scroll', window.pageYOffset);
-    });
-</script>
 
 @endsection

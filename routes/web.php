@@ -72,6 +72,9 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/settings', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'settings'])->name('admin.settings');
         Route::post('/settings', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'updateSettings'])->name('admin.settings.update');
         Route::post('/settings/test-mail', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'testMail'])->name('admin.settings.test-mail');
+
+        // FAQ Management
+        Route::resource('faqs', \App\Http\Controllers\Admin\CentralFaqController::class, ['as' => 'admin']);
     });
 
     // Telemetry API (Master only, gitignored)

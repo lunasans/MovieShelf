@@ -137,6 +137,7 @@
                 <li><a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">Dashboard</a></li>
                 <li><a href="{{ route('admin.tenants') }}" class="{{ request()->routeIs('admin.tenants') ? 'active' : '' }}">Filmregale (Tenants)</a></li>
                 <li><a href="{{ route('admin.settings') }}" class="{{ request()->routeIs('admin.settings') ? 'active' : '' }}">Plattform-Einstellungen</a></li>
+                <li><a href="{{ route('admin.faqs.index') }}" class="{{ request()->routeIs('admin.faqs.*') ? 'active' : '' }}">FAQ Verwalten</a></li>
                 <li style="margin-top: 2rem;"><a href="/" style="font-size: 0.9rem;">← Zur Landingpage</a></li>
             </ul>
         </nav>

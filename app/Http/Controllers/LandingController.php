@@ -11,6 +11,7 @@ class LandingController extends Controller
      */
     public function index()
     {
-        return view('landing');
+        $faqs = \App\Models\Faq::where('is_active', true)->orderBy('sort_order')->get();
+        return view('landing', compact('faqs'));
     }
 }
