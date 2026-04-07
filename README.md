@@ -1,14 +1,14 @@
-# MovieShelf 2.12.2
-UI-Layering & Premium Aesthetics
+# MovieShelf 2.12.3
+Final Modal Layering & Stacking Fix
 
-## Changelog 2.12.2
-- **UI**: Modal-Layering fix (Bestätigungs-Fenster schwebt nun korrekt über allen Elementen).
-- **Design**: "Blass"-Effekt behoben; das Modal hat nun einen dunkleren, hochwertigeren Backdrop mit Blur-Effekt (Cinematic Red Style).
-- **Core**: `@stack('modals')` im Layout integriert für saubere Element-Stapelung.
+## Changelog 2.12.3
+- **Fix**: Finaler CSS-Layer-Fix für die gesamte Plattform. Das Modal schwebt nun garantiert über allen `.glass`-Elementen.
+- **UI**: Helligkeit-Korrektur im Modal; der Text ist nun immer klar lesbar und wird nicht vom Backdrop überschattet.
+- **Design**: Backdrop-Optimierung für einen sauberen Cinematic-Look ohne "blasse" Artefakte.
 
 ---
 
-## Changelog 2.12.1 (Archiv)
+## Changelog 2.12.2 (Archiv)
 - **Fix**: Doppel-Initialisierung des Quill-Editors in Admin-Panel behoben.
 - **Fix**: Zu große Zeilenabstände (Margins) auf der Impressum-Seite korrigiert.
 - **Fix**: Layout-Problem in den Plattform-Einstellungen (E-Mail-Sektion) behoben.

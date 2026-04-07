@@ -46,12 +46,13 @@ $maxWidth = [
     x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
     x-show="show"
-    class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-[100]"
+    class="fixed inset-0 z-[100] flex flex-col items-center justify-center"
     style="display: {{ $show ? 'block' : 'none' }};"
 >
+    <!-- Backdrop -->
     <div
         x-show="show"
-        class="fixed inset-0 transform transition-all"
+        class="fixed inset-0 bg-gray-950/90 backdrop-blur-sm z-[100]"
         x-on:click="show = false"
         x-transition:enter="ease-out duration-300"
         x-transition:enter-start="opacity-0"
@@ -59,13 +60,12 @@ $maxWidth = [
         x-transition:leave="ease-in duration-200"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-    >
-        <div class="absolute inset-0 bg-gray-950/80 backdrop-blur-sm"></div>
-    </div>
+    ></div>
 
+    <!-- Modal Content -->
     <div
         x-show="show"
-        class="mb-6 bg-white dark:bg-[#1a1a1f] dark:border dark:border-white/10 dark:backdrop-blur-2xl rounded-2xl overflow-hidden shadow-2xl transform transition-all sm:w-full {{ $maxWidth }} sm:mx-auto"
+        class="relative z-[110] w-full max-w-2xl px-4 py-8 overflow-y-auto max-h-screen"
         x-transition:enter="ease-out duration-300"
         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
@@ -73,6 +73,8 @@ $maxWidth = [
         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
     >
-        {{ $slot }}
+        <div class="bg-white dark:bg-[#1a1a1f] dark:border dark:border-white/10 dark:backdrop-blur-2xl rounded-2xl overflow-hidden shadow-2xl">
+            {{ $slot }}
+        </div>
     </div>
 </div>
