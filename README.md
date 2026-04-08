@@ -1,7 +1,14 @@
-# MovieShelf 2.13.2
-Slider Size Correction
+# MovieShelf 2.13.3
+Width & Cache Fix
 
-## Changelog 2.13.2
+## Changelog 2.13.3
+- **Fix**: Maximale Breite des Screenshot-Sliders auf **800px** reduziert für ein kompakteres Erscheinungsbild.
+- **Fix**: CSS-Regeln mit `!important` verstärkt, um Cache-Probleme oder Overrides zu umgehen.
+- **Cache**: Laravel View-Cache manuell bereinigt.
+
+---
+
+## Changelog 2.13.2 (Archiv)
 - **Fix**: Screenshot-Slider Größe auf das exakte Originalmaß (Container-Breite) zurückgesetzt.
 - **Fix**: CSS-Limitierung auf 1000px entfernt, da dies als "zu groß" bzw. unpassend wahrgenommen wurde.
 - **Fix**: `fade-up` Animation vom Slider entfernt für einen direkteren Look.

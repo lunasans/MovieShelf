@@ -226,6 +226,8 @@
 
     /* ─── Screenshot section & Slider ────────────────────── */
     .screenshot-wrap {
+        max-width: 800px !important;
+        margin: 0 auto !important;
         border-radius: 12px;
         overflow: hidden;
         border: 1px solid var(--border);
