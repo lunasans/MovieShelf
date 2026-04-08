@@ -226,6 +226,8 @@
 
     /* ─── Screenshot section & Slider ────────────────────── */
     .screenshot-wrap {
+        max-width: 1000px;
+        margin: 0 auto;
         border-radius: 12px;
         overflow: hidden;
         border: 1px solid var(--border);
@@ -785,7 +787,7 @@
     next() { this.activeSlide = (this.activeSlide + 1) % this.slides.length },
     prev() { this.activeSlide = (this.activeSlide - 1 + this.slides.length) % this.slides.length },
     init() {
-        setInterval(() => this.next(), 6000);
+        setInterval(() => this.next(), 10000);
     }
 }">
     <div class="container">

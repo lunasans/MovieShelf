@@ -1,13 +1,15 @@
-# MovieShelf 2.13.0
-Screenshot Slider Feature
+# MovieShelf 2.13.1
+Slider Adjustments
 
-## Changelog 2.13.0
-- **Neu**: Interaktiver Screenshot-Slider auf der Landingpage mit Alpine.js.
-- **Neu**: Automatische Rotation und manuelle Navigation für Projekt-Features.
+## Changelog 2.13.1
+- **Refinement**: Maximale Breite des Screenshot-Sliders auf 1000px begrenzt für bessere Optik.
+- **Refinement**: Auto-Play Intervall auf 10 Sekunden verlängert.
 
 ---
 
-## Changelog 2.12.4 (Archiv)
+## Changelog 2.13.0 (Archiv)
+- **Neu**: Interaktiver Screenshot-Slider auf der Landingpage mit Alpine.js.
+- **Neu**: Automatische Rotation und manuelle Navigation für Projekt-Features.
 - **Fix**: `RouteNotFoundException` behoben, die beim Bestätigen der Regal-Löschung auftrat.
 - **Fix**: Lösch-Links werden nun immer für die zentrale Domain generiert.
 - **Fix**: Nach der Löschung erfolgt ein absoluter Redirect auf die zentrale Startseite, um Kontext-Konflikte zu vermeiden.
