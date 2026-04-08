@@ -224,18 +224,89 @@
     .btn-primary:hover  { background: var(--accent-hover); transform: translateY(-1px); }
     .btn-primary:active { transform: translateY(0); }
 
-    /* ─── Screenshot section ─────────────────────────────── */
+    /* ─── Screenshot section & Slider ────────────────────── */
     .screenshot-wrap {
         border-radius: 12px;
         overflow: hidden;
         border: 1px solid var(--border);
         background: var(--surface);
+        position: relative;
+    }
+
+    .slider-container {
+        position: relative;
+        display: flex;
+        transition: transform 0.5s ease-out;
+    }
+
+    .slider-slide {
+        min-width: 100%;
+        flex-shrink: 0;
     }
 
     .screenshot-wrap img {
         width: 100%;
         height: auto;
         display: block;
+    }
+
+    .slider-nav {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 1rem;
+        transform: translateY(-50%);
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .slider-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        pointer-events: auto;
+        color: var(--text);
+        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .slider-btn:hover {
+        background: var(--white);
+        color: var(--accent);
+        transform: scale(1.1);
+    }
+
+    .slider-dots {
+        position: absolute;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 0.5rem;
+        z-index: 10;
+    }
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .dot.active {
+        background: var(--accent);
+        width: 20px;
+        border-radius: 4px;
     }
 
     /* ─── Feature grid ───────────────────────────────────── */
@@ -703,11 +774,53 @@
 </section>
 
 
-{{-- ═══════════════════════════════════════════════════════ SCREENSHOT ═══════════════════════════════════════════════════════ --}}
-<section class="section">
+{{-- ═══════════════════════════════════════════════════════ SCREENSHOT SLIDER ═══════════════════════════════════════════════════════ --}}
+<section class="section" x-data="{ 
+    activeSlide: 0, 
+    slides: [
+        { src: '{{ asset('img/screenshots/hero.png') }}', alt: 'Dashboard Übersicht' },
+        { src: '{{ asset('img/screenshots/grid.png') }}', alt: 'Filmgitter Ansicht' },
+        { src: '{{ asset('img/screenshots/stats.png') }}', alt: 'Statistiken & Insights' }
+    ],
+    next() { this.activeSlide = (this.activeSlide + 1) % this.slides.length },
+    prev() { this.activeSlide = (this.activeSlide - 1 + this.slides.length) % this.slides.length },
+    init() {
+        setInterval(() => this.next(), 6000);
+    }
+}">
     <div class="container">
-        <div class="screenshot-wrap">
-            <img src="{{ asset('img/screenshots/hero.png') }}" alt="MovieShelf Oberfläche">
+        <div class="screenshot-wrap fade-up delay-4">
+            
+            {{-- Slides --}}
+            <div class="slider-container" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
+                <template x-for="(slide, index) in slides" :key="index">
+                    <div class="slider-slide">
+                        <img :src="slide.src" :alt="slide.alt">
+                    </div>
+                </template>
+            </div>
+
+            {{-- Navigation --}}
+            <div class="slider-nav">
+                <button @click="prev()" class="slider-btn" aria-label="Vorheriges Bild">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button @click="next()" class="slider-btn" aria-label="Nächstes Bild">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+
+            {{-- Dots --}}
+            <div class="slider-dots">
+                <template x-for="(slide, index) in slides" :key="index">
+                    <div 
+                        @click="activeSlide = index" 
+                        class="dot" 
+                        :class="activeSlide === index ? 'active' : ''"
+                    ></div>
+                </template>
+            </div>
+
         </div>
     </div>
 </section>
