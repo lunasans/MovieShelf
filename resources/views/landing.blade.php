@@ -226,8 +226,6 @@
 
     /* ─── Screenshot section & Slider ────────────────────── */
     .screenshot-wrap {
-        max-width: 1000px;
-        margin: 0 auto;
         border-radius: 12px;
         overflow: hidden;
         border: 1px solid var(--border);
@@ -791,7 +789,7 @@
     }
 }">
     <div class="container">
-        <div class="screenshot-wrap fade-up delay-4">
+        <div class="screenshot-wrap">
             
             {{-- Slides --}}
             <div class="slider-container" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">

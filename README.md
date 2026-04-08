@@ -1,7 +1,14 @@
-# MovieShelf 2.13.1
-Slider Adjustments
+# MovieShelf 2.13.2
+Slider Size Correction
 
-## Changelog 2.13.1
+## Changelog 2.13.2
+- **Fix**: Screenshot-Slider Größe auf das exakte Originalmaß (Container-Breite) zurückgesetzt.
+- **Fix**: CSS-Limitierung auf 1000px entfernt, da dies als "zu groß" bzw. unpassend wahrgenommen wurde.
+- **Fix**: `fade-up` Animation vom Slider entfernt für einen direkteren Look.
+
+---
+
+## Changelog 2.13.1 (Archiv)
 - **Refinement**: Maximale Breite des Screenshot-Sliders auf 1000px begrenzt für bessere Optik.
 - **Refinement**: Auto-Play Intervall auf 10 Sekunden verlängert.
 
