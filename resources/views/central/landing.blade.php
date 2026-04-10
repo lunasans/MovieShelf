@@ -177,10 +177,11 @@
             <h2 class="display" style="font-size:clamp(1.8rem,4vw,2.8rem);margin:.5rem 0 0">So sieht es aus.</h2>
             <div class="divider centered"></div>
         </div>
-        <div class="screenshot-wrap">
-            
+        <div class="screenshot-wrap" x-ref="wrap"
+             x-init="$el.style.setProperty('--slide-width', $el.offsetWidth + 'px'); window.addEventListener('resize', () => $el.style.setProperty('--slide-width', $el.offsetWidth + 'px'))">
+
             {{-- Slides --}}
-            <div class="slider-container" :style="`transform: translateX(calc(-${activeSlide} * (100% / ${slides.length})))`">
+            <div class="slider-container" :style="`transform: translateX(-${activeSlide * $refs.wrap.offsetWidth}px)`">
                 <template x-for="(slide, index) in slides" :key="index">
                     <div class="slider-slide">
                         <img :src="slide.src" :alt="slide.alt">
