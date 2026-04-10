@@ -100,15 +100,15 @@
                                     <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                                         <i class="bi bi-archive-fill text-emerald-500/50 text-xl"></i>
                                     </div>
-                                    <div>
-                                        <p class="text-sm font-black text-white tracking-wide mb-1">{{ $file['name'] }}</p>
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-black text-white tracking-wide mb-1 truncate">{{ $file['name'] }}</p>
                                         <p class="text-[9px] text-white/20 uppercase tracking-[0.2em] font-black">
                                             {{ date('d.m.Y H:i', $file['modified']) }} <span class="mx-2 text-emerald-500/20">|</span> {{ number_format($file['size'] / 1024 / 1024, 2) }} MB
                                         </p>
                                     </div>
                                 </div>
                                 
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 shrink-0 ml-4">
                                     <form action="{{ route('admin.import.backup.destroy', $file['name']) }}" method="POST" onsubmit="return confirm('Datei löschen?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="w-10 h-10 flex items-center justify-center text-white/10 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all">
@@ -116,12 +116,19 @@
                                         </button>
                                     </form>
 
-                                    <form action="{{ route('admin.import.backup.local') }}" method="POST">
+                                    <form action="{{ route('admin.import.backup.local') }}" method="POST" @submit="isImporting = true">
                                         @csrf
                                         <input type="hidden" name="filename" value="{{ $file['name'] }}">
-                                        <button type="submit" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-3">
-                                            <i class="bi bi-play-fill text-lg"></i>
-                                            Importieren
+                                        <button type="submit" :disabled="isImporting" 
+                                                class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-wait text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-3">
+                                            
+                                            <!-- Standard Icon -->
+                                            <i class="bi bi-play-fill text-lg" x-show="!isImporting" x-cloak></i>
+                                            
+                                            <!-- Loading Spinner -->
+                                            <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" x-show="isImporting" x-cloak></div>
+                                            
+                                            <span x-text="isImporting ? 'Importiere...' : 'Importieren'"></span>
                                         </button>
                                     </form>
                                 </div>
@@ -185,6 +192,7 @@
             return {
                 selectedFile: null,
                 isUploading: false,
+                isImporting: false,
                 progress: 0,
                 statusMessage: '',
                 chunkStatus: '',

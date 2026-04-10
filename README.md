@@ -1,5 +1,8 @@
-# MovieShelf 2.15.0
+# MovieShelf 2.15.1
 Digital Cinema Shelf - Update
+
+## Changelog 2.15.1 (Shelf)
+- **Fix**: SaaS-Backup-Import für große Dateien optimiert (Loading-State + PHP TimeLimit + Logging).
 
 ## Changelog 2.15.0 (Shelf)
 - **Neu**: MovieShelf Backup Import-Funktion (.zip).

@@ -125,7 +125,10 @@ class BackupImportController extends Controller
         $safeFilename = $this->sanitizeFilename($request->filename);
         $filePath = Storage::disk($this->importDisk)->path($this->importPath . '/' . $safeFilename);
         
+        Log::info("SaaS Local Import angefordert für: " . $safeFilename);
+
         if (!file_exists($filePath)) {
+            Log::error("SaaS Local Import fehlgeschlagen: Datei existiert nicht unter " . $filePath);
             return back()->with('error', 'Datei nicht auf dem Server gefunden.');
         }
 
@@ -134,6 +137,7 @@ class BackupImportController extends Controller
 
     protected function processZip($zipPath)
     {
+        set_time_limit(300); // Allow up to 5 minutes for large imports
         Log::info('SaaS Backup Import gestartet von: ' . $zipPath);
         $tempDir = storage_path('app/temp_import_' . uniqid());
         
