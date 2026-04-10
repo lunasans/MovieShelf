@@ -1,4 +1,4 @@
-@extends('layouts.saas')
+@extends('layouts.central')
 
 @section('content')
 <section class="pt-40 pb-32 px-8 min-h-screen">
