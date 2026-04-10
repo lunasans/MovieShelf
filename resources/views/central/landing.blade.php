@@ -27,7 +27,7 @@
                 if (this.subdomain.length < 3) { this.available = null; return; }
                 this.checking = true;
                 try {
-                    const res  = await fetch('{{ route('api.check.subdomain') }}?name=' + this.subdomain);
+                    const res  = await fetch('{{ route('api.check.subdomain', [], false) }}?name=' + this.subdomain);
                     const data = await res.json();
                     this.available = data.available;
                     this.subdomain = data.slug;

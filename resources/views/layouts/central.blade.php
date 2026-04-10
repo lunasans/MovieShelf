@@ -9,14 +9,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    @vite(['resources/css/landing.css'])
+    @vite(['resources/css/landing.css', 'resources/js/app.js'])
     <style>
         :root {
             --platinum-bg: #FFFFFF;
             --platinum-text: #222222;
-            --apex-accent: #CC4B06;
         }
+
+        [x-cloak] { display: none !important; }
         
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -27,33 +27,6 @@
 
         h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* APEX CURSOR */
-        #apex-cursor {
-            position: fixed;
-            top: 0; left: 0;
-            width: 40px; height: 40px;
-            border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s ease, height 0.3s ease, background 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #apex-cursor-dot {
-            width: 4px; height: 4px;
-            background: var(--apex-accent);
-            border-radius: 50%;
-        }
-
-        .cursor-hover #apex-cursor {
-            width: 80px; height: 80px;
-            background: rgba(0,0,0,0.03);
-            border-color: var(--apex-accent);
-        }
-
         .glass-ultra {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
@@ -91,9 +64,7 @@
         svg#grain-filter { display: none; }
     </style>
 </head>
-<body class="antialiased selection:bg-rose-600 selection:text-white" 
-      x-data="{ mouseX: 0, mouseY: 0, isHovering: false }"
-      @mousemove="mouseX = $event.clientX; mouseY = $event.clientY">
+<body class="antialiased selection:bg-rose-600 selection:text-white">
 
     <!-- Global Mesh Gradient (Subtle) -->
     <div class="mesh-bg">
@@ -104,17 +75,15 @@
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 right-0 z-50 px-8 py-6" x-data="{ menuOpen: false }">
         <div class="max-w-[1400px] mx-auto rounded-[8px] px-8 py-4 flex items-center justify-between transition-all duration-1200 glass-ultra shadow-sm relative">
-            <div class="flex items-center gap-4" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+            <div class="flex items-center gap-4">
                 <img src="/img/logo/logo_small.png" alt="Logo" class="h-10 bg-black/5 p-2 rounded-lg">
                 <span class="text-2xl font-black tracking-tight text-[#222222]">MOVIE<span class="text-orange-600">SHELF</span></span>
             </div>
             {{-- Desktop nav --}}
             <div class="hidden md:flex items-center gap-10 text-[13px] font-bold tracking-tight text-gray-500">
-                <a href="#features" class="hover:text-black transition-colors" @mouseenter="isHovering = true" @mouseleave="isHovering = false">Features</a>
-                <a href="/login" class="text-[11px] font-bold tracking-[0.1em] uppercase text-gray-400 hover:text-gray-700 transition-colors" @mouseenter="isHovering = true" @mouseleave="isHovering = false">Admin</a>
+                <a href="#features" class="hover:text-black transition-colors">Features</a>
                 <button onclick="document.getElementById('subdomain')?.focus(); window.scrollTo({top:0,behavior:'smooth'})"
-                        class="bg-[#CC4B06] text-white px-8 py-3 rounded-[8px] font-bold text-[11px] hover:bg-[#A33C05] transition-all active:scale-95"
-                        @mouseenter="isHovering = true" @mouseleave="isHovering = false">
+                        class="bg-[#CC4B06] text-white px-8 py-3 rounded-[8px] font-bold text-[11px] hover:bg-[#A33C05] transition-all active:scale-95">
                     REGISTRIEREN
                 </button>
             </div>
@@ -136,10 +105,6 @@
             <a href="#features" @click="menuOpen = false"
                class="text-sm font-bold text-gray-600 hover:text-black transition-colors py-2 px-4 rounded-lg hover:bg-gray-50">
                 Features
-            </a>
-            <a href="/login" @click="menuOpen = false"
-               class="text-sm font-bold text-gray-400 hover:text-gray-700 transition-colors py-2 px-4 rounded-lg hover:bg-gray-50">
-                Admin Login
             </a>
             <button @click="menuOpen = false; document.getElementById('subdomain')?.focus(); window.scrollTo({top:0,behavior:'smooth'})"
                     class="bg-[#CC4B06] text-white py-3 rounded-lg font-bold text-sm hover:bg-[#A33C05] transition-all mt-1">
