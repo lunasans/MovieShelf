@@ -81,7 +81,7 @@
             </div>
             {{-- Desktop nav --}}
             <div class="hidden md:flex items-center gap-10 text-[13px] font-bold tracking-tight text-gray-500">
-                <a href="#features" class="hover:text-black transition-colors">Features</a>
+                <a href="{{ route('landing') }}#features" class="hover:text-black transition-colors">Features</a>
                 <button onclick="document.getElementById('subdomain')?.focus(); window.scrollTo({top:0,behavior:'smooth'})"
                         class="bg-[#CC4B06] text-white px-8 py-3 rounded-[8px] font-bold text-[11px] hover:bg-[#A33C05] transition-all active:scale-95">
                     REGISTRIEREN
@@ -102,7 +102,7 @@
              x-transition:leave-end="opacity-0 -translate-y-2"
              @click.outside="menuOpen = false"
              class="max-w-[1400px] mx-auto mt-2 glass-ultra rounded-xl shadow-lg p-4 flex flex-col gap-2 md:hidden">
-            <a href="#features" @click="menuOpen = false"
+            <a href="{{ route('landing') }}#features" @click="menuOpen = false"
                class="text-sm font-bold text-gray-600 hover:text-black transition-colors py-2 px-4 rounded-lg hover:bg-gray-50">
                 Features
             </a>
@@ -160,14 +160,11 @@
             <div class="space-y-4">
                 <h4 class="font-bold text-xs uppercase tracking-widest text-gray-400">Navigation</h4>
                 <div class="flex flex-col gap-2">
-                    <a href="#features" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">Features</a>
+                    <a href="{{ route('landing') }}#features" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">Features</a>
                     @if(isset($faqs) && $faqs->count() > 0)
-                    <a href="#faq" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">FAQ</a>
+                    <a href="{{ route('landing') }}#faq" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">FAQ</a>
                     @endif
-                    <button onclick="document.getElementById('subdomain')?.focus(); window.scrollTo({top:0,behavior:'smooth'})"
-                            class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium text-left">
-                        Registrieren
-                    </button>
+                    <a href="{{ route('landing') }}" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">Registrieren</a>
                 </div>
             </div>
             {{-- Rechtliches --}}
