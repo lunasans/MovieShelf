@@ -26,9 +26,9 @@ class TrailerController extends Controller
             ->paginate(24);
 
         if ($request->ajax()) {
-            return view('trailers.partials.movie-card-list', compact('movies'))->render();
+            return view('tenant.trailers.partials.movie-card-list', compact('movies'))->render();
         }
 
-        return view('trailers.index', compact('movies'));
+        return view('tenant.trailers.index', compact('movies'));
     }
 }

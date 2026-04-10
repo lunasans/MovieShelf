@@ -119,7 +119,7 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-8 px-12 md:px-20">
                     @forelse($movies as $movie)
-                        @include('movies.partials.streaming-grid-item', ['movie' => $movie])
+                        @include('tenant.movies.partials.streaming-grid-item', ['movie' => $movie])
                     @empty
                         <div class="col-span-full py-32 text-center">
                             <i class="bi bi-search text-7xl text-white/5 mb-8 block"></i>
@@ -215,7 +215,7 @@
 
             <div x-ref="movieGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-8 px-12 md:px-20 pb-20">
                 @foreach($movies as $movie)
-                    @include('movies.partials.streaming-grid-item', ['movie' => $movie])
+                    @include('tenant.movies.partials.streaming-grid-item', ['movie' => $movie])
                 @endforeach
             </div>
 

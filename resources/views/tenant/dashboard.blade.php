@@ -414,10 +414,10 @@
             <div x-ref="movieGrid" :class="viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4' : 'flex flex-col gap-3'">
                 @forelse ($movies as $movie)
                     <template x-if="viewMode === 'grid'">
-                        @include('movies.partials.grid-item', ['movie' => $movie])
+                        @include('tenant.movies.partials.grid-item', ['movie' => $movie])
                     </template>
                     <template x-if="viewMode === 'list'">
-                        @include('movies.partials.list-item', ['movie' => $movie])
+                        @include('tenant.movies.partials.list-item', ['movie' => $movie])
                     </template>
                 @empty
                     <div class="col-span-full py-20 text-center glass rounded-2xl border-dashed">
@@ -468,7 +468,7 @@
             <div x-show="!selectedMovie && !loading && !error" class="h-full p-0 overflow-y-auto no-scrollbar">
                 <!-- Spacer to match Tabs on the left -->
                 <div class="h-[46px] mb-8"></div>
-                @include('movies.partials.latest', ['latestMovies' => $latestMovies])
+                @include('tenant.movies.partials.latest', ['latestMovies' => $latestMovies])
             </div>
 
             <!-- Dynamic Detail Content -->
@@ -491,7 +491,7 @@
                 </template>
                 <template x-if="!isStatsView && !selectedMovie">
                     <div class="animate-in fade-in duration-700">
-                        @include('movies.partials.streaming-layout')
+                        @include('tenant.movies.partials.streaming-layout')
                     </div>
                 </template>
                 
@@ -509,9 +509,9 @@
         </template>
 
         @if(\App\Models\Setting::get('boxset_quick_view_style', 'island') === 'modal')
-            @include('movies.partials.boxset-modal')
+            @include('tenant.movies.partials.boxset-modal')
         @else
-            @include('movies.partials.boxset-popover')
+            @include('tenant.movies.partials.boxset-popover')
         @endif
     </div>
 

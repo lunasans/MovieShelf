@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @vite(['resources/css/landing.css'])
     <style>
         :root {
             --platinum-bg: #FFFFFF;
@@ -161,7 +162,7 @@
                 </div>
                 <p class="text-gray-500 text-sm font-medium leading-relaxed">
                     Elevating movie collections to a cinematic cloud experience. <br>
-                    Platinum Apex: Ultimate Edition v2.10.4
+                    Platinum Apex: Ultimate Edition v2.14.0
                 </p>
             </div>
             <div class="md:col-span-2"></div>
@@ -171,7 +172,7 @@
                     <a href="#" class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 hover:bg-[#CC4B06] hover:text-white transition-all"><i class="bi bi-twitter-x text-xl"></i></a>
                 </div>
                 <div class="flex flex-col items-end gap-2 text-gray-400 text-[10px] font-bold uppercase tracking-[0.5em] text-right mt-4">
-                    <span>© 2026 RENÉ NEUHAUS • APEX ULTIMATE PROTOCOL</span>
+                    <span>© 2026 RENÉ NEUHAUS</span>
                     <div class="flex items-center gap-4 mt-2">
                         <a href="{{ route('privacy') }}" class="hover:text-[#CC4B06] transition-colors">DATENSCHUTZ</a>
                         <span>•</span>

@@ -33,7 +33,7 @@ class ProfileController extends Controller
             $qrCodeSvg = $this->generateQrCodeSvg($user->email, $secret);
         }
 
-        return view('profile.edit', [
+        return view('tenant.profile.edit', [
             'user' => $user,
             'qrCodeSvg' => $qrCodeSvg,
             'secret' => $secret,

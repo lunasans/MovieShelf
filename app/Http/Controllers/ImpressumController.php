@@ -21,9 +21,9 @@ class ImpressumController extends Controller
         }
 
         if (request()->ajax()) {
-            return view('movies.partials.impressum', compact('name', 'email', 'content', 'enabled'));
+            return view('tenant.movies.partials.impressum', compact('name', 'email', 'content', 'enabled'));
         }
 
-        return view('impressum', compact('name', 'email', 'content', 'enabled'));
+        return view('tenant.impressum', compact('name', 'email', 'content', 'enabled'));
     }
 }

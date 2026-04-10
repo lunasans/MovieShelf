@@ -96,14 +96,14 @@ class StatsController extends Controller
             ->get();
 
         if (request()->ajax()) {
-            return view('movies.partials.stats', compact(
+            return view('tenant.movies.partials.stats', compact(
                 'totalFilms', 'totalRuntime', 'avgRuntime', 'hours', 'days',
                 'yearStats', 'collections', 'ratings', 'genres',
                 'yearDistribution', 'decades', 'watchedFilms', 'watchedPercentage'
             ));
         }
 
-        return view('statistics', compact(
+        return view('tenant.statistics', compact(
             'totalFilms', 'totalRuntime', 'avgRuntime', 'hours', 'days',
             'yearStats', 'collections', 'ratings', 'genres',
             'yearDistribution', 'decades', 'watchedFilms', 'watchedPercentage'

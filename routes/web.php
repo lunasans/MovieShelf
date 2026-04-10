@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Landing Page (SaaS Home)
-Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
+Route::get('/', [\App\Http\Controllers\Central\LandingController::class, 'index'])->name('landing');
 Route::get('/debug-domain', function () {
     return [
         'hostname' => request()->getHost(),
@@ -24,21 +24,21 @@ Route::get('/debug-domain', function () {
 });
 
 Route::get('/privacy', function () {
-    return view('privacy');
+    return view('central.privacy');
 })->name('privacy');
 
 Route::get('/account-deletion', function () {
-    return view('account-deletion');
+    return view('central.account-deletion');
 })->name('account-deletion');
 
 Route::get('/impressum', function () {
-    return view('central_impressum');
+    return view('central.impressum');
 })->name('saas.impressum');
 
-Route::get('/api/check-subdomain', [\App\Http\Controllers\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain');
-Route::post('/claim', [\App\Http\Controllers\RegisterTenantController::class, 'store'])->name('tenant.register');
-Route::get('/activate/{token}', [\App\Http\Controllers\RegisterTenantController::class, 'activate'])->name('tenant.activate');
-Route::get('/forget-shelf/{tenant}', [\App\Http\Controllers\CentralDeletionController::class, 'confirm'])->name('central.tenant.forget')->middleware(['signed']);
+Route::get('/api/check-subdomain', [\App\Http\Controllers\Central\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain');
+Route::post('/claim', [\App\Http\Controllers\Central\RegisterTenantController::class, 'store'])->name('tenant.register');
+Route::get('/activate/{token}', [\App\Http\Controllers\Central\RegisterTenantController::class, 'activate'])->name('tenant.activate');
+Route::get('/forget-shelf/{tenant}', [\App\Http\Controllers\Central\CentralDeletionController::class, 'confirm'])->name('central.tenant.forget')->middleware(['signed']);
 
 // Central Storage Proxy (Required when public/storage symlink is removed)
 Route::get('/media/{path}', function ($path) {

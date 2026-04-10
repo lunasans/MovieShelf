@@ -1,14 +1,15 @@
-# MovieShelf 2.13.3
-Width & Cache Fix
+# MovieShelf 2.14.0
+Architecture Decoupling & Refactor
 
-## Changelog 2.13.3
-- **Fix**: Maximale Breite des Screenshot-Sliders auf **800px** reduziert für ein kompakteres Erscheinungsbild.
-- **Fix**: CSS-Regeln mit `!important` verstärkt, um Cache-Probleme oder Overrides zu umgehen.
-- **Cache**: Laravel View-Cache manuell bereinigt.
+## Changelog 2.14.0
+- **Refactor**: Komplette architektonische Entkoppelung der zentralen SaaS-Landingpage von der Mandanten-Shelf-Logik.
+- **Refactor**: Alle Controller und Views wurden in dedizierte `central/` und `tenant/` Namespaces/Verzeichnisse verschoben.
+- **Optimierung**: Extraktion von ca. 650 Zeilen Inline-CSS der Landingpage in eine externe `landing.css`.
+- **Refinement**: Aktualisierte Vite-Konfiguration und zentrales Layout für optimiertes Asset-Management.
 
 ---
 
-## Changelog 2.13.2 (Archiv)
+## Changelog 2.13.3 (Archiv)
 - **Fix**: Screenshot-Slider Größe auf das exakte Originalmaß (Container-Breite) zurückgesetzt.
 - **Fix**: CSS-Limitierung auf 1000px entfernt, da dies als "zu groß" bzw. unpassend wahrgenommen wurde.
 - **Fix**: `fade-up` Animation vom Slider entfernt für einen direkteren Look.

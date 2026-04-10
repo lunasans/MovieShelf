@@ -59,12 +59,12 @@ class MovieController extends Controller
                 : Setting::get('default_guest_layout', 'classic');
 
             if ($currentLayout === 'streaming') {
-                return view('movies.partials.streaming-movie-list-ajax', compact('movies'))->render();
+                return view('tenant.movies.partials.streaming-movie-list-ajax', compact('movies'))->render();
             }
-            return view('movies.partials.movie-list-ajax', compact('movies', 'viewMode'))->render();
+            return view('tenant.movies.partials.movie-list-ajax', compact('movies', 'viewMode'))->render();
         }
 
-        return view('dashboard', compact(
+        return view('tenant.dashboard', compact(
             'movies',
             'collectionTypes',
             'latestMovies',
@@ -81,7 +81,7 @@ class MovieController extends Controller
             ? auth()->user()->layout 
             : Setting::get('default_guest_layout', 'classic');
 
-        return view('movies.show', compact('movie', 'layoutMode'));
+        return view('tenant.movies.show', compact('movie', 'layoutMode'));
     }
 
     public function details(Movie $movie)
@@ -104,7 +104,7 @@ class MovieController extends Controller
             ? auth()->user()->layout 
             : \App\Models\Setting::get('default_guest_layout', 'classic');
 
-        return view('movies.partials.details', compact('movie', 'similarMovies', 'layoutMode'));
+        return view('tenant.movies.partials.details', compact('movie', 'similarMovies', 'layoutMode'));
     }
 
     public function random(Request $request)

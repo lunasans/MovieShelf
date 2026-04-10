@@ -1,6 +1,6 @@
 <x-app-layout>
 @if($layoutMode === 'streaming')
-    @include('movies.partials.streaming-details')
+    @include('tenant.movies.partials.streaming-details')
 @else
     <div class="relative min-h-screen">
         <!-- Backdrop (Subtle) -->
@@ -16,7 +16,7 @@
             </div>
 
             <div class="glass-strong p-10 rounded-[3.5rem] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-                @include('movies.partials.details', ['movie' => $movie])
+                @include('tenant.movies.partials.details', ['movie' => $movie])
             </div>
         </div>
     </div>

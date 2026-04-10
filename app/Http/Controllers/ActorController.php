@@ -34,10 +34,10 @@ class ActorController extends Controller
         $letter = strtoupper($request->get('letter'));
 
         if ($request->ajax()) {
-            return view('actors.partials.actor-list', compact('groupedActors'))->render();
+            return view('tenant.actors.partials.actor-list', compact('groupedActors'))->render();
         }
 
-        return view('actors.index', compact(
+        return view('tenant.actors.index', compact(
             'actors',
             'groupedActors',
             'availableLetters',
@@ -100,14 +100,14 @@ class ActorController extends Controller
     {
         $data = $this->getActorData($actor);
 
-        return view('actors.show', $data);
+        return view('tenant.actors.show', $data);
     }
 
     public function details(Actor $actor)
     {
         $data = $this->getActorData($actor);
 
-        return view('actors.partials.details', $data);
+        return view('tenant.actors.partials.details', $data);
     }
 
     protected function getActorData(Actor $actor)
