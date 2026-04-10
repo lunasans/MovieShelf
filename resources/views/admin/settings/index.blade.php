@@ -29,6 +29,11 @@
                 class="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 whitespace-nowrap shrink-0">
                 <i class="bi bi-envelope-fill"></i> E-Mail / Server
             </button>
+            <button @click="activeTab = 'backup'" 
+                :class="activeTab === 'backup' ? 'bg-rose-600 text-white shadow-xl shadow-rose-500/20' : 'text-white/30 hover:text-white hover:bg-white/5'" 
+                class="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 whitespace-nowrap shrink-0">
+                <i class="bi bi-cloud-download-fill"></i> Backup
+            </button>
         </div>
 
         <form action="{{ route('admin.settings.update') }}" method="POST">
@@ -401,6 +406,7 @@
                 </div>
             </div>
 
+
             <!-- Save Actions -->
             <div class="flex items-center justify-end mt-12 mb-10">
                 <button type="submit" class="px-12 py-6 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] transition-all shadow-2xl shadow-rose-600/30 flex items-center gap-4 transform hover:scale-[1.03] active:scale-[0.98]">
@@ -409,5 +415,57 @@
                 </button>
             </div>
         </form>
+
+        <!-- Backup Settings (Moved outside form for better download handling) -->
+        <div x-show="activeTab === 'backup'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="glass p-8 md:p-12 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 to-transparent pointer-events-none"></div>
+                <div class="flex items-center gap-6 mb-12">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl shadow-xl shadow-emerald-500/20 ring-2 ring-white/10">
+                        <i class="bi bi-cloud-download-fill"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-white tracking-tight uppercase">Daten-Export & Backup</h2>
+                        <p class="text-sm text-white/40 font-medium tracking-wide">Sichere deine gesamte Sammlung inklusive aller Medien.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-10">
+                    <div class="p-8 bg-black/20 border border-white/5 rounded-[2rem] flex flex-col md:flex-row items-center gap-8">
+                        <div class="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center shrink-0 border border-emerald-500/20">
+                            <i class="bi bi-archive text-emerald-400 text-3xl"></i>
+                        </div>
+                        <div class="flex-1 text-center md:text-left">
+                            <h3 class="text-lg font-black text-white uppercase tracking-widest mb-2">Vollständiges Backup (ZIP)</h3>
+                            <p class="text-xs text-white/50 leading-relaxed font-medium mb-6">
+                                Dieser Export erstellt ein ZIP-Archiv, das die gesamte SQLite-Datenbank sowie alle Cover, Backdrops und Schauspieler-Bilder enthält. Je nach Größe deiner Sammlung kann dieser Vorgang einige Zeit in Anspruch nehmen.
+                            </p>
+                            <a href="{{ route('admin.backup.export') }}" download class="inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20">
+                                <i class="bi bi-download"></i>
+                                Jetzt Exportieren
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 text-center">
+                            <div class="text-rose-500 text-2xl mb-2"><i class="bi bi-database"></i></div>
+                            <div class="text-[10px] font-black text-white/30 uppercase tracking-widest">Datenbank</div>
+                            <div class="text-white font-bold mt-1">SQLite</div>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 text-center">
+                            <div class="text-rose-500 text-2xl mb-2"><i class="bi bi-images"></i></div>
+                            <div class="text-[10px] font-black text-white/30 uppercase tracking-widest">Medien</div>
+                            <div class="text-white font-bold mt-1">Covers & Backdrops</div>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 text-center">
+                            <div class="text-rose-500 text-2xl mb-2"><i class="bi bi-people"></i></div>
+                            <div class="text-[10px] font-black text-white/30 uppercase tracking-widest">Akteure</div>
+                            <div class="text-white font-bold mt-1">Profile & Fotos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </x-admin-layout>

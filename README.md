@@ -1,5 +1,5 @@
 ![Logo](https://neuhaus.ovh/img/logo/logo.png)
-# MovieShelf v2.10.0 - Dein digitales Filmregal
+# MovieShelf v2.11.0 - Dein digitales Filmregal
 
 
 Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
@@ -171,7 +171,12 @@ Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
 - **Prepared Statements**: SQL-Injection-Schutz
 - **Password Hashing**: Bcrypt-Verschlüsselung
 
-## 🚀 Letzte Änderungen (2.10.0)
+## 🚀 Letzte Änderungen (2.11.0)
+
+- **New**: Vollständige Exportfunktion (Datenbank, Cover, Backdrops & Schauspieler-Bilder) im Admin-Bereich hinzugefügt.
+- **New**: ZIP-Archivierung für den vollständigen Datenexport implementiert.
+
+## 🚀 Version v2.10.0 (Historie)
 
 - **New**: Prüfung auf doppelte Einträge für Schauspieler (Name) und Filme (TMDb ID) hinzugefügt.
 - **Improved**: Unterstützung für Dubletten-Handling in der API (`POST /api/tmdb/import`) mit Status-Rückmeldung (`is_updated`).
@@ -386,9 +391,9 @@ Bei Fragen, Problemen oder Verbesserungsvorschlägen:
 - Nutzen Sie die Diskussionsfunktion im Repository
 
 
-**Version:** 2.10.0  - Laravel Framework Edition
+**Version:** 2.11.0  - Laravel Framework Edition
 
-**Letztes Update**: 6. April 2026  
+**Letztes Update**: 10. April 2026  
 **Status**: Aktiv entwickelt
 
 *Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
