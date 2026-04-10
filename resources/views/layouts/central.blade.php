@@ -109,8 +109,9 @@
                 <span class="text-2xl font-black tracking-tight text-[#222222]">MOVIE<span class="text-orange-600">SHELF</span></span>
             </div>
             {{-- Desktop nav --}}
-            <div class="hidden md:flex items-center gap-12 text-[13px] font-bold tracking-tight text-gray-500">
+            <div class="hidden md:flex items-center gap-10 text-[13px] font-bold tracking-tight text-gray-500">
                 <a href="#features" class="hover:text-black transition-colors" @mouseenter="isHovering = true" @mouseleave="isHovering = false">Features</a>
+                <a href="/login" class="text-[11px] font-bold tracking-[0.1em] uppercase text-gray-400 hover:text-gray-700 transition-colors" @mouseenter="isHovering = true" @mouseleave="isHovering = false">Admin</a>
                 <button onclick="document.getElementById('subdomain')?.focus(); window.scrollTo({top:0,behavior:'smooth'})"
                         class="bg-[#CC4B06] text-white px-8 py-3 rounded-[8px] font-bold text-[11px] hover:bg-[#A33C05] transition-all active:scale-95"
                         @mouseenter="isHovering = true" @mouseleave="isHovering = false">
@@ -135,6 +136,10 @@
             <a href="#features" @click="menuOpen = false"
                class="text-sm font-bold text-gray-600 hover:text-black transition-colors py-2 px-4 rounded-lg hover:bg-gray-50">
                 Features
+            </a>
+            <a href="/login" @click="menuOpen = false"
+               class="text-sm font-bold text-gray-400 hover:text-gray-700 transition-colors py-2 px-4 rounded-lg hover:bg-gray-50">
+                Admin Login
             </a>
             <button @click="menuOpen = false; document.getElementById('subdomain')?.focus(); window.scrollTo({top:0,behavior:'smooth'})"
                     class="bg-[#CC4B06] text-white py-3 rounded-lg font-bold text-sm hover:bg-[#A33C05] transition-all mt-1">

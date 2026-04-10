@@ -121,6 +121,32 @@
             </form>
         </div>
 
+        {{-- Tenant Login --}}
+        <div class="tenant-login fade-up delay-4"
+             x-data="{
+                 tenant: '',
+                 go() {
+                     const slug = this.tenant.trim().toLowerCase();
+                     if (slug.length > 1) window.location.href = 'https://' + slug + '.movieshelf.info';
+                 }
+             }">
+            <div class="tenant-login-wrap">
+                <span class="tenant-login-label">Bereits registriert?</span>
+                <div class="tenant-login-field">
+                    <input type="text"
+                           x-model="tenant"
+                           @keydown.enter="go()"
+                           placeholder="dein-name"
+                           autocomplete="off"
+                           spellcheck="false">
+                    <span class="tenant-login-suffix">.movieshelf.info</span>
+                </div>
+                <button class="tenant-login-btn" @click="go()" :disabled="tenant.trim().length < 2">
+                    Zur Cloud <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
         {{-- Trust Bar --}}
         <div class="trust-bar fade-up delay-4">
             <span><i class="bi bi-shield-check"></i> Kostenlos</span>

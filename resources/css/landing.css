@@ -644,6 +644,90 @@ li.dim   .check-icon { background: #E5E7EB; color: #9CA3AF; }
 .faq-item.active .faq-icon::after { transform: rotate(90deg); opacity: 0; }
 .faq-item.active .faq-icon::before { transform: rotate(180deg); }
 
+/* ─── Tenant Login ("Bereits registriert?") ─────────── */
+.tenant-login {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.tenant-login-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.tenant-login-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.tenant-login-field {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--white);
+    padding: 0 0.75rem;
+    height: 34px;
+    transition: border-color 0.2s;
+}
+
+.tenant-login-field:focus-within {
+    border-color: var(--accent);
+}
+
+.tenant-login-field input {
+    border: none;
+    outline: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+    background: transparent;
+    width: 100px;
+}
+
+.tenant-login-field input::placeholder {
+    color: #D1D5DB;
+    font-weight: 400;
+}
+
+.tenant-login-suffix {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.tenant-login-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: var(--text);
+    color: var(--white);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+}
+
+.tenant-login-btn:hover   { opacity: 0.8; }
+.tenant-login-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
 /* ─── Trust Bar ──────────────────────────────────────── */
 .trust-bar {
     display: flex;
