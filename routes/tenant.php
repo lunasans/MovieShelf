@@ -139,7 +139,11 @@ Route::middleware([
             // XML Import
             Route::get('import', [\App\Http\Controllers\Admin\XmlImportController::class, 'index'])->name('import.index');
             Route::post('import', [\App\Http\Controllers\Admin\XmlImportController::class, 'import'])->name('import.post');
-            Route::post('import/backup', [\App\Http\Controllers\Admin\BackupImportController::class, 'import'])->name('import.backup');
+            // Backup Import (Dedicated Page)
+            Route::get('backup-import', [\App\Http\Controllers\Admin\BackupImportController::class, 'index'])->name('import.backup.index');
+            Route::post('import/backup', [\App\Http\Controllers\Admin\BackupImportController::class, 'import'])->name('import.backup.upload');
+            Route::post('import/backup-local', [\App\Http\Controllers\Admin\BackupImportController::class, 'importLocal'])->name('import.backup.local');
+            Route::delete('import/backup/{filename}', [\App\Http\Controllers\Admin\BackupImportController::class, 'destroy'])->name('import.backup.destroy');
             Route::delete('import/{filename}', [\App\Http\Controllers\Admin\XmlImportController::class, 'destroy'])->name('import.destroy');
 
             // Users

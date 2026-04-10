@@ -10,18 +10,62 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
 class BackupImportController extends Controller
 {
+    protected $importDisk = 'local';
+    protected $importPath = 'backups/import';
+
+    public function index()
+    {
+        // Ensure directory exists
+        if (!Storage::disk($this->importDisk)->exists($this->importPath)) {
+            Storage::disk($this->importDisk)->makeDirectory($this->importPath);
+        }
+
+        $files = Storage::disk($this->importDisk)->files($this->importPath);
+        $zipFiles = array_map(function ($file) {
+            return [
+                'name' => basename($file),
+                'size' => Storage::disk($this->importDisk)->size($file),
+                'modified' => Storage::disk($this->importDisk)->lastModified($file),
+            ];
+        }, array_filter($files, fn ($f) => str_ends_with(strtolower($f), '.zip')));
+
+        usort($zipFiles, fn ($a, $b) => $b['modified'] <=> $a['modified']);
+
+        return view('admin.import.backup', compact('zipFiles'));
+    }
+
     public function import(Request $request)
     {
         $request->validate([
-            'backup_file' => 'required|file|mimes:zip|max:512000', // 500MB
+            'backup_file' => 'required|file|mimes:zip|max:512000',
         ]);
 
-        Log::info('SaaS Backup Import gestartet');
-        $zipFile = $request->file('backup_file');
+        return $this->processZip($request->file('backup_file')->getRealPath());
+    }
+
+    public function importLocal(Request $request)
+    {
+        $request->validate([
+            'filename' => 'required|string',
+        ]);
+
+        $filePath = Storage::disk($this->importDisk)->path($this->importPath . '/' . $request->filename);
+        
+        if (!file_exists($filePath)) {
+            return back()->with('error', 'Datei nicht auf dem Server gefunden.');
+        }
+
+        return $this->processZip($filePath);
+    }
+
+    protected function processZip($zipPath)
+    {
+        Log::info('SaaS Backup Import gestartet von: ' . $zipPath);
         $tempDir = storage_path('app/temp_import_' . uniqid());
         
         if (!File::isDirectory($tempDir)) {
@@ -29,10 +73,9 @@ class BackupImportController extends Controller
         }
 
         $zip = new ZipArchive();
-        if ($zip->open($zipFile->getRealPath()) === TRUE) {
+        if ($zip->open($zipPath) === TRUE) {
             $zip->extractTo($tempDir);
             $zip->close();
-            Log::info('ZIP extrahiert nach: ' . $tempDir);
         } else {
             return back()->with('error', 'Fehler beim Entpacken des ZIP-Archivs.');
         }
@@ -40,12 +83,10 @@ class BackupImportController extends Controller
         $importedDbPath = $tempDir . DIRECTORY_SEPARATOR . 'database.sqlite';
         if (!file_exists($importedDbPath)) {
             File::deleteDirectory($tempDir);
-            Log::warning('Import abgebrochen: database.sqlite fehlt im ZIP');
-            return back()->with('error', 'Die hochgeladene Datei ist kein gültiges MovieShelf-Backup (database.sqlite fehlt).');
+            return back()->with('error', 'Ungültiges MovieShelf-Backup (database.sqlite fehlt).');
         }
 
         try {
-            // 1. Setup auxiliary connection
             config(['database.connections.import_aux' => [
                 'driver' => 'sqlite',
                 'database' => $importedDbPath,
@@ -55,47 +96,39 @@ class BackupImportController extends Controller
 
             DB::beginTransaction();
 
-            // 2. Clear existing collections (Wipe & Replace strategy)
-            // We use direct DB calls to bypass potential model events that might interfere with bulk import
+            // Clear tables
             DB::table('film_actor')->delete();
             DB::table('movies')->delete();
             DB::table('actors')->delete();
             
-            Log::info('Lokale Tabellen bereinigt (Movies, Actors, film_actor)');
-
-            // Get current table columns to filter imported data
             $movieColumns = Schema::getColumnListing('movies');
             $actorColumns = Schema::getColumnListing('actors');
             $filmActorColumns = Schema::getColumnListing('film_actor');
 
-            // 3. Import Actors
+            // Actors
             $importedActors = DB::connection('import_aux')->table('actors')->get();
             foreach ($importedActors as $actorData) {
                 $data = array_intersect_key((array)$actorData, array_flip($actorColumns));
                 DB::table('actors')->insert($data);
             }
-            Log::info(count($importedActors) . ' Schauspieler importiert');
 
-            // 4. Import Movies
+            // Movies
             $importedMovies = DB::connection('import_aux')->table('movies')->get();
             foreach ($importedMovies as $movieData) {
                 $data = array_intersect_key((array)$movieData, array_flip($movieColumns));
-                $data['user_id'] = auth()->id(); // Ensure ownership
+                $data['user_id'] = auth()->id();
                 DB::table('movies')->insert($data);
             }
-            Log::info(count($importedMovies) . ' Filme importiert');
 
-            // 5. Import Relations
+            // Relations
             $importedRelations = DB::connection('import_aux')->table('film_actor')->get();
             foreach ($importedRelations as $relData) {
                 $data = array_intersect_key((array)$relData, array_flip($filmActorColumns));
                 DB::table('film_actor')->insert($data);
             }
-            Log::info(count($importedRelations) . ' Verknüpfungen importiert');
 
-            // 6. Media Assets
+            // Media
             $tenantId = tenancy()->tenant->id;
-            // Based on routes/tenant.php serving logic
             $targetPublicPath = base_path("storage/tenant{$tenantId}/app/public");
 
             if (!File::isDirectory($targetPublicPath)) {
@@ -111,23 +144,29 @@ class BackupImportController extends Controller
                         File::makeDirectory($targetPath, 0755, true);
                     }
                     File::copyDirectory($sourcePath, $targetPath);
-                    Log::info("Medien-Ordner '{$folder}' kopiert nach: " . $targetPath);
                 }
             }
 
             DB::commit();
             File::deleteDirectory($tempDir);
-            Log::info('SaaS Backup Import erfolgreich abgeschlossen');
 
-            return back()->with('success', 'Backup erfolgreich importiert! ' . count($importedMovies) . ' Filme und ' . count($importedActors) . ' Schauspieler hinzugefügt.');
+            return back()->with('success', 'Backup erfolgreich importiert! ' . count($importedMovies) . ' Filme hinzugefügt.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('SaaS Backup Import Error: ' . $e->getMessage());
-            if (File::isDirectory($tempDir)) {
-                File::deleteDirectory($tempDir);
-            }
-            return back()->with('error', 'Fehler beim Importieren der Daten: ' . $e->getMessage());
+            Log::error('Backup Import Error: ' . $e->getMessage());
+            if (File::isDirectory($tempDir)) { File::deleteDirectory($tempDir); }
+            return back()->with('error', 'Fehler beim Importieren: ' . $e->getMessage());
         }
+    }
+
+    public function destroy($filename)
+    {
+        $path = $this->importPath . '/' . $filename;
+        if (Storage::disk($this->importDisk)->exists($path)) {
+            Storage::disk($this->importDisk)->delete($path);
+            return back()->with('success', 'Flaschendatei gelöscht.');
+        }
+        return back()->with('error', 'Datei nicht gefunden.');
     }
 }

@@ -161,6 +161,10 @@
                         href="{{ route('admin.import.index') }}"
                         class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.import.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
                         <i class="bi bi-file-earmark-code-fill"></i> <span class="font-bold text-sm">XML Import</span>
+                    </a> <a
+                        href="{{ route('import.backup.index') }}"
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('import.backup.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                        <i class="bi bi-cloud-upload-fill"></i> <span class="font-bold text-sm">Backup Import</span>
                     </a> <!-- System -->
                     <div class="pt-8 pb-3 px-6"> <span
                             class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">System</span> </div> <a
