@@ -1,7 +1,15 @@
-# MovieShelf 2.14.0
-Architecture Decoupling & Refactor
+# MovieShelf 2.15.0
+Digital Cinema Shelf - Update
 
-## Changelog 2.14.0
+## Changelog 2.15.0 (Shelf)
+- **Neu**: MovieShelf Backup Import-Funktion (.zip).
+- **Kompatibilität**: Ermöglicht den Import von Backups aus der Self Hosted Version (v2.11.0+) in die SaaS-Umgebung.
+- **Sicherheit**: Automatisierte Schema-Validierung und Migration der importierten Filme in den Mandanten-Kontext.
+- **Medien**: Automatischer Transfer von Covers, Backdrops und Schauspieler-Bildern in den Mandanten-Speicher.
+
+---
+
+## Changelog 2.14.0 (Archiv)
 - **Refactor**: Komplette architektonische Entkoppelung der zentralen SaaS-Landingpage von der Mandanten-Shelf-Logik.
 - **Refactor**: Alle Controller und Views wurden in dedizierte `central/` und `tenant/` Namespaces/Verzeichnisse verschoben.
 - **Optimierung**: Extraktion von ca. 650 Zeilen Inline-CSS der Landingpage in eine externe `landing.css`.

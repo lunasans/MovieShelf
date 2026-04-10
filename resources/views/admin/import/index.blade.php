@@ -104,5 +104,48 @@
                 </div>
             </div>
         </div>
+
+        <!-- Backup Import Section -->
+        <div class="space-y-8 mt-12">
+            <div class="glass p-10 rounded-[3.5rem] border-white/5 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 to-transparent pointer-events-none"></div>
+                
+                <h2 class="text-lg font-black text-white mb-8 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                        <i class="bi bi-cloud-upload-fill"></i>
+                    </div>
+                    MovieShelf ZIP Backup einspielen
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <form action="{{ route('admin.import.backup') }}" method="POST" enctype="multipart/form-data" class="group relative border-2 border-dashed border-emerald-500/10 rounded-[2.5rem] p-12 text-center hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all cursor-pointer">
+                        @csrf
+                        <input type="file" name="backup_file" id="backup_file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="this.form.submit()">
+                        <div class="space-y-6">
+                            <div class="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform shadow-xl shadow-emerald-500/5">
+                                <i class="bi bi-file-earmark-zip text-4xl text-emerald-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-lg text-white font-black tracking-tight">Vollständiges Backup (.zip)</p>
+                                <p class="text-white/20 text-[10px] mt-2 uppercase tracking-[0.2em] font-black italic">Importiert Datenbank & Medien</p>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="p-8 bg-black/20 rounded-[2rem] border border-white/5">
+                        <h3 class="text-[10px] font-black text-emerald-500/40 uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+                            <i class="bi bi-exclamation-triangle-fill"></i> Wichtiger Hinweis für Backups
+                        </h3>
+                        <p class="text-xs text-white/40 leading-relaxed font-medium italic mb-6">
+                            Ein Backup-Import **löscht deine aktuelle Sammlung** in diesem Account und ersetzt sie vollständig durch den Stand aus der Backup-Datei. Dies beinhaltet Filme, Schauspieler und alle verknüpften Bilder.
+                        </p>
+                        <div class="flex items-center gap-4 text-[10px] font-black text-white/20 uppercase tracking-widest bg-white/5 p-4 rounded-xl border border-white/5">
+                            <i class="bi bi-check-circle-fill text-emerald-500"></i>
+                            <span>Unterstützt Backups ab v2.11.0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </x-admin-layout>
