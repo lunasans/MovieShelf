@@ -20,6 +20,8 @@ class BackupImportController extends Controller
 
     public function index()
     {
+        $this->authorizeAdmin();
+
         // Ensure directory exists
         if (!Storage::disk($this->importDisk)->exists($this->importPath)) {
             Storage::disk($this->importDisk)->makeDirectory($this->importPath);
@@ -41,6 +43,8 @@ class BackupImportController extends Controller
 
     public function import(Request $request)
     {
+        $this->authorizeAdmin();
+
         $request->validate([
             'backup_file' => 'required|file|mimes:zip|max:512000',
         ]);
@@ -50,11 +54,14 @@ class BackupImportController extends Controller
 
     public function importLocal(Request $request)
     {
+        $this->authorizeAdmin();
+
         $request->validate([
             'filename' => 'required|string',
         ]);
 
-        $filePath = Storage::disk($this->importDisk)->path($this->importPath . '/' . $request->filename);
+        $safeFilename = $this->sanitizeFilename($request->filename);
+        $filePath = Storage::disk($this->importDisk)->path($this->importPath . '/' . $safeFilename);
         
         if (!file_exists($filePath)) {
             return back()->with('error', 'Datei nicht auf dem Server gefunden.');
@@ -74,6 +81,18 @@ class BackupImportController extends Controller
 
         $zip = new ZipArchive();
         if ($zip->open($zipPath) === TRUE) {
+            // Security Check: Zip Slip protection
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $stat = $zip->statIndex($i);
+                $name = $stat['name'];
+                if (strpos($name, '..') !== false || str_starts_with($name, '/') || str_starts_with($name, '\\')) {
+                    $zip->close();
+                    File::deleteDirectory($tempDir);
+                    Log::warning('Sicherheitsrisiko blockiert: Ungültiger Dateipfad im ZIP: ' . $name);
+                    return back()->with('error', 'Sicherheitsrisiko: Ungültige Pfade im ZIP-Archiv entdeckt.');
+                }
+            }
+
             $zip->extractTo($tempDir);
             $zip->close();
         } else {
@@ -86,6 +105,13 @@ class BackupImportController extends Controller
             return back()->with('error', 'Ungültiges MovieShelf-Backup (database.sqlite fehlt).');
         }
 
+        // Security Check: Validate SQLite Header
+        if (!$this->isValidSqlite($importedDbPath)) {
+            File::deleteDirectory($tempDir);
+            Log::warning('Sicherheitsrisiko blockiert: database.sqlite ist keine gültige SQLite-Datei');
+            return back()->with('error', 'Die Datenbank im Backup ist beschädigt oder keine gültige SQLite-Datei.');
+        }
+
         try {
             config(['database.connections.import_aux' => [
                 'driver' => 'sqlite',
@@ -96,7 +122,7 @@ class BackupImportController extends Controller
 
             DB::beginTransaction();
 
-            // Clear tables
+            // Clear tables (Tenant scope)
             DB::table('film_actor')->delete();
             DB::table('movies')->delete();
             DB::table('actors')->delete();
@@ -116,7 +142,7 @@ class BackupImportController extends Controller
             $importedMovies = DB::connection('import_aux')->table('movies')->get();
             foreach ($importedMovies as $movieData) {
                 $data = array_intersect_key((array)$movieData, array_flip($movieColumns));
-                $data['user_id'] = auth()->id();
+                $data['user_id'] = auth()->id(); // Ensure tenant owner association
                 DB::table('movies')->insert($data);
             }
 
@@ -149,6 +175,7 @@ class BackupImportController extends Controller
 
             DB::commit();
             File::deleteDirectory($tempDir);
+            Log::info('Backup Import erfolgreich abgeschlossen für Tenant: ' . $tenantId);
 
             return back()->with('success', 'Backup erfolgreich importiert! ' . count($importedMovies) . ' Filme hinzugefügt.');
 
@@ -162,11 +189,42 @@ class BackupImportController extends Controller
 
     public function destroy($filename)
     {
-        $path = $this->importPath . '/' . $filename;
+        $this->authorizeAdmin();
+
+        $safeFilename = $this->sanitizeFilename($filename);
+        $path = $this->importPath . '/' . $safeFilename;
+
         if (Storage::disk($this->importDisk)->exists($path)) {
             Storage::disk($this->importDisk)->delete($path);
-            return back()->with('success', 'Flaschendatei gelöscht.');
+            return back()->with('success', 'Backup-Datei gelöscht.');
         }
         return back()->with('error', 'Datei nicht gefunden.');
+    }
+
+    // --- Security Helpers ---
+
+    protected function authorizeAdmin()
+    {
+        // In this architecture, the tenant administrator is usually User ID 1
+        if (auth()->id() !== 1) {
+            abort(403, 'Nur der Hauptadministrator darf Backups einspielen.');
+        }
+    }
+
+    protected function sanitizeFilename($filename)
+    {
+        $filename = basename($filename);
+        // Remove everything except basic file characters to prevent directory traversal
+        return preg_replace('/[^A-Za-z0-9._-]/', '', $filename);
+    }
+
+    protected function isValidSqlite($path)
+    {
+        if (!file_exists($path)) return false;
+        $handle = fopen($path, 'rb');
+        if (!$handle) return false;
+        $header = fread($handle, 16);
+        fclose($handle);
+        return str_starts_with($header, "SQLite format 3");
     }
 }

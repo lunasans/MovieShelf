@@ -27,7 +27,7 @@
                         Direkter Browser-Upload
                     </h2>
 
-                    <form action="{{ route('import.backup.upload') }}" method="POST" enctype="multipart/form-data" class="flex-1 flex flex-col">
+                    <form action="{{ route('admin.import.backup.upload') }}" method="POST" enctype="multipart/form-data" class="flex-1 flex flex-col">
                         @csrf
                         <div class="group relative border-2 border-dashed border-emerald-500/10 rounded-[2.5rem] p-12 text-center hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all cursor-pointer flex-1 flex flex-col justify-center">
                             <input type="file" name="backup_file" id="backup_file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="this.form.submit()">
@@ -79,14 +79,14 @@
                                 </div>
                                 
                                 <div class="flex items-center gap-2">
-                                    <form action="{{ route('import.backup.destroy', $file['name']) }}" method="POST" onsubmit="return confirm('Datei löschen?')">
+                                    <form action="{{ route('admin.import.backup.destroy', $file['name']) }}" method="POST" onsubmit="return confirm('Datei löschen?')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="w-10 h-10 flex items-center justify-center text-white/10 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all">
                                             <i class="bi bi-trash3 text-sm"></i>
                                         </button>
                                     </form>
 
-                                    <form action="{{ route('import.backup.local') }}" method="POST">
+                                    <form action="{{ route('admin.import.backup.local') }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="filename" value="{{ $file['name'] }}">
                                         <button type="submit" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-3">
