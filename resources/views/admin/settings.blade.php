@@ -2,7 +2,7 @@
 
 @section('title', 'SaaS Einstellungen | MovieShelf Mastery')
 
-@section('page-title', 'Plattform-Einstellungen')
+@section('header_title', 'Plattform-Einstellungen')
 
 @section('content')
 <div class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -380,7 +380,7 @@
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <style>
     .ql-toolbar.ql-snow { border: 1px solid rgba(255,255,255,0.1) !important; background: rgba(5,5,5,0.8) !important; border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 15px !important; }
-    .ql-container.ql-snow { border: 1px solid rgba(255,255,255,0.1) !important; border-top: none !important; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; font-family: 'Outfit', sans-serif !important; font-size: 0.95rem !important; }
+    .ql-container.ql-snow { border: 1px solid rgba(255,255,255,0.1) !important; border-top: none !important; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; font-family: 'Inter', sans-serif !important; font-size: 0.95rem !important; }
     .ql-editor { color: #fff !important; min-height: 300px; line-height: 1.6 !important; }
     .ql-snow .ql-stroke { stroke: #aaa !important; }
     .ql-snow .ql-fill { fill: #aaa !important; }

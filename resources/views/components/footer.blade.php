@@ -104,8 +104,17 @@
             <div class="flex items-center gap-8 order-2 md:order-1">
                 <div class="group relative">
                     <div class="absolute -inset-1 bg-gradient-to-r from-rose-600 to-red-600 rounded-full blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
-                    <div class="relative px-3 md:px-5 py-2 bg-black border border-white/10 rounded-full text-[9px] md:text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
-                        <span class="text-rose-500">v</span>{{ config('app.version') }}
+                    <div class="relative px-3 md:px-5 py-2 bg-black border border-white/10 rounded-full text-[9px] md:text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                        @if(function_exists('tenant') && tenant())
+                            <div class="flex items-center gap-2">
+                                <span class="text-rose-500 font-black">v</span>{{ config('app.shelf_version') }}
+                                <span class="text-white/10 mx-1">|</span>
+                                <span class="text-gray-500 uppercase text-[8px] tracking-[0.3em]">SaaS</span>
+                                <span class="text-white/60">v{{ config('app.saas_version') }}</span>
+                            </div>
+                        @else
+                            <span class="text-rose-500 font-black">v</span>{{ config('app.saas_version') }}
+                        @endif
                     </div>
                 </div>
                 <a href="https://github.com/lunasans/dvdprofiler.liste" target="_blank" class="text-white/10 hover:text-white transition-all transform hover:scale-125">
