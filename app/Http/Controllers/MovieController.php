@@ -28,7 +28,13 @@ class MovieController extends Controller
         }
 
         if ($request->filled('q')) {
-            $query->where('title', 'like', '%'.$request->q.'%');
+            $q = $request->q;
+            $query->where(function($w) use ($q) {
+                $w->where('title', 'like', '%'.$q.'%')
+                  ->orWhere('genre', 'like', '%'.$q.'%')
+                  ->orWhere('actors_names', 'like', '%'.$q.'%')
+                  ->orWhere('director', 'like', '%'.$q.'%');
+            });
         }
 
         if ($request->filled('type')) {

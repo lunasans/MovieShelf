@@ -1,5 +1,8 @@
-# MovieShelf 2.15.2
+# MovieShelf 2.15.3
 Digital Cinema Shelf - Update
+
+## Changelog 2.15.3 (Shelf)
+- **Fix**: Fehlerhafte View-Namespaces ("tenant.*") in AJAX-Partials korrigiert.
 
 ## Changelog 2.15.2 (Shelf)
 - **Fix**: Kritischer Alpine.js Fehler ("invalid escape sequence") im TMDb-Import behoben.

@@ -1,3 +1,3 @@
 @foreach ($movies as $movie)
-    @include('movies.partials.streaming-grid-item', ['movie' => $movie])
+    @include('tenant.movies.partials.streaming-grid-item', ['movie' => $movie])
 @endforeach

@@ -51,7 +51,7 @@
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
                     </span>
-                    SaaS Engine v{{ config('app.version') }}
+                    SaaS Engine v{{ config('app.saas_version') }}
                 </div>
                 <p class="text-[9px] font-bold text-white/10 uppercase tracking-[0.3em] mt-2">
                     &copy; {{ date('Y') }} René Neuhaus.
