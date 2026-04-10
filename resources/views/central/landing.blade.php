@@ -2,9 +2,6 @@
 
 @section('content')
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-
-
 {{-- ═══════════════════════════════════════════════════════ HERO ═══════════════════════════════════════════════════════ --}}
 <section class="hero">
     <div class="container">
@@ -123,12 +120,19 @@
 
             </form>
         </div>
+
+        {{-- Trust Bar --}}
+        <div class="trust-bar fade-up delay-4">
+            <span><i class="bi bi-shield-check"></i> Kostenlos</span>
+            <span><i class="bi bi-credit-card-2-front"></i> Keine Kreditkarte</span>
+            <span><i class="bi bi-lightning-charge"></i> Sofort einsatzbereit</span>
+        </div>
     </div>
 </section>
 
 
 {{-- ═══════════════════════════════════════════════════════ SCREENSHOT SLIDER ═══════════════════════════════════════════════════════ --}}
-<section class="section" x-data="{ 
+<section class="section" style="border-top:1px solid var(--border)" x-data="{
     activeSlide: 0, 
     slides: [
         { src: '{{ asset('img/screenshots/hero.png') }}', alt: 'Dashboard Übersicht' },
@@ -142,6 +146,11 @@
     }
 }">
     <div class="container">
+        <div style="text-align:center; margin-bottom:2.5rem">
+            <span class="eyebrow">Einblick</span>
+            <h2 class="display" style="font-size:clamp(1.8rem,4vw,2.8rem);margin:.5rem 0 0">So sieht es aus.</h2>
+            <div class="divider centered"></div>
+        </div>
         <div class="screenshot-wrap">
             
             {{-- Slides --}}
@@ -232,8 +241,8 @@
                 <ul class="plan-list">
                     <li class="check"><span class="check-icon bi bi-check" style="font-size:9px"></span>100 % Datenkontrolle</li>
                     <li class="check"><span class="check-icon bi bi-check" style="font-size:9px"></span>Eigener Speicherplatz</li>
-                    <li class="dim"><span class="check-icon bi bi-check" style="font-size:9px"></span>Server-Wartung nötig</li>
-                    <li class="dim"><span class="check-icon bi bi-check" style="font-size:9px"></span>Manuelle Updates</li>
+                    <li class="dim"><span class="check-icon bi bi-x" style="font-size:11px"></span>Server-Wartung nötig</li>
+                    <li class="dim"><span class="check-icon bi bi-x" style="font-size:11px"></span>Manuelle Updates</li>
                 </ul>
                 <a href="https://github.com/lunasans/MovieShelf" target="_blank" rel="noopener" class="btn-outline">
                     Source Code ansehen
@@ -328,13 +337,6 @@
                 class="btn-cta">
             Cloud kostenlos starten <i class="bi bi-arrow-right"></i>
         </button>
-        <p class="footer-note">
-            MovieShelf Cloud · v2.12.4
-            @if(\App\Models\Setting::get('saas_impressum_active', '0') == '1')
-                · <a href="{{ route('saas.impressum') }}" style="color: inherit; text-decoration: underline;">Impressum</a>
-            @endif
-            · <a href="/privacy" style="color: inherit; text-decoration: underline;">Datenschutz</a>
-        </p>
     </div>
 </section>
 
