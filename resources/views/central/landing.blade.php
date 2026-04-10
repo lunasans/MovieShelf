@@ -180,7 +180,7 @@
         <div class="screenshot-wrap">
             
             {{-- Slides --}}
-            <div class="slider-container" :style="'transform: translateX(-' + (activeSlide * 100) + '%)'">
+            <div class="slider-container" :style="`transform: translateX(calc(-${activeSlide} * (100% / ${slides.length})))`">
                 <template x-for="(slide, index) in slides" :key="index">
                     <div class="slider-slide">
                         <img :src="slide.src" :alt="slide.alt">
