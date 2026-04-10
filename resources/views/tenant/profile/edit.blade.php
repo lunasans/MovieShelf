@@ -18,31 +18,31 @@
                             {{ __('Eine Bestätigungs-E-Mail wurde an deine Adresse gesendet. Bitte klicke auf den Link in der Mail, um die Löschung abzuschließen.') }}
                         </div>
                     @endif
-                    @include('profile.partials.update-profile-information-form')
+                    @include('tenant.profile.partials.update-profile-information-form')
                 </div>
             </div>
 
             <div class="glass p-8 rounded-[2rem] border border-white/10 shadow-2xl">
                 <div class="max-w-xl">
-                    @include('profile.partials.update-settings-form')
+                    @include('tenant.profile.partials.update-settings-form')
                 </div>
             </div>
 
             <div class="glass p-8 rounded-[2rem] border border-white/10 shadow-2xl">
                 <div class="max-w-xl">
-                    @include('profile.partials.two-factor-management')
+                    @include('tenant.profile.partials.two-factor-management')
                 </div>
             </div>
 
             <div class="glass p-8 rounded-[2rem] border border-white/10 shadow-2xl">
                 <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
+                    @include('tenant.profile.partials.update-password-form')
                 </div>
             </div>
 
             <div class="glass p-8 rounded-[2rem] border border-rose-500/10 shadow-2xl bg-rose-500/5">
                 <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
+                    @include('tenant.profile.partials.delete-user-form')
                 </div>
             </div>
         </div>
