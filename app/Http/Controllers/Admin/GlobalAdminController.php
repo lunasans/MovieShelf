@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class GlobalAdminController extends Controller
 {
@@ -37,7 +39,15 @@ class GlobalAdminController extends Controller
     public function delete(Tenant $tenant)
     {
         $id = $tenant->id;
+
+        $storagePath = storage_path("tenant{$id}");
+        if (File::exists($storagePath)) {
+            File::deleteDirectory($storagePath);
+            Log::info("Admin deleted storage for tenant: {$id}");
+        }
+
         $tenant->delete();
+
         return back()->with('success', "MovieShelf '{$id}' wurde gelöscht.");
     }
 

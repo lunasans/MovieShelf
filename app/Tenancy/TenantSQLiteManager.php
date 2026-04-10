@@ -15,10 +15,7 @@ class TenantSQLiteManager extends SQLiteDatabaseManager
      */
     protected function getTenantDatabasePath(string $databaseName): string
     {
-        // $databaseName matches the pattern prefix + tenant_id + suffix
-        // We want to extract the tenant_id to find the correct storage folder.
         $tenantId = str_replace(['tenant', '.sqlite'], '', $databaseName);
-        
         $path = storage_path("tenant{$tenantId}");
 
         if (! file_exists($path)) {
@@ -42,8 +39,14 @@ class TenantSQLiteManager extends SQLiteDatabaseManager
 
     public function deleteDatabase(TenantWithDatabase $tenant): bool
     {
-        $path = $this->getTenantDatabasePath($tenant->database()->getName());
+        $tenantId = str_replace(['tenant', '.sqlite'], '', $tenant->database()->getName());
+        $dir = storage_path("tenant{$tenantId}");
 
-        return file_exists($path) ? unlink($path) : true;
+        if (is_dir($dir)) {
+            array_map('unlink', glob($dir . DIRECTORY_SEPARATOR . '*') ?: []);
+            rmdir($dir);
+        }
+
+        return true;
     }
 }
