@@ -143,6 +143,7 @@ Route::middleware([
             Route::get('backup-import', [\App\Http\Controllers\Admin\BackupImportController::class, 'index'])->name('import.backup.index');
             Route::post('import/backup', [\App\Http\Controllers\Admin\BackupImportController::class, 'import'])->name('import.backup.upload');
             Route::post('import/backup-local', [\App\Http\Controllers\Admin\BackupImportController::class, 'importLocal'])->name('import.backup.local');
+            Route::post('import/backup/chunk', [\App\Http\Controllers\Admin\BackupImportController::class, 'uploadChunk'])->name('import.backup.chunk');
             Route::delete('import/backup/{filename}', [\App\Http\Controllers\Admin\BackupImportController::class, 'destroy'])->name('import.backup.destroy');
             Route::delete('import/{filename}', [\App\Http\Controllers\Admin\XmlImportController::class, 'destroy'])->name('import.destroy');
 
