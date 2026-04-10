@@ -229,7 +229,7 @@ body {
 
 .screenshot-wrap img {
     width: 100%;
-    height: 480px;
+    height: 320px;
     object-fit: cover;
     object-position: top;
     display: block;
