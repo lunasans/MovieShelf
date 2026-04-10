@@ -96,7 +96,7 @@
                     <div class="space-y-4 flex-1">
                         @forelse($zipFiles as $file)
                             <div class="p-6 rounded-[2rem] bg-white/[0.02] border border-white/5 group hover:border-emerald-500/30 transition-all flex items-center justify-between">
-                                <div class="flex items-center gap-5">
+                                <div class="flex items-center gap-5 min-w-0 flex-1">
                                     <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                                         <i class="bi bi-archive-fill text-emerald-500/50 text-xl"></i>
                                     </div>

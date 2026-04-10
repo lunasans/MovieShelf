@@ -64,17 +64,13 @@ class BackupImportController extends Controller
         $tempPath = $this->chunkPath . '/' . $uuid;
         $chunkName = $index . '.part';
 
-        // Store chunk
         Storage::disk($this->importDisk)->putFileAs($tempPath, $request->file('chunk'), $chunkName);
 
-        // Check if all chunks are uploaded
         $uploadedChunks = Storage::disk($this->importDisk)->files($tempPath);
         
         if (count($uploadedChunks) === $totalChunks) {
-            // Reassemble
             $finalPath = Storage::disk($this->importDisk)->path($this->importPath . '/' . $filename);
             
-            // Ensure target directory exists
             if (!File::isDirectory(dirname($finalPath))) {
                 File::makeDirectory(dirname($finalPath), 0755, true);
             }
@@ -88,7 +84,6 @@ class BackupImportController extends Controller
             }
             fclose($out);
 
-            // Cleanup chunks
             Storage::disk($this->importDisk)->deleteDirectory($tempPath);
 
             return response()->json([
@@ -139,6 +134,7 @@ class BackupImportController extends Controller
     {
         set_time_limit(300); // Allow up to 5 minutes for large imports
         Log::info('SaaS Backup Import gestartet von: ' . $zipPath);
+        
         $tempDir = storage_path('app/temp_import_' . uniqid());
         
         if (!File::isDirectory($tempDir)) {
@@ -181,7 +177,13 @@ class BackupImportController extends Controller
             ]]);
             DB::purge('import_aux');
 
+            // Disable foreign key constraints for bulk import
+            Schema::disableForeignKeyConstraints();
+            DB::statement('PRAGMA foreign_keys = OFF');
+
             DB::beginTransaction();
+            
+            // Wipe existing data (Tenant database)
             DB::table('film_actor')->delete();
             DB::table('movies')->delete();
             DB::table('actors')->delete();
@@ -190,12 +192,14 @@ class BackupImportController extends Controller
             $actorColumns = Schema::getColumnListing('actors');
             $filmActorColumns = Schema::getColumnListing('film_actor');
 
+            // Import actors
             $importedActors = DB::connection('import_aux')->table('actors')->get();
             foreach ($importedActors as $actorData) {
                 $data = array_intersect_key((array)$actorData, array_flip($actorColumns));
                 DB::table('actors')->insert($data);
             }
 
+            // Import movies
             $importedMovies = DB::connection('import_aux')->table('movies')->get();
             foreach ($importedMovies as $movieData) {
                 $data = array_intersect_key((array)$movieData, array_flip($movieColumns));
@@ -203,15 +207,16 @@ class BackupImportController extends Controller
                 DB::table('movies')->insert($data);
             }
 
+            // Import relations
             $importedRelations = DB::connection('import_aux')->table('film_actor')->get();
             foreach ($importedRelations as $relData) {
                 $data = array_intersect_key((array)$relData, array_flip($filmActorColumns));
                 DB::table('film_actor')->insert($data);
             }
 
-            $tenantId = tenancy()->tenant->id;
-            $targetPublicPath = base_path("storage/tenant{$tenantId}/app/public");
-
+            // Media Assets - Use tenant-aware storage pathing
+            $targetPublicPath = storage_path('app/public');
+            
             if (!File::isDirectory($targetPublicPath)) {
                 File::makeDirectory($targetPublicPath, 0755, true);
             }
@@ -228,11 +233,22 @@ class BackupImportController extends Controller
             }
 
             DB::commit();
+            Schema::enableForeignKeyConstraints();
+            DB::statement('PRAGMA foreign_keys = ON');
+            
             File::deleteDirectory($tempDir);
-            return back()->with('success', 'Backup erfolgreich importiert!');
+            Log::info('Backup Import erfolgreich für User ID: ' . auth()->id());
+            
+            return back()->with('success', 'Backup erfolgreich importiert! Die Sammlung wurde aktualisiert.');
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Schema::enableForeignKeyConstraints();
+            DB::statement('PRAGMA foreign_keys = ON');
+            
+            Log::error('Backup Import Fehler: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            
             if (File::isDirectory($tempDir)) { File::deleteDirectory($tempDir); }
             return back()->with('error', 'Fehler beim Importieren: ' . $e->getMessage());
         }

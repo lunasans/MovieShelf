@@ -196,13 +196,13 @@
                     <span class="text-base font-black text-rose-500 tracking-widest" x-text="updateTotal > 0 ? Math.round((updateCount / updateTotal) * 100) : 0 + '%'"></span>
                 </div>
                 <div class="w-full h-5 bg-white/5 rounded-full overflow-hidden mb-12 border border-white/5 p-1 shadow-inner">
-                    <div class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-rose-400 rounded-full shadow-[0_0_15px_rgba(225,29,72,0.5)] transition-all duration-700" :style=\"'width: ' + (updateTotal > 0 ? (updateCount / updateTotal * 100) : 0) + '%'\"></div>
+                    <div class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-rose-400 rounded-full shadow-[0_0_15px_rgba(225,29,72,0.5)] transition-all duration-700" :style="'width: ' + (updateTotal > 0 ? (updateCount / updateTotal * 100) : 0) + '%'"></div>
                 </div>
 
                 <div class="space-y-6">
                      <div x-show="updating" x-cloak class="text-rose-400/60 text-[10px] font-black uppercase tracking-widest truncate" x-text="currentUpdateTitle"></div>
-                     <button x-show=\"!updating\" x-cloak @click=\"showMassUpdateModal = false; window.location.reload()\" class=\"w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all shadow-xl uppercase tracking-widest text-[10px]\">Dashboard aktualisieren</button>
-                    <button x-show=\"updating\" x-cloak @click=\"cancelUpdate()\" class=\"text-white/10 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest transition-colors\">Vorgang abbrechen</button>
+                     <button x-show="!updating" x-cloak @click="showMassUpdateModal = false; window.location.reload()" class="w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all shadow-xl uppercase tracking-widest text-[10px]">Dashboard aktualisieren</button>
+                    <button x-show="updating" x-cloak @click="cancelUpdate()" class="text-white/10 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest transition-colors">Vorgang abbrechen</button>
                 </div>
             </div>
         </div>

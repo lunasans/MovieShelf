@@ -1,5 +1,8 @@
-# MovieShelf 2.15.1
+# MovieShelf 2.15.2
 Digital Cinema Shelf - Update
+
+## Changelog 2.15.2 (Shelf)
+- **Fix**: Kritischer Alpine.js Fehler ("invalid escape sequence") im TMDb-Import behoben.
 
 ## Changelog 2.15.1 (Shelf)
 - **Fix**: SaaS-Backup-Import für große Dateien optimiert (Loading-State + PHP TimeLimit + Logging).
