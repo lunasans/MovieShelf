@@ -1,3 +1,9 @@
+@php
+    $currentHost = request()->getHost();
+    $centralDomains = explode(',', env('CENTRAL_DOMAINS', 'movieshelf.info,www.movieshelf.info'));
+    $isCentral = in_array($currentHost, array_merge(['localhost', '127.0.0.1'], $centralDomains));
+    $siteTitle = $isCentral ? \App\Models\Setting::get('saas_name', 'MovieShelf Cloud') : \App\Models\Setting::get('site_title', 'MovieShelf');
+@endphp
 <nav x-data="{ 
     open: false, 
     scrolled: window.pageYOffset > 20,
@@ -16,21 +22,17 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
     <div class="grid grid-cols-2 lg:grid-cols-3 items-center gap-4 text-white">
         <!-- Logo Section (Left) -->
         <div class="flex-shrink-0 flex items-center">
+            <a href="{{ route('dashboard') }}" class="group flex items-center gap-4">
+                <x-application-logo class="h-10 w-auto group-hover:scale-110 transition-transform" />
                 <div>
-                    <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-indigo-400 transition-colors hidden sm:block">
-                        @php
-                            $currentHost = request()->getHost();
-                            $centralDomains = explode(',', env('CENTRAL_DOMAINS', 'movieshelf.info,www.movieshelf.info'));
-                            $isCentral = in_array($currentHost, array_merge(['localhost', '127.0.0.1'], $centralDomains));
-                            $siteTitle = $isCentral ? \App\Models\Setting::get('saas_name', 'MovieShelf Cloud') : \App\Models\Setting::get('site_title', 'MovieShelf');
-                        @endphp
+                    <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-blue-400 transition-colors hidden sm:block">
                         {{ $siteTitle }}
                     </h2>
-                    <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-indigo-400 transition-colors sm:hidden">
+                    <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-blue-400 transition-colors sm:hidden">
                         MS
                     </h2>
-                    <p class="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em] mt-2 italic hidden sm:block">
-                        {{ __('Media Library') }}
+                    <p class="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em] mt-1 italic hidden sm:block">
+                        {{ $isCentral ? __('SaaS Platform') : __('Media Library') }}
                     </p>
                 </div>
             </a>
@@ -66,11 +68,6 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                 <i class="bi bi-bar-chart-fill mr-2"></i> {{ __('Statistics') }}
             </a>
             @endif
-
-            @php
-                $currentHost = request()->getHost();
-                $isCentral = in_array($currentHost, ['localhost', '127.0.0.1', 'movieshelf.info']);
-            @endphp
 
             @if($isCentral && Route::has('admin.settings'))
             <a href="{{ route('admin.settings') }}"
