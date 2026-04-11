@@ -12,9 +12,9 @@
     showMovieTitle: false,
 }" 
 x-init="window.addEventListener('scroll', () => { scrolled = window.pageYOffset > 20 })"
-@layout-change.window="if ($event.detail !== layoutMode) layoutMode = $event.detail"
-@set-active-movie.window="activeMovieTitle = $event.detail.title"
-@toggle-movie-title.window="showMovieTitle = $event.detail.show"
+x-on:layout-change.window="if ($event.detail !== layoutMode) layoutMode = $event.detail"
+x-on:set-active-movie.window="activeMovieTitle = $event.detail.title"
+x-on:toggle-movie-title.window="showMovieTitle = $event.detail.show"
 class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
 :class="{
     'fixed top-0 left-0 right-0': layoutMode === 'streaming',
