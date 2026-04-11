@@ -3,6 +3,7 @@
     $centralDomains = explode(',', env('CENTRAL_DOMAINS', 'movieshelf.info,www.movieshelf.info'));
     $isCentral = in_array($currentHost, array_merge(['localhost', '127.0.0.1'], $centralDomains));
     $siteTitle = $isCentral ? \App\Models\Setting::get('saas_name', 'MovieShelf Cloud') : \App\Models\Setting::get('site_title', 'MovieShelf');
+    $homeLink = Route::has('dashboard') ? route('dashboard') : (Route::has('landing') ? route('landing') : '/');
 @endphp
 <nav x-data="{ 
     open: false, 
@@ -30,7 +31,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                 <!-- Layer 1: Site Title -->
                 <div class="transform transition-all duration-500 flex items-center gap-4"
                      :class="showMovieTitle ? '-translate-y-full opacity-0 scale-95' : 'translate-y-0 opacity-100 scale-100'">
-                    <a href="{{ route('dashboard') }}" class="group flex items-center gap-4">
+                    <a href="{{ $homeLink }}" class="group flex items-center gap-4">
                         <x-application-logo class="h-10 w-auto group-hover:scale-110 transition-transform" />
                         <div>
                             <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-blue-400 transition-colors hidden sm:block">
@@ -149,10 +150,12 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
 
                         <x-slot name="content">
                             <div class="space-y-1">
+                                @if(Route::has('profile.edit'))
                                 <x-dropdown-link :href="route('profile.edit')" class="rounded-xl flex items-center gap-3">
                                     <i class="bi bi-person-badge text-sm opacity-50"></i> 
                                     <span>{{ __('Profile') }}</span>
                                 </x-dropdown-link>
+                                @endif
 
                                 <x-dropdown-link :href="route('admin.dashboard')" class="rounded-xl flex items-center gap-3">
                                     <i class="bi bi-speedometer2 text-sm opacity-50"></i> 
@@ -231,7 +234,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
         <!-- Mobile Search -->
         @if(Route::has('dashboard'))
         <div class="pt-2 px-2">
-            <form action="{{ route('dashboard') }}" method="GET" class="relative">
+            <form action="{{ $homeLink }}" method="GET" class="relative">
                 <input type="text" name="q" value="{{ request('q') }}"
                     placeholder="{{ __('Search...') }}"
                     class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 pl-10 focus:ring-2 focus:ring-blue-500/50 text-sm transition-all text-white">
