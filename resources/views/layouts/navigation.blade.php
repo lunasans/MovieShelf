@@ -8,10 +8,13 @@
     open: false, 
     scrolled: window.pageYOffset > 20,
     layoutMode: '{{ optional(auth()->user())->layout ?? \App\Models\Setting::get("default_guest_layout", "classic") }}',
-
+    activeMovieTitle: '',
+    showMovieTitle: false,
 }" 
 x-init="window.addEventListener('scroll', () => { scrolled = window.pageYOffset > 20 })"
 @layout-change.window="if ($event.detail !== layoutMode) layoutMode = $event.detail"
+@set-active-movie.window="activeMovieTitle = $event.detail.title"
+@toggle-movie-title.window="showMovieTitle = $event.detail.show"
 class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
 :class="{
     'fixed top-0 left-0 right-0': layoutMode === 'streaming',
@@ -22,20 +25,40 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
     <div class="grid grid-cols-2 lg:grid-cols-3 items-center gap-4 text-white">
         <!-- Logo Section (Left) -->
         <div class="flex-shrink-0 flex items-center">
-            <a href="{{ route('dashboard') }}" class="group flex items-center gap-4">
-                <x-application-logo class="h-10 w-auto group-hover:scale-110 transition-transform" />
-                <div>
-                    <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-blue-400 transition-colors hidden sm:block">
-                        {{ $siteTitle }}
-                    </h2>
-                    <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-blue-400 transition-colors sm:hidden">
-                        MS
-                    </h2>
-                    <p class="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em] mt-1 italic hidden sm:block">
-                        {{ $isCentral ? __('SaaS Platform') : __('Media Library') }}
-                    </p>
+            <div class="relative h-12 overflow-hidden flex items-center px-2">
+                <!-- Layer 1: Site Title -->
+                <div class="transform transition-all duration-500 flex items-center gap-4"
+                     :class="showMovieTitle ? '-translate-y-full opacity-0 scale-95' : 'translate-y-0 opacity-100 scale-100'">
+                    <a href="{{ route('dashboard') }}" class="group flex items-center gap-4">
+                        <x-application-logo class="h-10 w-auto group-hover:scale-110 transition-transform" />
+                        <div>
+                            <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-blue-400 transition-colors hidden sm:block">
+                                {{ $siteTitle }}
+                            </h2>
+                            <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-blue-400 transition-colors sm:hidden">
+                                MS
+                            </h2>
+                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em] mt-1 italic hidden sm:block">
+                                {{ $isCentral ? __('SaaS Platform') : __('Media Library') }}
+                            </p>
+                        </div>
+                    </a>
                 </div>
-            </a>
+
+                <!-- Layer 2: Movie Title -->
+                <div class="absolute inset-0 flex items-center transform transition-all duration-700 delay-75"
+                     :class="showMovieTitle ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-full opacity-0 scale-90'"
+                     x-cloak>
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                            <i class="bi bi-film text-blue-400"></i>
+                        </div>
+                        <h2 class="text-xl font-black text-white uppercase tracking-tighter leading-none truncate max-w-[150px] md:max-w-[300px] lg:max-w-lg italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/40">
+                            <span x-text="activeMovieTitle"></span>
+                        </h2>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Center Navigation (Desktop) -->

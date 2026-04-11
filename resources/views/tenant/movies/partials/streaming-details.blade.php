@@ -74,7 +74,12 @@
                window.location.href = '{{ route('login') }}';
            @endif
         }
-     }">
+     x-init="
+        window.dispatchEvent(new CustomEvent('set-active-movie', { detail: { title: '{{ addslashes($movie->title) }}' } }));
+        window.addEventListener('beforeunload', () => {
+            window.dispatchEvent(new CustomEvent('toggle-movie-title', { detail: { show: false } }));
+        });
+     ">
     {{-- Fullscreen Backdrop --}}
     <div class="fixed inset-0 z-0">
         <img src="{{ $movie->backdrop_url ?: $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover opacity-60">
@@ -116,7 +121,9 @@
                     @endif
                 </div>
 
-                <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter mb-8 drop-shadow-2xl">
+                <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter mb-8 drop-shadow-2xl"
+                    x-intersect:leave="window.dispatchEvent(new CustomEvent('toggle-movie-title', { detail: { show: true } }))"
+                    x-intersect:enter="window.dispatchEvent(new CustomEvent('toggle-movie-title', { detail: { show: false } }))">
                     {{ $movie->title }}
                 </h1>
 
