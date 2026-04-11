@@ -53,7 +53,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                         <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
                             <i class="bi bi-film text-blue-400"></i>
                         </div>
-                        <h2 class="text-xl font-black text-white uppercase tracking-tighter leading-none truncate max-w-[150px] md:max-w-[300px] lg:max-w-lg italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/40">
+                        <h2 class="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-none truncate max-w-[200px] md:max-w-[400px] lg:max-w-xl italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 pr-6">
                             <span x-text="activeMovieTitle"></span>
                         </h2>
                     </div>
