@@ -128,7 +128,7 @@
 
                 <!-- Grouped Actor Grid -->
                 <div class="space-y-24" x-ref="actorGrid">
-                    @include('actors.partials.actor-list', ['groupedActors' => $groupedActors])
+                    @include('tenant.actors.partials.actor-list', ['groupedActors' => $groupedActors])
                 </div>
 
                 <!-- Manual Load More -->
@@ -174,7 +174,7 @@
                 </div>
 
                 <div class="space-y-16">
-                    @include('actors.partials.actor-list', ['groupedActors' => $groupedActors])
+                    @include('tenant.actors.partials.actor-list', ['groupedActors' => $groupedActors])
                 </div>
                 
                 <div class="mt-20">

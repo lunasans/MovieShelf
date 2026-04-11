@@ -136,7 +136,7 @@
             <!-- Trailers Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 {{ $layoutMode === 'streaming' ? 'lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' : 'lg:grid-cols-3 xl:grid-cols-4' }} gap-10" x-ref="grid">
                 @forelse($movies as $movie)
-                    @include('trailers.partials.movie-card', ['movie' => $movie])
+                    @include('tenant.trailers.partials.movie-card', ['movie' => $movie])
                 @empty
                     <div class="col-span-full py-32 text-center {{ $layoutMode === 'streaming' ? 'glass-streaming rounded-[3rem]' : 'glass rounded-[3rem]' }} border border-dashed border-white/10 animate-in fade-in duration-1000">
                         <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-8 border border-white/10 group-hover:scale-110 transition-transform">

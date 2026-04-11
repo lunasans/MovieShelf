@@ -1,3 +1,3 @@
 @foreach($movies as $movie)
-    @include('trailers.partials.movie-card', ['movie' => $movie])
+    @include('tenant.trailers.partials.movie-card', ['movie' => $movie])
 @endforeach
