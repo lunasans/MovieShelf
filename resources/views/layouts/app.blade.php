@@ -76,9 +76,9 @@
 
             <!-- Page Content -->
             @php
-                $hasHero = request()->routeIs('dashboard', 'movies.show', 'actors.show', 'actors.index', 'movies.trailers', 'statistics', 'impressum');
+                $hasHero = request()->routeIs('dashboard', 'movies.show', 'actors.show');
                 $mainClasses = $isStreaming 
-                    ? ($hasHero ? 'mt-0' : 'pt-28') 
+                    ? ($hasHero ? 'mt-0' : 'pt-32') 
                     : 'mt-8';
             @endphp
             <main class="{{ $mainClasses }}">

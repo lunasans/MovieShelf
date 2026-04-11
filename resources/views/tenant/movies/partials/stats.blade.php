@@ -2,7 +2,7 @@
     $layoutMode = auth()->user()->layout ?? 'classic';
 @endphp
 
-<div class="{{ $layoutMode === 'streaming' ? 'streaming-stats-view min-h-screen pt-32 pb-20 px-12 md:px-20 relative' : 'space-y-8 p-8 max-w-[90rem] mx-auto overflow-y-auto no-scrollbar h-full' }}">
+<div class="{{ $layoutMode === 'streaming' ? 'streaming-stats-view min-h-screen pt-0 pb-20 px-12 md:px-20 relative' : 'space-y-8 p-8 max-w-[90rem] mx-auto overflow-y-auto no-scrollbar h-full' }}">
     
     @if($layoutMode === 'streaming')
         {{-- Background Elements --}}

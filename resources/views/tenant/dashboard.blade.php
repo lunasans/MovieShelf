@@ -477,7 +477,7 @@
         </template>
 
         <template x-if="layoutMode === 'streaming'">
-            <div class="relative min-h-screen pt-0">
+            <div class="relative min-h-screen" :class="(isStatsView || selectedMovie) ? 'pt-32' : 'pt-0'">
                 <template x-if="isStatsView || selectedMovie">
                     <div class="animate-in fade-in slide-in-from-bottom-8 duration-700 relative">
                         <!-- Close Button -->

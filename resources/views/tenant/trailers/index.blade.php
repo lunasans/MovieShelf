@@ -69,7 +69,7 @@
         }
     </script>
 
-    <div class="{{ $layoutMode === 'streaming' ? 'streaming-trailers-view min-h-screen pt-32 pb-20 px-12 md:px-20 relative' : 'px-8 py-10 min-h-screen' }}" 
+    <div class="{{ $layoutMode === 'streaming' ? 'streaming-trailers-view min-h-screen pt-0 pb-20 px-12 md:px-20 relative' : 'px-8 py-10 min-h-screen' }}" 
          x-data="trailerGallery()">
         
         @if($layoutMode === 'streaming')

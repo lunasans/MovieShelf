@@ -4,7 +4,7 @@
         : \App\Models\Setting::get('default_guest_layout', 'classic');
 @endphp
 
-<div class="{{ $layoutMode === 'streaming' ? 'streaming-actor-details animate-in fade-in slide-in-from-bottom-8 duration-700 pt-32' : 'animate-in fade-in slide-in-from-right-4 duration-500' }}">
+<div class="{{ $layoutMode === 'streaming' ? 'streaming-actor-details animate-in fade-in slide-in-from-bottom-8 duration-700' : 'animate-in fade-in slide-in-from-right-4 duration-500' }}">
     @if($layoutMode === 'streaming')
         {{-- High-End Immersive Profile --}}
         <div class="relative mb-16 rounded-[3rem] overflow-hidden group shadow-2xl border border-white/10 min-h-[500px]">
