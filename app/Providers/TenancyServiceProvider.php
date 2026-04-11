@@ -136,6 +136,10 @@ class TenancyServiceProvider extends ServiceProvider
                 \App\Http\Middleware\VisitorCounterMiddleware::class,
             ])
             ->group(base_path('routes/tenant.php'));
+
+            Route::middleware(['tenancy', 'api'])
+                ->prefix('api')
+                ->group(base_path('routes/api.php'));
         }
     }
 }
