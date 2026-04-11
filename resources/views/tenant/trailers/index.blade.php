@@ -69,7 +69,7 @@
         }
     </script>
 
-    <div class="{{ $layoutMode === 'streaming' ? 'streaming-trailers-view min-h-screen pt-32 pb-20 px-4 md:px-12 lg:px-24 relative' : 'px-8 py-10 min-h-screen' }}" 
+    <div class="{{ $layoutMode === 'streaming' ? 'streaming-trailers-view min-h-screen pt-4 pb-20 px-12 md:px-20 relative' : 'px-8 py-10 min-h-screen' }}" 
          x-data="trailerGallery()">
         
         @if($layoutMode === 'streaming')
@@ -132,9 +132,9 @@
             </div>
         @endif
 
-        <div class="{{ $layoutMode === 'streaming' ? 'relative z-10' : 'max-w-7xl mx-auto' }}">
+        <div class="{{ $layoutMode === 'streaming' ? 'relative z-10' : 'max-w-[90rem] mx-auto' }}">
             <!-- Trailers Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 {{ $layoutMode === 'streaming' ? 'lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' : 'lg:grid-cols-3 xl:grid-cols-4' }} gap-10" x-ref="grid">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-10" x-ref="grid">
                 @forelse($movies as $movie)
                     @include('tenant.trailers.partials.movie-card', ['movie' => $movie])
                 @empty

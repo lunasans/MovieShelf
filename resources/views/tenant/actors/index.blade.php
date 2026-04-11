@@ -57,7 +57,7 @@
         }
     </script>
 
-    <div class="{{ $layoutMode === 'streaming' ? 'streaming-actors-view min-h-screen pt-32 pb-20 px-4 md:px-12 lg:px-24 relative' : 'px-8 py-10 min-h-screen' }}"
+    <div class="{{ $layoutMode === 'streaming' ? 'streaming-actors-view min-h-screen pt-4 pb-20 px-12 md:px-20 relative' : 'px-8 py-10 min-h-screen' }}"
          x-data="actorGallery()">
         
         @if($layoutMode === 'streaming')
@@ -145,7 +145,7 @@
             </div>
         @else
             <!-- Original Classic layout logic remains unchanged -->
-            <div class="max-w-7xl mx-auto">
+            <div class="max-w-[90rem] mx-auto">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 uppercase">
                     <div>
                         <h1 class="text-4xl font-black text-white tracking-tighter mb-2 italic">
