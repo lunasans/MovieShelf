@@ -13,8 +13,8 @@
     ];
 @endphp
 
-<footer class="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 
-    {{ $isStreaming ? 'mt-32 pb-20 px-12 md:px-20 border-t border-white/5 bg-gradient-to-t from-[#0c0c0e] to-transparent' : ($compact ? 'py-10 px-12' : 'mt-20 pb-10 px-8') }}">
+<footer class="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 border-t border-white/10
+    {{ $isStreaming ? 'mt-32 pb-20 px-12 md:px-20 bg-gradient-to-t from-[#0c0c0e] to-transparent shadow-[0_-20px_50px_-12px_rgba(225,29,72,0.05)]' : ($compact ? 'py-10 px-12' : 'mt-20 pb-10 px-8 bg-white/5') }}">
     
     <div class="{{ $isStreaming ? 'max-w-[1400px]' : ($compact ? 'w-full' : 'max-w-7xl') }} mx-auto">
         
