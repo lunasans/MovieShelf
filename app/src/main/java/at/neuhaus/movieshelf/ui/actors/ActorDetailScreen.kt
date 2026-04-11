@@ -15,17 +15,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import at.neuhaus.movieshelf.data.api.RetrofitClient
 import at.neuhaus.movieshelf.data.model.Movie
 import at.neuhaus.movieshelf.ui.dashboard.MovieItem
+import at.neuhaus.movieshelf.ui.util.resolveImageUrl
 import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,15 +66,16 @@ fun ActorDetailScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Profilbild
+                val context = LocalContext.current
                 Surface(
                     modifier = Modifier.size(150.dp),
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     if (actor.imageUrl != null) {
-                        val fullUrl = if (actor.imageUrl.startsWith("http")) actor.imageUrl else "${RetrofitClient.baseUrl}${actor.imageUrl}"
+                        val model: Any? = remember(actor.imageUrl) { resolveImageUrl(context, actor.imageUrl) }
                         AsyncImage(
-                            model = fullUrl,
+                            model = model,
                             contentDescription = actor.name,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
@@ -136,6 +139,7 @@ fun ActorDetailScreen(
 
 @Composable
 fun MovieRowItem(movie: Movie, onClick: () -> Unit) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -145,9 +149,9 @@ fun MovieRowItem(movie: Movie, onClick: () -> Unit) {
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             if (movie.coverUrl != null) {
-                val imageUrl = if (movie.coverUrl.startsWith("http")) movie.coverUrl else "${RetrofitClient.baseUrl}${movie.coverUrl}"
+                val model: Any? = remember(movie.coverUrl) { resolveImageUrl(context, movie.coverUrl) }
                 AsyncImage(
-                    model = imageUrl,
+                    model = model,
                     contentDescription = movie.title,
                     modifier = Modifier.width(70.dp).fillMaxHeight(),
                     contentScale = ContentScale.Crop

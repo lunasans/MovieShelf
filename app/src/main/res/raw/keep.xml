@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Verhindert, dass R8/ProGuard Demo-Drawables entfernt,
+    die nur per getIdentifier() (res:*) referenziert werden.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/inception_cover,@drawable/inception_backdrop,@drawable/dark_knight_cover,@drawable/dark_knight_backdrop" />

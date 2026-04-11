@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import at.neuhaus.movieshelf.R
 import at.neuhaus.movieshelf.data.api.RetrofitClient
 import at.neuhaus.movieshelf.data.model.Movie
+import at.neuhaus.movieshelf.ui.util.resolveImageUrl
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 
@@ -171,20 +172,7 @@ fun MovieItem(movie: Movie, onClick: () -> Unit) {
             ) {
                 if (movie.coverUrl != null) {
                     val model: Any? = remember(movie.coverUrl, RetrofitClient.baseUrl) {
-                        val url = movie.coverUrl.trim()
-                        when {
-                            url.startsWith("res:") -> {
-                                val resName = url.substringAfter("res:")
-                                val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
-                                if (resId != 0) resId else null
-                            }
-                            url.startsWith("http") -> url
-                            else -> {
-                                val base = RetrofitClient.baseUrl.removeSuffix("/")
-                                val path = url.removePrefix("/")
-                                "$base/$path"
-                            }
-                        }
+                        resolveImageUrl(context, movie.coverUrl)
                     }
 
                     var imageError by remember { mutableStateOf(false) }
