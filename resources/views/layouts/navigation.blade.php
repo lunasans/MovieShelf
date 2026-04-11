@@ -61,7 +61,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                                 </div>
                             </template>
                         </div>
-                        <h2 class="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-none truncate max-w-[200px] md:max-w-[400px] lg:max-w-xl italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 pr-6">
+                        <h2 class="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-none truncate max-w-[250px] md:max-w-[600px] lg:max-w-[800px] italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 pr-6">
                             <span x-text="activeMovieTitle"></span>
                         </h2>
                     </div>
