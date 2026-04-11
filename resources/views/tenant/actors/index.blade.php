@@ -75,20 +75,20 @@
                         <div class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5 backdrop-blur-xl group-hover:border-white/30 group-hover:scale-110 transition-all">
                             <i class="bi bi-arrow-left text-xl"></i>
                         </div>
-                        <span class="font-black uppercase tracking-widest text-sm italic">{{ __('Back to Library') }}</span>
+                        <span class="font-black tracking-widest text-sm italic">{{ __('Back to Library') }}</span>
                     </a>
 
                     <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
                         <div class="flex-1">
-                            <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 drop-shadow-2xl uppercase">
+                            <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 drop-shadow-2xl">
                                 {!! __('Our <span class="text-red-500">Stars</span>') !!}
                             </h1>
                             <div class="flex items-center gap-4 mt-8 flex-wrap">
-                                <span class="px-5 py-2 bg-red-500/10 border border-red-500/20 rounded-full text-[10px] font-black text-red-400 uppercase tracking-widest shadow-xl">
+                                <span class="px-5 py-2 bg-red-500/10 border border-red-500/20 rounded-full text-[10px] font-black text-red-300 tracking-widest shadow-xl">
                                     <i class="bi bi-people-fill mr-2"></i> {{ number_format($filteredActorsCount) }} / {{ number_format($totalActors) }} {{ __('Actors') }}
                                 </span>
                                 @if($letter)
-                                    <a href="{{ route('actors.index', ['q' => request('q')]) }}" class="px-5 py-2 bg-rose-500/10 border border-rose-500/20 rounded-full text-[10px] font-black text-rose-400 uppercase tracking-widest hover:bg-rose-500/20 transition-all flex items-center gap-3 group shadow-xl">
+                                    <a href="{{ route('actors.index', ['q' => request('q')]) }}" class="px-5 py-2 bg-rose-500/10 border border-rose-500/20 rounded-full text-[10px] font-black text-rose-300 tracking-widest hover:bg-rose-500/20 transition-all flex items-center gap-3 group shadow-xl">
                                         <i class="bi bi-funnel-fill"></i> {{ __('Letter: :letter', ['letter' => $letter]) }} <i class="bi bi-x-lg group-hover:rotate-90 transition-transform"></i>
                                     </a>
                                 @endif
