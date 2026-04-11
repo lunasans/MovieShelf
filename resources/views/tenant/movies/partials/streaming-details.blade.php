@@ -74,6 +74,7 @@
                window.location.href = '{{ route('login') }}';
            @endif
         }
+     }"
      x-init="
         window.dispatchEvent(new CustomEvent('set-active-movie', { detail: { title: '{{ addslashes($movie->title) }}' } }));
         window.addEventListener('beforeunload', () => {
