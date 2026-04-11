@@ -61,7 +61,7 @@ class ShortcodeService
 
                 if ($actor) {
                     $url = route('actors.show', $actor);
-                    return '<a href="'.$url.'" class="text-blue-400 hover:text-blue-300 transition-colors font-medium border-b border-blue-400/30 hover:border-blue-300">'.$rawName.'</a>';
+                    return '<a href="'.e($url).'" class="text-blue-400 hover:text-blue-300 transition-colors font-medium border-b border-blue-400/30 hover:border-blue-300">'.e($rawName).'</a>';
                 }
 
                 return $rawName; // Fallback

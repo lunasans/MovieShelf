@@ -38,3 +38,11 @@ pub/
 .agents/rules/zugangdaten.md
 .agents/rules/update-version.md
 resources/views/# List Network Requests.txt
+scripts/cleanup_db.php
+scripts/check_logs.php
+.gitignore
+scripts/inspect_db_pdo.php
+scripts/direct_sql_fix.php
+scripts/final_central_fix.php
+scripts/inspect_db.php
+scripts/tmp_repair.php

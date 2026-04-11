@@ -15,10 +15,12 @@ use Illuminate\Support\Facades\Route;
 
 // --- ULTIMATE IMAGE RESOLUTION PROXY ---
 $serveImage = function ($path) {
-    $path = str_replace('..', '', $path);
     $tenantId = tenancy()->tenant->id;
+    $tenantBase = realpath(base_path("storage/tenant{$tenantId}/app/public")) ?: '';
+    $centralBase = realpath(base_path('storage/app/public')) ?: '';
+
     $tryPaths = [$path];
-    
+
     // Add folder variants (cover/covers, backdrop/backdrops)
     if (str_contains($path, 'cover')) {
         $tryPaths[] = 'covers/' . basename($path);
@@ -38,12 +40,17 @@ $serveImage = function ($path) {
             base_path("storage/app/public/{$tp}")
         ];
         foreach ($files as $f) {
-            if (file_exists($f)) {
-                return response()->file($f, [
-                    'X-Storage-Proxy' => 'hit',
-                    'X-Storage-Route' => 'hit',
-                    'Cache-Control' => 'no-cache, private'
-                ]);
+            $resolved = realpath($f);
+            if ($resolved !== false) {
+                $inTenant = $tenantBase && str_starts_with($resolved, $tenantBase . DIRECTORY_SEPARATOR);
+                $inCentral = $centralBase && str_starts_with($resolved, $centralBase . DIRECTORY_SEPARATOR);
+                if ($inTenant || $inCentral) {
+                    return response()->file($resolved, [
+                        'X-Storage-Proxy' => 'hit',
+                        'X-Storage-Route' => 'hit',
+                        'Cache-Control' => 'no-cache, private'
+                    ]);
+                }
             }
         }
     }
@@ -113,7 +120,7 @@ Route::middleware([
         Route::post('/movies/{movie}/watched', [\App\Http\Controllers\MovieWatchedController::class, 'toggle'])->name('movies.watched.toggle');
 
         // Admin Area
-        Route::prefix('admin')->name('admin.')->group(function () {
+        Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('dashboard');
             Route::get('movies/sync-logs', [\App\Http\Controllers\Admin\TrailerSyncController::class, 'index'])->name('movies.sync-logs');
             Route::get('movies/sync-logs/{run}', [\App\Http\Controllers\Admin\TrailerSyncController::class, 'show'])->name('movies.sync-logs.show');

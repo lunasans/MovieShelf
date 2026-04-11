@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use PragmaRX\Google2FALaravel\Facade as Google2FA;
 
@@ -71,9 +73,12 @@ class AuthController extends Controller
 
         // Check if 2FA is active for this user
         if ($user->two_factor_confirmed_at) {
+            $challengeToken = Str::random(40);
+            Cache::put('2fa_challenge_'.$challengeToken, $user->id, now()->addMinutes(5));
+
             return response()->json([
                 'requires_2fa' => true,
-                'user_id' => $user->id,
+                '2fa_token' => $challengeToken,
                 'device_name' => $request->device_name,
             ]);
         }
@@ -100,7 +105,7 @@ class AuthController extends Controller
             required: true,
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'user_id', type: 'integer', example: 1),
+                    new OA\Property(property: '2fa_token', type: 'string', example: 'abc123...'),
                     new OA\Property(property: 'device_name', type: 'string', example: 'mobile_app'),
                     new OA\Property(property: 'code', type: 'string', example: '123456')
                 ]
@@ -124,12 +129,20 @@ class AuthController extends Controller
     public function login2fa(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            '2fa_token' => 'required|string',
             'device_name' => 'required',
             'code' => 'required|string',
         ]);
 
-        $user = User::findOrFail($request->user_id);
+        $userId = Cache::pull('2fa_challenge_'.$request->input('2fa_token'));
+
+        if (!$userId) {
+            throw ValidationException::withMessages([
+                '2fa_token' => ['Ungültige oder abgelaufene 2FA-Sitzung. Bitte erneut einloggen.'],
+            ]);
+        }
+
+        $user = User::findOrFail($userId);
 
         if (!$user->two_factor_confirmed_at) {
             return response()->json(['message' => '2FA is not enabled for this user.'], 422);

@@ -147,15 +147,15 @@ class MovieController extends Controller
     {
         if ($request->hasFile('cover_upload')) {
             $file = $request->file('cover_upload');
-            $filename = 'covers/custom_'.time().'.'.$file->getClientOriginalExtension();
-            Storage::disk('public')->put($filename, file_get_contents($file->getRealPath()));
+            $filename = 'covers/custom_'.time().'.'.$file->guessExtension();
+            $file->storeAs('', $filename, 'public');
             $validated['cover_id'] = $filename;
         }
 
         if ($request->hasFile('backdrop_upload')) {
             $file = $request->file('backdrop_upload');
-            $filename = 'backdrops/custom_'.time().'.'.$file->getClientOriginalExtension();
-            Storage::disk('public')->put($filename, file_get_contents($file->getRealPath()));
+            $filename = 'backdrops/custom_'.time().'.'.$file->guessExtension();
+            $file->storeAs('', $filename, 'public');
             $validated['backdrop_id'] = $filename;
         }
     }
@@ -163,7 +163,7 @@ class MovieController extends Controller
     protected function downloadTmdbImage(string $path, string $size, string $folder): ?string
     {
         try {
-            $response = Http::withOptions(['verify' => false])->get("https://image.tmdb.org/t/p/{$size}".$path);
+            $response = Http::get("https://image.tmdb.org/t/p/{$size}".$path);
             if ($response->successful()) {
                 $prefix = $folder === 'backdrops' ? 'tmdb_backdrop_' : 'tmdb_';
                 $filename = $prefix.ltrim($path, '/');
@@ -240,7 +240,7 @@ class MovieController extends Controller
         }
 
         try {
-            $response = Http::withOptions(['verify' => false])->get('https://image.tmdb.org/t/p/w185'.$profilePath);
+            $response = Http::get('https://image.tmdb.org/t/p/w185'.$profilePath);
             if ($response->successful()) {
                 $filename = 'actors/tmdb_'.ltrim($profilePath, '/');
                 Storage::disk('public')->put($filename, $response->body());

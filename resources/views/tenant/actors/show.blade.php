@@ -112,7 +112,7 @@
                                 </h2>
                                 <div class="text-white/70 leading-relaxed text-xl lg:text-2xl font-medium tracking-tight relative pl-10 prose-movie">
                                     <span class="absolute left-0 top-0 text-7xl text-blue-500/20 leading-none">"</span>
-                                    {!! \App\Services\ShortcodeService::parse($actor->bio) !!}
+                                    {!! \App\Services\ShortcodeService::parse(e($actor->bio)) !!}
                                 </div>
                             </div>
                          @endif

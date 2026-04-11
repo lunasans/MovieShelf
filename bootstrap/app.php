@@ -17,9 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // Only global-safe middleware here
         ]);
 
-        $middleware->validateCsrfTokens(except: [
-            'login',
-        ]);
+        $middleware->validateCsrfTokens(except: []);
 
         $middleware->redirectTo(
             guests: '/login',
@@ -30,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenancy' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
             'prevent-central-access' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
             'tenant.activated' => \App\Http\Middleware\CheckTenantActivation::class,
+            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'central.admin' => \App\Http\Middleware\EnsureCentralAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

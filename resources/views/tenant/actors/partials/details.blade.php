@@ -111,7 +111,7 @@
                 <div class="relative">
                     <div class="absolute -left-8 top-0 bottom-0 w-1 bg-blue-600 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.5)] opacity-50"></div>
                     <div class="text-white/60 leading-relaxed text-xl lg:text-2xl font-medium italic max-w-4xl tracking-tight prose-movie">
-                        {!! $actor->bio !!}
+                        {!! nl2br(e($actor->bio)) !!}
                     </div>
                 </div>
             </div>
@@ -206,7 +206,7 @@
             @if ($actor->bio)
                 <div class="glass p-6 rounded-3xl border-white/5">
                     <div class="text-gray-300 leading-relaxed text-xs italic opacity-80 prose-movie">
-                        {!! Str::limit($actor->bio, 450) !!}
+                        {{ Str::limit(strip_tags($actor->bio), 450) }}
                     </div>
                 </div>
             @endif

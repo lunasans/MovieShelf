@@ -2,7 +2,7 @@
     <div class="p-6 md:p-10" x-data="{
         showAddModal: {{ $errors->any() && !session('editing_user_id') ? 'true' : 'false' }},
         showEditModal: {{ session('editing_user_id') ? 'true' : 'false' }},
-        editingUser: {!! session('editing_user_id') ? \App\Models\User::find(session('editing_user_id'))->toJson() : 'null' !!},
+        editingUser: {!! session('editing_user_id') ? (\App\Models\User::find(session('editing_user_id'))?->toJson() ?? 'null') : 'null' !!},
         openEditModal(user) {
             this.editingUser = user;
             this.showEditModal = true;

@@ -123,6 +123,7 @@ class RegisterTenantController extends Controller
             'username' => $username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'is_admin' => true,
         ];
 
         $tenant->run(function () use ($userData) {

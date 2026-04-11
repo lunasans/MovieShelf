@@ -74,7 +74,7 @@ class ActorController extends Controller
             })
             ->when($letter && preg_match('/^[A-Z#]$/', $letter), function ($q) use ($letter) {
                 if ($letter === '#') {
-                    $q->whereRaw('last_name REGEXP "^[^A-Za-z]"');
+                    $q->whereRaw("last_name NOT GLOB '[A-Za-z]*' AND last_name != ''");
                 } else {
                     $q->where('last_name', 'like', $letter.'%');
                 }

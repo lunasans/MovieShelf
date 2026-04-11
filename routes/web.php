@@ -14,14 +14,6 @@ use Illuminate\Support\Facades\Route;
 
 // Landing Page (SaaS Home)
 Route::get('/', [\App\Http\Controllers\Central\LandingController::class, 'index'])->name('landing');
-Route::get('/debug-domain', function () {
-    return [
-        'hostname' => request()->getHost(),
-        'is_central' => in_array(request()->getHost(), config('tenancy.central_domains')),
-        'central_domains' => config('tenancy.central_domains'),
-        'tenancy_initialized' => function_exists('tenancy') && tenancy()->initialized,
-    ];
-});
 
 Route::get('/privacy', function () {
     return view('central.privacy');
@@ -35,17 +27,17 @@ Route::get('/impressum', function () {
     return view('central.impressum');
 })->name('saas.impressum');
 
-Route::get('/api/check-subdomain', [\App\Http\Controllers\Central\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain');
-Route::post('/claim', [\App\Http\Controllers\Central\RegisterTenantController::class, 'store'])->name('tenant.register');
+Route::get('/api/check-subdomain', [\App\Http\Controllers\Central\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain')->middleware('throttle:30,1');
+Route::post('/claim', [\App\Http\Controllers\Central\RegisterTenantController::class, 'store'])->name('tenant.register')->middleware('throttle:3,10');
 Route::get('/activate/{token}', [\App\Http\Controllers\Central\RegisterTenantController::class, 'activate'])->name('tenant.activate');
 Route::get('/forget-shelf/{tenant}', [\App\Http\Controllers\Central\CentralDeletionController::class, 'confirm'])->name('central.tenant.forget')->middleware(['signed']);
 
 // Central Storage Proxy (Required when public/storage symlink is removed)
 Route::get('/media/{path}', function ($path) {
-    $path = str_replace('..', '', $path);
-    
+    $storageBase = realpath(base_path('storage/app/public'));
+
     $tryPaths = [$path];
-    
+
     // Add singular/plural variants for robustness
     if (str_starts_with($path, 'cover/')) {
         $tryPaths[] = str_replace('cover/', 'covers/', $path);
@@ -59,8 +51,10 @@ Route::get('/media/{path}', function ($path) {
 
     foreach ($tryPaths as $tryPath) {
         $fullPath = base_path("storage/app/public/$tryPath");
-        if (file_exists($fullPath)) {
-            return response()->file($fullPath, ['X-Storage-Proxy' => 'central-web']);
+        $resolvedPath = realpath($fullPath);
+        if ($resolvedPath !== false && $storageBase !== false
+            && str_starts_with($resolvedPath, $storageBase . DIRECTORY_SEPARATOR)) {
+            return response()->file($resolvedPath, ['X-Storage-Proxy' => 'central-web']);
         }
     }
 
@@ -68,7 +62,7 @@ Route::get('/media/{path}', function ($path) {
 })->where('path', '.*');
 
 // Master Routes (Global ACP)
-Route::middleware(['web', 'auth'])->group(function () {
+Route::middleware(['web', 'auth', 'central.admin'])->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'index'])->name('admin.dashboard');
         Route::get('/tenants', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'tenants'])->name('admin.tenants');
