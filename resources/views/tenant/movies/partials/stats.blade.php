@@ -14,7 +14,14 @@
 
         {{-- Header Section --}}
         <div class="relative z-10 mb-16 animate-in slide-in-from-left duration-700">
-            @if(!request()->routeIs('dashboard'))
+            @if(request()->routeIs('dashboard'))
+                <button @click="isStatsView = false; selectedMovie = null" class="group inline-flex items-center gap-4 text-white/60 hover:text-white transition-all mb-8">
+                    <div class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5 backdrop-blur-xl group-hover:border-white/30 group-hover:scale-110 transition-all">
+                        <i class="bi bi-arrow-left text-xl"></i>
+                    </div>
+                    <span class="font-black uppercase tracking-widest text-sm italic">{{ __('Back to Library') }}</span>
+                </button>
+            @else
                 <a href="{{ route('dashboard', ['layout' => 'streaming']) }}" class="group inline-flex items-center gap-4 text-white/60 hover:text-white transition-all mb-8">
                     <div class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5 backdrop-blur-xl group-hover:border-white/30 group-hover:scale-110 transition-all">
                         <i class="bi bi-arrow-left text-xl"></i>
