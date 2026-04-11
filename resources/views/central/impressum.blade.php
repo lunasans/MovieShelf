@@ -77,7 +77,7 @@
 
     <div class="legal-content">
         @if(\App\Models\Setting::get('saas_impressum_active', '0') == '1')
-            {!! strip_tags(\App\Models\Setting::get('saas_impressum_content', 'No content available.'), '<p><br><strong><b><em><i><ul><ol><li><a><h1><h2><h3><h4><h5><h6><blockquote><code><pre><hr><div><span>') !!}
+            {!! Purifier::clean(\App\Models\Setting::get('saas_impressum_content', 'No content available.'), 'richtext') !!}
         @else
             <h1>Impressum</h1>
             <p>Das Impressum ist derzeit nicht öffentlich verfügbar.</p>

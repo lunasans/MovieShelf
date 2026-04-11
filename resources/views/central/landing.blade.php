@@ -341,7 +341,7 @@
                 </button>
                 <div class="faq-answer" x-show="active === {{ $loop->index }}" x-collapse>
                     <div class="py-4">
-                        {!! strip_tags($faq->answer, '<p><br><strong><b><em><i><ul><ol><li><a><h2><h3><h4><blockquote><code><pre><hr>') !!}
+                        {!! Purifier::clean($faq->answer, 'richtext') !!}
                     </div>
                 </div>
             </div>
