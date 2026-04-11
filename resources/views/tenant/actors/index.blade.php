@@ -81,10 +81,10 @@
                     <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-12">
                         <div class="flex-1">
                             <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 drop-shadow-2xl uppercase">
-                                {!! __('Our <span class="text-blue-500">Stars</span>') !!}
+                                {!! __('Our <span class="text-red-500">Stars</span>') !!}
                             </h1>
                             <div class="flex items-center gap-4 mt-8 flex-wrap">
-                                <span class="px-5 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-[10px] font-black text-blue-400 uppercase tracking-widest shadow-xl">
+                                <span class="px-5 py-2 bg-red-500/10 border border-red-500/20 rounded-full text-[10px] font-black text-red-400 uppercase tracking-widest shadow-xl">
                                     <i class="bi bi-people-fill mr-2"></i> {{ number_format($filteredActorsCount) }} / {{ number_format($totalActors) }} {{ __('Actors') }}
                                 </span>
                                 @if($letter)

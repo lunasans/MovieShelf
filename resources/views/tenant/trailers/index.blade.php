@@ -93,7 +93,7 @@
                     <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
                         <div class="flex-1">
                             <h1 class="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4 drop-shadow-2xl uppercase">
-                                {!! __('Trailer <span class="text-blue-500">Gallery</span>') !!}
+                                {!! __('Trailer <span class="text-red-500">Gallery</span>') !!}
                             </h1>
                             <p class="text-white/40 text-lg font-bold max-w-2xl italic tracking-wide">
                                 {{ __('Discover trailers from your collection') }}
@@ -102,11 +102,11 @@
                         
                         <!-- Search Form (Streaming Style) -->
                         <form action="{{ route('movies.trailers') }}" method="GET" class="relative w-full max-w-md group">
-                            <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-rose-600 rounded-2xl blur opacity-20 group-focus-within:opacity-50 transition duration-500"></div>
+                            <div class="absolute -inset-1 bg-gradient-to-r from-red-600 to-rose-600 rounded-2xl blur opacity-20 group-focus-within:opacity-50 transition duration-500"></div>
                             <input type="text" name="q" value="{{ request('q') }}"
                                 placeholder="{{ __('Search for trailers...') }}"
                                 class="relative w-full bg-[#0c0c0e]/80 border border-white/10 rounded-2xl px-6 py-5 pl-14 focus:ring-0 focus:border-white/30 text-white transition-all outline-none placeholder:text-white/20 backdrop-blur-xl">
-                            <i class="bi bi-search absolute left-6 top-1/2 -translate-y-1/2 text-white/30 text-xl group-focus-within:text-blue-500 transition-colors"></i>
+                            <i class="bi bi-search absolute left-6 top-1/2 -translate-y-1/2 text-white/30 text-xl group-focus-within:text-red-500 transition-colors"></i>
                         </form>
                     </div>
                 </div>
@@ -117,7 +117,7 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                     <div>
                         <h1 class="text-4xl font-black text-white tracking-tighter mb-2 italic">
-                            {!! __('Trailer <span class="text-blue-500">Gallery</span>') !!}
+                            {!! __('Trailer <span class="text-red-500">Gallery</span>') !!}
                         </h1>
                         <p class="text-gray-400 font-medium italic opacity-80">{{ __('Discover trailers from your collection') }}</p>
                     </div>
@@ -125,7 +125,7 @@
                     <form action="{{ route('movies.trailers') }}" method="GET" class="relative w-full max-w-md">
                         <input type="text" name="q" value="{{ request('q') }}"
                             placeholder="{{ __('Search for trailers...') }}"
-                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pl-14 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-white transition-all outline-none placeholder:text-gray-500 glass">
+                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pl-14 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 text-white transition-all outline-none placeholder:text-gray-500 glass">
                         <i class="bi bi-search absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 text-xl"></i>
                     </form>
                 </div>
@@ -151,10 +151,10 @@
             <!-- Infinite Scroll Trigger -->
             <div x-show="$data.nextPageUrl" x-intersect.margin.800px="loadMore()" class="mt-24 flex flex-col items-center justify-center gap-6">
                 <div x-show="$data.isLoading" class="flex flex-col items-center gap-6 animate-in fade-in duration-500">
-                    <div class="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin shadow-[0_0_30px_rgba(59,130,246,0.3)]"></div>
+                    <div class="w-16 h-16 border-4 border-red-500/20 border-t-red-500 rounded-full animate-spin shadow-[0_0_30px_rgba(59,130,246,0.3)]"></div>
                     <span class="text-[12px] font-black text-white/30 uppercase tracking-[0.4em] italic animate-pulse">{{ __('Loading more trailers...') }}</span>
                 </div>
-                <button x-show="!$data.isLoading" @click="loadMore()" class="{{ $layoutMode === 'streaming' ? 'glass-streaming border-white/10' : 'glass border-white/5' }} px-12 py-5 border rounded-3xl text-xs font-black text-white/40 hover:text-white hover:border-blue-500 transition-all uppercase tracking-[0.3em] italic group shadow-2xl">
+                <button x-show="!$data.isLoading" @click="loadMore()" class="{{ $layoutMode === 'streaming' ? 'glass-streaming border-white/10' : 'glass border-white/5' }} px-12 py-5 border rounded-3xl text-xs font-black text-white/40 hover:text-white hover:border-red-500 transition-all uppercase tracking-[0.3em] italic group shadow-2xl">
                     <span>{{ __('Load more') }}</span>
                     <i class="bi bi-chevron-down ml-3 group-hover:translate-y-1 transition-transform inline-block"></i>
                 </button>
