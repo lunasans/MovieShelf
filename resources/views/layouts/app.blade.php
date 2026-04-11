@@ -76,7 +76,7 @@
 
             <!-- Page Content -->
             @php
-                $hasHero = request()->routeIs('dashboard', 'movies.show');
+                $hasHero = request()->routeIs('dashboard', 'movies.show', 'actors.show', 'actors.index', 'movies.trailers', 'statistics', 'impressum');
                 $mainClasses = $isStreaming 
                     ? ($hasHero ? 'mt-0' : 'pt-28') 
                     : 'mt-8';
