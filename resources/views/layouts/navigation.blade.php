@@ -9,11 +9,12 @@
     scrolled: window.pageYOffset > 20,
     layoutMode: '{{ optional(auth()->user())->layout ?? \App\Models\Setting::get("default_guest_layout", "classic") }}',
     activeMovieTitle: '',
+    activeMovieCover: '',
     showMovieTitle: false,
 }" 
 x-init="window.addEventListener('scroll', () => { scrolled = window.pageYOffset > 20 })"
 x-on:layout-change.window="if ($event.detail !== layoutMode) layoutMode = $event.detail"
-x-on:set-active-movie.window="activeMovieTitle = $event.detail.title"
+x-on:set-active-movie.window="activeMovieTitle = $event.detail.title; activeMovieCover = $event.detail.cover"
 x-on:toggle-movie-title.window="showMovieTitle = $event.detail.show"
 class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
 :class="{
@@ -50,8 +51,15 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                      :class="showMovieTitle ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-full opacity-0 scale-90'"
                      x-cloak>
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                            <i class="bi bi-film text-blue-400"></i>
+                        <div class="w-9 h-12 rounded-lg overflow-hidden border border-white/20 shadow-2xl flex-shrink-0 bg-white/5 backdrop-blur-md">
+                            <template x-if="activeMovieCover">
+                                <img :src="activeMovieCover" class="w-full h-full object-cover">
+                            </template>
+                            <template x-if="!activeMovieCover">
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <i class="bi bi-film text-white/20 text-xs"></i>
+                                </div>
+                            </template>
                         </div>
                         <h2 class="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-none truncate max-w-[200px] md:max-w-[400px] lg:max-w-xl italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 pr-6">
                             <span x-text="activeMovieTitle"></span>

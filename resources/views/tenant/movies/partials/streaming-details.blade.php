@@ -76,7 +76,12 @@
         }
      }"
      x-init="
-        window.dispatchEvent(new CustomEvent('set-active-movie', { detail: { title: '{{ addslashes($movie->title) }}' } }));
+        window.dispatchEvent(new CustomEvent('set-active-movie', { 
+            detail: { 
+                title: '{{ addslashes($movie->title) }}',
+                cover: '{{ $movie->cover_url }}'
+            } 
+        }));
         window.addEventListener('beforeunload', () => {
             window.dispatchEvent(new CustomEvent('toggle-movie-title', { detail: { show: false } }));
         });
