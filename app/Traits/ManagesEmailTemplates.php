@@ -5,7 +5,6 @@ namespace App\Traits;
 use App\Models\EmailTemplate;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Support\Facades\Blade;
 
 trait ManagesEmailTemplates
 {
@@ -27,7 +26,7 @@ trait ManagesEmailTemplates
         $template = EmailTemplate::getBySlug($this->templateSlug());
 
         return new Envelope(
-            subject: $template ? Blade::render($template->subject, $this->templateData()) : $this->defaultSubject(),
+            subject: $template ? $this->interpolateTemplate($template->subject, $this->templateData()) : $this->defaultSubject(),
         );
     }
 
@@ -40,13 +39,33 @@ trait ManagesEmailTemplates
 
         if ($template) {
             return new Content(
-                htmlString: Blade::render($template->content, $this->templateData()),
+                htmlString: $this->interpolateTemplate($template->content, $this->templateData()),
             );
         }
 
         return new Content(
             markdown: $this->defaultMarkdownView(),
         );
+    }
+
+    /**
+     * Safely interpolate template variables using only {{ $var }} and {!! $var !!} syntax.
+     * Prevents arbitrary Blade/PHP code execution from database-stored templates.
+     */
+    protected function interpolateTemplate(string $template, array $data): string
+    {
+        foreach ($data as $key => $value) {
+            $escaped = e((string) $value);
+            // Escaped output: {{ $key }}
+            $template = str_replace('{{ $'.$key.' }}', $escaped, $template);
+            $template = str_replace('{{$'.$key.'}}', $escaped, $template);
+            $template = str_replace('{{ $'.$key.'}}', $escaped, $template);
+            $template = str_replace('{{$'.$key.' }}', $escaped, $template);
+            // Unescaped output: {!! $key !!}
+            $template = str_replace('{!! $'.$key.' !!}', (string) $value, $template);
+            $template = str_replace('{!!$'.$key.'!!}', (string) $value, $template);
+        }
+        return $template;
     }
 
     /**

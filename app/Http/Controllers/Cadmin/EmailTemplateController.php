@@ -23,7 +23,7 @@ class EmailTemplateController extends Controller
     {
         $data = $request->validate([
             'subject' => 'required|string|max:255',
-            'content' => 'required|string',
+            'content' => 'required|string|max:65535',
         ]);
 
         $template->update($data);

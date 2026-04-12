@@ -86,6 +86,14 @@ class BackupImportController extends Controller
 
             Storage::disk($this->importDisk)->deleteDirectory($tempPath);
 
+            // Verify the assembled file is a valid ZIP before accepting it
+            $zip = new ZipArchive();
+            if ($zip->open($finalPath) !== true) {
+                unlink($finalPath);
+                return response()->json(['status' => 'error', 'message' => 'Ungültige Datei: kein gültiges ZIP-Archiv.'], 422);
+            }
+            $zip->close();
+
             return response()->json([
                 'status' => 'completed',
                 'filename' => $filename

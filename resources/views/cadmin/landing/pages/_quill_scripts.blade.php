@@ -18,7 +18,7 @@ function pageForm() {
     return {
         slug: document.getElementById('slug')?.value ?? '',
         formData: {
-            content: {!! json_encode($existingContent ?? old('content')) !!}
+            content: {!! json_encode($existingContent ?? old('content'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}
         },
         updateSlug() {
             if (!this.slug) {

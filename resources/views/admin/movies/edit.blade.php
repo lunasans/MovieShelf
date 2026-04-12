@@ -384,28 +384,28 @@
             return {
                 showModal: false,
                 quill: null,
-                searchQuery: {!! json_encode($movie->title) !!},
+                searchQuery: {!! json_encode($movie->title, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
                 results: [],
                 loading: false,
                 formData: {
-                    title: {!! json_encode(old('title', $movie->title)) !!},
-                    year: {!! json_encode(old('year', $movie->year)) !!},
-                    collection_type: {!! json_encode(old('collection_type', $movie->collection_type)) !!},
-                    genre: {!! json_encode(old('genre', $movie->genre)) !!},
-                    runtime: {!! json_encode(old('runtime', $movie->runtime)) !!},
-                    rating: {!! json_encode(old('rating', $movie->rating ? round($movie->rating, 1) : null)) !!},
-                    rating_age: {!! json_encode(old('rating_age', $movie->rating_age)) !!},
-                    trailer_url: {!! json_encode(old('trailer_url', $movie->trailer_url)) !!},
-                    overview: {!! json_encode(old('overview', $movie->overview)) !!},
-                    tmdb_id: {!! json_encode(old('tmdb_id', $movie->tmdb_id)) !!},
-                    cover_id: {!! json_encode(old('cover_id', $movie->cover_id)) !!},
-                    backdrop_id: {!! json_encode(old('backdrop_id', $movie->backdrop_id)) !!},
-                    created_at: {!! json_encode(old('created_at', $movie->created_at ? $movie->created_at->format('Y-m-d\TH:i') : null)) !!}
+                    title: {!! json_encode(old('title', $movie->title), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    year: {!! json_encode(old('year', $movie->year), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    collection_type: {!! json_encode(old('collection_type', $movie->collection_type), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    genre: {!! json_encode(old('genre', $movie->genre), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    runtime: {!! json_encode(old('runtime', $movie->runtime), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    rating: {!! json_encode(old('rating', $movie->rating ? round($movie->rating, 1) : null), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    rating_age: {!! json_encode(old('rating_age', $movie->rating_age), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    trailer_url: {!! json_encode(old('trailer_url', $movie->trailer_url), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    overview: {!! json_encode(old('overview', $movie->overview), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    tmdb_id: {!! json_encode(old('tmdb_id', $movie->tmdb_id), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    cover_id: {!! json_encode(old('cover_id', $movie->cover_id), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    backdrop_id: {!! json_encode(old('backdrop_id', $movie->backdrop_id), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    created_at: {!! json_encode(old('created_at', $movie->created_at ? $movie->created_at->format('Y-m-d\TH:i') : null), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}
                 },
                 coverPreview: null,
                 backdropPreview: null,
-                initialCoverUrl: {!! json_encode($movie->cover_url) !!},
-                initialBackdropUrl: {!! json_encode($movie->backdrop_url) !!},
+                initialCoverUrl: {!! json_encode($movie->cover_url, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                initialBackdropUrl: {!! json_encode($movie->backdrop_url, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
 
                 getImageUrl(id, type) {
                     if (!id) return null;
@@ -584,7 +584,7 @@
                             'sort_order' => $actor->pivot->sort_order
                         ]
                     ];
-                })) !!},
+                }), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
 
                 searchActors() {
                     if (this.searchQuery.length < 2) {

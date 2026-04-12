@@ -23,7 +23,7 @@ class LandingPageController extends Controller
     {
         $data = $request->validate([
             'title'       => 'required|string|max:255',
-            'slug'        => 'nullable|string|max:255|unique:landing_pages,slug',
+            'slug'        => 'nullable|string|max:255|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/|unique:landing_pages,slug',
             'content'     => 'nullable|string',
             'sort_order'  => 'nullable|integer',
             'is_active'   => 'nullable|boolean',
@@ -48,7 +48,7 @@ class LandingPageController extends Controller
     {
         $data = $request->validate([
             'title'       => 'required|string|max:255',
-            'slug'        => 'nullable|string|max:255|unique:landing_pages,slug,' . $page->id,
+            'slug'        => 'nullable|string|max:255|regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/|unique:landing_pages,slug,' . $page->id,
             'content'     => 'nullable|string',
             'sort_order'  => 'nullable|integer',
             'is_active'   => 'nullable|boolean',
