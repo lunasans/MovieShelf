@@ -152,13 +152,50 @@
                         </p>
                     </div>
 
-                    <div class="md:col-span-2 space-y-4 pt-6 border-t border-white/10">
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2 ms-1">Gesperrte Subdomains</label>
-                        <textarea name="forbidden_subdomains" rows="3" 
-                                  placeholder="admin, api, www, support, test, dev..."
-                                  class="block w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500/50 text-white transition-all outline-none font-mono text-sm tracking-widest">{{ $settings['forbidden_subdomains'] }}</textarea>
-                        <p class="text-[10px] text-gray-500 font-medium italic">
-                            💡 Gib hier durch Kommas getrennte Begriffe ein, die Nutzer nicht als Subdomain wählen dürfen.
+                    <div class="md:col-span-2 space-y-3 pt-6 border-t border-white/10"
+                         x-data="{
+                            words: {{ json_encode(array_values(array_filter(array_map('trim', explode(',', $settings['forbidden_subdomains'])))), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) }},
+                            input: '',
+                            get csv() { return this.words.join(',') },
+                            add() {
+                                const w = this.input.toLowerCase().replace(/[^a-z0-9-]/g, '').trim();
+                                if (w.length >= 2 && !this.words.includes(w)) this.words.push(w);
+                                this.input = '';
+                            },
+                            remove(w) { this.words = this.words.filter(x => x !== w) },
+                            onKey(e) { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); this.add(); } }
+                         }">
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 ms-1">Gesperrte Subdomains</label>
+
+                        {{-- Hidden field for form submission --}}
+                        <input type="hidden" name="forbidden_subdomains" :value="csv">
+
+                        {{-- Tag display --}}
+                        <div class="min-h-[3rem] flex flex-wrap gap-2 p-3 bg-white/5 border border-white/10 rounded-xl">
+                            <template x-for="w in words" :key="w">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-black uppercase tracking-widest">
+                                    <span x-text="w"></span>
+                                    <button type="button" @click="remove(w)"
+                                            class="text-rose-400/60 hover:text-rose-300 transition-colors leading-none">
+                                        <i class="bi bi-x text-sm"></i>
+                                    </button>
+                                </span>
+                            </template>
+                            <span x-show="words.length === 0" class="text-white/20 text-xs italic self-center">Keine gesperrten Subdomains</span>
+                        </div>
+
+                        {{-- Add input --}}
+                        <div class="flex gap-2">
+                            <input type="text" x-model="input" @keydown="onKey($event)"
+                                   placeholder="Begriff eingeben + Enter"
+                                   class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm font-mono outline-none focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/20 transition-all placeholder-white/20">
+                            <button type="button" @click="add()"
+                                    class="px-4 py-2.5 rounded-xl bg-rose-500/20 border border-rose-500/30 text-rose-400 text-sm font-black hover:bg-rose-500/30 transition-all">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-gray-600 font-medium">
+                            Nur Kleinbuchstaben, Zahlen und Bindestriche erlaubt · mind. 2 Zeichen · Enter oder Komma zum Hinzufügen
                         </p>
                     </div>
                 </div>

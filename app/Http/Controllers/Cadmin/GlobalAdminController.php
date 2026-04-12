@@ -125,6 +125,16 @@ class GlobalAdminController extends Controller
             'saas_impressum_content' => 'nullable|string',
         ]);
 
+        // Sanitize forbidden_subdomains: ensure each entry is lowercase alphanumeric+hyphens, min 2 chars
+        if (isset($data['forbidden_subdomains'])) {
+            $data['forbidden_subdomains'] = collect(explode(',', $data['forbidden_subdomains']))
+                ->map(fn($w) => preg_replace('/[^a-z0-9-]/', '', strtolower(trim($w))))
+                ->filter(fn($w) => strlen($w) >= 2)
+                ->unique()
+                ->sort()
+                ->implode(',');
+        }
+
         foreach ($data as $key => $value) {
             Setting::set($key, $value, 'saas');
         }
