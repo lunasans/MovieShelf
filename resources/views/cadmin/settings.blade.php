@@ -493,7 +493,6 @@
             </div>
 
         </div>
-        </div>
 
         {{-- Announcement Tab --}}
         <div x-show="activeTab === 'announcement'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300" x-cloak>

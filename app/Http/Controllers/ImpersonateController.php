@@ -32,7 +32,7 @@ class ImpersonateController extends Controller
 
         Log::info("Impersonation erfolgreich: {$data['cadmin']} → Tenant " . tenancy()->tenant->id);
 
-        return redirect()->route('admin.dashboard');
+        return redirect()->route('dashboard');
     }
 
     public function exit()
