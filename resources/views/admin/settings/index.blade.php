@@ -252,6 +252,7 @@
                     </div>
                     
                     <!-- Preview Area -->
+                    @if(Route::has('signature'))
                     <div class="mt-12 space-y-8">
                         <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] flex items-center gap-2">
                             <i class="bi bi-eye"></i> Live-Vorschau
@@ -306,6 +307,7 @@
                             </div>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
 

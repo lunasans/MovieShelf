@@ -179,9 +179,13 @@
                             class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.migration.index') ? 'sidebar-link-active' : 'text-gray-400' }}">
                             <i class="bi bi-database-fill-up"></i> <span class="font-bold text-sm">Daten Migration</span>
                         </a>
-                        @endif <a href="{{ route('admin.settings.index') }}"
+                        @endif
+                        @if(Route::has('admin.settings.index'))
+                        <a href="{{ route('admin.settings.index') }}"
                             class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.settings.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
-                            <i class="bi bi-sliders"></i> <span class="font-bold text-sm">Einstellungen</span> </a>
+                            <i class="bi bi-sliders"></i> <span class="font-bold text-sm">Einstellungen</span>
+                        </a>
+                        @endif
             </nav>
             <div class="p-4 border-t border-white/5 shrink-0">
                 <form method="POST" action="{{ route('logout') }}"> @csrf <button type="submit"
