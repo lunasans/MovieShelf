@@ -208,24 +208,6 @@
                     </button>
                 </div>
 
-                {{-- Star Rating --}}
-                <div class="flex items-center gap-4 mt-4">
-                    <span class="text-[10px] font-black text-white/30 uppercase tracking-widest">{{ __('Deine Bewertung') }}</span>
-                    <div class="flex items-center gap-1">
-                        @for($s = 1; $s <= 5; $s++)
-                        <button @click="setRating({{ $s }})"
-                                @mouseenter="hoverRating = {{ $s }}"
-                                @mouseleave="hoverRating = 0"
-                                class="text-2xl transition-all active:scale-90"
-                                :class="(hoverRating || userRating) >= {{ $s }} ? 'text-amber-400' : 'text-white/10'">
-                            <i class="bi bi-star-fill"></i>
-                        </button>
-                        @endfor
-                    </div>
-                    <span class="text-xs text-white/30 font-medium" x-show="userRating > 0" x-text="userRating + '/5'"></span>
-                    <span class="text-[10px] text-white/20 font-bold" x-show="ratingCount > 0" x-text="'Ø ' + avgRating + ' (' + ratingCount + ')'"></span>
-                </div>
-
                 <div class="glass p-8 md:p-12 rounded-[3rem] border border-white/10 backdrop-blur-3xl shadow-2xl relative overflow-hidden mb-12">
                     <div class="absolute top-0 right-0 p-8 opacity-5">
                         <i class="bi bi-quote text-9xl"></i>
@@ -284,7 +266,7 @@
                             {{ __('Staffeln & Episoden') }}
                             <div class="h-1 w-12 bg-emerald-600 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             @foreach($movie->seasons->sortBy('season_number') as $season)
                                 <div class="rounded-3xl border border-white/5 bg-white/5 overflow-hidden transition-colors duration-300 group/season"
                                      :class="activeSeason === {{ $season->id }} ? 'border-emerald-500/30 bg-white/10 shadow-2xl' : 'hover:border-white/10'">
@@ -453,13 +435,31 @@
                              <p class="text-sm font-black text-white">{{ $movie->runtime ?: 'N/A' }}m</p>
                          </div>
                          <div class="text-center flex-1 border-r border-white/5">
-                             <p class="text-[10px] font-black text-white/40 uppercase mb-1">{{ __('Format') }}</p>
-                             <p class="text-sm font-black text-white">4K UHD</p> {{-- Conceptual placeholder --}}
+                             <p class="text-[10px] font-black text-white/40 uppercase mb-1">{{ __('TMDB') }}</p>
+                             <p class="text-sm font-black text-white">{{ $movie->rating ? number_format($movie->rating, 1) . '/10' : 'N/A' }}</p>
                          </div>
                          <div class="text-center flex-1">
-                             <p class="text-[10px] font-black text-white/40 uppercase mb-1">{{ __('Language') }}</p>
-                             <p class="text-sm font-black text-white">DE/EN</p> {{-- Conceptual placeholder --}}
+                             <p class="text-[10px] font-black text-white/40 uppercase mb-1">{{ __('Jahr') }}</p>
+                             <p class="text-sm font-black text-white">{{ $movie->year ?: 'N/A' }}</p>
                          </div>
+                     </div>
+
+                     {{-- Star Rating Card --}}
+                     <div class="mt-4 glass p-6 rounded-3xl border border-white/10">
+                         <p class="text-[10px] font-black text-white/40 uppercase tracking-widest mb-3">{{ __('Deine Bewertung') }}</p>
+                         <div class="flex items-center gap-2 mb-2">
+                             @for($s = 1; $s <= 5; $s++)
+                             <button @click="setRating({{ $s }})"
+                                     @mouseenter="hoverRating = {{ $s }}"
+                                     @mouseleave="hoverRating = 0"
+                                     class="text-3xl transition-all active:scale-90 hover:scale-110"
+                                     :class="(hoverRating || userRating) >= {{ $s }} ? 'text-amber-400' : 'text-white/10'">
+                                 <i class="bi bi-star-fill"></i>
+                             </button>
+                             @endfor
+                             <span class="text-sm text-amber-400 font-black ml-1" x-show="userRating > 0" x-text="userRating + '/5'"></span>
+                         </div>
+                         <p class="text-[10px] text-white/20 font-bold" x-show="ratingCount > 0" x-text="ratingCount + ' {{ __('Bewertungen') }} · Ø ' + avgRating"></p>
                      </div>
                  </div>
             </div>
