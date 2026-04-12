@@ -31,11 +31,6 @@
                     {{ __('Imprint') }}
                 </a>
                 
-                <a href="#" class="{{ $navClass }}">
-                    <i class="bi bi-shield-lock"></i>
-                    {{ __('Privacy') }}
-                </a>
-
                 @if(!request()->routeIs('login'))
                 <a href="{{ route('login') }}" class="{{ $navClass }}">
                     <i class="bi bi-person"></i>

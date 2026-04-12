@@ -36,11 +36,6 @@
                 </a>
                 @endif
                 
-                <a href="#" class="{{ $navClass }}">
-                    <i class="bi bi-shield-lock"></i>
-                    {{ __('Privacy') }}
-                </a>
-
                 @guest
                     <a href="{{ route('login') }}" class="{{ $navClass }}">
                         <i class="bi bi-person"></i>
