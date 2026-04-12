@@ -125,6 +125,22 @@
                     <span class="font-bold text-sm">FAQ Verwalten</span>
                 </a>
 
+                <div class="pt-6 pb-2 px-6">
+                    <span class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Landingpage</span>
+                </div>
+
+                <a href="{{ route('cadmin.landing.screenshots') }}"
+                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('cadmin.landing.screenshots*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                    <i class="bi bi-images"></i>
+                    <span class="font-bold text-sm">Screenshots</span>
+                </a>
+
+                <a href="{{ route('cadmin.landing.pages.index') }}"
+                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('cadmin.landing.pages.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                    <i class="bi bi-file-earmark-richtext-fill"></i>
+                    <span class="font-bold text-sm">Unterseiten</span>
+                </a>
+
                 <div class="pt-8 pb-3 px-6">
                     <span class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Navigation</span>
                 </div>

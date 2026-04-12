@@ -27,6 +27,8 @@ Route::get('/impressum', function () {
     return view('central.impressum');
 })->name('saas.impressum');
 
+Route::get('/p/{slug}', [\App\Http\Controllers\Central\LandingController::class, 'page'])->name('landing.page');
+
 Route::get('/api/check-subdomain', [\App\Http\Controllers\Central\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain')->middleware('throttle:30,1');
 Route::post('/claim', [\App\Http\Controllers\Central\RegisterTenantController::class, 'store'])->name('tenant.register')->middleware('throttle:3,10');
 Route::get('/activate/{token}', [\App\Http\Controllers\Central\RegisterTenantController::class, 'activate'])->name('tenant.activate');
@@ -74,6 +76,19 @@ Route::middleware(['web', 'auth', 'central.admin'])->group(function () {
 
         // FAQ Management
         Route::resource('faqs', \App\Http\Controllers\Cadmin\CentralFaqController::class);
+
+        // Landing Page Editor
+        Route::prefix('landing')->name('landing.')->group(function () {
+            // Screenshots
+            Route::get('screenshots', [\App\Http\Controllers\Cadmin\LandingScreenshotController::class, 'index'])->name('screenshots');
+            Route::post('screenshots', [\App\Http\Controllers\Cadmin\LandingScreenshotController::class, 'store'])->name('screenshots.store');
+            Route::patch('screenshots/{screenshot}', [\App\Http\Controllers\Cadmin\LandingScreenshotController::class, 'update'])->name('screenshots.update');
+            Route::delete('screenshots/{screenshot}', [\App\Http\Controllers\Cadmin\LandingScreenshotController::class, 'destroy'])->name('screenshots.destroy');
+            Route::post('screenshots/reorder', [\App\Http\Controllers\Cadmin\LandingScreenshotController::class, 'reorder'])->name('screenshots.reorder');
+
+            // Sub-pages
+            Route::resource('pages', \App\Http\Controllers\Cadmin\LandingPageController::class);
+        });
     });
 
     // Telemetry API (Master only, gitignored)

@@ -3,16 +3,26 @@
 namespace App\Http\Controllers\Central;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Faq;
+use App\Models\LandingPage;
+use App\Models\LandingScreenshot;
 
 class LandingController extends Controller
 {
-    /**
-     * Display the SaaS landing page.
-     */
     public function index()
     {
-        $faqs = \App\Models\Faq::where('is_active', true)->orderBy('sort_order')->get();
-        return view('central.landing', compact('faqs'));
+        $faqs        = Faq::where('is_active', true)->orderBy('sort_order')->get();
+        $screenshots = LandingScreenshot::where('is_active', true)->orderBy('sort_order')->get();
+        $navPages    = LandingPage::where('is_active', true)->where('show_in_nav', true)->orderBy('sort_order')->get();
+
+        return view('central.landing', compact('faqs', 'screenshots', 'navPages'));
+    }
+
+    public function page(string $slug)
+    {
+        $page = LandingPage::where('slug', $slug)->where('is_active', true)->firstOrFail();
+        $navPages = LandingPage::where('is_active', true)->where('show_in_nav', true)->orderBy('sort_order')->get();
+
+        return view('central.page', compact('page', 'navPages'));
     }
 }
