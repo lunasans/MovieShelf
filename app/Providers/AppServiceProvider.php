@@ -60,6 +60,19 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        // Share global announcement with all tenant app views
+        View::composer('layouts.app', function ($view) {
+            $announcement = ['active' => false, 'text' => '', 'type' => 'info'];
+            $file = storage_path('app/announcement.json');
+            if (file_exists($file)) {
+                $decoded = json_decode(file_get_contents($file), true);
+                if (is_array($decoded)) {
+                    $announcement = $decoded;
+                }
+            }
+            $view->with('globalAnnouncement', $announcement);
+        });
+
         // Share Dynamic Pages with Central Layout
         View::composer('layouts.central', function ($view) {
             // Only fetch if we are on the central domain

@@ -71,6 +71,7 @@ Route::middleware(['web', 'auth', 'central.admin'])->group(function () {
         Route::get('/tenants', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'tenants'])->name('tenants');
         Route::post('/tenants/{tenant}/activate', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'activate'])->name('tenants.activate');
         Route::delete('/tenants/{tenant}/delete', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'delete'])->name('tenants.delete');
+        Route::get('/tenants/{tenant}/impersonate', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'impersonate'])->name('tenants.impersonate');
         Route::get('/settings', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'settings'])->name('settings');
         Route::post('/settings', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'updateSettings'])->name('settings.update');
         Route::post('/settings/test-mail', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'testMail'])->name('settings.test-mail');

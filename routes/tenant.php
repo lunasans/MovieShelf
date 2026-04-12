@@ -102,6 +102,10 @@ Route::middleware([
     Route::get('/statistics', [\App\Http\Controllers\StatsController::class, 'index'])->name('statistics');
     Route::post('/theme/save', [\App\Http\Controllers\ThemeController::class, 'save'])->name('theme.save');
 
+    // Cadmin Impersonation
+    Route::get('/impersonate/{token}', [\App\Http\Controllers\ImpersonateController::class, 'login'])->name('impersonate.login');
+    Route::get('/impersonate-exit', [\App\Http\Controllers\ImpersonateController::class, 'exit'])->name('impersonate.exit');
+
     Route::middleware('auth')->group(function () use ($profilePath) {
         Route::get($profilePath, [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch($profilePath, [ProfileController::class, 'update'])->name('profile.update');

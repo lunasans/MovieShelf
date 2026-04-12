@@ -38,11 +38,17 @@
                 <i class="bi bi-envelope-at"></i>
                 E-Mail
             </button>
-            <button type="button" @click="activeTab = 'legal'" 
+            <button type="button" @click="activeTab = 'legal'"
                     :class="activeTab === 'legal' ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'"
                     class="px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center gap-2">
                 <i class="bi bi-file-earmark-text"></i>
                 Rechtliches
+            </button>
+            <button type="button" @click="activeTab = 'announcement'"
+                    :class="activeTab === 'announcement' ? 'bg-amber-500 text-black' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+                    class="px-6 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all flex items-center gap-2">
+                <i class="bi bi-megaphone-fill"></i>
+                Ankündigung
             </button>
         </div>
 
@@ -487,6 +493,89 @@
             </div>
 
         </div>
+        </div>
+
+        {{-- Announcement Tab --}}
+        <div x-show="activeTab === 'announcement'" class="space-y-8 animate-in fade-in zoom-in-95 duration-300" x-cloak>
+            <div class="glass rounded-[2rem] border border-white/10 overflow-hidden">
+                <div class="px-8 py-6 border-b border-white/10 bg-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center border border-amber-500/30">
+                            <i class="bi bi-megaphone-fill text-amber-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-black text-white uppercase tracking-tight">Globale Ankündigung</h2>
+                            <p class="text-gray-400 text-sm font-medium">Banner wird auf allen aktiven Tenant-Seiten angezeigt</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-8 space-y-6">
+
+                    {{-- Active Toggle --}}
+                    <input type="hidden" name="announcement_active" value="0">
+                    <label class="relative flex items-center p-4 cursor-pointer glass border border-white/10 rounded-2xl group hover:bg-white/5 transition-all max-w-md">
+                        <input type="checkbox" name="announcement_active" value="1"
+                               {{ $settings['announcement_active'] == '1' ? 'checked' : '' }}
+                               class="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-10 peer">
+                        <div class="w-12 h-6 bg-white/10 rounded-full p-1 transition-all peer-checked:bg-amber-500">
+                            <div class="w-4 h-4 bg-white rounded-full transition-all peer-checked:translate-x-6"></div>
+                        </div>
+                        <span class="ms-4 text-sm font-bold text-white group-hover:text-amber-400 transition-colors">Banner aktiv (auf allen Tenant-Seiten sichtbar)</span>
+                    </label>
+
+                    {{-- Type --}}
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-3 ms-1">Typ</label>
+                        <div class="flex flex-wrap gap-3">
+                            @foreach(['info' => ['label' => 'Info', 'color' => 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'], 'warning' => ['label' => 'Warnung', 'color' => 'bg-amber-500/20 border-amber-500/40 text-amber-300'], 'critical' => ['label' => 'Kritisch', 'color' => 'bg-rose-500/20 border-rose-500/40 text-rose-300']] as $val => $opt)
+                            <label class="flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer {{ $opt['color'] }} {{ $settings['announcement_type'] === $val ? 'ring-2 ring-white/20' : '' }}">
+                                <input type="radio" name="announcement_type" value="{{ $val }}"
+                                       {{ $settings['announcement_type'] === $val ? 'checked' : '' }}
+                                       class="sr-only">
+                                <span class="text-xs font-black uppercase tracking-widest">{{ $opt['label'] }}</span>
+                            </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Text --}}
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-3 ms-1">Nachricht</label>
+                        <input type="text" name="announcement_text"
+                               value="{{ $settings['announcement_text'] }}"
+                               maxlength="500"
+                               placeholder="z.B. Wartungsarbeiten am 15.01 von 02:00–04:00 Uhr."
+                               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 transition-all placeholder-white/20">
+                        <p class="text-[10px] text-gray-600 font-medium mt-2">Max. 500 Zeichen · Nutzer können den Banner einmalig schließen (wird per localStorage gemerkt)</p>
+                    </div>
+
+                    {{-- Preview --}}
+                    @if($settings['announcement_text'])
+                    <div class="space-y-2">
+                        <p class="text-xs font-black uppercase tracking-widest text-gray-500 ms-1">Vorschau</p>
+                        @php
+                            $previewColors = match($settings['announcement_type']) {
+                                'warning'  => 'bg-amber-500 text-black',
+                                'critical' => 'bg-rose-600 text-white',
+                                default    => 'bg-indigo-500 text-white',
+                            };
+                            $previewIcon = match($settings['announcement_type']) {
+                                'warning'  => 'bi-exclamation-triangle-fill',
+                                'critical' => 'bi-exclamation-octagon-fill',
+                                default    => 'bi-info-circle-fill',
+                            };
+                        @endphp
+                        <div class="{{ $previewColors }} flex items-center justify-between gap-4 px-6 py-2.5 rounded-xl text-xs font-bold">
+                            <div class="flex items-center gap-2">
+                                <i class="bi {{ $previewIcon }}"></i>
+                                <span>{{ $settings['announcement_text'] }}</span>
+                            </div>
+                            <i class="bi bi-x-lg opacity-60"></i>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
         </div>
 
         <div class="flex justify-end pt-4">

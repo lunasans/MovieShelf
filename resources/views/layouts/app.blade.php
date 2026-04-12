@@ -71,6 +71,52 @@
             <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-[#0c0c0e]/50"></div>
         </div>
 
+        {{-- Impersonation Banner --}}
+        @if(session('impersonated_by'))
+        <div class="fixed top-0 inset-x-0 z-[9999] flex items-center justify-between gap-4 px-6 py-2.5 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg">
+            <div class="flex items-center gap-2">
+                <i class="bi bi-person-badge-fill"></i>
+                Support-Modus · Eingeloggt als Tenant-Admin · Cadmin: {{ session('impersonated_by') }}
+            </div>
+            <a href="{{ route('impersonate.exit') }}"
+               class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors">
+                <i class="bi bi-box-arrow-right"></i> Beenden
+            </a>
+        </div>
+        <div class="h-10"></div>
+        @endif
+
+        {{-- Global Announcement Banner --}}
+        @if(!empty($globalAnnouncement['active']))
+        @php
+            $annType = $globalAnnouncement['type'] ?? 'info';
+            $annColors = match($annType) {
+                'warning'  => 'bg-amber-500 text-black',
+                'critical' => 'bg-rose-600 text-white',
+                default    => 'bg-indigo-500 text-white',
+            };
+            $annIcon = match($annType) {
+                'warning'  => 'bi-exclamation-triangle-fill',
+                'critical' => 'bi-exclamation-octagon-fill',
+                default    => 'bi-info-circle-fill',
+            };
+            $annKey = 'ann_' . md5($globalAnnouncement['text'] ?? '');
+        @endphp
+        <div x-data="{ show: localStorage.getItem('{{ $annKey }}') !== '1' }"
+             x-show="show"
+             x-transition
+             class="{{ $annColors }} relative z-50 flex items-center justify-between gap-4 px-6 py-2.5 text-xs font-bold shadow-lg">
+            <div class="flex items-center gap-2">
+                <i class="bi {{ $annIcon }}"></i>
+                <span>{{ $globalAnnouncement['text'] }}</span>
+            </div>
+            <button @click="show = false; localStorage.setItem('{{ $annKey }}', '1')"
+                    class="opacity-60 hover:opacity-100 transition-opacity">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        @endif
+
         <div class="{{ $isStreaming ? 'relative z-10' : 'px-4 pb-12 sm:px-6 lg:px-8 relative z-10' }}">
             @include('layouts.navigation')
 

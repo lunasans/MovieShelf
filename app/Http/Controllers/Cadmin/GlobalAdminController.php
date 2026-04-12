@@ -31,7 +31,65 @@ class GlobalAdminController extends Controller
     {
         $tenants = Tenant::with('domains')->latest()->paginate(15);
         $onboardingMode = Setting::get('onboarding_mode', 'email');
-        return view('cadmin.tenants.index', compact('tenants', 'onboardingMode'));
+
+        $tenantStats = [];
+        foreach ($tenants as $tenant) {
+            try {
+                $stats = $tenant->run(function () {
+                    return [
+                        'movies'        => \App\Models\Movie::where('is_deleted', false)->count(),
+                        'last_activity' => \Illuminate\Support\Facades\DB::table('sessions')
+                                            ->whereNotNull('user_id')
+                                            ->max('last_activity'),
+                    ];
+                });
+            } catch (\Exception $e) {
+                $stats = ['movies' => '–', 'last_activity' => null];
+            }
+
+            $storagePath = storage_path("tenant{$tenant->id}/app/public");
+            $stats['storage_kb'] = is_dir($storagePath) ? $this->dirSizeKb($storagePath) : 0;
+            $tenantStats[$tenant->id] = $stats;
+        }
+
+        return view('cadmin.tenants.index', compact('tenants', 'onboardingMode', 'tenantStats'));
+    }
+
+    protected function dirSizeKb(string $path): int
+    {
+        $bytes = 0;
+        try {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS)) as $file) {
+                $bytes += $file->getSize();
+            }
+        } catch (\Exception $e) {}
+        return (int) round($bytes / 1024);
+    }
+
+    public function impersonate(Tenant $tenant)
+    {
+        $adminUser = $tenant->run(fn() => \App\Models\User::where('is_admin', true)->first());
+
+        if (!$adminUser) {
+            return back()->with('error', "Kein Admin-User in Tenant '{$tenant->id}' gefunden.");
+        }
+
+        $token = \Illuminate\Support\Str::random(64);
+        \Illuminate\Support\Facades\Cache::put(
+            "impersonate_{$token}",
+            ['tenant_id' => $tenant->id, 'cadmin' => auth()->user()->email],
+            now()->addMinutes(5)
+        );
+
+        Log::info("Cadmin impersonation: " . auth()->user()->email . " → tenant {$tenant->id}");
+
+        $domain = $tenant->domains()->first()?->domain;
+        if (!$domain) {
+            $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
+            $domain = $tenant->id . '.' . $centralDomain;
+        }
+
+        return redirect()->away("https://{$domain}/impersonate/{$token}");
     }
 
     public function activate(Tenant $tenant)
@@ -98,6 +156,9 @@ class GlobalAdminController extends Controller
             'forbidden_subdomains' => Setting::get('forbidden_subdomains', 'admin,api,www,support,mail,test,dev,internal'),
             'saas_impressum_active' => Setting::get('saas_impressum_active', '0'),
             'saas_impressum_content' => Setting::get('saas_impressum_content', '<h1>Impressum</h1><p>...</p>'),
+            'announcement_active' => Setting::get('announcement_active', '0'),
+            'announcement_text'   => Setting::get('announcement_text', ''),
+            'announcement_type'   => Setting::get('announcement_type', 'info'),
         ];
 
         return view('cadmin.settings', compact('settings'));
@@ -123,6 +184,9 @@ class GlobalAdminController extends Controller
             'forbidden_subdomains' => 'nullable|string',
             'saas_impressum_active' => 'required|in:0,1',
             'saas_impressum_content' => 'nullable|string',
+            'announcement_active' => 'required|in:0,1',
+            'announcement_text'   => 'nullable|string|max:500',
+            'announcement_type'   => 'required|in:info,warning,critical',
         ]);
 
         // Sanitize forbidden_subdomains: ensure each entry is lowercase alphanumeric+hyphens, min 2 chars
@@ -138,6 +202,13 @@ class GlobalAdminController extends Controller
         foreach ($data as $key => $value) {
             Setting::set($key, $value, 'saas');
         }
+
+        // Write announcement to shared file so all tenant contexts can read it
+        file_put_contents(storage_path('app/announcement.json'), json_encode([
+            'active' => ($data['announcement_active'] ?? '0') === '1',
+            'text'   => $data['announcement_text'] ?? '',
+            'type'   => $data['announcement_type'] ?? 'info',
+        ]));
 
         return back()->with('success', 'Einstellungen wurden erfolgreich gespeichert.');
     }
