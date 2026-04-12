@@ -184,7 +184,6 @@
                     @if(\App\Models\Setting::get('saas_impressum_active', '0') == '1')
                     <a href="{{ route('saas.impressum') }}" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">Impressum</a>
                     @endif
-                    <a href="{{ route('account-deletion') }}" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">Konto löschen</a>
                 </div>
             </div>
             {{-- Social + Copyright --}}
