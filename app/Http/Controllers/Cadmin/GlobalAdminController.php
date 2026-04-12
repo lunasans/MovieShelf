@@ -30,7 +30,8 @@ class GlobalAdminController extends Controller
     public function tenants()
     {
         $tenants = Tenant::with('domains')->latest()->paginate(15);
-        return view('cadmin.tenants.index', compact('tenants'));
+        $onboardingMode = Setting::get('onboarding_mode', 'email');
+        return view('cadmin.tenants.index', compact('tenants', 'onboardingMode'));
     }
 
     public function activate(Tenant $tenant)

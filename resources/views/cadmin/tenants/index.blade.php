@@ -10,9 +10,16 @@
             <h2 class="text-2xl font-black text-white uppercase tracking-tight">Alle Instanzen</h2>
             <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Verwaltung der registrierten MovieShelf Web-Services</p>
         </div>
-        <div class="flex items-center gap-2 px-4 py-2 bg-rose-500/10 border border-rose-500/20 rounded-xl">
-            <i class="bi bi-info-circle text-rose-500"></i>
-            <span class="text-[10px] font-black text-rose-400 uppercase tracking-widest">Manuelle Aktivierung erforderlich</span>
+        @php
+            $modeBadge = match($onboardingMode) {
+                'auto'  => ['bg' => 'bg-green-500/10',  'border' => 'border-green-500/20',  'icon' => 'bi-lightning-charge-fill text-green-500',  'text' => 'text-green-400',  'label' => 'Sofort-Aktivierung aktiv'],
+                'email' => ['bg' => 'bg-blue-500/10',   'border' => 'border-blue-500/20',   'icon' => 'bi-envelope-fill text-blue-500',            'text' => 'text-blue-400',   'label' => 'E-Mail Aktivierung aktiv'],
+                default => ['bg' => 'bg-rose-500/10',   'border' => 'border-rose-500/20',   'icon' => 'bi-shield-lock-fill text-rose-500',         'text' => 'text-rose-400',   'label' => 'Manuelle Aktivierung erforderlich'],
+            };
+        @endphp
+        <div class="flex items-center gap-2 px-4 py-2 {{ $modeBadge['bg'] }} border {{ $modeBadge['border'] }} rounded-xl">
+            <i class="bi {{ $modeBadge['icon'] }}"></i>
+            <span class="text-[10px] font-black {{ $modeBadge['text'] }} uppercase tracking-widest">{{ $modeBadge['label'] }}</span>
         </div>
     </div>
 
