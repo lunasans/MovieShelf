@@ -1,4 +1,4 @@
-@extends('admin.layout')
+@extends('cadmin.layout')
 
 @section('header_title', 'Filmregale (Tenants)')
 
@@ -65,7 +65,7 @@
                         <td class="px-8 py-6">
                             <div class="flex items-center justify-end gap-3">
                                 @if(!$tenant->activated_at)
-                                <form action="{{ route('admin.tenants.activate', $tenant) }}" method="POST">
+                                <form action="{{ route('cadmin.tenants.activate', $tenant) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white border border-emerald-500/20 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2">
                                         <i class="bi bi-person-check-fill"></i>
@@ -74,7 +74,7 @@
                                 </form>
                                 @endif
                                 
-                                <form action="{{ route('admin.tenants.delete', $tenant) }}" method="POST" onsubmit="return confirm('Soll dieses Filmregal wirklich unwiderruflich gelöscht werden?')">
+                                <form action="{{ route('cadmin.tenants.delete', $tenant) }}" method="POST" onsubmit="return confirm('Soll dieses Filmregal wirklich unwiderruflich gelöscht werden?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="w-10 h-10 bg-white/5 hover:bg-rose-500/10 text-gray-500 hover:text-rose-500 border border-white/10 hover:border-rose-500/30 rounded-xl transition-all flex items-center justify-center" title="Instanz löschen">

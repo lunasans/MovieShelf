@@ -101,9 +101,9 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
             </a>
             @endif
 
-            @if($isCentral && Route::has('admin.settings'))
-            <a href="{{ route('admin.settings') }}"
-                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('admin.settings') ? 'bg-white/10' : '' }}">
+            @if($isCentral && Route::has('cadmin.settings'))
+            <a href="{{ route('cadmin.settings') }}"
+                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('cadmin.settings') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-gear-fill mr-2"></i> {{ __('SaaS Settings') }}
             </a>
             @endif
@@ -157,14 +157,21 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                                 </x-dropdown-link>
                                 @endif
 
-                                <x-dropdown-link :href="route('admin.dashboard')" class="rounded-xl flex items-center gap-3">
-                                    <i class="bi bi-speedometer2 text-sm opacity-50"></i> 
+                                @if($isCentral && Route::has('cadmin.dashboard'))
+                                <x-dropdown-link :href="route('cadmin.dashboard')" class="rounded-xl flex items-center gap-3">
+                                    <i class="bi bi-speedometer2 text-sm opacity-50"></i>
                                     <span>{{ __('Admin Panel') }}</span>
                                 </x-dropdown-link>
+                                @elseif(Route::has('admin.dashboard'))
+                                <x-dropdown-link :href="route('admin.dashboard')" class="rounded-xl flex items-center gap-3">
+                                    <i class="bi bi-speedometer2 text-sm opacity-50"></i>
+                                    <span>{{ __('Admin Panel') }}</span>
+                                </x-dropdown-link>
+                                @endif
 
-                                @if($isCentral && Route::has('admin.settings'))
-                                <x-dropdown-link :href="route('admin.settings')" class="rounded-xl flex items-center gap-3">
-                                    <i class="bi bi-gear-fill text-sm opacity-50"></i> 
+                                @if($isCentral && Route::has('cadmin.settings'))
+                                <x-dropdown-link :href="route('cadmin.settings')" class="rounded-xl flex items-center gap-3">
+                                    <i class="bi bi-gear-fill text-sm opacity-50"></i>
                                     <span>{{ __('SaaS Settings') }}</span>
                                 </x-dropdown-link>
                                 @endif

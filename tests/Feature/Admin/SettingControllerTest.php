@@ -135,7 +135,7 @@ class SettingControllerTest extends TestCase
     {
         Mail::fake();
 
-        $response = $this->actingAs($this->admin)->post(route('admin.settings.test-mail'), [
+        $response = $this->actingAs($this->admin)->post(route('cadmin.settings.test-mail'), [
             'email' => 'test@example.com'
         ]);
 

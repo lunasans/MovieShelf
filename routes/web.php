@@ -63,17 +63,17 @@ Route::get('/media/{path}', function ($path) {
 
 // Master Routes (Global ACP)
 Route::middleware(['web', 'auth', 'central.admin'])->group(function () {
-    Route::prefix('admin')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'index'])->name('admin.dashboard');
-        Route::get('/tenants', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'tenants'])->name('admin.tenants');
-        Route::post('/tenants/{tenant}/activate', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'activate'])->name('admin.tenants.activate');
-        Route::delete('/tenants/{tenant}/delete', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'delete'])->name('admin.tenants.delete');
-        Route::get('/settings', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'settings'])->name('admin.settings');
-        Route::post('/settings', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'updateSettings'])->name('admin.settings.update');
-        Route::post('/settings/test-mail', [\App\Http\Controllers\Admin\GlobalAdminController::class, 'testMail'])->name('admin.settings.test-mail');
+    Route::prefix('cadmin')->name('cadmin.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'index'])->name('dashboard');
+        Route::get('/tenants', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'tenants'])->name('tenants');
+        Route::post('/tenants/{tenant}/activate', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'activate'])->name('tenants.activate');
+        Route::delete('/tenants/{tenant}/delete', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'delete'])->name('tenants.delete');
+        Route::get('/settings', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'settings'])->name('settings');
+        Route::post('/settings', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'updateSettings'])->name('settings.update');
+        Route::post('/settings/test-mail', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'testMail'])->name('settings.test-mail');
 
         // FAQ Management
-        Route::resource('faqs', \App\Http\Controllers\Admin\CentralFaqController::class, ['as' => 'admin']);
+        Route::resource('faqs', \App\Http\Controllers\Cadmin\CentralFaqController::class);
     });
 
     // Telemetry API (Master only, gitignored)

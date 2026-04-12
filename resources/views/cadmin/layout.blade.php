@@ -88,7 +88,7 @@
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
             class="w-72 glass-sidebar flex flex-col shrink-0 h-screen transition-all duration-500 ease-in-out fixed left-0 top-0 z-50">
             <div class="p-6 flex items-center justify-between">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center group">
+                <a href="{{ route('cadmin.dashboard') }}" class="flex items-center group">
                     <x-application-logo class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
                 </a>
                 <button @click="sidebarOpen = false" class="md:hidden text-gray-400 hover:text-white">
@@ -101,26 +101,26 @@
                     <span class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Zentrale Verwaltung</span>
                 </div>
                 
-                <a href="{{ route('admin.dashboard') }}"
-                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.dashboard') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                <a href="{{ route('cadmin.dashboard') }}"
+                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('cadmin.dashboard') ? 'sidebar-link-active' : 'text-gray-400' }}">
                     <i class="bi bi-grid-1x2-fill"></i>
                     <span class="font-bold text-sm">Dashboard</span>
                 </a>
 
-                <a href="{{ route('admin.tenants') }}"
-                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.tenants') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                <a href="{{ route('cadmin.tenants') }}"
+                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('cadmin.tenants') ? 'sidebar-link-active' : 'text-gray-400' }}">
                     <i class="bi bi-server"></i>
                     <span class="font-bold text-sm">Filmregale (Tenants)</span>
                 </a>
 
-                <a href="{{ route('admin.settings') }}"
-                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.settings') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                <a href="{{ route('cadmin.settings') }}"
+                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('cadmin.settings') ? 'sidebar-link-active' : 'text-gray-400' }}">
                     <i class="bi bi-sliders"></i>
                     <span class="font-bold text-sm">Einstellungen</span>
                 </a>
 
-                <a href="{{ route('admin.faqs.index') }}"
-                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.faqs.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                <a href="{{ route('cadmin.faqs.index') }}"
+                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('cadmin.faqs.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
                     <i class="bi bi-question-circle-fill"></i>
                     <span class="font-bold text-sm">FAQ Verwalten</span>
                 </a>

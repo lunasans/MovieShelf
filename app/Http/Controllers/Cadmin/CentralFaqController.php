@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Cadmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Faq;
@@ -11,12 +11,12 @@ class CentralFaqController extends Controller
     public function index()
     {
         $faqs = Faq::orderBy('sort_order')->get();
-        return view('admin.central_faqs.index', compact('faqs'));
+        return view('cadmin.faqs.index', compact('faqs'));
     }
 
     public function create()
     {
-        return view('admin.central_faqs.create');
+        return view('cadmin.faqs.create');
     }
 
     public function store(Request $request)
@@ -25,17 +25,18 @@ class CentralFaqController extends Controller
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
             'sort_order' => 'nullable|integer',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
+        $data['is_active'] = $request->boolean('is_active');
 
         Faq::create($data);
 
-        return redirect()->route('admin.faqs.index')->with('success', 'FAQ wurde erfolgreich erstellt.');
+        return redirect()->route('cadmin.faqs.index')->with('success', 'FAQ wurde erfolgreich erstellt.');
     }
 
     public function edit(Faq $faq)
     {
-        return view('admin.central_faqs.edit', compact('faq'));
+        return view('cadmin.faqs.edit', compact('faq'));
     }
 
     public function update(Request $request, Faq $faq)
@@ -44,17 +45,18 @@ class CentralFaqController extends Controller
             'question' => 'required|string|max:255',
             'answer' => 'required|string',
             'sort_order' => 'nullable|integer',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable|boolean',
         ]);
+        $data['is_active'] = $request->boolean('is_active');
 
         $faq->update($data);
 
-        return redirect()->route('admin.faqs.index')->with('success', 'FAQ wurde erfolgreich aktualisiert.');
+        return redirect()->route('cadmin.faqs.index')->with('success', 'FAQ wurde erfolgreich aktualisiert.');
     }
 
     public function destroy(Faq $faq)
     {
         $faq->delete();
-        return redirect()->route('admin.faqs.index')->with('success', 'FAQ wurde erfolgreich gelöscht.');
+        return redirect()->route('cadmin.faqs.index')->with('success', 'FAQ wurde erfolgreich gelöscht.');
     }
 }

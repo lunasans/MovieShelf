@@ -38,13 +38,13 @@ class RouteTest extends TestCase
     public function test_protected_routes_redirect_to_login()
     {
         $this->get(route('profile.edit'))->assertRedirect(route('login'));
-        $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
+        $this->get(route('cadmin.dashboard'))->assertRedirect(route('login'));
     }
 
     public function test_admin_dashboard_is_accessible_to_authenticated_users()
     {
         $user = User::factory()->create();
-        $this->actingAs($user)->get(route('admin.dashboard'))->assertStatus(200);
+        $this->actingAs($user)->get(route('cadmin.dashboard'))->assertStatus(200);
     }
 
     public function test_language_switch_route()

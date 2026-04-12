@@ -1,4 +1,4 @@
-@extends('admin.layout')
+@extends('cadmin.layout')
 
 @section('header_title', 'System Dashboard')
 
@@ -70,7 +70,7 @@
                     <p class="text-xs text-gray-500 font-bold uppercase tracking-widest">Die letzten 5 Anmeldungen</p>
                 </div>
             </div>
-            <a href="{{ route('admin.tenants') }}" class="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-white transition-all border border-white/10">
+            <a href="{{ route('cadmin.tenants') }}" class="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-white transition-all border border-white/10">
                 Alle anzeigen <i class="bi bi-arrow-right ms-2 text-rose-500"></i>
             </a>
         </div>

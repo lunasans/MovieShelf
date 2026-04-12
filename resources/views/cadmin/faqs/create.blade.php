@@ -1,11 +1,11 @@
-@extends('admin.layout')
+@extends('cadmin.layout')
 
 @section('header_title', 'Neue FAQ erstellen')
 
 @section('content')
 <div class="max-w-4xl animate-in fade-in slide-in-from-bottom-6 duration-1000">
     <!-- Breadcrumb-like Back Button -->
-    <a href="{{ route('admin.faqs.index') }}" class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-rose-500 transition-colors mb-8 group">
+    <a href="{{ route('cadmin.faqs.index') }}" class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-rose-500 transition-colors mb-8 group">
         <i class="bi bi-arrow-left transition-transform group-hover:-translate-x-1"></i>
         Zurück zur Übersicht
     </a>
@@ -16,7 +16,7 @@
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Konfiguration der neuen Frage</p>
         </div>
 
-        <form action="{{ route('admin.faqs.store') }}" method="POST" class="p-10 space-y-8">
+        <form action="{{ route('cadmin.faqs.store') }}" method="POST" class="p-10 space-y-8">
             @csrf
             
             <!-- Question Field -->

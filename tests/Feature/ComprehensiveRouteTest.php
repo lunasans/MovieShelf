@@ -103,6 +103,6 @@ class ComprehensiveRouteTest extends TestCase
 
     public function test_admin_routes_unauthenticated_redirects()
     {
-        $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
+        $this->get(route('cadmin.dashboard'))->assertRedirect(route('login'));
     }
 }

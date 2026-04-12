@@ -1,4 +1,4 @@
-@extends('admin.layout')
+@extends('cadmin.layout')
 
 @section('header_title', 'FAQ Verwalten')
 
@@ -10,7 +10,7 @@
             <h2 class="text-2xl font-black text-white uppercase tracking-tight">Häufige Fragen</h2>
             <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Verwalte die FAQs für die MovieShelf Landingpage</p>
         </div>
-        <a href="{{ route('admin.faqs.create') }}" class="px-6 py-3 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-rose-900/20 transition-all active:scale-95 flex items-center gap-2">
+        <a href="{{ route('cadmin.faqs.create') }}" class="px-6 py-3 bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-rose-900/20 transition-all active:scale-95 flex items-center gap-2">
             <i class="bi bi-plus-lg"></i>
             Neue FAQ erstellen
         </a>
@@ -33,7 +33,7 @@
                         <tr class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] bg-white/[0.01]">
                             <th class="px-8 py-6 w-16">Pos</th>
                             <th class="px-8 py-6">Frage & Antwort</th>
-                            <th class="px-8 py-6">Eichtbarkeit</th>
+                            <th class="px-8 py-6">Sichtbarkeit</th>
                             <th class="px-8 py-6 text-right">Aktionen</th>
                         </tr>
                     </thead>
@@ -64,10 +64,10 @@
                             </td>
                             <td class="px-8 py-6">
                                 <div class="flex items-center justify-end gap-2">
-                                    <a href="{{ route('admin.faqs.edit', $faq) }}" class="w-10 h-10 bg-white/5 hover:bg-blue-500/10 text-gray-500 hover:text-blue-400 border border-white/10 hover:border-blue-500/30 rounded-xl transition-all flex items-center justify-center" title="Bearbeiten">
+                                    <a href="{{ route('cadmin.faqs.edit', $faq) }}" class="w-10 h-10 bg-white/5 hover:bg-blue-500/10 text-gray-500 hover:text-blue-400 border border-white/10 hover:border-blue-500/30 rounded-xl transition-all flex items-center justify-center" title="Bearbeiten">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <form action="{{ route('admin.faqs.destroy', $faq) }}" method="POST" onsubmit="return confirm('Möchtest du diese FAQ wirklich löschen?')" class="inline">
+                                    <form action="{{ route('cadmin.faqs.destroy', $faq) }}" method="POST" onsubmit="return confirm('Möchtest du diese FAQ wirklich löschen?')" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="w-10 h-10 bg-white/5 hover:bg-rose-500/10 text-gray-500 hover:text-rose-500 border border-white/10 hover:border-rose-500/30 rounded-xl transition-all flex items-center justify-center" title="Löschen">

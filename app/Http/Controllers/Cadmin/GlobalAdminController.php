@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Cadmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
@@ -21,13 +21,13 @@ class GlobalAdminController extends Controller
 
         $recent_tenants = Tenant::latest()->take(5)->get();
 
-        return view('admin.saas_dashboard', compact('stats', 'recent_tenants'));
+        return view('cadmin.saas_dashboard', compact('stats', 'recent_tenants'));
     }
 
     public function tenants()
     {
         $tenants = Tenant::with('domains')->latest()->paginate(15);
-        return view('admin.tenants.index', compact('tenants'));
+        return view('cadmin.tenants.index', compact('tenants'));
     }
 
     public function activate(Tenant $tenant)
@@ -46,6 +46,7 @@ class GlobalAdminController extends Controller
             Log::info("Admin deleted storage for tenant: {$id}");
         }
 
+        $tenant->domains()->delete();
         $tenant->delete();
 
         return back()->with('success', "MovieShelf '{$id}' wurde gelöscht.");
@@ -73,7 +74,7 @@ class GlobalAdminController extends Controller
             'saas_impressum_content' => Setting::get('saas_impressum_content', '<h1>Impressum</h1><p>...</p>'),
         ];
 
-        return view('admin.settings', compact('settings'));
+        return view('cadmin.settings', compact('settings'));
     }
 
     public function updateSettings(Request $request)
@@ -108,7 +109,19 @@ class GlobalAdminController extends Controller
     public function testMail(Request $request)
     {
         try {
-            $to = $request->get('email', auth()->user()->email ?? 'admin@movieshelf.info');
+            $to = $request->get('email', auth()->user()->email ?? config('mail.from.address'));
+
+            config([
+                'mail.mailers.smtp.host'       => Setting::get('mail_host', config('mail.mailers.smtp.host')),
+                'mail.mailers.smtp.port'       => Setting::get('mail_port', config('mail.mailers.smtp.port')),
+                'mail.mailers.smtp.username'   => Setting::get('mail_username', config('mail.mailers.smtp.username')),
+                'mail.mailers.smtp.password'   => Setting::get('mail_password', config('mail.mailers.smtp.password')),
+                'mail.mailers.smtp.encryption' => Setting::get('mail_encryption', config('mail.mailers.smtp.encryption')),
+                'mail.from.address'            => Setting::get('mail_from_address', config('mail.from.address')),
+                'mail.from.name'               => Setting::get('mail_from_name', config('mail.from.name')),
+            ]);
+            \Illuminate\Support\Facades\Mail::purge('smtp');
+
             \Illuminate\Support\Facades\Mail::send('emails.test', [], function ($message) use ($to) {
                 $message->to($to)->subject(config('app.name').': SMTP Verbindungstest (Central)');
             });

@@ -1,4 +1,4 @@
-@extends('admin.layout')
+@extends('cadmin.layout')
 
 @section('title', 'SaaS Einstellungen | MovieShelf Mastery')
 
@@ -9,7 +9,7 @@
     
     <!-- Settings Form -->
 
-    <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-8" x-data="{ activeTab: 'branding' }">
+    <form action="{{ route('cadmin.settings.update') }}" method="POST" class="space-y-8" x-data="{ activeTab: 'branding' }">
         @csrf
         
         <!-- Tab Navigation -->
@@ -165,7 +165,17 @@
                 </div>
             </div>
             
-            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="p-8 space-y-8">
+                <!-- TMDb API Key -->
+                <div>
+                    <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-4 ms-1">Globaler TMDb API Key</label>
+                    <input type="text" name="global_tmdb_key" value="{{ $settings['global_tmdb_key'] }}"
+                        placeholder="z.B. eyJhbGciOiJIUzI1NiJ9..."
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 font-mono transition-all">
+                    <p class="text-[10px] text-gray-600 mt-2 ms-1">Wird als Fallback verwendet, wenn ein Tenant keinen eigenen Key konfiguriert hat.</p>
+                </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Default Layout -->
                 <div class="space-y-4">
                     <label class="block text-xs font-black uppercase tracking-widest text-gray-500 mb-4 ms-1">Standard Layout</label>
@@ -207,6 +217,7 @@
                         </label>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
         </div>
@@ -290,7 +301,7 @@
                             this.testing = true;
                             this.testStatus = null;
                             
-                            fetch('{{ route('admin.settings.test-mail') }}', {
+                            fetch('{{ route('cadmin.settings.test-mail') }}', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',

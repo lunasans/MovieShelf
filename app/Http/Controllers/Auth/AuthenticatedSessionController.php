@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
 
         // Central domain login is only for the Global Admin.
         // Tenant users log in via their own subdomain.
-        return redirect()->intended(route('admin.dashboard', absolute: false));
+        return redirect()->intended(route('cadmin.dashboard', absolute: false));
     }
 
     /**
