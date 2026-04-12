@@ -167,13 +167,13 @@
             ['src' => asset('img/screenshots/stats.png'), 'alt' => 'Statistiken & Insights'],
           ]);
 @endphp
-<section class="section" style="border-top:1px solid var(--border)" x-data="{
+<section class="section" style="border-top:1px solid var(--border)" x-data='{
     activeSlide: 0,
     slides: {!! json_encode($sliderSlides->values()) !!},
     next() { this.activeSlide = (this.activeSlide + 1) % this.slides.length },
     prev() { this.activeSlide = (this.activeSlide - 1 + this.slides.length) % this.slides.length },
     init() { setInterval(() => this.next(), 10000); }
-}">
+}'>
     <div class="container">
         <div style="text-align:center; margin-bottom:2.5rem">
             <span class="eyebrow">Einblick</span>
