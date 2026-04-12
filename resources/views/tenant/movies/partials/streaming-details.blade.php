@@ -44,6 +44,11 @@
         showTrailer: false,
         isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }},
         watchedCount: {{ $movie->watchedByUsers()->count() }},
+        isWishlisted: {{ Auth::check() && \App\Models\UserWishlist::where('user_id', Auth::id())->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }},
+        userRating: {{ Auth::check() ? (\App\Models\UserRating::where('user_id', Auth::id())->where('movie_id', $movie->id)->value('rating') ?? 0) : 0 }},
+        hoverRating: 0,
+        avgRating: {{ round(\App\Models\UserRating::where('movie_id', $movie->id)->avg('rating') ?? 0, 1) }},
+        ratingCount: {{ \App\Models\UserRating::where('movie_id', $movie->id)->count() }},
         get youtubeId() {
             const url = '{{ $movie->trailer_url }}';
             const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:v\/|u\/\w\/|embed\/|watch\?v=))([^#\&\?]*)/);
@@ -58,19 +63,51 @@
                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
                            'Content-Type': 'application/json',
                            'Accept': 'application/json'
-                       }                   });
+                       }
+                   });
                    const data = await response.json();
                    if (data.watched !== undefined) {
                        this.isWatched = data.watched;
                        this.watchedCount = data.count;
-                       // Dispatch event for dashboard cards
                        window.dispatchEvent(new CustomEvent('movie-watched-updated', {
                            detail: { movieId: {{ $movie->id }}, watched: data.watched }
                        }));
                    }
                } catch (e) {
                    console.error('Toggle watched failed', e);
-               }           @else
+               }
+           @else
+               window.location.href = '{{ route('login') }}';
+           @endif
+        },
+        async toggleWishlist() {
+           @if(Auth::check())
+               try {
+                   const response = await fetch('{{ route('movies.wishlist.toggle', $movie) }}', {
+                       method: 'POST',
+                       headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' }
+                   });
+                   const data = await response.json();
+                   if (data.wishlisted !== undefined) this.isWishlisted = data.wishlisted;
+               } catch (e) { console.error('Toggle wishlist failed', e); }
+           @else
+               window.location.href = '{{ route('login') }}';
+           @endif
+        },
+        async setRating(n) {
+           @if(Auth::check())
+               try {
+                   const response = await fetch('{{ route('movies.rate', $movie) }}', {
+                       method: 'POST',
+                       headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                       body: JSON.stringify({ rating: n })
+                   });
+                   const data = await response.json();
+                   this.userRating = data.rating;
+                   this.avgRating = data.avg;
+                   this.ratingCount = data.count;
+               } catch (e) { console.error('Rating failed', e); }
+           @else
                window.location.href = '{{ route('login') }}';
            @endif
         }
@@ -145,10 +182,10 @@
                     {{-- Watched Toggle Button --}}
                     <button @click="toggleWatched()"
                             class="h-12 px-8 rounded-full font-bold flex items-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-lg border-2"
-                            :class="isWatched 
-                                ? 'bg-blue-600 border-blue-600 text-white shadow-blue-600/20' 
+                            :class="isWatched
+                                ? 'bg-blue-600 border-blue-600 text-white shadow-blue-600/20'
                                 : 'bg-white/5 border-white/20 text-white hover:bg-white/10 hover:border-white/40'">
-                        
+
                         <div class="relative w-5 h-5 flex items-center justify-center">
                             <i class="bi bi-eye-fill absolute transition-all duration-300"
                                :class="isWatched ? 'scale-100 opacity-100' : 'scale-0 opacity-0'"></i>
@@ -158,6 +195,35 @@
 
                         <span class="text-sm uppercase tracking-wider" x-text="isWatched ? '{{ __('Gesehen') }}' : '{{ __('Nicht gesehen') }}'"></span>
                     </button>
+
+                    {{-- Wishlist Toggle Button --}}
+                    <button @click="toggleWishlist()"
+                            class="h-12 px-8 rounded-full font-bold flex items-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-lg border-2"
+                            :class="isWishlisted
+                                ? 'bg-rose-600 border-rose-600 text-white shadow-rose-600/20'
+                                : 'bg-white/5 border-white/20 text-white hover:bg-white/10 hover:border-white/40'">
+                        <i class="bi text-xl transition-colors"
+                           :class="isWishlisted ? 'bi-bookmark-heart-fill' : 'bi-bookmark-heart'"></i>
+                        <span class="text-sm uppercase tracking-wider" x-text="isWishlisted ? '{{ __('Auf Merkliste') }}' : '{{ __('Merken') }}'"></span>
+                    </button>
+                </div>
+
+                {{-- Star Rating --}}
+                <div class="flex items-center gap-4 mt-4">
+                    <span class="text-[10px] font-black text-white/30 uppercase tracking-widest">{{ __('Deine Bewertung') }}</span>
+                    <div class="flex items-center gap-1">
+                        @for($s = 1; $s <= 5; $s++)
+                        <button @click="setRating({{ $s }})"
+                                @mouseenter="hoverRating = {{ $s }}"
+                                @mouseleave="hoverRating = 0"
+                                class="text-2xl transition-all active:scale-90"
+                                :class="(hoverRating || userRating) >= {{ $s }} ? 'text-amber-400' : 'text-white/10'">
+                            <i class="bi bi-star-fill"></i>
+                        </button>
+                        @endfor
+                    </div>
+                    <span class="text-xs text-white/30 font-medium" x-show="userRating > 0" x-text="userRating + '/5'"></span>
+                    <span class="text-[10px] text-white/20 font-bold" x-show="ratingCount > 0" x-text="'Ø ' + avgRating + ' (' + ratingCount + ')'"></span>
                 </div>
 
                 <div class="glass p-8 md:p-12 rounded-[3rem] border border-white/10 backdrop-blur-3xl shadow-2xl relative overflow-hidden mb-12">
@@ -220,7 +286,7 @@
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             @foreach($movie->seasons->sortBy('season_number') as $season)
-                                <div class="rounded-3xl border border-white/5 bg-white/5 overflow-hidden transition-all duration-500 group/season"
+                                <div class="rounded-3xl border border-white/5 bg-white/5 overflow-hidden transition-colors duration-300 group/season"
                                      :class="activeSeason === {{ $season->id }} ? 'border-emerald-500/30 bg-white/10 shadow-2xl' : 'hover:border-white/10'">
                                     <button @click="activeSeason = activeSeason === {{ $season->id }} ? null : {{ $season->id }}"
                                             class="w-full flex items-center justify-between p-6 text-left">

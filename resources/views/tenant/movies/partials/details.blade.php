@@ -289,7 +289,7 @@
                 </h3>
                 <div class="space-y-4">
                     @foreach($movie->seasons->sortBy('season_number') as $season)
-                        <div class="rounded-2xl border border-white/5 bg-white/5 overflow-hidden transition-all duration-300"
+                        <div class="rounded-2xl border border-white/5 bg-white/5 overflow-hidden transition-colors duration-300"
                              :class="activeSeason === {{ $season->id }} ? 'border-blue-500/30 bg-white/10' : 'hover:border-white/10'">
                             <button @click="activeSeason = activeSeason === {{ $season->id }} ? null : {{ $season->id }}"
                                     class="w-full flex items-center justify-between p-4 text-left group">
