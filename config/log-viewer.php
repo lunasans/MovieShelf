@@ -41,7 +41,7 @@ return [
     |
     */
 
-    'route_path' => 'cadmin/logs-viewer',
+    'route_path' => 'system-logs-viewer',
 
     /*
     |--------------------------------------------------------------------------
@@ -104,8 +104,8 @@ return [
 
     'middleware' => [
         'web',
-        'auth',
-        'central.admin',
+        // 'auth',
+        // 'central.admin',
         AuthorizeLogViewer::class,
     ],
 
@@ -145,7 +145,7 @@ return [
 
         // 'staging' => [
         //     'name' => 'Staging',
-        //     'host' => 'https://staging.example.com/log-viewer',
+        //     'host' => 'https://staging.example.com/logs',
         //     'auth' => [      // Example of HTTP Basic auth
         //         'username' => 'username',
         //         'password' => 'password',

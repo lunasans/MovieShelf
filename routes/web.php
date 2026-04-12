@@ -109,3 +109,8 @@ Route::get('/register', function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/test-iframe', function () {
+    return 'HELLO FROM IFRAME';
+})->name('test.iframe');
+
