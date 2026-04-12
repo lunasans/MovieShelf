@@ -174,8 +174,6 @@
             <div class="space-y-4">
                 <h4 class="font-bold text-xs uppercase tracking-widest text-gray-400">Rechtliches</h4>
                 <div class="flex flex-col gap-2">
-                    <a href="{{ route('privacy') }}" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">Datenschutz</a>
-                    
                     @foreach($footerPages ?? [] as $fPage)
                     <a href="{{ route('landing.page', $fPage->slug) }}" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">
                         {{ $fPage->title }}
