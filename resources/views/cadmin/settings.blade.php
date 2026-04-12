@@ -156,19 +156,75 @@
                          x-data="{
                             words: {{ json_encode(array_values(array_filter(array_map('trim', explode(',', $settings['forbidden_subdomains'])))), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) }},
                             input: '',
+                            importText: '',
+                            showImport: false,
+                            importAdded: 0,
                             get csv() { return this.words.join(',') },
+                            sanitize(w) { return w.toLowerCase().replace(/[^a-z0-9-]/g, '').trim(); },
                             add() {
-                                const w = this.input.toLowerCase().replace(/[^a-z0-9-]/g, '').trim();
+                                const w = this.sanitize(this.input);
                                 if (w.length >= 2 && !this.words.includes(w)) this.words.push(w);
                                 this.input = '';
                             },
                             remove(w) { this.words = this.words.filter(x => x !== w) },
-                            onKey(e) { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); this.add(); } }
+                            onKey(e) { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); this.add(); } },
+                            importList() {
+                                const raw = this.importText.split(/[\n,;\s]+/);
+                                let added = 0;
+                                raw.forEach(entry => {
+                                    const w = this.sanitize(entry);
+                                    if (w.length >= 2 && !this.words.includes(w)) {
+                                        this.words.push(w);
+                                        added++;
+                                    }
+                                });
+                                this.words.sort();
+                                this.importAdded = added;
+                                this.importText = '';
+                                this.showImport = false;
+                            }
                          }">
-                        <label class="block text-xs font-black uppercase tracking-widest text-gray-500 ms-1">Gesperrte Subdomains</label>
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-black uppercase tracking-widest text-gray-500 ms-1">Gesperrte Subdomains</label>
+                            <div class="flex items-center gap-3">
+                                <span x-show="importAdded > 0" x-text="importAdded + ' hinzugefügt'"
+                                      class="text-[10px] font-black text-emerald-400 uppercase tracking-widest"
+                                      x-transition></span>
+                                <button type="button" @click="showImport = !showImport"
+                                        :class="showImport ? 'bg-indigo-500/30 border-indigo-500/50 text-indigo-300' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all">
+                                    <i class="bi bi-upload text-xs"></i> Liste importieren
+                                </button>
+                                <button type="button" @click="if(confirm('Alle gesperrten Subdomains löschen?')) { words = []; importAdded = 0; }"
+                                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-white/5 border-white/10 text-white/20 hover:text-rose-400 hover:border-rose-500/30 text-[10px] font-black uppercase tracking-widest transition-all">
+                                    <i class="bi bi-trash text-xs"></i> Alle löschen
+                                </button>
+                            </div>
+                        </div>
 
                         {{-- Hidden field for form submission --}}
                         <input type="hidden" name="forbidden_subdomains" :value="csv">
+
+                        {{-- Import panel --}}
+                        <div x-show="showImport" x-transition class="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/20 space-y-3">
+                            <p class="text-[10px] font-black text-indigo-300 uppercase tracking-widest">
+                                Liste einfügen — ein Wort pro Zeile, oder komma-/semikolon-/leerzeichengetrennt
+                            </p>
+                            <textarea x-model="importText" rows="6"
+                                      placeholder="admin&#10;api&#10;www&#10;support&#10;mail&#10;test&#10;dev&#10;..."
+                                      class="w-full bg-white/5 border border-indigo-500/30 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder-white/20 resize-y"></textarea>
+                            <div class="flex gap-2 justify-end">
+                                <button type="button" @click="showImport = false; importText = ''"
+                                        class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white/40 text-xs font-black uppercase tracking-widest hover:text-white transition-all">
+                                    Abbrechen
+                                </button>
+                                <button type="button" @click="importList()"
+                                        :disabled="importText.trim().length === 0"
+                                        class="px-4 py-2 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-black uppercase tracking-widest hover:bg-indigo-500/30 transition-all disabled:opacity-30">
+                                    <i class="bi bi-check-lg me-1"></i> Importieren
+                                </button>
+                            </div>
+                        </div>
 
                         {{-- Tag display --}}
                         <div class="min-h-[3rem] flex flex-wrap gap-2 p-3 bg-white/5 border border-white/10 rounded-xl">
@@ -195,7 +251,7 @@
                             </button>
                         </div>
                         <p class="text-[10px] text-gray-600 font-medium">
-                            Nur Kleinbuchstaben, Zahlen und Bindestriche erlaubt · mind. 2 Zeichen · Enter oder Komma zum Hinzufügen
+                            Nur Kleinbuchstaben, Zahlen und Bindestriche · mind. 2 Zeichen · Enter oder Komma zum Hinzufügen
                         </p>
                     </div>
                 </div>
