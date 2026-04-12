@@ -1,78 +1,47 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark" style="background-color:#020617;">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $page->title }} — {{ \App\Models\Setting::get('saas_name', config('app.name')) }}</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet"> <!-- NOSONAR -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-          integrity="sha256-9kPW/n5nn53j4WMRYAxe9c1rCY96Oogo/MKSVdKzPmI=" crossorigin="anonymous">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="font-sans antialiased text-white min-h-screen bg-[#020617]">
+@extends('layouts.central')
 
-    <!-- Background -->
-    <div class="fixed inset-0 z-0 pointer-events-none">
-        <div class="absolute inset-0 bg-gradient-to-br from-[#020617] via-[#0a0f1e] to-[#020617]"></div>
-        <div class="absolute top-[10%] -left-[10%] w-[50%] h-[50%] bg-rose-600/5 rounded-full blur-[120px]"></div>
-        <div class="absolute bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-red-900/5 rounded-full blur-[100px]"></div>
-    </div>
+@section('title', $page->title . ' — ' . \App\Models\Setting::get('saas_name', config('app.name')))
 
-    <!-- Header -->
-    <header class="relative z-10 border-b border-white/5 bg-black/20 backdrop-blur-xl">
-        <div class="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
-            <a href="{{ route('landing') }}" class="flex items-center gap-3 group">
-                <x-application-logo class="h-8 w-auto group-hover:scale-105 transition-transform" />
-                <span class="text-sm font-black text-white uppercase tracking-widest">
-                    {{ \App\Models\Setting::get('saas_name', config('app.name')) }}
-                </span>
-            </a>
-            <a href="{{ route('landing') }}"
-               class="text-[10px] font-black text-gray-500 hover:text-white uppercase tracking-widest transition-colors flex items-center gap-2">
-                <i class="bi bi-arrow-left"></i>
-                Startseite
+@section('content')
+<main class="relative z-10 pt-32 pb-24">
+    <div class="max-w-4xl mx-auto px-6">
+        
+        {{-- Breadcrumb / Back --}}
+        <div class="mb-12">
+            <a href="{{ route('landing') }}" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-[#CC4B06] transition-colors group">
+                <i class="bi bi-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                Zurück zur Startseite
             </a>
         </div>
-    </header>
 
-    <!-- Content -->
-    <main class="relative z-10 max-w-4xl mx-auto px-6 py-16 md:py-24">
-        <article>
-            <h1 class="text-3xl md:text-5xl font-black text-white uppercase tracking-tight mb-12">
+        <article class="animate-reveal active">
+            <h1 class="display mb-12" style="font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1;">
                 {{ $page->title }}
             </h1>
-            <div class="prose prose-invert prose-lg max-w-none
-                        prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight
-                        prose-a:text-rose-400 prose-a:no-underline hover:prose-a:text-rose-300
-                        prose-strong:text-white prose-code:text-rose-300
-                        prose-hr:border-white/10">
-                {!! \Purifier::clean($page->content, 'richtext') !!}
+
+            <div class="glass-ultra rounded-[2rem] p-8 md:p-12 shadow-sm border border-gray-100">
+                <div class="prose prose-gray max-w-none 
+                            prose-headings:font-bold prose-headings:text-black
+                            prose-p:text-gray-600 prose-p:leading-relaxed
+                            prose-a:text-[#CC4B06] prose-a:font-semibold hover:prose-a:underline
+                            prose-strong:text-black">
+                    {!! \Purifier::clean($page->content, 'richtext') !!}
+                </div>
             </div>
         </article>
-    </main>
 
-    <!-- Footer -->
-    <footer class="relative z-10 border-t border-white/5 py-10 mt-16">
-        <div class="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">
-                &copy; {{ date('Y') }} {{ \App\Models\Setting::get('saas_name', config('app.name')) }}
-            </p>
-            @if($navPages->isNotEmpty())
-            <nav class="flex items-center gap-6">
-                @foreach($navPages as $navPage)
-                    <a href="{{ route('landing.page', $navPage->slug) }}"
-                       class="text-[10px] font-bold text-gray-500 hover:text-white uppercase tracking-widest transition-colors
-                              {{ $navPage->slug === $page->slug ? 'text-white' : '' }}">
-                        {{ $navPage->title }}
-                    </a>
-                @endforeach
-            </nav>
-            @endif
-        </div>
-    </footer>
+    </div>
+</main>
 
-</body>
-</html>
+<style>
+    /* Ensure the content fits the platinum aesthetic */
+    body {
+        background-color: #FFFFFF !important;
+    }
+    .prose h2 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+</style>
+@endsection
