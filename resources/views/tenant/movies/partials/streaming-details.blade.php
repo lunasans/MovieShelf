@@ -209,7 +209,7 @@
                 </div>
 
                 {{-- Star Rating Row --}}
-                <div class="flex items-center gap-3 mt-5 mb-2">
+                <div class="flex items-center gap-3 mt-5 mb-5">
                     <span class="text-[10px] font-black text-white/30 uppercase tracking-widest shrink-0">{{ __('Deine Bewertung') }}</span>
                     <div class="flex items-center gap-1">
                         @for($s = 1; $s <= 5; $s++)
