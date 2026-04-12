@@ -431,7 +431,7 @@
                      {{-- Star Rating under Cover --}}
                      <div class="mt-6 flex flex-col items-center gap-2">
                          <p class="text-[10px] font-black text-white/30 uppercase tracking-widest">{{ __('Deine Bewertung') }}</p>
-                         <div class="flex items-center gap-2">
+                         <div class="flex items-center gap-2 flex-wrap justify-center">
                              @for($s = 1; $s <= 5; $s++)
                              <button @click="setRating({{ $s }})"
                                      @mouseenter="hoverRating = {{ $s }}"
@@ -441,9 +441,9 @@
                                  <i class="bi bi-star-fill"></i>
                              </button>
                              @endfor
+                             <span class="text-sm text-amber-400 font-black" x-show="userRating > 0" x-text="userRating + '/5'"></span>
+                             <span class="text-[10px] text-white/20 font-bold" x-show="ratingCount > 0" x-text="'· Ø ' + avgRating + ' (' + ratingCount + ')'"></span>
                          </div>
-                         <p class="text-sm text-amber-400 font-black" x-show="userRating > 0" x-text="userRating + '/5'"></p>
-                         <p class="text-[10px] text-white/20 font-bold" x-show="ratingCount > 0" x-text="'Ø ' + avgRating + ' (' + ratingCount + ' {{ __('Bewertungen') }})'"></p>
                      </div>
 
                      {{-- Bonus Details Card --}}
