@@ -225,7 +225,7 @@ body {
     border: 1px solid var(--border);
     background: var(--surface);
     position: relative;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
     box-shadow: 0 20px 40px rgba(0,0,0,0.06);
 }
 
@@ -233,8 +233,8 @@ body {
     width: 100%;
     height: 100%;
     display: block;
-    object-fit: contain;
-    object-position: center;
+    object-fit: cover;
+    object-position: top;
     transition: transform 0.3s ease;
 }
 
@@ -251,6 +251,7 @@ body {
 
 .slider-container {
     display: flex;
+    height: 100%;
     transition: transform 0.5s ease-out;
     will-change: transform;
 }
@@ -258,6 +259,7 @@ body {
 .slider-slide {
     flex: 0 0 auto;
     width: var(--slide-width, 100%);
+    height: 100%;
 }
 
 
