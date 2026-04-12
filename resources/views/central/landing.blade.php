@@ -175,7 +175,7 @@
     init() { 
         this.$nextTick(() => {
             GLightbox({
-                selector: '.glightbox',
+                selector: ".glightbox",
                 touchNavigation: true,
                 loop: true,
                 zoomable: true
