@@ -233,8 +233,20 @@ body {
     width: 100%;
     height: 100%;
     display: block;
-    object-fit: cover;
-    object-position: top center;
+    object-fit: contain;
+    object-position: center;
+    transition: transform 0.3s ease;
+}
+
+.glightbox {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: zoom-in;
+}
+
+.glightbox:hover img {
+    transform: scale(1.02);
 }
 
 .slider-container {

@@ -12,48 +12,30 @@ use Illuminate\Queue\SerializesModels;
 
 class TenantWelcome extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, \App\Traits\ManagesEmailTemplates;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(
         public \App\Models\Tenant $tenant, 
         public \App\Models\User $user,
         public string $activationUrl,
         public string $tenantUrl
-    )
+    ) {}
+
+    protected function templateSlug(): string { return 'tenant_welcome'; }
+
+    protected function templateData(): array
     {
-        //
+        return [
+            'tenant' => $this->tenant,
+            'user' => $this->user,
+            'activationUrl' => $this->activationUrl,
+            'tenantUrl' => $this->tenantUrl,
+        ];
     }
 
-    /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: 'Willkommen bei deinem MovieShelf!',
-        );
-    }
+    protected function defaultSubject(): string { return 'Willkommen bei deinem MovieShelf!'; }
 
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            markdown: 'emails.tenant-welcome',
-        );
-    }
+    protected function defaultMarkdownView(): string { return 'emails.tenant-welcome'; }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, Attachment>
-     */
-    public function attachments(): array
-    {
-        return [];
-    }
+    public function attachments(): array { return []; }
 }

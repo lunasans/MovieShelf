@@ -166,4 +166,8 @@ class GlobalAdminController extends Controller
             return response()->json(['success' => false, 'message' => 'Fehler: '.$errorMessage], 500);
         }
     }
+    public function logs()
+    {
+        return view('cadmin.logs');
+    }
 }

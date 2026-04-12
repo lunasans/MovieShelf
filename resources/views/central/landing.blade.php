@@ -187,7 +187,9 @@
             <div class="slider-container" :style="`transform: translateX(-${activeSlide * $refs.wrap.offsetWidth}px)`">
                 <template x-for="(slide, index) in slides" :key="index">
                     <div class="slider-slide">
-                        <img :src="slide.src" :alt="slide.alt">
+                        <a :href="slide.src" class="glightbox" data-gallery="screenshots">
+                            <img :src="slide.src" :alt="slide.alt">
+                        </a>
                     </div>
                 </template>
             </div>
@@ -371,3 +373,16 @@
 </section>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const lightbox = GLightbox({
+            selector: '.glightbox',
+            touchNavigation: true,
+            loop: true,
+            zoomable: true
+        });
+    });
+</script>
+@endpush

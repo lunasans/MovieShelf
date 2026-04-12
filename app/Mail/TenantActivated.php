@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 class TenantActivated extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, \App\Traits\ManagesEmailTemplates;
 
     public function __construct(
         public Tenant $tenant,
@@ -20,22 +20,20 @@ class TenantActivated extends Mailable
         public string $tenantUrl
     ) {}
 
-    public function envelope(): Envelope
+    protected function templateSlug(): string { return 'tenant_activated'; }
+
+    protected function templateData(): array
     {
-        return new Envelope(
-            subject: 'Dein MovieShelf ist jetzt aktiv!',
-        );
+        return [
+            'tenant' => $this->tenant,
+            'user' => $this->user,
+            'tenantUrl' => $this->tenantUrl,
+        ];
     }
 
-    public function content(): Content
-    {
-        return new Content(
-            markdown: 'emails.tenant-activated',
-        );
-    }
+    protected function defaultSubject(): string { return 'Dein MovieShelf ist jetzt aktiv!'; }
 
-    public function attachments(): array
-    {
-        return [];
-    }
+    protected function defaultMarkdownView(): string { return 'emails.tenant-activated'; }
+
+    public function attachments(): array { return []; }
 }

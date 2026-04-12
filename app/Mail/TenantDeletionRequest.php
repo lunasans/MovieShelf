@@ -11,39 +11,33 @@ use Illuminate\Queue\SerializesModels;
 
 class TenantDeletionRequest extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable, SerializesModels, \App\Traits\ManagesEmailTemplates;
 
     public $tenantName;
     public $deletionUrl;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct($tenantName, $deletionUrl)
     {
         $this->tenantName = $tenantName;
         $this->deletionUrl = $deletionUrl;
     }
 
-    /**
-     * Get the message envelope.
-     */
-    public function Envelope(): Envelope
+    protected function templateSlug(): string { return 'tenant_deletion_request'; }
+
+    protected function templateData(): array
     {
-        return new Envelope(
-            subject: 'WICHTIG: Bestätigung der Regal-Löschung (' . $this->tenantName . ')',
-        );
+        return [
+            'tenantName' => $this->tenantName,
+            'deletionUrl' => $this->deletionUrl,
+        ];
     }
 
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
+    protected function defaultSubject(): string
     {
-        return new Content(
-            view: 'emails.deletion_request',
-        );
+        return 'WICHTIG: Bestätigung der Regal-Löschung (' . $this->tenantName . ')';
     }
+
+    protected function defaultMarkdownView(): string { return 'emails.deletion_request'; }
 
     /**
      * Get the attachments for the message.

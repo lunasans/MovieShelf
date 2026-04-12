@@ -13,6 +13,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0.0",
         "mews/purifier": "^3.4",
+        "opcodesio/log-viewer": "^3.24",
         "pragmarx/google2fa-laravel": "^3.0",
         "stancl/tenancy": "^3.10"
     },

@@ -73,6 +73,7 @@ Route::middleware(['web', 'auth', 'central.admin'])->group(function () {
         Route::get('/settings', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'settings'])->name('settings');
         Route::post('/settings', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'updateSettings'])->name('settings.update');
         Route::post('/settings/test-mail', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'testMail'])->name('settings.test-mail');
+        Route::get('/logs', [\App\Http\Controllers\Cadmin\GlobalAdminController::class, 'logs'])->name('logs');
 
         // FAQ Management
         Route::resource('faqs', \App\Http\Controllers\Cadmin\CentralFaqController::class);
@@ -89,6 +90,11 @@ Route::middleware(['web', 'auth', 'central.admin'])->group(function () {
             // Sub-pages
             Route::resource('pages', \App\Http\Controllers\Cadmin\LandingPageController::class);
         });
+
+        // Email Templates
+        Route::get('/email-templates', [\App\Http\Controllers\Cadmin\EmailTemplateController::class, 'index'])->name('email-templates.index');
+        Route::get('/email-templates/{template}/edit', [\App\Http\Controllers\Cadmin\EmailTemplateController::class, 'edit'])->name('email-templates.edit');
+        Route::patch('/email-templates/{template}', [\App\Http\Controllers\Cadmin\EmailTemplateController::class, 'update'])->name('email-templates.update');
     });
 
     // Telemetry API (Master only, gitignored)
