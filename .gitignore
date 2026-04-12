@@ -46,3 +46,4 @@ scripts/direct_sql_fix.php
 scripts/final_central_fix.php
 scripts/inspect_db.php
 scripts/tmp_repair.php
+.claude/settings.local.json

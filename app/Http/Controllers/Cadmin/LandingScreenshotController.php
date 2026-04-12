@@ -32,7 +32,7 @@ class LandingScreenshotController extends Controller
 
             LandingScreenshot::create([
                 'filename'   => $filename,
-                'alt_text'   => $request->input("alt_texts.$i", ''),
+                'alt_text'   => $request->input("alt_texts.$i") ?? '',
                 'sort_order' => ++$maxOrder,
                 'is_active'  => true,
             ]);
