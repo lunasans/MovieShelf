@@ -6,7 +6,7 @@
 @section('content')
 <div class="glass rounded-3xl overflow-hidden border border-white/5 shadow-2xl animate-in fade-in zoom-in duration-500" 
      style="height: calc(100vh - 200px);">
-    <iframe src="{{ route('test.iframe') }}" 
+    <iframe src="{{ route('log-viewer.index') }}" 
             class="w-full h-full border-none" 
             title="Log Viewer"></iframe>
 </div>
