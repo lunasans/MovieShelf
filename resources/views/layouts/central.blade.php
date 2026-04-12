@@ -132,7 +132,7 @@
                      class="glass-ultra border-l-4 border-rose-500 p-4 shadow-xl rounded-xl flex items-center justify-between text-rose-800 font-bold text-sm tracking-tight animate-bounce-in">
                     <div class="flex items-center gap-3">
                         <i class="bi bi-exclamation-triangle-fill text-rose-500"></i>
-                        <span>{{ session('error') }}</span>
+                        <span>{!! session('error') !!}</span>
                     </div>
                     <button @click="show = false" class="text-rose-500 hover:text-rose-700"><i class="bi bi-x-lg"></i></button>
                 </div>
