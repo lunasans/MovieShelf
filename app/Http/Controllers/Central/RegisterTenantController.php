@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Setting;
 use App\Mail\TenantWelcome;
+use App\Mail\TenantActivated;
 
 class RegisterTenantController extends Controller
 {
@@ -76,17 +77,19 @@ class RegisterTenantController extends Controller
             return back()->withErrors(['subdomain' => 'Dieser Name ist leider reserviert.'])->withInput();
         }
 
+        $onboardingMode = Setting::get('onboarding_mode', 'email');
+
         // 0. Generate URLs before entering tenant context
         $activationUrl = route('tenant.activate', ['token' => $token]);
         $tempTenant = new Tenant(['id' => $subdomain]);
         $tenantUrl = $this->getTenantUrl($tempTenant);
 
-        // 1. Create the Tenant (Status: Inactive)
+        // 1. Create the Tenant — active immediately for auto mode, inactive otherwise
         $tenant = new Tenant();
         $tenant->id = $subdomain;
         $tenant->email = $request->email;
         $tenant->activation_token = $token;
-        $tenant->activated_at = null;
+        $tenant->activated_at = ($onboardingMode === 'auto') ? now() : null;
         $tenant->save();
 
         $tenant->domains()->create([
@@ -130,14 +133,26 @@ class RegisterTenantController extends Controller
             User::create($userData);
         });
 
-        // 4. Send Activation Email (Catch failures to prevent 500)
+        // 4. Send appropriate email based on onboarding mode
+        $userModel = new User($userData);
         try {
-            Mail::to($request->email)->send(new TenantWelcome($tenant, new User($userData), $activationUrl, $tenantUrl));
+            if ($onboardingMode === 'email') {
+                Mail::to($request->email)->send(new TenantWelcome($tenant, $userModel, $activationUrl, $tenantUrl));
+            } elseif ($onboardingMode === 'auto') {
+                Mail::to($request->email)->send(new TenantActivated($tenant, $userModel, $tenantUrl));
+            }
+            // manual mode: no email sent at registration time
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Registration Mail failed for {$request->email}: " . $e->getMessage());
         }
 
-        return redirect()->route('landing')->with('success', 'Dein MovieShelf wurde erfolgreich reserviert! Bitte schaue in dein E-Mail Postfach (' . $request->email . '), um dein Filmregal freizuschalten.');
+        $successMessage = match ($onboardingMode) {
+            'auto'   => 'Dein MovieShelf ist sofort einsatzbereit! Eine Bestätigungs-E-Mail wurde an ' . $request->email . ' gesendet.',
+            'manual' => 'Dein MovieShelf wurde erfolgreich reserviert! Wir prüfen deine Anfrage und schalten dein Regal in Kürze frei.',
+            default  => 'Dein MovieShelf wurde erfolgreich reserviert! Bitte schaue in dein E-Mail Postfach (' . $request->email . '), um dein Filmregal freizuschalten.',
+        };
+
+        return redirect()->route('landing')->with('success', $successMessage);
     }
 
     public function activate($token)

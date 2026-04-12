@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use App\Mail\TenantActivated;
+use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class GlobalAdminController extends Controller
 {
@@ -33,7 +36,29 @@ class GlobalAdminController extends Controller
     public function activate(Tenant $tenant)
     {
         $tenant->update(['activated_at' => now()]);
+
+        // Send "your shelf is now active" email to tenant owner
+        if ($tenant->email) {
+            try {
+                $tenantUrl = $this->getTenantUrl($tenant);
+                $user = $tenant->run(fn () => User::where('is_admin', true)->first());
+                if ($user) {
+                    Mail::to($tenant->email)->send(new TenantActivated($tenant, $user, $tenantUrl));
+                }
+            } catch (\Exception $e) {
+                Log::error("Activation mail failed for tenant {$tenant->id}: " . $e->getMessage());
+            }
+        }
+
         return back()->with('success', "MovieShelf '{$tenant->id}' wurde manuell aktiviert.");
+    }
+
+    protected function getTenantUrl(Tenant $tenant): string
+    {
+        $domainRecord = $tenant->domains()->first();
+        $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
+        $hostname = $domainRecord ? $domainRecord->domain : $tenant->id . '.' . $centralDomain;
+        return 'https://' . $hostname . '/login';
     }
 
     public function delete(Tenant $tenant)
@@ -83,7 +108,7 @@ class GlobalAdminController extends Controller
             'saas_name' => 'required|string|max:255',
             'saas_headline' => 'required|string|max:255',
             'support_email' => 'required|email|max:255',
-            'onboarding_mode' => 'required|in:manual,auto',
+            'onboarding_mode' => 'required|in:manual,auto,email',
             'global_tmdb_key' => 'nullable|string|max:255',
             'default_tenant_layout' => 'required|in:classic,streaming',
             'default_tenant_language' => 'required|in:de,en',

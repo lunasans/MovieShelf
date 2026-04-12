@@ -104,35 +104,51 @@
                         <div class="grid grid-cols-1 gap-4">
                             <label class="relative flex items-center p-4 cursor-pointer glass border border-white/10 rounded-2xl group hover:bg-white/5 transition-all">
                                 <input type="radio" name="onboarding_mode" value="manual" {{ $settings['onboarding_mode'] == 'manual' ? 'checked' : '' }} class="hidden peer">
-                                <div class="w-6 h-6 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-rose-500 peer-checked:bg-rose-500 transition-all">
+                                <div class="w-6 h-6 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-rose-500 peer-checked:bg-rose-500 transition-all flex-shrink-0">
                                     <div class="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
                                 </div>
                                 <div class="ms-4">
-                                    <span class="block text-sm font-bold text-white group-hover:text-rose-400 transition-colors">Manuelle Prüfung (Empfohlen)</span>
-                                    <span class="block text-xs text-gray-500">Du musst jedes Filmregal manuell im Dashboard freischalten.</span>
+                                    <span class="block text-sm font-bold text-white group-hover:text-rose-400 transition-colors">Manuelle Prüfung <span class="text-[10px] text-rose-500 font-black uppercase tracking-widest">(Empfohlen)</span></span>
+                                    <span class="block text-xs text-gray-500 mt-0.5">Du schaltest jedes Regal selbst frei. Der Nutzer bekommt nach Aktivierung eine E-Mail.</span>
+                                </div>
+                            </label>
+
+                            <label class="relative flex items-center p-4 cursor-pointer glass border border-white/10 rounded-2xl group hover:bg-white/5 transition-all">
+                                <input type="radio" name="onboarding_mode" value="email" {{ $settings['onboarding_mode'] == 'email' ? 'checked' : '' }} class="hidden peer">
+                                <div class="w-6 h-6 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-sky-500 peer-checked:bg-sky-500 transition-all flex-shrink-0">
+                                    <div class="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                </div>
+                                <div class="ms-4">
+                                    <span class="block text-sm font-bold text-white group-hover:text-sky-400 transition-colors">E-Mail Aktivierung</span>
+                                    <span class="block text-xs text-gray-500 mt-0.5">Nutzer erhalten einen Aktivierungslink per E-Mail und schalten ihr Regal selbst frei.</span>
                                 </div>
                             </label>
 
                             <label class="relative flex items-center p-4 cursor-pointer glass border border-white/10 rounded-2xl group hover:bg-white/5 transition-all">
                                 <input type="radio" name="onboarding_mode" value="auto" {{ $settings['onboarding_mode'] == 'auto' ? 'checked' : '' }} class="hidden peer">
-                                <div class="w-6 h-6 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-500 transition-all">
+                                <div class="w-6 h-6 border-2 border-white/20 rounded-full flex items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-500 transition-all flex-shrink-0">
                                     <div class="w-2 h-2 bg-white rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
                                 </div>
                                 <div class="ms-4">
                                     <span class="block text-sm font-bold text-white group-hover:text-green-400 transition-colors">Sofort-Aktivierung</span>
-                                    <span class="block text-xs text-gray-500">Tenants werden sofort nach der Registrierung freigeschaltet.</span>
+                                    <span class="block text-xs text-gray-500 mt-0.5">Tenants werden sofort nach der Registrierung freigeschaltet. Bestätigungs-E-Mail wird gesendet.</span>
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    <div class="bg-rose-500/5 rounded-3xl border border-rose-500/10 p-6">
-                        <h3 class="text-rose-500 font-bold mb-2 flex items-center gap-2">
-                            <i class="bi bi-info-circle-fill"></i>
-                            Wichtiger Hinweis
+                    <div class="bg-white/[0.03] rounded-3xl border border-white/10 p-6 space-y-4">
+                        <h3 class="text-white font-bold flex items-center gap-2 text-sm">
+                            <i class="bi bi-envelope-at text-sky-400"></i>
+                            E-Mail Versand
                         </h3>
-                        <p class="text-sm text-gray-400 leading-relaxed">
-                            Die manuelle Prüfung schützt deine Serverressourcen vor Spam-Registrierungen. Bei der Sofort-Aktivierung erhält der Nutzer direkt nach Absenden des Formulars Zugriff auf sein Regal.
+                        <ul class="space-y-2 text-xs text-gray-400 leading-relaxed">
+                            <li class="flex items-start gap-2"><span class="text-rose-400 font-black mt-0.5">Manuell</span><span>→ E-Mail nach Admin-Freischaltung</span></li>
+                            <li class="flex items-start gap-2"><span class="text-sky-400 font-black mt-0.5">E-Mail</span><span>→ Aktivierungslink direkt nach Registrierung</span></li>
+                            <li class="flex items-start gap-2"><span class="text-green-400 font-black mt-0.5">Sofort</span><span>→ Willkommens-E-Mail mit Login-Link</span></li>
+                        </ul>
+                        <p class="text-[10px] text-gray-600 pt-2 border-t border-white/5">
+                            Stelle sicher, dass der SMTP-Server im E-Mail Tab korrekt konfiguriert ist.
                         </p>
                     </div>
 
