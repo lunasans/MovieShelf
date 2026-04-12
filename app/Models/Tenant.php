@@ -59,6 +59,13 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         ];
     }
 
+    protected function casts(): array
+    {
+        return [
+            'activated_at' => 'datetime',
+        ];
+    }
+
     /**
      * Specify the database driver for every tenant.
      */
