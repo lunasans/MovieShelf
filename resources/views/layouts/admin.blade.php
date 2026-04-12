@@ -92,6 +92,22 @@
 </head>
 
 <body class="font-sans antialiased text-white min-h-screen relative overflow-x-hidden selection:bg-rose-500/30" x-data="{ sidebarOpen: false }">
+    @php $isImpersonating = session('impersonated_by'); @endphp
+
+    {{-- Impersonation Banner --}}
+    @if($isImpersonating)
+    <div class="fixed top-0 inset-x-0 z-[9999] flex items-center justify-between gap-4 px-6 py-2.5 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg">
+        <div class="flex items-center gap-2">
+            <i class="bi bi-person-badge-fill"></i>
+            Support-Modus · Eingeloggt als Tenant-Admin · Cadmin: {{ session('impersonated_by') }}
+        </div>
+        <a href="{{ route('impersonate.exit') }}"
+           class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors">
+            <i class="bi bi-box-arrow-right"></i> Beenden
+        </a>
+    </div>
+    @endif
+
     <!-- Premium Cinematic background -->
     <div class="fixed inset-0 z-0 bg-[#020617] pointer-events-none overflow-hidden">
         <!-- Main Dark Gradient -->
@@ -124,7 +140,7 @@
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-            class="w-72 glass-sidebar flex flex-col shrink-0 h-screen transition-all duration-500 ease-in-out fixed left-0 top-0 z-50">
+            class="w-72 glass-sidebar flex flex-col shrink-0 transition-all duration-500 ease-in-out fixed left-0 z-50 {{ $isImpersonating ? 'top-10 h-[calc(100vh-2.5rem)]' : 'top-0 h-screen' }}">
             <div class="p-6 flex items-center justify-between"> 
                 <a href="{{ route('dashboard') }}" class="flex items-center group"> 
                     <x-application-logo class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
@@ -197,7 +213,7 @@
         <main :class="sidebarOpen ? 'translate-x-72 md:translate-x-0' : 'translate-x-0'"
             class="flex-1 flex flex-col min-w-0 md:ml-72 transition-transform duration-500 ease-in-out">
             <header
-                class="h-20 header-glass flex items-center justify-between px-6 md:px-12 z-40 shrink-0 sticky top-0">
+                class="h-20 header-glass flex items-center justify-between px-6 md:px-12 z-40 shrink-0 sticky {{ $isImpersonating ? 'top-10' : 'top-0' }}">
                 <div class="flex items-center gap-6">
                     <button @click="sidebarOpen = true" class="md:hidden text-gray-400 hover:text-white transition-colors">
                         <i class="bi bi-list text-2xl"></i>
