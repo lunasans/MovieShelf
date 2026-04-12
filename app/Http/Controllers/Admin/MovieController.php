@@ -276,6 +276,88 @@ class MovieController extends Controller
         return redirect()->route('admin.movies.index')->with('success', 'Film gelöscht.');
     }
 
+    // ─── CSV Export ────────────────────────────────────────────────────────────
+
+    public function export()
+    {
+        $movies = Movie::where('is_deleted', false)
+            ->orderBy('title')
+            ->get(['title', 'year', 'genre', 'collection_type', 'runtime', 'rating', 'director', 'overview', 'tmdb_id', 'trailer_url', 'created_at']);
+
+        $filename = 'filmsammlung_' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($movies) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM for Excel
+            fputcsv($handle, ['Titel', 'Jahr', 'Genre', 'Typ', 'Laufzeit (min)', 'Bewertung', 'Regisseur', 'Beschreibung', 'TMDb ID', 'Trailer URL', 'Hinzugefügt am'], ';');
+            foreach ($movies as $movie) {
+                fputcsv($handle, [
+                    $movie->title,
+                    $movie->year,
+                    $movie->genre,
+                    $movie->collection_type,
+                    $movie->runtime,
+                    $movie->rating,
+                    $movie->director,
+                    $movie->overview,
+                    $movie->tmdb_id,
+                    $movie->trailer_url,
+                    $movie->created_at?->format('d.m.Y'),
+                ], ';');
+            }
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    // ─── Duplicate Detection ───────────────────────────────────────────────────
+
+    public function duplicates()
+    {
+        $duplicateGroups = Movie::where('is_deleted', false)
+            ->selectRaw('title, year, COUNT(*) as count')
+            ->groupBy('title', 'year')
+            ->having('count', '>', 1)
+            ->orderByDesc('count')
+            ->get()
+            ->map(function ($group) {
+                $group->movies = Movie::where('title', $group->title)
+                    ->where('year', $group->year)
+                    ->where('is_deleted', false)
+                    ->get();
+                return $group;
+            });
+
+        return view('admin.movies.duplicates', compact('duplicateGroups'));
+    }
+
+    // ─── Batch Action ──────────────────────────────────────────────────────────
+
+    public function batchAction(Request $request)
+    {
+        $request->validate([
+            'action' => 'required|in:delete,restore,genre',
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer|exists:movies,id',
+            'genre'  => 'required_if:action,genre|nullable|string|max:255',
+        ]);
+
+        $count = count($request->ids);
+
+        switch ($request->action) {
+            case 'delete':
+                Movie::whereIn('id', $request->ids)->update(['is_deleted' => true]);
+                return back()->with('success', "{$count} Filme wurden deaktiviert.");
+            case 'restore':
+                Movie::whereIn('id', $request->ids)->update(['is_deleted' => false]);
+                return back()->with('success', "{$count} Filme wurden wiederhergestellt.");
+            case 'genre':
+                Movie::whereIn('id', $request->ids)->update(['genre' => $request->genre]);
+                return back()->with('success', "Genre für {$count} Filme auf \"{$request->genre}\" gesetzt.");
+        }
+
+        return back()->with('error', 'Ungültige Aktion.');
+    }
+
     /**
      * Trigger the Smart Trailer Sync via Artisan command.
      */

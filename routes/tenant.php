@@ -122,10 +122,15 @@ Route::middleware([
         Route::post('/two-factor-recovery-codes', [TwoFactorController::class, 'regenerateCodes'])->name('two-factor.recovery-codes');
 
         Route::post('/movies/{movie}/watched', [\App\Http\Controllers\MovieWatchedController::class, 'toggle'])->name('movies.watched.toggle');
+        Route::post('/movies/{movie}/wishlist', [\App\Http\Controllers\MovieWishlistController::class, 'toggle'])->name('movies.wishlist.toggle');
+        Route::post('/movies/{movie}/rate', [\App\Http\Controllers\MovieRatingController::class, 'store'])->name('movies.rate');
 
         // Admin Area
         Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('dashboard');
+            Route::get('movies/export', [\App\Http\Controllers\Admin\MovieController::class, 'export'])->name('movies.export');
+            Route::get('movies/duplicates', [\App\Http\Controllers\Admin\MovieController::class, 'duplicates'])->name('movies.duplicates');
+            Route::post('movies/batch', [\App\Http\Controllers\Admin\MovieController::class, 'batchAction'])->name('movies.batch');
             Route::get('movies/sync-logs', [\App\Http\Controllers\Admin\TrailerSyncController::class, 'index'])->name('movies.sync-logs');
             Route::get('movies/sync-logs/{run}', [\App\Http\Controllers\Admin\TrailerSyncController::class, 'show'])->name('movies.sync-logs.show');
             Route::post('movies/smart-trailer', [\App\Http\Controllers\Admin\MovieController::class, 'smartTrailerSync'])->name('movies.smart-trailer');

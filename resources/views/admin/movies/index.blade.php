@@ -1,10 +1,69 @@
 <x-admin-layout>
     @section('header_title', 'Filme verwalten')
 
-    <div class="space-y-8">
+    <div class="space-y-8" x-data="{
+        selected: [],
+        batchAction: '',
+        batchGenre: '',
+        showGenreInput: false,
+        toggleAll(checked, ids) { this.selected = checked ? ids : []; },
+        toggle(id) {
+            const i = this.selected.indexOf(id);
+            i === -1 ? this.selected.push(id) : this.selected.splice(i, 1);
+        },
+        isSelected(id) { return this.selected.includes(id); },
+        submitBatch(action) {
+            if (this.selected.length === 0) return;
+            if (action === 'genre') { this.showGenreInput = true; return; }
+            if (action === 'delete' && !confirm(this.selected.length + ' Filme deaktivieren?')) return;
+            this.batchAction = action;
+            this.$nextTick(() => this.$refs.batchForm.submit());
+        },
+        confirmGenre() {
+            if (!this.batchGenre.trim()) return;
+            this.batchAction = 'genre';
+            this.$nextTick(() => this.$refs.batchForm.submit());
+        }
+    }">
+        <!-- Batch Action Bar (floats when items selected) -->
+        <div x-show="selected.length > 0"
+             x-transition
+             class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 glass border border-white/20 rounded-2xl shadow-2xl backdrop-blur-2xl"
+             x-cloak>
+            <span class="text-xs font-black text-white/60 uppercase tracking-widest me-2" x-text="selected.length + ' ausgewählt'"></span>
+            <button @click="submitBatch('restore')" class="px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-500/30 transition-all">
+                <i class="bi bi-check-circle me-1"></i>Aktivieren
+            </button>
+            <button @click="submitBatch('genre')" class="px-4 py-2 bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-500/30 transition-all">
+                <i class="bi bi-tag me-1"></i>Genre
+            </button>
+            <button @click="submitBatch('delete')" class="px-4 py-2 bg-rose-500/20 border border-rose-500/30 text-rose-400 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-rose-500/30 transition-all">
+                <i class="bi bi-eye-slash me-1"></i>Deaktivieren
+            </button>
+            <button @click="selected = []" class="px-3 py-2 text-white/30 hover:text-white rounded-xl transition-colors text-xs"><i class="bi bi-x-lg"></i></button>
+
+            <!-- Genre input overlay -->
+            <div x-show="showGenreInput" x-transition class="absolute bottom-full mb-3 left-0 right-0 flex items-center gap-2 px-4 py-3 glass border border-indigo-500/30 rounded-2xl shadow-xl" x-cloak>
+                <input x-model="batchGenre" type="text" placeholder="Genre eingeben (z.B. Action, Drama)" @keydown.enter="confirmGenre()"
+                       class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-xs outline-none focus:border-indigo-500/50">
+                <button @click="confirmGenre()" class="px-3 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black">OK</button>
+                <button @click="showGenreInput = false; batchGenre = ''" class="px-3 py-2 text-white/40 hover:text-white rounded-xl text-xs">Abbrechen</button>
+            </div>
+        </div>
+
+        <!-- Hidden batch form -->
+        <form x-ref="batchForm" action="{{ route('admin.movies.batch') }}" method="POST" class="hidden">
+            @csrf
+            <input type="hidden" name="action" x-bind:value="batchAction">
+            <input type="hidden" name="genre" x-bind:value="batchGenre">
+            <template x-for="id in selected" :key="id">
+                <input type="hidden" name="ids[]" :value="id">
+            </template>
+        </form>
+
         <!-- Top Actions & Search Bar -->
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 flex-wrap">
                 <a href="{{ route('admin.movies.create') }}" class="px-8 py-3.5 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-rose-500/20 flex items-center gap-3 group">
                     <i class="bi bi-plus-lg text-lg group-hover:scale-125 transition-transform"></i>
                     Neuer Film
@@ -12,6 +71,14 @@
                 <a href="{{ route('admin.tmdb.index') }}" class="px-8 py-3.5 bg-white/5 hover:bg-white/10 text-white/70 rounded-2xl font-black text-xs uppercase tracking-widest border border-white/10 transition-all flex items-center gap-3">
                     <i class="bi bi-cloud-arrow-down-fill text-lg"></i>
                     TMDb Import
+                </a>
+                <a href="{{ route('admin.movies.export') }}" class="px-8 py-3.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-2xl font-black text-xs uppercase tracking-widest border border-emerald-500/20 transition-all flex items-center gap-3">
+                    <i class="bi bi-file-earmark-spreadsheet text-lg"></i>
+                    CSV Export
+                </a>
+                <a href="{{ route('admin.movies.duplicates') }}" class="px-8 py-3.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-2xl font-black text-xs uppercase tracking-widest border border-amber-500/20 transition-all flex items-center gap-3">
+                    <i class="bi bi-copy text-lg"></i>
+                    Duplikate
                 </a>
                 <form action="{{ route('admin.movies.smart-trailer') }}" method="POST">
                     @csrf
@@ -90,7 +157,11 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-white/[0.02] border-b border-white/5">
-                            <th class="px-10 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">Sammlung & Titel</th>
+                            <th class="px-6 py-6 w-12">
+                                <input type="checkbox" @change="toggleAll($event.target.checked, {{ $movies->pluck('id') }})"
+                                       class="w-4 h-4 rounded border-white/20 bg-white/5 accent-rose-500 cursor-pointer">
+                            </th>
+                            <th class="px-4 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">Sammlung & Titel</th>
                             <th class="px-8 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.3em] hidden lg:table-cell">Details</th>
                             <th class="px-8 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.3em] hidden md:table-cell">Jahr</th>
                             <th class="px-8 py-6 text-[10px] font-black text-white/30 uppercase tracking-[0.3em] text-right">Aktionen</th>
@@ -98,8 +169,12 @@
                     </thead>
                     <tbody class="divide-y divide-white/5">
                         @forelse($movies as $movie)
-                            <tr class="hover:bg-white/[0.03] transition-colors group">
-                                <td class="px-10 py-6">
+                            <tr class="hover:bg-white/[0.03] transition-colors group" :class="isSelected({{ $movie->id }}) ? 'bg-rose-500/5' : ''">
+                                <td class="px-6 py-6 w-12">
+                                    <input type="checkbox" :checked="isSelected({{ $movie->id }})" @change="toggle({{ $movie->id }})"
+                                           class="w-4 h-4 rounded border-white/20 bg-white/5 accent-rose-500 cursor-pointer">
+                                </td>
+                                <td class="px-4 py-6">
                                     <div class="flex items-center gap-6">
                                         <div class="w-14 h-20 bg-gray-800 rounded-2xl overflow-hidden flex-shrink-0 border border-white/10 shadow-2xl relative group-hover:scale-105 transition-transform duration-500">
                                             @if($movie->cover_url)

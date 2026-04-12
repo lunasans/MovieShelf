@@ -5,6 +5,11 @@
         showTrailer: false,
         isWatched: {{ Auth::check() && Auth::user()->watchedMovies()->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }},
         watchedCount: {{ $movie->watchedByUsers()->count() }},
+        isWishlisted: {{ Auth::check() && \App\Models\UserWishlist::where('user_id', Auth::id())->where('movie_id', $movie->id)->exists() ? 'true' : 'false' }},
+        userRating: {{ Auth::check() ? (\App\Models\UserRating::where('user_id', Auth::id())->where('movie_id', $movie->id)->value('rating') ?? 0) : 0 }},
+        hoverRating: 0,
+        avgRating: {{ round(\App\Models\UserRating::where('movie_id', $movie->id)->avg('rating') ?? 0, 1) }},
+        ratingCount: {{ \App\Models\UserRating::where('movie_id', $movie->id)->count() }},
         get youtubeId() {
             const url = '{{ $movie->trailer_url }}';
             const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:v\/|u\/\w\/|embed\/|watch\?v=))([^#\&\?]*)/);
@@ -15,26 +20,51 @@
                try {
                    const response = await fetch('{{ route('movies.watched.toggle', $movie) }}', {
                        method: 'POST',
-                       headers: {
-                           'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                           'Content-Type': 'application/json',
-                           'Accept': 'application/json'
-                       }                   });
+                       headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' }
+                   });
                    const data = await response.json();
                    if (data.watched !== undefined) {
                        this.isWatched = data.watched;
                        this.watchedCount = data.count;
-                       // Dispatch event for dashboard cards
-                       window.dispatchEvent(new CustomEvent('movie-watched-updated', {
-                           detail: { movieId: {{ $movie->id }}, watched: data.watched }
-                       }));
+                       window.dispatchEvent(new CustomEvent('movie-watched-updated', { detail: { movieId: {{ $movie->id }}, watched: data.watched } }));
                    }
-               } catch (e) {
-                   console.error('Toggle watched failed', e);
-               }           @else
+               } catch (e) { console.error('Toggle watched failed', e); }
+           @else
                window.location.href = '{{ route('login') }}';
            @endif
-        }     }">
+        },
+        async toggleWishlist() {
+           @if(Auth::check())
+               try {
+                   const response = await fetch('{{ route('movies.wishlist.toggle', $movie) }}', {
+                       method: 'POST',
+                       headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' }
+                   });
+                   const data = await response.json();
+                   if (data.wishlisted !== undefined) this.isWishlisted = data.wishlisted;
+               } catch (e) { console.error('Toggle wishlist failed', e); }
+           @else
+               window.location.href = '{{ route('login') }}';
+           @endif
+        },
+        async setRating(n) {
+           @if(Auth::check())
+               try {
+                   const response = await fetch('{{ route('movies.rate', $movie) }}', {
+                       method: 'POST',
+                       headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                       body: JSON.stringify({ rating: n })
+                   });
+                   const data = await response.json();
+                   this.userRating = data.rating;
+                   this.avgRating = data.avg;
+                   this.ratingCount = data.count;
+               } catch (e) { console.error('Rating failed', e); }
+           @else
+               window.location.href = '{{ route('login') }}';
+           @endif
+        }
+     }">
     @if($layoutMode !== 'streaming')
         <!-- Layout Alignment Spacer (Matches Dashboard Tabs) -->
         <div class="h-[46px] mb-8"></div>
@@ -356,8 +386,45 @@
             </div>
         @endif
 
-        <!-- Other Actions (Watched Toggle) -->
-        <div class="flex justify-end">
+        <!-- Star Rating Row -->
+        <div class="flex items-center justify-between mt-6 px-1">
+            <div class="flex items-center gap-3">
+                <span class="text-[10px] font-black text-white/30 uppercase tracking-widest">{{ __('Deine Bewertung') }}</span>
+                <div class="flex items-center gap-1">
+                    @for($s = 1; $s <= 5; $s++)
+                    <button @click="setRating({{ $s }})"
+                            @mouseenter="hoverRating = {{ $s }}"
+                            @mouseleave="hoverRating = 0"
+                            class="text-2xl transition-all active:scale-90"
+                            :class="(hoverRating || userRating) >= {{ $s }} ? 'text-amber-400' : 'text-white/10'">
+                        <i class="bi bi-star-fill"></i>
+                    </button>
+                    @endfor
+                </div>
+                <span class="text-xs text-white/20 font-medium" x-show="userRating > 0" x-text="userRating + '/5'"></span>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] text-white/20 font-bold" x-show="ratingCount > 0">
+                <i class="bi bi-people text-sm"></i>
+                <span x-text="ratingCount + ' ' + '{{ __('Bewertungen') }}' + ' · Ø ' + avgRating"></span>
+            </div>
+        </div>
+
+        <!-- Other Actions (Watched + Wishlist) -->
+        <div class="flex items-center justify-end gap-3 mt-4">
+            <!-- Watchlist -->
+            <button @click="toggleWishlist()"
+                    class="h-14 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center gap-3 transition-all group shadow-lg"
+                    :class="isWishlisted ? 'border-rose-500/50 bg-rose-500/10' : ''">
+                <span class="text-xs font-bold uppercase tracking-widest transition-colors"
+                      :class="isWishlisted ? 'text-rose-400' : 'text-gray-400 group-hover:text-white'">
+                    <span x-show="isWishlisted">{{ __('Auf Merkliste') }}</span>
+                    <span x-show="!isWishlisted">{{ __('Merken') }}</span>
+                </span>
+                <i class="bi text-xl transition-colors"
+                   :class="isWishlisted ? 'bi-bookmark-heart-fill text-rose-400' : 'bi-bookmark-heart text-gray-400 group-hover:text-rose-400'"></i>
+            </button>
+
+            <!-- Watched -->
             <button @click="toggleWatched()"
                     class="h-14 px-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl flex items-center gap-3 transition-all group shadow-lg"
                     :class="isWatched ? 'border-blue-500/50 bg-blue-500/10' : ''">
