@@ -172,7 +172,17 @@
     slides: {!! json_encode($sliderSlides->values()) !!},
     next() { this.activeSlide = (this.activeSlide + 1) % this.slides.length },
     prev() { this.activeSlide = (this.activeSlide - 1 + this.slides.length) % this.slides.length },
-    init() { setInterval(() => this.next(), 10000); }
+    init() { 
+        this.$nextTick(() => {
+            GLightbox({
+                selector: '.glightbox',
+                touchNavigation: true,
+                loop: true,
+                zoomable: true
+            });
+        });
+        setInterval(() => this.next(), 10000); 
+    }
 }'>
     <div class="container">
         <div style="text-align:center; margin-bottom:2.5rem">
@@ -376,13 +386,6 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const lightbox = GLightbox({
-            selector: '.glightbox',
-            touchNavigation: true,
-            loop: true,
-            zoomable: true
-        });
-    });
+    // GLightbox logic handles dynamic slides via Alpine init
 </script>
 @endpush

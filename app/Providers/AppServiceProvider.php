@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Cache;
+use App\Models\LandingPage;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -54,6 +57,20 @@ class AppServiceProvider extends ServiceProvider
                     'daily_visits' => \App\Models\Counter::where('page', "daily:{$today}")->value('visits') ?? 0,
                     'total_visits' => \App\Models\Counter::where('page', 'all')->value('visits') ?? 0,
                 ]);
+            }
+        });
+
+        // Share Dynamic Pages with Central Layout
+        View::composer('layouts.central', function ($view) {
+            // Only fetch if we are on the central domain
+            if (!(function_exists('tenancy') && tenancy()->initialized)) {
+                $footerPages = Cache::remember('central_footer_pages', now()->addHours(1), function () {
+                    return LandingPage::where('is_active', true)
+                        ->where('show_in_nav', true)
+                        ->orderBy('sort_order')
+                        ->get();
+                });
+                $view->with('footerPages', $footerPages);
             }
         });
     }
