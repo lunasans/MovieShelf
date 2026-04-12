@@ -163,6 +163,7 @@
                 <h4 class="font-bold text-xs uppercase tracking-widest text-gray-400">Navigation</h4>
                 <div class="flex flex-col gap-2">
                     <a href="{{ route('landing') }}#features" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">Features</a>
+                    <a href="{{ route('landing.discover') }}" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">Entdecken</a>
                     @if(isset($faqs) && $faqs->count() > 0)
                     <a href="{{ route('landing') }}#faq" class="text-sm text-gray-500 hover:text-[#CC4B06] transition-colors font-medium">FAQ</a>
                     @endif

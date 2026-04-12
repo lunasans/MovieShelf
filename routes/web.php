@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 // Landing Page (SaaS Home)
 Route::get('/', [\App\Http\Controllers\Central\LandingController::class, 'index'])->name('landing');
+Route::get('/entdecken', [\App\Http\Controllers\Central\LandingController::class, 'discover'])->name('landing.discover');
 
 Route::get('/privacy', function () {
     return view('central.privacy');

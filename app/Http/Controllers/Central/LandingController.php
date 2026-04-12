@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Faq;
 use App\Models\LandingPage;
 use App\Models\LandingScreenshot;
+use App\Models\Tenant;
 
 class LandingController extends Controller
 {
@@ -24,5 +25,15 @@ class LandingController extends Controller
         $navPages = LandingPage::where('is_active', true)->where('show_in_nav', true)->orderBy('sort_order')->get();
 
         return view('central.page', compact('page', 'navPages'));
+    }
+
+    public function discover()
+    {
+        $tenants = Tenant::whereNotNull('activated_at')
+            ->latest('activated_at')
+            ->limit(10)
+            ->get();
+
+        return view('central.discover', compact('tenants'));
     }
 }
