@@ -14,7 +14,7 @@ class EnsureCentralAdmin
         }
 
         $adminEmails = array_filter(
-            array_map('trim', explode(',', env('CENTRAL_ADMIN_EMAILS', '')))
+            array_map('trim', explode(',', config('app.central_admin_emails', '')))
         );
 
         if (empty($adminEmails) || ! in_array(auth()->user()->email, $adminEmails)) {

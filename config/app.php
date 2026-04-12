@@ -128,5 +128,6 @@ return [
     'saas_version' => env('APP_SAAS_VERSION', '1.0.0'),
     'shelf_version' => env('APP_SHELF_VERSION', '2.15.3'),
     'version' => env('APP_SHELF_VERSION', '2.15.3'),
+    'central_admin_emails' => env('CENTRAL_ADMIN_EMAILS', ''),
 
 ];
