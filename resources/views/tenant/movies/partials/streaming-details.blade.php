@@ -208,6 +208,24 @@
                     </button>
                 </div>
 
+                {{-- Star Rating Row --}}
+                <div class="flex items-center gap-3 mt-5 mb-2">
+                    <span class="text-[10px] font-black text-white/30 uppercase tracking-widest shrink-0">{{ __('Deine Bewertung') }}</span>
+                    <div class="flex items-center gap-1">
+                        @for($s = 1; $s <= 5; $s++)
+                        <button @click="setRating({{ $s }})"
+                                @mouseenter="hoverRating = {{ $s }}"
+                                @mouseleave="hoverRating = 0"
+                                class="text-2xl transition-all active:scale-90 hover:scale-110"
+                                :class="(hoverRating || userRating) >= {{ $s }} ? 'text-amber-400' : 'text-white/10'">
+                            <i class="bi bi-star-fill"></i>
+                        </button>
+                        @endfor
+                    </div>
+                    <span class="text-sm text-amber-400 font-black" x-show="userRating > 0" x-text="userRating + '/5'"></span>
+                    <span class="text-[10px] text-white/20 font-bold ml-2" x-show="ratingCount > 0" x-text="'Ø ' + avgRating + ' (' + ratingCount + ')'"></span>
+                </div>
+
                 <div class="glass p-8 md:p-12 rounded-[3rem] border border-white/10 backdrop-blur-3xl shadow-2xl relative overflow-hidden mb-12">
                     <div class="absolute top-0 right-0 p-8 opacity-5">
                         <i class="bi bi-quote text-9xl"></i>
@@ -444,23 +462,6 @@
                          </div>
                      </div>
 
-                     {{-- Star Rating Card --}}
-                     <div class="mt-4 glass p-6 rounded-3xl border border-white/10">
-                         <p class="text-[10px] font-black text-white/40 uppercase tracking-widest mb-3">{{ __('Deine Bewertung') }}</p>
-                         <div class="flex items-center gap-2 mb-2">
-                             @for($s = 1; $s <= 5; $s++)
-                             <button @click="setRating({{ $s }})"
-                                     @mouseenter="hoverRating = {{ $s }}"
-                                     @mouseleave="hoverRating = 0"
-                                     class="text-3xl transition-all active:scale-90 hover:scale-110"
-                                     :class="(hoverRating || userRating) >= {{ $s }} ? 'text-amber-400' : 'text-white/10'">
-                                 <i class="bi bi-star-fill"></i>
-                             </button>
-                             @endfor
-                             <span class="text-sm text-amber-400 font-black ml-1" x-show="userRating > 0" x-text="userRating + '/5'"></span>
-                         </div>
-                         <p class="text-[10px] text-white/20 font-bold" x-show="ratingCount > 0" x-text="ratingCount + ' {{ __('Bewertungen') }} · Ø ' + avgRating"></p>
-                     </div>
                  </div>
             </div>
         </div>
