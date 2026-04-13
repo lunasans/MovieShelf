@@ -92,23 +92,6 @@
 
                         <div class="md:col-span-2 space-y-6 pt-6 mt-6 border-t border-white/5">
                             <div class="flex items-center gap-4 bg-white/5 p-6 rounded-[1.5rem] border border-white/10 group hover:border-rose-500/30 transition-all cursor-pointer">
-                                <input type="checkbox" name="public_collection_enabled" id="public_collection_enabled" value="1" {{ (old('public_collection_enabled', $settings['public_collection_enabled'] ?? '0') == '1') ? 'checked' : '' }} class="w-6 h-6 rounded-lg border-white/10 bg-white/5 text-rose-600 focus:ring-rose-500/50 transition-all cursor-pointer">
-                                <label for="public_collection_enabled" class="flex-1 cursor-pointer">
-                                    <span class="block text-sm font-black text-white uppercase tracking-widest">Öffentliche Sammlung aktivieren</span>
-                                    <span class="text-[10px] text-white/30 font-medium italic mt-1 block tracking-wide">
-                                        Macht deine Filmsammlung unter
-                                        <code class="text-white/50 bg-white/5 px-1 rounded">/kollektion</code>
-                                        für jeden ohne Login sichtbar.
-                                    </span>
-                                </label>
-                                @if(($settings['public_collection_enabled'] ?? '0') == '1')
-                                    <a href="{{ route('collection.index') }}" target="_blank"
-                                       class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500/20 transition-all">
-                                        <i class="bi bi-box-arrow-up-right"></i> Öffnen
-                                    </a>
-                                @endif
-                            </div>
-                            <div class="flex items-center gap-4 bg-white/5 p-6 rounded-[1.5rem] border border-white/10 group hover:border-rose-500/30 transition-all cursor-pointer">
                                 <input type="checkbox" name="telemetry_enabled" id="telemetry_enabled" value="1" {{ (old('telemetry_enabled', $settings['telemetry_enabled'] ?? '1') == '1') ? 'checked' : '' }} class="w-6 h-6 rounded-lg border-white/10 bg-white/5 text-rose-600 focus:ring-rose-500/50 transition-all cursor-pointer">
                                 <label for="telemetry_enabled" class="flex-1 cursor-pointer">
                                     <span class="block text-sm font-black text-white uppercase tracking-widest">Anonyme Statistiken senden</span>
