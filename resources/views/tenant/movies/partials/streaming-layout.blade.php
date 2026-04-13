@@ -96,7 +96,70 @@
 
     {{-- Content Rows --}}
     <div class="space-y-16 pb-20" style="padding-top: 2.5rem;">
-        @if(request('q') || request('type'))
+
+        {{-- Advanced Filter Bar --}}
+        @php
+            $hasActiveFilters = request()->hasAny(['genre','year_from','year_to','rating_min','runtime_max']);
+        @endphp
+        <div class="px-12 md:px-20">
+            <form action="{{ route('dashboard') }}" method="GET"
+                  class="glass border {{ $hasActiveFilters ? 'border-blue-500/30' : 'border-white/10' }} rounded-2xl p-4 flex flex-wrap gap-3 items-end">
+                <input type="hidden" name="q" value="{{ request('q') }}">
+                <input type="hidden" name="type" value="{{ request('type') }}">
+
+                <div class="flex items-center gap-1.5 text-gray-500 self-center shrink-0">
+                    <i class="bi bi-funnel-fill text-sm {{ $hasActiveFilters ? 'text-blue-400' : '' }}"></i>
+                    <span class="text-[9px] font-black uppercase tracking-widest {{ $hasActiveFilters ? 'text-blue-400' : '' }}">Filter</span>
+                </div>
+
+                <div class="flex flex-col gap-1 min-w-[120px]">
+                    <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Genre</label>
+                    <select name="genre" class="bg-white/5 border {{ request('genre') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 appearance-none cursor-pointer">
+                        <option value="">Alle</option>
+                        @foreach($genres as $genre)
+                            <option value="{{ $genre }}" {{ request('genre') === $genre ? 'selected' : '' }} class="bg-zinc-900 text-white">{{ $genre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Jahr</label>
+                    <div class="flex items-center gap-1">
+                        <input type="number" name="year_from" value="{{ request('year_from') }}" placeholder="von" min="1900" max="{{ date('Y') }}"
+                            class="w-20 bg-white/5 border {{ request('year_from') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                        <span class="text-gray-600 text-xs">–</span>
+                        <input type="number" name="year_to" value="{{ request('year_to') }}" placeholder="bis" min="1900" max="{{ date('Y') }}"
+                            class="w-20 bg-white/5 border {{ request('year_to') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Mind. Bewertung</label>
+                    <input type="number" name="rating_min" value="{{ request('rating_min') }}" placeholder="0–10" min="0" max="10" step="0.5"
+                        class="w-24 bg-white/5 border {{ request('rating_min') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Max. Laufzeit (Min.)</label>
+                    <input type="number" name="runtime_max" value="{{ request('runtime_max') }}" placeholder="z.B. 120" min="1"
+                        class="w-28 bg-white/5 border {{ request('runtime_max') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                </div>
+
+                <div class="flex gap-2 self-end">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                    @if($hasActiveFilters)
+                        <a href="{{ route('dashboard', array_filter(['q' => request('q'), 'type' => request('type')])) }}"
+                           class="px-4 py-2 bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 text-gray-400 hover:text-red-400 text-xs font-black rounded-xl transition-all" title="Filter zurücksetzen">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+        @if(request('q') || request('type') || $hasActiveFilters)
             {{-- Search/Filter Results View --}}
             <section class="animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <div class="flex items-center justify-between mb-10 px-12 md:px-20">
