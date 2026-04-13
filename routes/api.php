@@ -33,4 +33,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/details', [\App\Http\Controllers\Api\TmdbController::class, 'details']);
         Route::post('/import', [\App\Http\Controllers\Api\TmdbController::class, 'import']);
     });
+
+    // Admin-only endpoints
+    Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::post('/movies', [\App\Http\Controllers\Api\AdminMovieController::class, 'store']);
+        Route::put('/movies/{movie}', [\App\Http\Controllers\Api\AdminMovieController::class, 'update']);
+        Route::delete('/movies/{movie}', [\App\Http\Controllers\Api\AdminMovieController::class, 'destroy']);
+        Route::post('/movies/{movie}/cover', [\App\Http\Controllers\Api\AdminMovieController::class, 'uploadCover']);
+        Route::post('/movies/{movie}/backdrop', [\App\Http\Controllers\Api\AdminMovieController::class, 'uploadBackdrop']);
+        Route::get('/export', [\App\Http\Controllers\Api\AdminMovieController::class, 'export']);
+    });
 });
