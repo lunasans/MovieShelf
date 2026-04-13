@@ -21,15 +21,15 @@
         @if($movie->tag)
         @php
             $tagMap = [
-                'DVD'       => ['label' => 'DVD',     'bg' => 'bg-orange-500'],
-                'BluRay'    => ['label' => 'Blu-ray', 'bg' => 'bg-blue-500'],
-                '4K'        => ['label' => '4K',      'bg' => 'bg-cyan-500'],
-                'Streaming' => ['label' => 'Stream',  'bg' => 'bg-green-500'],
-                'Digital'   => ['label' => 'Digital', 'bg' => 'bg-purple-500'],
-                'VHS'       => ['label' => 'VHS',     'bg' => 'bg-gray-500'],
-                'Leihe'     => ['label' => 'Leihe',   'bg' => 'bg-yellow-500'],
+                'DVD'       => ['label' => 'DVD',     'bg' => 'bg-orange-800/80'],
+                'BluRay'    => ['label' => 'Blu-ray', 'bg' => 'bg-blue-800/80'],
+                '4K'        => ['label' => '4K',      'bg' => 'bg-cyan-800/80'],
+                'Streaming' => ['label' => 'Stream',  'bg' => 'bg-emerald-800/80'],
+                'Digital'   => ['label' => 'Digital', 'bg' => 'bg-violet-800/80'],
+                'VHS'       => ['label' => 'VHS',     'bg' => 'bg-stone-600/80'],
+                'Leihe'     => ['label' => 'Leihe',   'bg' => 'bg-amber-800/80'],
             ];
-            $tag = $tagMap[$movie->tag] ?? ['label' => $movie->tag, 'bg' => 'bg-white/50'];
+            $tag = $tagMap[$movie->tag] ?? ['label' => $movie->tag, 'bg' => 'bg-black/50'];
         @endphp
         <div class="absolute top-[12px] -right-[28px] z-20 w-[100px] py-[3px] {{ $tag['bg'] }} rotate-45 text-center shadow-md pointer-events-none">
             <span class="text-[7px] font-black text-white uppercase tracking-wider drop-shadow-sm">{{ $tag['label'] }}</span>
