@@ -313,33 +313,33 @@
 
 
 {{-- ═══════════════════════════════════════════════════════ DESKTOP APP ═══════════════════════════════════════════════════════ --}}
-<section class="section-sm" style="border-top:1px solid var(--border); background: rgba(225, 29, 72, 0.02);">
+<section class="section-sm beta-section">
     <div class="container">
-        <div class="beta-inner" style="background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(225,29,72,0.05) 100%); border: 1px solid rgba(225,29,72,0.1);">
+        <div class="beta-inner">
             <div class="text">
-                <div class="pulse-dot"><span style="background: #fb7185; box-shadow: 0 0 10px #fb7185;"></span>Desktop App</div>
+                <div class="pulse-dot"><span></span>Desktop App</div>
                 <h2 class="display" style="font-size:1.6rem;margin:.25rem 0 .4rem">MovieShelf für Desktop</h2>
                 <p>Erlebe deine Filmsammlung nativ auf Windows. Mit Offline-Zugriff, Tray-Synchronisation und maximaler Performance am großen Bildschirm.</p>
                 
                 <div style="margin-top: 1.5rem; display: flex; gap: 1.5rem; flex-wrap: wrap;">
                     <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; tracking: 0.1em;">
-                        <i class="bi bi-lightning-charge text-rose-500"></i> Native Speed
+                        <i class="bi bi-lightning-charge" style="color: var(--accent)"></i> Native Speed
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; tracking: 0.1em;">
-                        <i class="bi bi-cloud-slash text-rose-500"></i> Offline Modus
+                        <i class="bi bi-cloud-slash" style="color: var(--accent)"></i> Offline Modus
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--muted); font-weight: 600; text-transform: uppercase; tracking: 0.1em;">
-                        <i class="bi bi-sync text-rose-500"></i> Cloud Sync
+                        <i class="bi bi-sync" style="color: var(--accent)"></i> Cloud Sync
                     </div>
                 </div>
             </div>
             <div class="beta-actions">
                 @if($latestDesktop)
-                    <a href="{{ $latestDesktop->download_url }}" class="btn-primary" style="padding: 1rem 2rem; display: inline-flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(225,29,72,0.3);">
+                    <a href="{{ $latestDesktop->download_url }}" class="btn-primary" style="padding: 0.8rem 1.8rem; display: inline-flex; align-items: center; gap: 10px; width: auto; box-shadow: 0 10px 20px rgba(204, 75, 6, 0.15);">
                         <i class="bi bi-download"></i> Download {{ $latestDesktop->version }} (.exe)
                     </a>
                 @else
-                    <span class="btn-outline" style="opacity: 0.5; cursor: not-allowed;">
+                    <span class="btn-outline" style="opacity: 0.5; cursor: not-allowed; width: auto; padding: 0.8rem 1.8rem;">
                         Demnächst verfügbar
                     </span>
                 @endif
