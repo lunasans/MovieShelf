@@ -101,7 +101,7 @@
         @php
             $hasActiveFilters = request()->hasAny(['genre','year_from','year_to','rating_min','runtime_max']);
         @endphp
-        <div class="px-12 md:px-20">
+        <div class="px-12 md:px-20 mt-6">
             <form action="{{ route('dashboard') }}" method="GET"
                   class="glass border {{ $hasActiveFilters ? 'border-blue-500/30' : 'border-white/10' }} rounded-2xl p-4 flex flex-wrap gap-3 items-end">
                 <input type="hidden" name="q" value="{{ request('q') }}">

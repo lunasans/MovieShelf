@@ -396,7 +396,7 @@
                 $hasActiveFilters = request()->hasAny(['genre','year_from','year_to','rating_min','runtime_max']);
             @endphp
             <form action="{{ route('dashboard') }}" method="GET"
-                  class="px-2 glass border {{ $hasActiveFilters ? 'border-blue-500/30' : 'border-white/10' }} rounded-2xl p-4 flex flex-wrap gap-3 items-end">
+                  class="px-2 mt-6 glass border {{ $hasActiveFilters ? 'border-blue-500/30' : 'border-white/10' }} rounded-2xl p-4 flex flex-wrap gap-3 items-end">
                 <input type="hidden" name="q" value="{{ request('q') }}">
                 <input type="hidden" name="type" value="{{ request('type') }}">
 
