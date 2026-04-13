@@ -29,6 +29,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Track last login time for tenant inactivity warnings
+        if (tenancy()->initialized && tenancy()->tenant) {
+            tenancy()->tenant->update(['last_login_at' => now()]);
+        }
+
         // Central domain login is only for the Global Admin.
         // Tenant users log in via their own subdomain.
         return redirect()->intended(route('cadmin.dashboard', absolute: false));

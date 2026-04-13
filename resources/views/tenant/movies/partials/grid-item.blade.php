@@ -9,7 +9,13 @@
                 <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
             @else
-                <i class="bi bi-film text-4xl text-white/5"></i>
+                <div class="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-4 text-center">
+                    <i class="bi bi-film text-3xl text-white/15 mb-3"></i>
+                    <span class="text-[11px] font-black text-white/50 uppercase tracking-tight leading-snug line-clamp-4">{{ $movie->title }}</span>
+                    @if($movie->year)
+                        <span class="text-[9px] text-white/25 font-bold mt-2">{{ $movie->year }}</span>
+                    @endif
+                </div>
             @endif
         </div>
 

@@ -1,6 +1,16 @@
 <div @click="window.location.href = '{{ route('movies.show', $movie) }}'" 
      class="aspect-[2/3] relative rounded-[2rem] overflow-hidden glass-streaming border border-white/10 group cursor-pointer hover:border-blue-500/50 hover:scale-105 transition-all duration-500 shadow-2xl">
+    @if($movie->cover_url)
     <img src="{{ $movie->cover_url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+    @else
+    <div class="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-4 text-center">
+        <i class="bi bi-film text-3xl text-white/15 mb-3"></i>
+        <span class="text-[11px] font-black text-white/50 uppercase tracking-tight leading-snug line-clamp-4">{{ $movie->title }}</span>
+        @if($movie->year)
+            <span class="text-[9px] text-white/25 font-bold mt-2">{{ $movie->year }}</span>
+        @endif
+    </div>
+    @endif
     {{-- Permanent subtle bottom shadow for legibility on light covers --}}
     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-0"></div>
     {{-- Hover gradient --}}

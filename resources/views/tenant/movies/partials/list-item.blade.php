@@ -7,8 +7,9 @@
         @if($movie->cover_url)
             <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
         @else
-            <div class="w-full h-full bg-gray-900 flex items-center justify-center">
-                <i class="bi bi-film text-xl text-white/10"></i>
+            <div class="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-2 text-center">
+                <i class="bi bi-film text-lg text-white/15 mb-1"></i>
+                <span class="text-[8px] font-black text-white/40 uppercase tracking-tight leading-snug line-clamp-3">{{ $movie->title }}</span>
             </div>
         @endif
         <!-- Watched Badge -->

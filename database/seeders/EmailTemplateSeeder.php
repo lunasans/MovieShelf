@@ -77,5 +77,48 @@ Danke,
 {{ config(\'app.name\') }}',
             'variables_hint' => '$tenantName, $deletionUrl'
         ]);
+        EmailTemplate::updateOrCreate(['slug' => 'tenant_deletion_warning'], [
+            'name' => 'Lösch-Warnung (50 Tage inaktiv)',
+            'subject' => 'Wichtig: Dein MovieShelf wird in {{ $daysUntilDeletion }} Tagen gelöscht!',
+            'content' => '<x-mail::message>
+# Wichtig: Dein MovieShelf wird gelöscht!
+
+Dein MovieShelf wurde seit **{{ $inactiveDays }} Tagen** nicht mehr genutzt und wird in **{{ $daysUntilDeletion }} Tagen** automatisch gelöscht.
+
+Melde dich einmal an, um dein MovieShelf zu behalten:
+
+<x-mail::button :url="{{ $loginUrl }}">
+Jetzt anmelden & Shelf behalten
+</x-mail::button>
+
+Falls du dein MovieShelf nicht mehr benötigst, musst du nichts tun – es wird automatisch entfernt.
+
+Danke,<br>
+{{ config(\'app.name\') }}
+</x-mail::message>',
+            'variables_hint' => '$tenantId, $inactiveDays, $daysUntilDeletion, $loginUrl'
+        ]);
+
+        EmailTemplate::updateOrCreate(['slug' => 'tenant_inactivity_warning'], [
+            'name' => 'Inaktivitäts-Warnung',
+            'subject' => 'Dein MovieShelf wartet auf dich!',
+            'content' => '<x-mail::message>
+# Alles gut bei dir?
+
+Wir haben bemerkt, dass dein MovieShelf seit **{{ $inactiveDays }} Tagen** nicht besucht wurde.
+
+Deine Filmsammlung wartet auf dich – vielleicht ist es Zeit für einen neuen Filmabend?
+
+<x-mail::button :url="{{ $loginUrl }}">
+Zum MovieShelf
+</x-mail::button>
+
+Falls du Fragen oder Probleme hast, melde dich einfach bei uns.
+
+Bis bald,<br>
+{{ config(\'app.name\') }}
+</x-mail::message>',
+            'variables_hint' => '$tenantId, $inactiveDays, $loginUrl'
+        ]);
     }
 }

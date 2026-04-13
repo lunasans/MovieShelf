@@ -56,6 +56,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'email',
             'activation_token',
             'activated_at',
+            'last_login_at',
         ];
     }
 
@@ -63,6 +64,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     {
         return [
             'activated_at' => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
 
