@@ -31,7 +31,7 @@
             ];
             $tag = $tagMap[$movie->tag] ?? ['label' => $movie->tag, 'bg' => 'bg-white/50'];
         @endphp
-        <div class="absolute top-[10px] -right-[18px] z-20 w-[72px] py-[3px] {{ $tag['bg'] }} rotate-45 text-center shadow-md pointer-events-none">
+        <div class="absolute top-[12px] -right-[28px] z-20 w-[100px] py-[3px] {{ $tag['bg'] }} rotate-45 text-center shadow-md pointer-events-none">
             <span class="text-[7px] font-black text-white uppercase tracking-wider drop-shadow-sm">{{ $tag['label'] }}</span>
         </div>
         @endif
