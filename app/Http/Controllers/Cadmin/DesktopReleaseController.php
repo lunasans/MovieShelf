@@ -22,11 +22,26 @@ class DesktopReleaseController extends Controller
 
     public function store(Request $request)
     {
+        // Prüfe ob PHP die Datei wegen post_max_size still verworfen hat
+        if ($request->server('CONTENT_LENGTH') > 0 && empty($_FILES) && empty($request->all())) {
+            return back()->withErrors(['exe_file' => 'Die Datei ist zu groß. Bitte prüfe die PHP-Einstellung post_max_size.']);
+        }
+
         $request->validate([
             'version'      => 'required|string|unique:desktop_releases,version',
             'changelog'    => 'nullable|string',
             'download_url' => 'nullable|url',
-            'exe_file'     => 'nullable|file|max:102400', // max 100MB
+            'exe_file'     => [
+                'nullable',
+                'file',
+                'max:204800', // 200MB
+                function ($attribute, $value, $fail) {
+                    $ext = strtolower($value->getClientOriginalExtension());
+                    if (!in_array($ext, ['exe', 'msi', 'zip'])) {
+                        $fail('Erlaubte Dateitypen: .exe, .msi, .zip');
+                    }
+                },
+            ],
             'is_public'    => 'nullable|boolean',
         ]);
 
@@ -35,11 +50,11 @@ class DesktopReleaseController extends Controller
 
         if ($request->hasFile('exe_file')) {
             $file = $request->file('exe_file');
-            $filename = 'MovieShelf_v' . $request->version . '.' . $file->getClientOriginalExtension();
+            $filename = 'MovieShelf_v' . preg_replace('/[^a-zA-Z0-9.\-_]/', '_', $request->version)
+                        . '.' . $file->getClientOriginalExtension();
             $path = $file->storeAs('releases', $filename, 'public');
             $data['file_path'] = $path;
-            
-            // Falls keine externe URL angegeben wurde, generieren wir die interne
+
             if (!$data['download_url']) {
                 $data['download_url'] = Storage::disk('public')->url($path);
             }

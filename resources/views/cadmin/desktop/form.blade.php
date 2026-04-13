@@ -40,22 +40,38 @@
             </div>
 
             <!-- EXE Upload -->
-            <div class="space-y-2">
-                <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Installer Upload (.exe)</label>
+            <div class="space-y-2" x-data="{ fileName: null }">
+                <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Installer Upload (.exe / .msi / .zip)</label>
                 <div class="relative group">
-                    <input type="file" name="exe_file" class="hidden" id="exe_file">
-                    <label for="exe_file" class="flex items-center justify-center w-full h-32 border-2 border-dashed border-white/10 rounded-3xl hover:border-rose-500/30 hover:bg-rose-500/5 transition-all cursor-pointer group">
+                    <input type="file" name="exe_file" accept=".exe,.msi,.zip" class="hidden" id="exe_file"
+                           @change="fileName = $event.target.files[0]?.name ?? null">
+                    <label for="exe_file" class="flex items-center justify-center w-full h-32 border-2 border-dashed border-white/10 rounded-3xl hover:border-rose-500/30 hover:bg-rose-500/5 transition-all cursor-pointer">
                         <div class="text-center">
-                            <i class="bi bi-cloud-arrow-up text-3xl text-gray-400 group-hover:text-rose-500 transition-colors"></i>
-                            <p class="mt-2 text-xs text-gray-500 font-bold uppercase tracking-widest">Klicken zum Hochladen</p>
-                            <p class="text-[10px] text-gray-600 mt-1">Maximale Dateigröße: 100MB</p>
+                            <template x-if="!fileName">
+                                <div>
+                                    <i class="bi bi-cloud-arrow-up text-3xl text-gray-400"></i>
+                                    <p class="mt-2 text-xs text-gray-500 font-bold uppercase tracking-widest">Klicken zum Hochladen</p>
+                                    <p class="text-[10px] text-gray-600 mt-1">Erlaubt: .exe, .msi, .zip · Max. 200MB</p>
+                                </div>
+                            </template>
+                            <template x-if="fileName">
+                                <div>
+                                    <i class="bi bi-file-earmark-check text-3xl text-emerald-500"></i>
+                                    <p class="mt-2 text-xs text-emerald-400 font-bold" x-text="fileName"></p>
+                                    <p class="text-[10px] text-gray-600 mt-1">Klicken um Datei zu ändern</p>
+                                </div>
+                            </template>
                         </div>
                     </label>
                 </div>
+                @error('exe_file')
+                    <p class="text-xs text-rose-400 font-bold px-2"><i class="bi bi-exclamation-triangle-fill"></i> {{ $message }}</p>
+                @enderror
                 @if($release->file_path)
-                    <p class="text-[10px] text-emerald-500/60 font-medium px-2">✓ Datei bereits hochgeladen: {{ basename($release->file_path) }}</p>
+                    <p class="text-[10px] text-emerald-500/60 font-medium px-2">✓ Bereits hochgeladen: {{ basename($release->file_path) }}</p>
                 @endif
             </div>
+
 
             <!-- Changelog -->
             <div class="space-y-2">
