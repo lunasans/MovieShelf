@@ -5,24 +5,22 @@
     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-0"></div>
     {{-- Hover gradient --}}
     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-    <!-- Media Tag Badge (Top Right) -->
+    <!-- Media Tag Banderole (Top Right Corner) -->
     @if($movie->tag)
     @php
         $tagMap = [
-            'DVD'       => ['icon' => 'bi-disc',             'bg' => 'bg-orange-500/90',  'title' => 'DVD'],
-            'BluRay'    => ['icon' => 'bi-disc-fill',        'bg' => 'bg-blue-500/90',    'title' => 'Blu-ray'],
-            '4K'        => ['icon' => 'bi-badge-4k-fill',    'bg' => 'bg-cyan-500/90',    'title' => '4K UHD'],
-            'Streaming' => ['icon' => 'bi-wifi',             'bg' => 'bg-green-500/90',   'title' => 'Streaming'],
-            'Digital'   => ['icon' => 'bi-cloud-fill',       'bg' => 'bg-purple-500/90',  'title' => 'Digital'],
-            'VHS'       => ['icon' => 'bi-camera-video-fill','bg' => 'bg-gray-500/90',    'title' => 'VHS'],
-            'Leihe'     => ['icon' => 'bi-bag-fill',         'bg' => 'bg-yellow-500/90',  'title' => 'Leihe'],
+            'DVD'       => ['label' => 'DVD',     'bg' => 'bg-orange-500'],
+            'BluRay'    => ['label' => 'Blu-ray', 'bg' => 'bg-blue-500'],
+            '4K'        => ['label' => '4K UHD',  'bg' => 'bg-cyan-500'],
+            'Streaming' => ['label' => 'Stream',  'bg' => 'bg-green-500'],
+            'Digital'   => ['label' => 'Digital', 'bg' => 'bg-purple-500'],
+            'VHS'       => ['label' => 'VHS',     'bg' => 'bg-gray-500'],
+            'Leihe'     => ['label' => 'Leihe',   'bg' => 'bg-yellow-500'],
         ];
-        $tag = $tagMap[$movie->tag] ?? ['icon' => 'bi-tag-fill', 'bg' => 'bg-white/20', 'title' => $movie->tag];
+        $tag = $tagMap[$movie->tag] ?? ['label' => $movie->tag, 'bg' => 'bg-white/50'];
     @endphp
-    <div class="absolute top-3 right-3 z-20">
-        <div class="{{ $tag['bg'] }} backdrop-blur-md w-7 h-7 rounded-lg border border-white/20 flex items-center justify-center shadow-xl" title="{{ $tag['title'] }}">
-            <i class="bi {{ $tag['icon'] }} text-[13px] text-white leading-none"></i>
-        </div>
+    <div class="absolute top-[18px] -right-[30px] z-20 w-[115px] py-[5px] {{ $tag['bg'] }} rotate-45 text-center shadow-lg pointer-events-none">
+        <span class="text-[9px] font-black text-white uppercase tracking-widest drop-shadow-sm">{{ $tag['label'] }}</span>
     </div>
     @endif
     <div class="absolute bottom-0 left-0 right-0 p-5 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 text-center">

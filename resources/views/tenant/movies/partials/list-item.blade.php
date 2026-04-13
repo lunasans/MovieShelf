@@ -17,24 +17,22 @@
                 <i class="bi bi-eye-fill text-white text-[10px] leading-none m-0 p-0"></i>
             </div>
         </div>
-        <!-- Media Tag Badge -->
+        <!-- Media Tag Banderole (Top Right Corner) -->
         @if($movie->tag)
         @php
             $tagMap = [
-                'DVD'       => ['icon' => 'bi-disc',             'bg' => 'bg-orange-500/90',  'title' => 'DVD'],
-                'BluRay'    => ['icon' => 'bi-disc-fill',        'bg' => 'bg-blue-500/90',    'title' => 'Blu-ray'],
-                '4K'        => ['icon' => 'bi-badge-4k-fill',    'bg' => 'bg-cyan-500/90',    'title' => '4K UHD'],
-                'Streaming' => ['icon' => 'bi-wifi',             'bg' => 'bg-green-500/90',   'title' => 'Streaming'],
-                'Digital'   => ['icon' => 'bi-cloud-fill',       'bg' => 'bg-purple-500/90',  'title' => 'Digital'],
-                'VHS'       => ['icon' => 'bi-camera-video-fill','bg' => 'bg-gray-500/90',    'title' => 'VHS'],
-                'Leihe'     => ['icon' => 'bi-bag-fill',         'bg' => 'bg-yellow-500/90',  'title' => 'Leihe'],
+                'DVD'       => ['label' => 'DVD',     'bg' => 'bg-orange-500'],
+                'BluRay'    => ['label' => 'Blu-ray', 'bg' => 'bg-blue-500'],
+                '4K'        => ['label' => '4K',      'bg' => 'bg-cyan-500'],
+                'Streaming' => ['label' => 'Stream',  'bg' => 'bg-green-500'],
+                'Digital'   => ['label' => 'Digital', 'bg' => 'bg-purple-500'],
+                'VHS'       => ['label' => 'VHS',     'bg' => 'bg-gray-500'],
+                'Leihe'     => ['label' => 'Leihe',   'bg' => 'bg-yellow-500'],
             ];
-            $tag = $tagMap[$movie->tag] ?? ['icon' => 'bi-tag-fill', 'bg' => 'bg-white/20', 'title' => $movie->tag];
+            $tag = $tagMap[$movie->tag] ?? ['label' => $movie->tag, 'bg' => 'bg-white/50'];
         @endphp
-        <div class="absolute bottom-2 right-2">
-            <div class="{{ $tag['bg'] }} backdrop-blur-md w-6 h-6 rounded-md border border-white/20 flex items-center justify-center shadow-lg" title="{{ $tag['title'] }}">
-                <i class="bi {{ $tag['icon'] }} text-[11px] text-white leading-none"></i>
-            </div>
+        <div class="absolute top-[10px] -right-[18px] z-20 w-[72px] py-[3px] {{ $tag['bg'] }} rotate-45 text-center shadow-md pointer-events-none">
+            <span class="text-[7px] font-black text-white uppercase tracking-wider drop-shadow-sm">{{ $tag['label'] }}</span>
         </div>
         @endif
     </div>
