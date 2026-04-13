@@ -7,6 +7,7 @@ use App\Models\Faq;
 use App\Models\LandingPage;
 use App\Models\LandingScreenshot;
 use App\Models\Tenant;
+use App\Models\DesktopRelease;
 
 class LandingController extends Controller
 {
@@ -15,8 +16,9 @@ class LandingController extends Controller
         $faqs        = Faq::where('is_active', true)->orderBy('sort_order')->get();
         $screenshots = LandingScreenshot::where('is_active', true)->orderBy('sort_order')->get();
         $navPages    = LandingPage::where('is_active', true)->where('show_in_nav', true)->orderBy('sort_order')->get();
+        $latestDesktop = DesktopRelease::latestPublic();
 
-        return view('central.landing', compact('faqs', 'screenshots', 'navPages'));
+        return view('central.landing', compact('faqs', 'screenshots', 'navPages', 'latestDesktop'));
     }
 
     public function page(string $slug)

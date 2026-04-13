@@ -9,6 +9,12 @@ class EnsureCentralAdmin
 {
     public function handle(Request $request, Closure $next)
     {
+        // 1. Erst prüfen wir, ob wir uns auf einer zentralen Domain befinden
+        $centralDomains = config('tenancy.central_domains', []);
+        if (! in_array($request->getHost(), $centralDomains)) {
+            abort(404); // So tun als gäbe es die Seite auf Subdomains nicht
+        }
+
         if (! auth()->check()) {
             abort(403, 'Zugriff verweigert.');
         }
