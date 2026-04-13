@@ -100,6 +100,7 @@ Route::middleware([
     Route::get('/impressum', [\App\Http\Controllers\ImpressumController::class, 'index'])->name('impressum');
 
     Route::get('/statistics', [\App\Http\Controllers\StatsController::class, 'index'])->name('statistics');
+    Route::get('/kollektion', [\App\Http\Controllers\PublicCollectionController::class, 'index'])->name('collection.index');
     Route::post('/theme/save', [\App\Http\Controllers\ThemeController::class, 'save'])->name('theme.save');
 
     // Cadmin Impersonation

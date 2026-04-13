@@ -102,11 +102,12 @@
                     this.loading = true;
                     this.error = null;
 
-                    const type = new URLSearchParams(window.location.search).get('type') || '';
-                    const q = new URLSearchParams(window.location.search).get('q') || '';
+                    const params = new URLSearchParams(window.location.search);
+                    params.delete('movie');
+                    params.delete('page');
 
                     try {
-                        const response = await fetch(`/movies/random?type=${encodeURIComponent(type)}&q=${encodeURIComponent(q)}`, {
+                        const response = await fetch(`/movies/random?${params.toString()}`, {
                             headers: { 'Accept': 'application/json' }
                         });
                         const data = await response.json();
@@ -360,15 +361,15 @@
                         @endforeach
                     </div>
 
-                <!-- Gambling Button / View Mode Toggle -->
+                <!-- Random + View Mode Toggle -->
                 <div class="flex gap-4 items-center shrink-0">
                     <button
                         @click="fetchRandom()"
                         class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl shadow-lg shadow-purple-900/40 transition-all font-bold text-xs group active:scale-95"
-                        title="{{ __('Random Movie') }}"
+                        title="{{ __('Zufälliger Film') }}"
                     >
                         <i class="bi bi-dice-5 text-lg group-hover:rotate-45 transition-transform duration-500"></i>
-                        <span class="hidden sm:inline uppercase tracking-widest">{{ __('Lucky Dip') }}</span>
+                        <span class="hidden sm:inline uppercase tracking-widest">Was soll ich schauen?</span>
                     </button>
 
                     <div class="flex gap-2 bg-white/5 border border-white/10 p-1.5 rounded-2xl">
@@ -387,6 +388,85 @@
                             <i class="bi bi-list-ul"></i>
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Advanced Filter Panel -->
+            @php
+                $activeFilters = array_filter([
+                    request('genre'), request('year_from'), request('year_to'),
+                    request('rating_min'), request('runtime_max'),
+                ]);
+                $activeFilterCount = count($activeFilters);
+            @endphp
+            <div x-data="{ open: {{ $activeFilterCount > 0 ? 'true' : 'false' }} }" class="px-2">
+                <button @click="open = !open"
+                    class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border"
+                    :class="open ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'"
+                >
+                    <i class="bi bi-funnel-fill"></i>
+                    <span class="uppercase tracking-widest">Erweiterte Filter</span>
+                    @if($activeFilterCount > 0)
+                        <span class="bg-blue-500 text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center leading-none">{{ $activeFilterCount }}</span>
+                    @endif
+                    <i class="bi bi-chevron-down text-[10px] transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+
+                <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2" class="mt-3">
+                    <form action="{{ route('dashboard') }}" method="GET" class="glass border border-white/10 rounded-2xl p-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <input type="hidden" name="q" value="{{ request('q') }}">
+                        <input type="hidden" name="type" value="{{ request('type') }}">
+
+                        {{-- Genre --}}
+                        <div>
+                            <label class="block text-[9px] font-black text-white/30 uppercase tracking-widest mb-2">Genre</label>
+                            <select name="genre" class="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-blue-500/50 appearance-none cursor-pointer">
+                                <option value="">Alle</option>
+                                @foreach($genres as $genre)
+                                    <option value="{{ $genre }}" {{ request('genre') === $genre ? 'selected' : '' }} class="bg-zinc-900">{{ $genre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Jahr von --}}
+                        <div>
+                            <label class="block text-[9px] font-black text-white/30 uppercase tracking-widest mb-2">Jahr von</label>
+                            <input type="number" name="year_from" value="{{ request('year_from') }}" placeholder="1900" min="1900" max="{{ date('Y') }}"
+                                class="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                        </div>
+
+                        {{-- Jahr bis --}}
+                        <div>
+                            <label class="block text-[9px] font-black text-white/30 uppercase tracking-widest mb-2">Jahr bis</label>
+                            <input type="number" name="year_to" value="{{ request('year_to') }}" placeholder="{{ date('Y') }}" min="1900" max="{{ date('Y') }}"
+                                class="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                        </div>
+
+                        {{-- Min. Bewertung --}}
+                        <div>
+                            <label class="block text-[9px] font-black text-white/30 uppercase tracking-widest mb-2">Mind. Bewertung</label>
+                            <input type="number" name="rating_min" value="{{ request('rating_min') }}" placeholder="0 – 10" min="0" max="10" step="0.5"
+                                class="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                        </div>
+
+                        {{-- Max. Laufzeit --}}
+                        <div>
+                            <label class="block text-[9px] font-black text-white/30 uppercase tracking-widest mb-2">Max. Laufzeit (Min.)</label>
+                            <input type="number" name="runtime_max" value="{{ request('runtime_max') }}" placeholder="z.B. 120" min="1"
+                                class="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                        </div>
+
+                        {{-- Buttons --}}
+                        <div class="col-span-2 md:col-span-3 lg:col-span-5 flex gap-3 pt-1">
+                            <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/20">
+                                <i class="bi bi-funnel mr-1"></i> Anwenden
+                            </button>
+                            <a href="{{ route('dashboard', array_filter(['q' => request('q'), 'type' => request('type')])) }}"
+                               class="px-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all">
+                                <i class="bi bi-x-lg mr-1"></i> Zurücksetzen
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
 

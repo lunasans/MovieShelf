@@ -23,7 +23,8 @@ class MovieController extends Controller
 
         $query = Movie::query();
 
-        if (! $request->filled('q') && ! $request->filled('type')) {
+        $hasFilters = $request->hasAny(['q', 'type', 'genre', 'year_from', 'year_to', 'rating_min', 'runtime_max']);
+        if (! $hasFilters) {
             $query->whereNull('boxset_parent');
         }
 
@@ -41,9 +42,33 @@ class MovieController extends Controller
             $query->where('collection_type', $request->type);
         }
 
+        if ($request->filled('genre')) {
+            $query->where('genre', 'like', '%' . $request->genre . '%');
+        }
+
+        if ($request->filled('year_from')) {
+            $query->where('year', '>=', (int) $request->year_from);
+        }
+
+        if ($request->filled('year_to')) {
+            $query->where('year', '<=', (int) $request->year_to);
+        }
+
+        if ($request->filled('rating_min')) {
+            $query->whereNotNull('rating')->where('rating', '>=', (float) $request->rating_min);
+        }
+
+        if ($request->filled('runtime_max')) {
+            $query->whereNotNull('runtime')->where('runtime', '<=', (int) $request->runtime_max);
+        }
+
         $perPage = Setting::get('items_per_page', 20);
         $movies = $query->withCount('boxsetChildren')->orderBy('title')->paginate($perPage)->withQueryString();
         $collectionTypes = Movie::distinct()->whereNotNull('collection_type')->orderBy('collection_type')->pluck('collection_type');
+
+        $genres = Movie::whereNotNull('genre')->pluck('genre')
+            ->flatMap(fn($g) => array_map('trim', explode(',', $g)))
+            ->filter()->unique()->sort()->values();
 
         $latestCount = (int) Setting::where('key', 'latest_films_count')->value('value') ?: 15;
         $latestMovies = Movie::whereNull('boxset_parent')->withCount('boxsetChildren')->orderBy('created_at', 'desc')->limit($latestCount)->get();
@@ -73,6 +98,7 @@ class MovieController extends Controller
         return view('tenant.dashboard', compact(
             'movies',
             'collectionTypes',
+            'genres',
             'latestMovies',
             'defaultViewMode',
             'genreRows',
@@ -123,6 +149,26 @@ class MovieController extends Controller
 
         if ($request->filled('type')) {
             $query->where('collection_type', $request->type);
+        }
+
+        if ($request->filled('genre')) {
+            $query->where('genre', 'like', '%' . $request->genre . '%');
+        }
+
+        if ($request->filled('year_from')) {
+            $query->where('year', '>=', (int) $request->year_from);
+        }
+
+        if ($request->filled('year_to')) {
+            $query->where('year', '<=', (int) $request->year_to);
+        }
+
+        if ($request->filled('rating_min')) {
+            $query->whereNotNull('rating')->where('rating', '>=', (float) $request->rating_min);
+        }
+
+        if ($request->filled('runtime_max')) {
+            $query->whereNotNull('runtime')->where('runtime', '<=', (int) $request->runtime_max);
         }
 
         $movie = $query->inRandomOrder()->first();
