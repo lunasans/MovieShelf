@@ -93,6 +93,16 @@ Route::middleware(['web', 'auth', 'central.admin'])->group(function () {
             Route::resource('pages', \App\Http\Controllers\Cadmin\LandingPageController::class);
         });
 
+        // Desktop App Releases
+        Route::resource('desktop', \App\Http\Controllers\Cadmin\DesktopReleaseController::class)->names([
+            'index'   => 'desktop.index',
+            'create'  => 'desktop.create',
+            'store'   => 'desktop.store',
+            'edit'    => 'desktop.edit',
+            'update'  => 'desktop.update',
+            'destroy' => 'desktop.destroy',
+        ]);
+
         // Email Templates
         Route::get('/email-templates', [\App\Http\Controllers\Cadmin\EmailTemplateController::class, 'index'])->name('email-templates.index');
         Route::get('/email-templates/{template}/edit', [\App\Http\Controllers\Cadmin\EmailTemplateController::class, 'edit'])->name('email-templates.edit');
