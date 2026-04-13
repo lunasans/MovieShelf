@@ -131,6 +131,12 @@
                     <span class="font-bold text-sm">System-Logs</span>
                 </a>
 
+                <a href="{{ route('cadmin.desktop.index') }}"
+                    class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('cadmin.desktop.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                    <i class="bi bi-pc-display-horizontal"></i>
+                    <span class="font-bold text-sm">Desktop App</span>
+                </a>
+
                 <div class="pt-6 pb-2 px-6">
                     <span class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Landingpage</span>
                 </div>
