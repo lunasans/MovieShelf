@@ -83,6 +83,7 @@ class MovieController extends Controller
             'title' => 'required|string|max:255',
             'year' => 'required|integer',
             'collection_type' => 'required|string',
+            'tag' => 'nullable|string|max:50',
             'genre' => 'nullable|string',
             'runtime' => 'nullable|integer',
             'rating' => 'nullable|numeric|min:0|max:100',

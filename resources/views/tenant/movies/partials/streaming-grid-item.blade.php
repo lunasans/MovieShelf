@@ -5,6 +5,26 @@
     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 transition-opacity duration-500 group-hover:opacity-0"></div>
     {{-- Hover gradient --}}
     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <!-- Media Tag Badge (Top Right) -->
+    @if($movie->tag)
+    @php
+        $tagMap = [
+            'DVD'       => ['icon' => 'bi-disc',             'bg' => 'bg-orange-500/90',  'title' => 'DVD'],
+            'BluRay'    => ['icon' => 'bi-disc-fill',        'bg' => 'bg-blue-500/90',    'title' => 'Blu-ray'],
+            '4K'        => ['icon' => 'bi-badge-4k-fill',    'bg' => 'bg-cyan-500/90',    'title' => '4K UHD'],
+            'Streaming' => ['icon' => 'bi-wifi',             'bg' => 'bg-green-500/90',   'title' => 'Streaming'],
+            'Digital'   => ['icon' => 'bi-cloud-fill',       'bg' => 'bg-purple-500/90',  'title' => 'Digital'],
+            'VHS'       => ['icon' => 'bi-camera-video-fill','bg' => 'bg-gray-500/90',    'title' => 'VHS'],
+            'Leihe'     => ['icon' => 'bi-bag-fill',         'bg' => 'bg-yellow-500/90',  'title' => 'Leihe'],
+        ];
+        $tag = $tagMap[$movie->tag] ?? ['icon' => 'bi-tag-fill', 'bg' => 'bg-white/20', 'title' => $movie->tag];
+    @endphp
+    <div class="absolute top-3 right-3 z-20">
+        <div class="{{ $tag['bg'] }} backdrop-blur-md w-7 h-7 rounded-lg border border-white/20 flex items-center justify-center shadow-xl" title="{{ $tag['title'] }}">
+            <i class="bi {{ $tag['icon'] }} text-[13px] text-white leading-none"></i>
+        </div>
+    </div>
+    @endif
     <div class="absolute bottom-0 left-0 right-0 p-5 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 text-center">
          <h4 class="text-[10px] font-black text-white uppercase tracking-wider mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] truncate">{{ $movie->title }}</h4>
          <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">

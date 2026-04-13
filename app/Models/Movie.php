@@ -28,6 +28,7 @@ class Movie extends Model
         'user_id',
         'is_deleted',
         'view_count',
+        'tag',
         'tmdb_id',
         'tmdb_type',
         'tmdb_json',

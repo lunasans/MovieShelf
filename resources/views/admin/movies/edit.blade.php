@@ -108,6 +108,21 @@
                     </div>
 
                     <div>
+                        <label for="tag" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Medium / Format</label>
+                        <select name="tag" id="tag" x-model="formData.tag"
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none cursor-pointer font-bold">
+                            <option value="">— Kein Tag —</option>
+                            <option value="DVD">DVD</option>
+                            <option value="BluRay">Blu-ray</option>
+                            <option value="4K">4K UHD</option>
+                            <option value="Streaming">Streaming</option>
+                            <option value="Digital">Digital</option>
+                            <option value="VHS">VHS</option>
+                            <option value="Leihe">Leihe</option>
+                        </select>
+                    </div>
+
+                    <div>
                         <label for="genre" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Genre / Kategorien</label>
                         <input type="text" name="genre" id="genre" x-model="formData.genre"
                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
@@ -391,6 +406,7 @@
                     title: {!! json_encode(old('title', $movie->title), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
                     year: {!! json_encode(old('year', $movie->year), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
                     collection_type: {!! json_encode(old('collection_type', $movie->collection_type), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    tag: {!! json_encode(old('tag', $movie->tag), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
                     genre: {!! json_encode(old('genre', $movie->genre), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
                     runtime: {!! json_encode(old('runtime', $movie->runtime), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
                     rating: {!! json_encode(old('rating', $movie->rating ? round($movie->rating, 1) : null), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
