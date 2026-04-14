@@ -36,9 +36,9 @@ class S3TenancyBootstrapper implements TenancyBootstrapper
         Config::set('filesystems.disks.s3.root', $prefix);
         Config::set('filesystems.disks.r2.root', $prefix);
 
-        // Update the public URL to include the tenant folder
-        Config::set('filesystems.disks.s3.url', $baseMediaUrl . '/' . $prefix);
-        Config::set('filesystems.disks.r2.url', $baseMediaUrl . '/' . $prefix);
+        // Update the public URL (Base URL only, prefix is handled by the root setting)
+        Config::set('filesystems.disks.s3.url', $baseMediaUrl);
+        Config::set('filesystems.disks.r2.url', $baseMediaUrl);
     }
 
     public function revert()
