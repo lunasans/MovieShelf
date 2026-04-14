@@ -3,7 +3,7 @@
 @section('header_title', $release->exists ? 'Release bearbeiten' : 'Neues Release')
 
 @section('content')
-<div class="max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
     <div class="flex flex-col gap-2">
         <h2 class="text-3xl font-black text-white tracking-tight uppercase">{{ $release->exists ? 'Release editieren' : 'Neues Release erstellen' }}</h2>
         <p class="text-gray-400 font-medium">Konfiguriere das App-Update für deine Nutzer.</p>
