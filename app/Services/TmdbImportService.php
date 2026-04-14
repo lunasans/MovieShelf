@@ -143,7 +143,9 @@ class TmdbImportService
                     'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]
                 ])->get($posterUrl)->body();
                 $filename = 'covers/'.Str::random(20).'.jpg';
-                Storage::disk('public')->put($filename, $imageContent);
+                $disk = env('UPLOAD_DISK', 'public');
+                if ($disk === 'r2') $disk = 's3'; // Support old env setting
+                Storage::disk($disk)->put($filename, $imageContent);
                 $movie->update(['cover_id' => $filename]);
             } catch (\Exception $e) {
                 Log::warning('Tmdb poster download failed: '.$e->getMessage());
@@ -157,7 +159,9 @@ class TmdbImportService
                     'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]
                 ])->get($backdropUrl)->body();
                 $filename = 'backdrops/'.Str::random(20).'.jpg';
-                Storage::disk('public')->put($filename, $imageContent);
+                $disk = env('UPLOAD_DISK', 'public');
+                if ($disk === 'r2') $disk = 's3'; // Support old env setting
+                Storage::disk($disk)->put($filename, $imageContent);
                 $movie->update(['backdrop_id' => $filename]);
             } catch (\Exception $e) {
                 Log::warning('Tmdb backdrop download failed: '.$e->getMessage());
@@ -227,7 +231,9 @@ class TmdbImportService
                     'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]
                 ])->get($profileUrl)->body();
                 $filename = 'actors/'.Str::random(20).'.jpg';
-                Storage::disk('public')->put($filename, $imageContent);
+                $disk = env('UPLOAD_DISK', 'public');
+                if ($disk === 'r2') $disk = 's3'; // Support old env setting
+                Storage::disk($disk)->put($filename, $imageContent);
                 $actor->update(['profile_path' => $filename]);
             } catch (\Exception $e) {
                 // Ignore image download errors

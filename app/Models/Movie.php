@@ -124,12 +124,18 @@ class Movie extends Model
         $url = null;
         $disk = Storage::disk('public');
         $centralDisk = Storage::disk('central');
+        $s3Disk = Storage::disk('s3');
 
         // Check for absolute URLs
         if (str_starts_with($id, 'http')) {
             return $id;
         } 
         
+        // 0. Check S3 first (prioritize cloud if available)
+        if ($s3Disk->exists($id)) {
+            return $s3Disk->url($id);
+        }
+
         // 1. Check if the ID itself exists locally as a file (Tenant or Central)
         // This handles cases like 'tmdb_xyz.jpg' or 'cover/tmdb_xyz.jpg' stored locally.
         if ($disk->exists($id)) {
@@ -177,6 +183,7 @@ class Movie extends Model
     {
         $disk = Storage::disk('public');
         $centralDisk = Storage::disk('central');
+        $s3Disk = Storage::disk('s3');
         
         // Check both singular and plural versions for flexibility (e.g. cover vs covers)
         $folders = ($type === 'cover') ? ['covers', 'cover'] : ['backdrops', 'backdrop'];
@@ -185,6 +192,9 @@ class Movie extends Model
         foreach ($folders as $folder) {
             // Try standard extension first
             $path = "$folder/$id$suffix.jpg";
+            if ($s3Disk->exists($path)) {
+                return $s3Disk->url($path);
+            }
             if ($disk->exists($path)) {
                 return '/media/' . $path;
             }
@@ -196,6 +206,9 @@ class Movie extends Model
             $extensions = ['.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.webp'];
             foreach ($extensions as $ext) {
                 $fallbackPath = "$folder/$id$suffix$ext";
+                if ($s3Disk->exists($fallbackPath)) {
+                    return $s3Disk->url($fallbackPath);
+                }
                 if ($disk->exists($fallbackPath)) {
                     return '/media/' . $fallbackPath;
                 }
@@ -206,6 +219,9 @@ class Movie extends Model
 
             // Try without suffix as a last resort
             if ($suffix !== '') {
+                if ($s3Disk->exists("$folder/$id.jpg")) {
+                    return $s3Disk->url("$folder/$id.jpg");
+                }
                 if ($disk->exists("$folder/$id.jpg")) {
                     return '/media/' . "$folder/$id.jpg";
                 }

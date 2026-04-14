@@ -40,21 +40,28 @@ class Actor extends Model
         $url = null;
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
         $centralDisk = \Illuminate\Support\Facades\Storage::disk('central');
+        $s3Disk = \Illuminate\Support\Facades\Storage::disk('s3');
 
         if (str_starts_with($this->profile_path, 'http')) {
             $url = $this->profile_path;
         } elseif (str_starts_with($this->profile_path, '/')) {
             $url = 'https://image.tmdb.org/t/p/w185'.$this->profile_path;
         } elseif (str_contains($this->profile_path, '/') && str_contains($this->profile_path, '.')) {
-            if ($disk->exists($this->profile_path)) {
+            if ($s3Disk->exists($this->profile_path)) {
+                $url = $s3Disk->url($this->profile_path);
+            } elseif ($disk->exists($this->profile_path)) {
                 $url = '/media/'.$this->profile_path;
             } elseif ($centralDisk->exists($this->profile_path)) {
                 $url = '/media/'.$this->profile_path;
             }
+        } elseif ($s3Disk->exists('actors/'.$this->profile_path)) {
+            $url = $s3Disk->url('actors/'.$this->profile_path);
         } elseif ($disk->exists('actors/'.$this->profile_path)) {
             $url = '/media/actors/'.$this->profile_path;
         } elseif ($centralDisk->exists('actors/'.$this->profile_path)) {
             $url = '/media/actors/'.$this->profile_path;
+        } elseif ($s3Disk->exists($this->profile_path)) {
+            $url = $s3Disk->url($this->profile_path);
         } elseif ($disk->exists($this->profile_path)) {
             $url = '/media/'.$this->profile_path;
         } elseif ($centralDisk->exists($this->profile_path)) {
