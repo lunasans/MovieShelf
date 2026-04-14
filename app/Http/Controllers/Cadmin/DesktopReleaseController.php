@@ -66,34 +66,35 @@ class DesktopReleaseController extends Controller
         return redirect()->route('cadmin.desktop.index')->with('success', 'Release wurde erfolgreich angelegt.');
     }
 
-    public function edit(DesktopRelease $release)
+    public function edit(DesktopRelease $desktop)
     {
-        return view('cadmin.desktop.form', compact('release'));
+        return view('cadmin.desktop.form', ['release' => $desktop]);
     }
 
-    public function update(Request $request, DesktopRelease $release)
+    public function update(Request $request, DesktopRelease $desktop)
     {
         $request->validate([
-            'version'      => 'required|string|unique:desktop_releases,version,' . $release->id,
+            'version'      => 'required|string|unique:desktop_releases,version,' . $desktop->id,
             'changelog'    => 'nullable|string',
             'download_url' => 'nullable|url',
+            'file_hash'    => 'nullable|string|max:128',
             'is_public'    => 'nullable|boolean',
         ]);
 
-        $data = $request->only(['version', 'changelog', 'download_url']);
+        $data = $request->only(['version', 'changelog', 'download_url', 'file_hash']);
         $data['is_public'] = $request->boolean('is_public');
 
-        $release->update($data);
+        $desktop->update($data);
 
         return redirect()->route('cadmin.desktop.index')->with('success', 'Release wurde aktualisiert.');
     }
 
-    public function destroy(DesktopRelease $release)
+    public function destroy(DesktopRelease $desktop)
     {
-        if ($release->file_path) {
-            Storage::disk('public')->delete($release->file_path);
+        if ($desktop->file_path) {
+            Storage::disk('public')->delete($desktop->file_path);
         }
-        $release->delete();
+        $desktop->delete();
         return back()->with('success', 'Release wurde gelöscht.');
     }
 

@@ -10,7 +10,7 @@
     </div>
 
     <div class="glass rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl p-10"
-         x-data="chunkUploader()">
+         x-data="chunkUploader('{{ $release->exists ? route('cadmin.desktop.update', $release) : route('cadmin.desktop.store') }}', '{{ $release->exists ? 'PUT' : 'POST' }}')">
 
         {{-- Normales Formular für Metadaten (ohne Datei) --}}
         <form id="release-form" class="space-y-8">
@@ -129,8 +129,10 @@
 
 @push('scripts')
 <script>
-function chunkUploader() {
+function chunkUploader(submitUrl, submitMethod) {
     return {
+        submitUrl: submitUrl,
+        submitMethod: submitMethod,
         selectedFile: null,
         fileSize: '',
         uploading: false,
@@ -174,7 +176,7 @@ function chunkUploader() {
                 return;
             }
 
-            // Falls keine Datei ausgewählt → klassisches Formular abschicken (nur URL)
+            // Falls keine Datei ausgewählt → nur Metadaten absenden
             if (!this.selectedFile) {
                 await this.submitMetaOnly(meta);
                 return;
@@ -186,9 +188,12 @@ function chunkUploader() {
         async submitMetaOnly(meta) {
             const fd = new FormData();
             fd.append('_token', document.querySelector('input[name="_token"]').value);
+            if (this.submitMethod === 'PUT') {
+                fd.append('_method', 'PUT');
+            }
             Object.entries(meta).forEach(([k, v]) => fd.append(k, v));
 
-            const res = await fetch('{{ route("cadmin.desktop.store") }}', {
+            const res = await fetch(this.submitUrl, {
                 method: 'POST', body: fd
             });
 
