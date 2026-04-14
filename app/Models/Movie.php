@@ -36,6 +36,11 @@ class Movie extends Model
         'updated_at',
     ];
 
+    protected $appends = [
+        'cover_url',
+        'backdrop_url',
+    ];
+
     protected $casts = [
         'is_deleted' => 'boolean',
         'year' => 'integer',
