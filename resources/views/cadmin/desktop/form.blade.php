@@ -222,14 +222,17 @@ function chunkUploader() {
             this.progress = 95;
 
             const metaFd = new FormData(form);
-            metaFd.delete('exe_file'); // Datei nicht nochmal senden
+            metaFd.delete('exe_file');   // Datei nicht nochmal senden
+            metaFd.delete('_method');    // PUT/PATCH nicht an die finalize-Route senden
             metaFd.append('upload_id', uploadId);
             metaFd.append('total_chunks', totalChunks);
             metaFd.append('filename', file.name);
 
             try {
                 const res = await fetch('{{ route("cadmin.desktop.finalize-upload") }}', {
-                    method: 'POST', body: metaFd
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: metaFd
                 });
                 const data = await res.json();
                 if (data.ok) {
