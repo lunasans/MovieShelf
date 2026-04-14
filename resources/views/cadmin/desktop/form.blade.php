@@ -9,12 +9,28 @@
         <p class="text-gray-400 font-medium">Konfiguriere das App-Update für deine Nutzer.</p>
     </div>
 
-    <div class="glass rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl p-10"
-         x-data="chunkUploader('{{ $release->exists ? route('cadmin.desktop.update', $release) : route('cadmin.desktop.store') }}', '{{ $release->exists ? 'PUT' : 'POST' }}')">
+    @if($errors->any())
+    <div class="bg-rose-500/10 border border-rose-500/30 rounded-2xl px-6 py-4">
+        <ul class="text-sm text-rose-400 font-bold space-y-1">
+            @foreach($errors->all() as $error)
+                <li><i class="bi bi-exclamation-circle-fill mr-2"></i>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
 
-        {{-- Normales Formular für Metadaten (ohne Datei) --}}
-        <form id="release-form" class="space-y-8">
+    <div class="glass rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl p-10"
+         x-data="chunkUploader()">
+
+        {{-- Reguläres HTML-Formular – alle Felder werden normal übermittelt --}}
+        <form id="release-form"
+              action="{{ $release->exists ? route('cadmin.desktop.update', $release) : route('cadmin.desktop.store') }}"
+              method="POST"
+              enctype="multipart/form-data"
+              class="space-y-8"
+              @submit.prevent="handleSubmit($event)">
             @csrf
+            @if($release->exists) @method('PUT') @endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Version -->
@@ -22,15 +38,15 @@
                     <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Versionsnummer</label>
                     <input type="text" name="version" id="version"
                            value="{{ old('version', $release->version) }}" placeholder="v0.1.0"
-                           class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold">
+                           class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold" required>
                 </div>
 
                 <!-- Status -->
                 <div class="space-y-2">
                     <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Verfügbarkeit</label>
                     <select name="is_public" id="is_public" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-rose-500/50 transition-all font-bold cursor-pointer">
-                        <option value="1" {{ old('is_public', $release->is_public) ? 'selected' : '' }}>Öffentlich (Sichtbar für App)</option>
-                        <option value="0" {{ !old('is_public', $release->is_public) ? 'selected' : '' }}>Entwurf (Versteckt)</option>
+                        <option value="1" {{ old('is_public', $release->is_public ?? 0) == '1' ? 'selected' : '' }}>Öffentlich (Sichtbar für App)</option>
+                        <option value="0" {{ old('is_public', $release->is_public ?? 0) != '1' ? 'selected' : '' }}>Entwurf (Versteckt)</option>
                     </select>
                 </div>
             </div>
@@ -50,23 +66,22 @@
                     <input type="text" name="file_hash" id="file_hash"
                            value="{{ old('file_hash', $release->file_hash) }}"
                            placeholder="Wird beim Datei-Upload automatisch berechnet..."
-                           class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pr-14 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-mono text-xs">
+                           class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pr-20 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-mono text-xs">
                     <div class="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 text-xs font-black uppercase tracking-widest">SHA256</div>
                 </div>
-                <p class="text-[10px] text-gray-600 px-2">Wird beim Datei-Upload automatisch berechnet. Manuell eintragen wenn du eine externe URL verwendest.</p>
+                <p class="text-[10px] text-gray-600 px-2">Manuell eintragen oder wird beim Datei-Upload automatisch berechnet.</p>
             </div>
 
             <!-- EXE Upload (Chunked) -->
             <div class="space-y-3">
                 <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Installer Upload (.exe / .msi / .zip)</label>
 
-                <!-- Drop Zone -->
                 <div class="relative">
-                    <input type="file" id="exe_file" accept=".exe,.msi,.zip" class="hidden"
+                    <input type="file" id="exe_file" name="exe_file" accept=".exe,.msi,.zip" class="hidden"
                            @change="onFileSelected($event)">
                     <label for="exe_file"
-                           class="flex items-center justify-center w-full h-32 border-2 border-dashed border-white/10 rounded-3xl hover:border-rose-500/30 hover:bg-rose-500/5 transition-all cursor-pointer"
-                           :class="selectedFile ? 'border-emerald-500/40 bg-emerald-500/5' : ''">
+                           class="flex items-center justify-center w-full h-32 border-2 border-dashed rounded-3xl transition-all cursor-pointer"
+                           :class="selectedFile ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-white/10 hover:border-rose-500/30 hover:bg-rose-500/5'">
                         <div class="text-center" x-show="!selectedFile">
                             <i class="bi bi-cloud-arrow-up text-3xl text-gray-400"></i>
                             <p class="mt-2 text-xs text-gray-500 font-bold uppercase tracking-widest">Klicken zum Auswählen</p>
@@ -96,7 +111,6 @@
                     </div>
                 </div>
 
-                <!-- Fehler -->
                 <p x-show="errorMsg" x-cloak class="text-xs text-rose-400 font-bold px-2">
                     <i class="bi bi-exclamation-triangle-fill"></i> <span x-text="errorMsg"></span>
                 </p>
@@ -105,12 +119,12 @@
             <!-- Changelog -->
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Changelog / Release Notes</label>
-                <textarea name="changelog" id="changelog" rows="6" placeholder="Was ist neu in dieser Version?"
+                <textarea name="changelog" rows="6" placeholder="Was ist neu in dieser Version?"
                           class="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-medium custom-scrollbar">{{ old('changelog', $release->changelog) }}</textarea>
             </div>
 
             <div class="pt-6 flex flex-col sm:flex-row items-center gap-4">
-                <button type="button" @click="submit()"
+                <button type="submit"
                         :disabled="uploading"
                         :class="uploading ? 'opacity-50 cursor-not-allowed' : ''"
                         class="w-full sm:w-auto px-10 py-4 bg-rose-600 hover:bg-rose-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-rose-600/20 transition-all flex items-center justify-center gap-2">
@@ -129,10 +143,8 @@
 
 @push('scripts')
 <script>
-function chunkUploader(submitUrl, submitMethod) {
+function chunkUploader() {
     return {
-        submitUrl: submitUrl,
-        submitMethod: submitMethod,
         selectedFile: null,
         fileSize: '',
         uploading: false,
@@ -140,8 +152,7 @@ function chunkUploader(submitUrl, submitMethod) {
         progress: 0,
         statusText: '',
         errorMsg: '',
-
-        CHUNK_SIZE: 2 * 1024 * 1024, // 2 MB pro Chunk
+        CHUNK_SIZE: 2 * 1024 * 1024, // 2 MB
 
         onFileSelected(event) {
             const file = event.target.files[0];
@@ -153,64 +164,32 @@ function chunkUploader(submitUrl, submitMethod) {
             this.progress = 0;
         },
 
+        async handleSubmit(event) {
+            this.errorMsg = '';
+
+            // Kein Datei-Upload → normales HTML-Formular absenden
+            if (!this.selectedFile) {
+                event.target.submit();
+                return;
+            }
+
+            // Mit Datei → Chunk-Upload, dann redirect
+            await this.uploadInChunks(event.target);
+        },
+
         generateId() {
             return Math.random().toString(36).substring(2, 18) +
                    Math.random().toString(36).substring(2, 18);
         },
 
-        getFormData() {
-            return {
-                version:      document.getElementById('version').value.trim(),
-                changelog:    document.getElementById('changelog').value.trim(),
-                download_url: document.getElementById('download_url').value.trim(),
-                is_public:    document.getElementById('is_public').value,
-            };
-        },
-
-        async submit() {
-            this.errorMsg = '';
-            const meta = this.getFormData();
-
-            if (!meta.version) {
-                this.errorMsg = 'Bitte Versionsnummer angeben.';
-                return;
-            }
-
-            // Falls keine Datei ausgewählt → nur Metadaten absenden
-            if (!this.selectedFile) {
-                await this.submitMetaOnly(meta);
-                return;
-            }
-
-            await this.uploadInChunks(meta);
-        },
-
-        async submitMetaOnly(meta) {
-            const fd = new FormData();
-            fd.append('_token', document.querySelector('input[name="_token"]').value);
-            if (this.submitMethod === 'PUT') {
-                fd.append('_method', 'PUT');
-            }
-            Object.entries(meta).forEach(([k, v]) => fd.append(k, v));
-
-            const res = await fetch(this.submitUrl, {
-                method: 'POST', body: fd
-            });
-
-            if (res.redirected || res.ok) {
-                window.location.href = '{{ route("cadmin.desktop.index") }}';
-            } else {
-                this.errorMsg = 'Fehler beim Speichern. Bitte alle Felder prüfen.';
-            }
-        },
-
-        async uploadInChunks(meta) {
+        async uploadInChunks(form) {
             this.uploading = true;
             const file = this.selectedFile;
             const uploadId = this.generateId();
             const totalChunks = Math.ceil(file.size / this.CHUNK_SIZE);
-            const token = document.querySelector('input[name="_token"]').value;
+            const token = form.querySelector('input[name="_token"]').value;
 
+            // Chunks hochladen
             for (let i = 0; i < totalChunks; i++) {
                 const start = i * this.CHUNK_SIZE;
                 const chunk = file.slice(start, start + this.CHUNK_SIZE);
@@ -224,7 +203,7 @@ function chunkUploader(submitUrl, submitMethod) {
                 fd.append('filename', file.name);
 
                 this.statusText = `Chunk ${i + 1} / ${totalChunks} wird hochgeladen...`;
-                this.progress = Math.round(((i) / totalChunks) * 90);
+                this.progress = Math.round((i / totalChunks) * 90);
 
                 try {
                     const res = await fetch('{{ route("cadmin.desktop.upload-chunk") }}', {
@@ -238,20 +217,19 @@ function chunkUploader(submitUrl, submitMethod) {
                 }
             }
 
-            // Finalisieren
+            // Alle Metadaten aus dem Formular lesen (native FormData → zuverlässig!)
             this.statusText = 'Datei wird zusammengesetzt...';
             this.progress = 95;
 
-            const fd = new FormData();
-            fd.append('_token', token);
-            fd.append('upload_id', uploadId);
-            fd.append('total_chunks', totalChunks);
-            fd.append('filename', file.name);
-            Object.entries(meta).forEach(([k, v]) => fd.append(k, v));
+            const metaFd = new FormData(form);
+            metaFd.delete('exe_file'); // Datei nicht nochmal senden
+            metaFd.append('upload_id', uploadId);
+            metaFd.append('total_chunks', totalChunks);
+            metaFd.append('filename', file.name);
 
             try {
                 const res = await fetch('{{ route("cadmin.desktop.finalize-upload") }}', {
-                    method: 'POST', body: fd
+                    method: 'POST', body: metaFd
                 });
                 const data = await res.json();
                 if (data.ok) {
