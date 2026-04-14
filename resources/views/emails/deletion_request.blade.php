@@ -38,7 +38,7 @@
             <p style="margin-top: 30px; font-size: 14px;">Falls du diese Anfrage nicht gestellt hast, kannst du diese E-Mail einfach ignorieren. Das Regal bleibt dann unverändert bestehen.</p>
         </div>
         <div class="footer">
-            &copy; {{ date('Y') }} MovieShelf Cloud. v{{ config('app.version') }}
+            &copy; {{ date('Y') }} MovieShelf Cloud. v{{ config('app.shelf_version') }}
         </div>
     </div>
 </body>
