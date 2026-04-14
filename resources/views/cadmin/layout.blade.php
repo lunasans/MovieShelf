@@ -180,6 +180,10 @@
                         <span class="font-bold text-sm">Abmelden</span>
                     </button>
                 </form>
+                <div class="mt-4 px-4 opacity-20 flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white">
+                    <span>SaaS Admin</span>
+                    <span>v{{ config('app.saas_version') }}</span>
+                </div>
             </div>
         </aside>
 

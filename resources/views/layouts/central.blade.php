@@ -155,7 +155,7 @@
                     modern, schnell und ohne Aufwand.
                 </p>
                 <span class="text-gray-300 text-xs font-bold tracking-widest uppercase">
-                    MovieShelf Cloud · v{{ config('app.version', '2.14.0') }}
+                    MovieShelf Cloud · v{{ config('app.saas_version') }}
                 </span>
             </div>
             {{-- Navigation --}}
