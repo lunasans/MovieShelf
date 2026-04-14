@@ -31,6 +31,7 @@ Route::get('/impressum', function () {
 Route::get('/p/{slug}', [\App\Http\Controllers\Central\LandingController::class, 'page'])->name('landing.page');
 
 Route::get('/api/check-subdomain', [\App\Http\Controllers\Central\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain')->middleware('throttle:30,1');
+Route::get('/api/desktop-version', [\App\Http\Controllers\Api\DesktopVersionController::class, 'index'])->name('api.desktop-version');
 Route::post('/claim', [\App\Http\Controllers\Central\RegisterTenantController::class, 'store'])->name('tenant.register')->middleware('throttle:3,10');
 Route::get('/activate/{token}', [\App\Http\Controllers\Central\RegisterTenantController::class, 'activate'])->name('tenant.activate');
 Route::get('/forget-shelf/{tenant}', [\App\Http\Controllers\Central\CentralDeletionController::class, 'confirm'])->name('central.tenant.forget')->middleware(['signed']);

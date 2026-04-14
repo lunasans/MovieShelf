@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/info', [\App\Http\Controllers\Api\InfoController::class, 'index']);
-Route::get('/desktop-version', [\App\Http\Controllers\Api\DesktopVersionController::class, 'index']);
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/login/2fa', [AuthController::class, 'login2fa'])->middleware('throttle:5,1');
 
