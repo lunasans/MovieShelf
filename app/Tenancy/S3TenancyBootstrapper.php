@@ -30,14 +30,15 @@ class S3TenancyBootstrapper implements TenancyBootstrapper
 
         $tenantId = $tenant->getTenantKey();
         $baseMediaUrl = env('S3_URL', 'https://medien.movieshelf.info');
+        $prefix = 'users/' . $tenantId;
 
         // Set the root (folder prefix) inside the bucket
-        Config::set('filesystems.disks.s3.root', $tenantId);
-        Config::set('filesystems.disks.r2.root', $tenantId);
+        Config::set('filesystems.disks.s3.root', $prefix);
+        Config::set('filesystems.disks.r2.root', $prefix);
 
         // Update the public URL to include the tenant folder
-        Config::set('filesystems.disks.s3.url', $baseMediaUrl . '/' . $tenantId);
-        Config::set('filesystems.disks.r2.url', $baseMediaUrl . '/' . $tenantId);
+        Config::set('filesystems.disks.s3.url', $baseMediaUrl . '/' . $prefix);
+        Config::set('filesystems.disks.r2.url', $baseMediaUrl . '/' . $prefix);
     }
 
     public function revert()
