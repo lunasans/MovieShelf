@@ -47,25 +47,32 @@ class Actor extends Model
         } elseif (str_starts_with($this->profile_path, '/')) {
             $url = 'https://image.tmdb.org/t/p/w185'.$this->profile_path;
         } elseif (str_contains($this->profile_path, '/') && str_contains($this->profile_path, '.')) {
-            if ($s3Disk->exists($this->profile_path)) {
-                $url = $s3Disk->url($this->profile_path);
+            // Assume S3 if UPLOAD_DISK is s3
+            if (env('UPLOAD_DISK') === 's3') {
+                return $s3Disk->url($this->profile_path);
+            }
+
+            if ($disk->exists($this->profile_path)) {
+                $url = '/media/'.$this->profile_path;
+            } elseif ($centralDisk->exists($this->profile_path)) {
+                $url = '/media/'.$this->profile_path;
+            }
+        } else {
+            // Check structured paths
+            // If we are on S3, we assume it's in the actors/ folder or just try it
+            if (env('UPLOAD_DISK') === 's3') {
+                return $s3Disk->url('actors/'.$this->profile_path);
+            }
+
+            if ($disk->exists('actors/'.$this->profile_path)) {
+                $url = '/media/actors/'.$this->profile_path;
+            } elseif ($centralDisk->exists('actors/'.$this->profile_path)) {
+                $url = '/media/actors/'.$this->profile_path;
             } elseif ($disk->exists($this->profile_path)) {
                 $url = '/media/'.$this->profile_path;
             } elseif ($centralDisk->exists($this->profile_path)) {
                 $url = '/media/'.$this->profile_path;
             }
-        } elseif ($s3Disk->exists('actors/'.$this->profile_path)) {
-            $url = $s3Disk->url('actors/'.$this->profile_path);
-        } elseif ($disk->exists('actors/'.$this->profile_path)) {
-            $url = '/media/actors/'.$this->profile_path;
-        } elseif ($centralDisk->exists('actors/'.$this->profile_path)) {
-            $url = '/media/actors/'.$this->profile_path;
-        } elseif ($s3Disk->exists($this->profile_path)) {
-            $url = $s3Disk->url($this->profile_path);
-        } elseif ($disk->exists($this->profile_path)) {
-            $url = '/media/'.$this->profile_path;
-        } elseif ($centralDisk->exists($this->profile_path)) {
-            $url = '/media/'.$this->profile_path;
         }
 
         return $url;

@@ -136,8 +136,8 @@ class Movie extends Model
             return $id;
         } 
         
-        // 0. Check S3 first (prioritize cloud if available)
-        if ($s3Disk->exists($id)) {
+        // 0. Check S3 first (If we have a valid path, assume it is on S3 if UPLOAD_DISK is s3 or just try it)
+        if (str_contains($id, '/') && env('UPLOAD_DISK') === 's3') {
             return $s3Disk->url($id);
         }
 
@@ -197,9 +197,12 @@ class Movie extends Model
         foreach ($folders as $folder) {
             // Try standard extension first
             $path = "$folder/$id$suffix.jpg";
-            if ($s3Disk->exists($path)) {
+
+            // If we are on S3, we assume the file exists to save performance
+            if (env('UPLOAD_DISK') === 's3') {
                 return $s3Disk->url($path);
             }
+
             if ($disk->exists($path)) {
                 return '/media/' . $path;
             }
@@ -207,13 +210,10 @@ class Movie extends Model
                 return '/media/' . $path;
             }
 
-            // Fallback extensions
+            // Fallback extensions (only for local storage, too slow for S3 list)
             $extensions = ['.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.webp'];
             foreach ($extensions as $ext) {
                 $fallbackPath = "$folder/$id$suffix$ext";
-                if ($s3Disk->exists($fallbackPath)) {
-                    return $s3Disk->url($fallbackPath);
-                }
                 if ($disk->exists($fallbackPath)) {
                     return '/media/' . $fallbackPath;
                 }
@@ -224,9 +224,6 @@ class Movie extends Model
 
             // Try without suffix as a last resort
             if ($suffix !== '') {
-                if ($s3Disk->exists("$folder/$id.jpg")) {
-                    return $s3Disk->url("$folder/$id.jpg");
-                }
                 if ($disk->exists("$folder/$id.jpg")) {
                     return '/media/' . "$folder/$id.jpg";
                 }
