@@ -126,8 +126,8 @@ return [
     'git_binary' => env('GIT_BINARY', 'git'),
     'composer_binary' => env('COMPOSER_BINARY', 'composer'),
     'saas_version' => env('APP_SAAS_VERSION', '1.0.0'),
-    'shelf_version' => env('APP_SHELF_VERSION', '2.15.3'),
-    'version' => env('APP_SHELF_VERSION', '2.15.3'),
+    'shelf_version' => env('APP_SHELF_VERSION', '2.16.5'),
+    'version' => env('APP_SHELF_VERSION', '2.16.5'),
     'central_admin_emails' => env('CENTRAL_ADMIN_EMAILS', ''),
 
 ];

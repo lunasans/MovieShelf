@@ -1,8 +1,22 @@
-# MovieShelf 2.15.3
+# MovieShelf 2.16.5
 Digital Cinema Shelf - Update
 
-## Changelog 2.15.3 (Shelf)
-- **Fix**: Fehlerhafte View-Namespaces ("tenant.*") in AJAX-Partials korrigiert.
+## Changelog 2.16.5 (Landingpage)
+- **Fix**: Chunk-Upload Finalisierung gibt jetzt immer JSON zurück (kein HTML-Fehler mehr).
+- **Fix**: `is_public` Verfügbarkeit wurde beim Speichern von Desktop-Releases nicht korrekt übernommen.
+- **Fix**: Route Model Binding Konflikt im Desktop-Release Edit-Formular behoben (leere Felder).
+- **Fix**: `_method`-Feld wurde fälschlicherweise an den Finalize-Endpunkt gesendet.
+- **Fix**: SHA-256 Hash wird beim Chunk-Upload automatisch berechnet und in der Datenbank gespeichert.
+- **Fix**: Nginx `client_max_body_size` Diagnose und Dokumentation für Chunk-Upload-Lösung.
+- **Neu**: Chunk-Upload für Desktop-Installer (`.exe`, `.msi`, `.zip`) – umgeht Nginx-Limits vollständig.
+- **Neu**: SHA-256 Hashwert-Feld für Desktop-Releases (manuell oder automatisch beim Upload).
+- **Neu**: `SHA-256 verifiziert`-Badge auf der Landingpage wenn Hash hinterlegt ist.
+- **Sicherheit**: Cadmin-Panel ist ausschließlich über die primäre Domain erreichbar (404 auf Subdomains).
+
+## Changelog 2.16.0 (Shelf)
+- **Neu**: Desktop App Release-Verwaltung im Cadmin-Panel.
+- **Neu**: Öffentliche API (`/api/desktop-version`) für automatische Update-Checks der Desktop-App.
+- **Neu**: Desktop App Sektion auf der Landingpage mit dynamischem Download-Button.
 
 ## Changelog 2.15.2 (Shelf)
 - **Fix**: Kritischer Alpine.js Fehler ("invalid escape sequence") im TMDb-Import behoben.
