@@ -43,6 +43,19 @@
                        class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold italic">
             </div>
 
+            <!-- SHA-256 Hash -->
+            <div class="space-y-2">
+                <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">SHA-256 Hashwert (optional)</label>
+                <div class="relative">
+                    <input type="text" name="file_hash" id="file_hash"
+                           value="{{ old('file_hash', $release->file_hash) }}"
+                           placeholder="Wird beim Datei-Upload automatisch berechnet..."
+                           class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pr-14 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-mono text-xs">
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 text-xs font-black uppercase tracking-widest">SHA256</div>
+                </div>
+                <p class="text-[10px] text-gray-600 px-2">Wird beim Datei-Upload automatisch berechnet. Manuell eintragen wenn du eine externe URL verwendest.</p>
+            </div>
+
             <!-- EXE Upload (Chunked) -->
             <div class="space-y-3">
                 <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Installer Upload (.exe / .msi / .zip)</label>

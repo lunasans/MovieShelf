@@ -25,9 +25,10 @@ class DesktopVersionController extends Controller
         }
 
         return response()->json([
-            'version' => $release->version,
-            'url' => $release->download_url,
-            'changelog' => $release->changelog,
+            'version'      => $release->version,
+            'url'          => $release->download_url,
+            'sha256'       => $release->file_hash,
+            'changelog'    => $release->changelog,
             'published_at' => $release->created_at->toIso8601String(),
         ]);
     }

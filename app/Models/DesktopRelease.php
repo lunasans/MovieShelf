@@ -14,6 +14,7 @@ class DesktopRelease extends Model
         'changelog',
         'download_url',
         'file_path',
+        'file_hash',
         'is_public',
     ];
 

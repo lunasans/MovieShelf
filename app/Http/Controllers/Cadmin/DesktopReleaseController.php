@@ -31,6 +31,7 @@ class DesktopReleaseController extends Controller
             'version'      => 'required|string|unique:desktop_releases,version',
             'changelog'    => 'nullable|string',
             'download_url' => 'nullable|url',
+            'file_hash'    => 'nullable|string|max:128',
             'exe_file'     => [
                 'nullable',
                 'file',
@@ -165,11 +166,15 @@ class DesktopReleaseController extends Controller
         $storagePath  = "releases/{$finalName}";
         $downloadUrl  = $request->input('download_url') ?: Storage::disk('public')->url($storagePath);
 
+        // SHA-256 automatisch berechnen
+        $fileHash = hash_file('sha256', $finalPath);
+
         $release = DesktopRelease::create([
             'version'      => $request->input('version'),
             'changelog'    => $request->input('changelog'),
             'download_url' => $downloadUrl,
             'file_path'    => $storagePath,
+            'file_hash'    => $fileHash,
             'is_public'    => $request->boolean('is_public'),
         ]);
 
