@@ -95,4 +95,88 @@ class DesktopReleaseController extends Controller
         $release->delete();
         return back()->with('success', 'Release wurde gelöscht.');
     }
+
+    /**
+     * Empfängt einen einzelnen Chunk und speichert ihn temporär.
+     */
+    public function uploadChunk(Request $request)
+    {
+        $request->validate([
+            'chunk'       => 'required|file',
+            'upload_id'   => 'required|string|alpha_num|max:64',
+            'chunk_index' => 'required|integer|min:0',
+            'total_chunks'=> 'required|integer|min:1',
+            'filename'    => 'required|string|max:255',
+        ]);
+
+        $uploadId   = $request->input('upload_id');
+        $chunkIndex = (int) $request->input('chunk_index');
+        $tmpDir     = storage_path("app/chunks/{$uploadId}");
+
+        if (!is_dir($tmpDir)) {
+            mkdir($tmpDir, 0755, true);
+        }
+
+        $request->file('chunk')->move($tmpDir, "chunk_{$chunkIndex}");
+
+        return response()->json(['ok' => true, 'chunk' => $chunkIndex]);
+    }
+
+    /**
+     * Setzt alle Chunks zusammen und legt das Release an.
+     */
+    public function finalizeUpload(Request $request)
+    {
+        $request->validate([
+            'upload_id'    => 'required|string|alpha_num|max:64',
+            'total_chunks' => 'required|integer|min:1',
+            'filename'     => 'required|string|max:255',
+            'version'      => 'required|string|unique:desktop_releases,version',
+            'changelog'    => 'nullable|string',
+            'download_url' => 'nullable|url',
+            'is_public'    => 'nullable|boolean',
+        ]);
+
+        $uploadId    = $request->input('upload_id');
+        $totalChunks = (int) $request->input('total_chunks');
+        $tmpDir      = storage_path("app/chunks/{$uploadId}");
+        $ext         = pathinfo($request->input('filename'), PATHINFO_EXTENSION);
+        $safeVersion = preg_replace('/[^a-zA-Z0-9.\-_]/', '_', $request->input('version'));
+        $finalName   = "MovieShelf_v{$safeVersion}.{$ext}";
+        $finalPath   = storage_path("app/public/releases/{$finalName}");
+
+        if (!is_dir(dirname($finalPath))) {
+            mkdir(dirname($finalPath), 0755, true);
+        }
+
+        // Zusammenfügen
+        $out = fopen($finalPath, 'wb');
+        for ($i = 0; $i < $totalChunks; $i++) {
+            $chunkFile = "{$tmpDir}/chunk_{$i}";
+            if (!file_exists($chunkFile)) {
+                return response()->json(['error' => "Chunk {$i} fehlt."], 422);
+            }
+            fwrite($out, file_get_contents($chunkFile));
+            unlink($chunkFile);
+        }
+        fclose($out);
+        rmdir($tmpDir);
+
+        $storagePath  = "releases/{$finalName}";
+        $downloadUrl  = $request->input('download_url') ?: Storage::disk('public')->url($storagePath);
+
+        $release = DesktopRelease::create([
+            'version'      => $request->input('version'),
+            'changelog'    => $request->input('changelog'),
+            'download_url' => $downloadUrl,
+            'file_path'    => $storagePath,
+            'is_public'    => $request->boolean('is_public'),
+        ]);
+
+        return response()->json([
+            'ok'      => true,
+            'release' => $release->id,
+            'redirect'=> route('cadmin.desktop.index'),
+        ]);
+    }
 }

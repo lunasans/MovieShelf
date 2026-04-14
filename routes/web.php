@@ -102,6 +102,8 @@ Route::middleware(['web', 'auth', 'central.admin'])->group(function () {
             'update'  => 'desktop.update',
             'destroy' => 'desktop.destroy',
         ]);
+        Route::post('/desktop/upload-chunk', [\App\Http\Controllers\Cadmin\DesktopReleaseController::class, 'uploadChunk'])->name('desktop.upload-chunk');
+        Route::post('/desktop/finalize-upload', [\App\Http\Controllers\Cadmin\DesktopReleaseController::class, 'finalizeUpload'])->name('desktop.finalize-upload');
 
         // Email Templates
         Route::get('/email-templates', [\App\Http\Controllers\Cadmin\EmailTemplateController::class, 'index'])->name('email-templates.index');
