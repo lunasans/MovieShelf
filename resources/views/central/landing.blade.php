@@ -335,9 +335,22 @@
             </div>
             <div class="beta-actions">
                 @if($latestDesktop)
-                    <a href="{{ $latestDesktop->download_url }}" class="btn-primary" style="padding: 0.8rem 1.8rem; display: inline-flex; align-items: center; gap: 10px; width: auto; box-shadow: 0 10px 20px rgba(204, 75, 6, 0.15);">
-                        <i class="bi bi-download"></i> Download {{ $latestDesktop->version }} (.exe)
-                    </a>
+                    <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+                        <a href="{{ $latestDesktop->download_url }}" class="btn-primary" style="padding: 0.8rem 1.8rem; display: inline-flex; align-items: center; gap: 10px; width: auto; box-shadow: 0 10px 20px rgba(204, 75, 6, 0.15);">
+                            <i class="bi bi-download"></i> Download {{ $latestDesktop->version }} (.exe)
+                        </a>
+                        <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
+                            <span style="font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;">
+                                Windows 10/11 · x64
+                            </span>
+                            @if($latestDesktop->file_hash)
+                            <span style="font-size: 9px; font-weight: 500; color: #9CA3AF; font-family: monospace;" title="SHA-256: {{ $latestDesktop->file_hash }}">
+                                <i class="bi bi-shield-check" style="color: #10B981; font-style: normal;"></i>
+                                SHA-256 verifiziert
+                            </span>
+                            @endif
+                        </div>
+                    </div>
                 @else
                     <span class="btn-outline" style="opacity: 0.5; cursor: not-allowed; width: auto; padding: 0.8rem 1.8rem;">
                         Demnächst verfügbar
