@@ -93,7 +93,7 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'two_factor_enabled' => !! $user->two_factor_confirmed_at,
             ],
-            'version' => config('app.version'),
+            'version' => config('app.shelf_version'),
         ]);
     }
 
@@ -159,7 +159,7 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'two_factor_enabled' => true,
                 ],
-                'version' => config('app.version'),
+                'version' => config('app.shelf_version'),
             ]);
         }
 

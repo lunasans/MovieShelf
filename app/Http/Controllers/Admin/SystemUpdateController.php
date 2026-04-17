@@ -40,7 +40,7 @@ class SystemUpdateController extends Controller
             Log::error('Update Check failed: '.$e->getMessage());
 
             return view('admin.update.index', [
-                'currentCommit' => 'v'.config('app.version'),
+                'currentCommit' => 'v'.config('app.shelf_version'),
                 'currentBranch' => 'Release',
                 'formattedChanges' => [],
                 'needsUpdate' => false,
