@@ -78,17 +78,10 @@ class OAuthController extends Controller
             'code_challenge_method' => $request->code_challenge_method,
         ]);
 
-        $callbackUrl = $redirectUri . '?' . http_build_query([
+        return redirect($redirectUri . '?' . http_build_query([
             'code'  => $code,
             'state' => $state,
-        ]);
-
-        $scheme = parse_url($redirectUri, PHP_URL_SCHEME);
-        if (! in_array($scheme, ['http', 'https'])) {
-            return view('oauth.callback', ['callbackUrl' => $callbackUrl]);
-        }
-
-        return redirect($callbackUrl);
+        ]));
     }
 
     // POST /oauth/token
