@@ -100,16 +100,7 @@
                 <div class="group relative">
                     <div class="absolute -inset-1 bg-gradient-to-r from-rose-600 to-red-600 rounded-full blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
                     <div class="relative px-3 md:px-5 py-2 bg-black border border-white/10 rounded-full text-[9px] md:text-[10px] font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
-                        @if(function_exists('tenant') && tenant())
-                            <div class="flex items-center gap-2">
-                                <span class="text-rose-500 font-black">v</span>{{ config('app.shelf_version') }}
-                                <span class="text-white/10 mx-1">|</span>
-                                <span class="text-gray-500 uppercase text-[8px] tracking-[0.3em]">SaaS</span>
-                                <span class="text-white/60">v{{ config('app.saas_version') }}</span>
-                            </div>
-                        @else
-                            <span class="text-rose-500 font-black">v</span>{{ config('app.saas_version') }}
-                        @endif
+                        <span class="text-rose-500 font-black">v</span>{{ function_exists('tenant') && tenant() ? config('app.shelf_version') : config('app.saas_version') }}
                     </div>
                 </div>
                 <a href="https://github.com/lunasans/dvdprofiler.liste" target="_blank" class="text-white/10 hover:text-white transition-all transform hover:scale-125">
@@ -117,25 +108,26 @@
                 </a>
             </div>
 
-            <div class="flex flex-col items-center md:items-start gap-2 order-1 md:order-2">
-                <p class="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-[0.4em] leading-relaxed italic text-center md:text-left">
-                    &copy; {{ date('Y') }} René Neuhaus.<span class="hidden lg:inline ml-2">Alle Rechte vorbehalten.</span>
-                </p>
-                <p class="text-[8px] font-bold text-white/10 uppercase tracking-[0.3em] flex items-center gap-2">
-                    Hand-crafted with <i class="bi bi-heart-fill text-rose-600 animate-pulse"></i> and Laravel.
-                </p>
+
+            <div class="flex justify-center order-1 md:order-2">
+                @if(function_exists('tenant') && tenant())
+                <a href="{{ config('app.url') }}" target="_blank"
+                   class="flex items-center gap-2 px-5 py-2.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/40 transition-all group">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.7)] group-hover:shadow-[0_0_12px_rgba(16,185,129,1)] transition-all animate-pulse"></span>
+                    <span class="text-[10px] font-black text-emerald-400/60 uppercase tracking-[0.25em] group-hover:text-emerald-400 transition-colors">
+                        Gratis gehostet auf {{ \App\Models\Setting::get('saas_name', 'MovieShelf Cloud') }}
+                    </span>
+                </a>
+                @endif
             </div>
 
             <div class="flex flex-col items-center md:items-end gap-1 order-3">
-                <div class="text-right hidden sm:block mb-2">
-                    <p class="text-[7px] font-black text-white/10 uppercase tracking-[0.4em] mb-1">Powered by</p>
-                    <p class="text-[8px] text-white/20 font-bold uppercase tracking-[0.2em] max-w-[200px] leading-relaxed">
+                <a href="https://www.themoviedb.org" target="_blank" class="flex items-center gap-3 group opacity-40 hover:opacity-100 transition-all duration-500">
+                    <img src="{{ asset('img/svg/tmdb_logo.svg') }}"
+                         alt="TMDB Logo" class="h-4 md:h-5 w-auto brightness-200 contrast-150">
+                    <span class="text-[8px] font-bold text-white/50 uppercase tracking-[0.2em] max-w-[180px] leading-relaxed hidden sm:block group-hover:text-white/80 transition-colors">
                         This product uses the TMDB API but is not endorsed or certified by TMDB.
-                    </p>
-                </div>
-                <a href="https://www.themoviedb.org" target="_blank" class="opacity-10 hover:opacity-100 transition-all duration-700 hover:scale-110">
-                    <img src="{{ asset('img/svg/tmdb_logo.svg') }}" 
-                         alt="TMDB Logo" class="h-3 md:h-4 w-auto brightness-200 contrast-150">
+                    </span>
                 </a>
             </div>
         </div>
