@@ -113,7 +113,7 @@ du hast eine Anfrage zum Zurücksetzen deines Passworts gestellt.
 Passwort zurücksetzen
 </x-mail::button>
 
-Dieser Link ist **60 Minuten** gültig.
+Dieser Link ist **10 Minuten** gültig.
 
 Falls du keine Passwortzurücksetzung angefordert hast, kannst du diese E-Mail ignorieren.
 
