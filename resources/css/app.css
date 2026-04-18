@@ -131,6 +131,19 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
+.filter-bar-field {
+    flex: 1 1 0%;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.filter-bar-field input,
+.filter-bar-field select {
+    width: 100%;
+}
+
 .film-list-area {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);

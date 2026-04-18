@@ -406,9 +406,9 @@
                 </div>
 
                 {{-- Genre --}}
-                <div class="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+                <div class="filter-bar-field">
                     <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Genre</label>
-                    <select name="genre" class="w-full bg-white/5 border {{ request('genre') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 appearance-none cursor-pointer">
+                    <select name="genre" class="bg-white/5 border {{ request('genre') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 appearance-none cursor-pointer">
                         <option value="">Alle</option>
                         @foreach($genres as $genre)
                             <option value="{{ $genre }}" {{ request('genre') === $genre ? 'selected' : '' }} class="bg-zinc-900 text-white">{{ $genre }}</option>
@@ -417,7 +417,7 @@
                 </div>
 
                 {{-- Jahr von/bis --}}
-                <div class="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+                <div class="filter-bar-field">
                     <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Jahr</label>
                     <div class="flex items-center gap-2">
                         <input type="number" name="year_from" value="{{ request('year_from') }}" placeholder="von" min="1900" max="{{ date('Y') }}"
@@ -429,14 +429,14 @@
                 </div>
 
                 {{-- Min. Bewertung --}}
-                <div class="flex flex-col gap-1.5 flex-1 min-w-[120px]">
+                <div class="filter-bar-field">
                     <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Mind. Bewertung</label>
                     <input type="number" name="rating_min" value="{{ request('rating_min') }}" placeholder="0–10" min="0" max="10" step="0.5"
                         class="w-full bg-white/5 border {{ request('rating_min') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
                 </div>
 
                 {{-- Max. Laufzeit --}}
-                <div class="flex flex-col gap-1.5 flex-1 min-w-[140px]">
+                <div class="filter-bar-field">
                     <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Max. Laufzeit (Min.)</label>
                     <input type="number" name="runtime_max" value="{{ request('runtime_max') }}" placeholder="z.B. 120" min="1"
                         class="w-full bg-white/5 border {{ request('runtime_max') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
