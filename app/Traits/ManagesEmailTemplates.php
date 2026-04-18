@@ -38,10 +38,11 @@ trait ManagesEmailTemplates
         $template = EmailTemplate::getBySlug($this->templateSlug());
 
         if ($template) {
-            $html = \Illuminate\Support\Facades\Blade::render(
-                $template->content,
-                $this->templateData()
-            );
+            $tmpPath = storage_path('framework/views/email_dyn_' . md5($template->slug . $template->updated_at) . '.blade.php');
+            if (!file_exists($tmpPath)) {
+                file_put_contents($tmpPath, $template->content);
+            }
+            $html = view()->file($tmpPath, $this->templateData())->render();
             return new Content(htmlString: $html);
         }
 
