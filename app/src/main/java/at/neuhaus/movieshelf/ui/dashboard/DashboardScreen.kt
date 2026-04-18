@@ -16,13 +16,17 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import at.neuhaus.movieshelf.R
 import at.neuhaus.movieshelf.data.api.RetrofitClient
@@ -221,6 +225,40 @@ fun MovieItem(movie: Movie, onClick: () -> Unit) {
                         }
                     }
                 }
+
+                // Tag Banderole (top-right diagonal ribbon, wie v2-saas)
+                if (!movie.tag.isNullOrBlank()) {
+                    val firstTag = movie.tag.split(",").first().trim()
+                    val (ribbonColor, ribbonLabel) = movieTagStyle(firstTag)
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(56.dp)
+                            .clip(RectangleShape)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(90.dp)
+                                .background(ribbonColor)
+                                .align(Alignment.Center)
+                                .graphicsLayer {
+                                    rotationZ = 45f
+                                    translationX = 14.dp.toPx()
+                                    translationY = (-14).dp.toPx()
+                                }
+                                .padding(vertical = 3.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = ribbonLabel,
+                                color = Color.White,
+                                fontSize = 7.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 0.5.sp
+                            )
+                        }
+                    }
+                }
             }
             
             Column(Modifier.padding(8.dp)) {
@@ -245,4 +283,15 @@ fun MovieItem(movie: Movie, onClick: () -> Unit) {
             }
         }
     }
+}
+
+fun movieTagStyle(tag: String): Pair<Color, String> = when (tag.lowercase()) {
+    "dvd"                 -> Color(0xFF7C3E0A) to "DVD"
+    "bluray", "blu-ray"   -> Color(0xFF1A3A6E) to "BLU-RAY"
+    "4k", "4k uhd"        -> Color(0xFF0A4F5E) to "4K UHD"
+    "streaming", "stream" -> Color(0xFF14532D) to "STREAM"
+    "digital"             -> Color(0xFF3B1D6E) to "DIGITAL"
+    "vhs"                 -> Color(0xFF44403C) to "VHS"
+    "leihe"               -> Color(0xFF78350F) to "LEIHE"
+    else                  -> Color(0xFF1F2937) to tag.uppercase()
 }

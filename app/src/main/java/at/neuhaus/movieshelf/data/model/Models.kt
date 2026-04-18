@@ -40,10 +40,20 @@ data class Movie(
     @SerializedName("actors", alternate = ["cast", "credits"]) val actors: List<Actor>? = null,
     @SerializedName("tmdb_id") val tmdbId: String? = null,
     @SerializedName("rating_age") val ratingAge: Int? = null,
+    val tag: String? = null,
     // Felder für Boxsets
     @SerializedName("is_boxset") val isBoxset: Boolean? = false,
     @SerializedName("boxset_parent_id") val boxsetParentId: Int? = null,
     @SerializedName("boxset_children", alternate = ["movies"]) val boxsetChildren: List<Movie>? = null
+)
+
+data class TagItem(
+    val tag: String,
+    val count: Int
+)
+
+data class TagResponse(
+    val data: List<TagItem>
 )
 
 data class Actor(

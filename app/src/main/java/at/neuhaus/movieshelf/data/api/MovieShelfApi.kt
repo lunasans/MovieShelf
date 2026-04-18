@@ -13,14 +13,21 @@ interface MovieShelfApi {
     @GET("api/movies")
     suspend fun getMovies(
         @Query("page") page: Int = 1,
-        @Query("per_page") perPage: Int = 20
+        @Query("per_page") perPage: Int = 20,
+        @Query("tag") tag: String? = null
     ): MovieResponse
 
     @GET("api/movies/{id}")
     suspend fun getMovie(@Path("id") id: Int): SingleMovieResponse
 
     @GET("api/search")
-    suspend fun searchMovies(@Query("q") query: String): MovieResponse
+    suspend fun searchMovies(
+        @Query("q") query: String,
+        @Query("tag") tag: String? = null
+    ): MovieResponse
+
+    @GET("api/tags")
+    suspend fun getTags(): TagResponse
 
     @POST("api/movies/{id}/watched")
     suspend fun toggleWatched(@Path("id") id: Int): Map<String, Any>

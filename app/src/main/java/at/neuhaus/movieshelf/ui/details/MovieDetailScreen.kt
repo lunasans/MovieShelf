@@ -284,6 +284,18 @@ private fun MovieHeader(
         }
     }
 
+    if (!movie.tag.isNullOrBlank()) {
+        Spacer(Modifier.height(8.dp))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = fadeModifier
+        ) {
+            movie.tag.split(",").map { it.trim() }.filter { it.isNotEmpty() }.forEach { tag ->
+                TagBadge(tag = tag)
+            }
+        }
+    }
+
     if (!movie.director.isNullOrBlank()) {
         Spacer(Modifier.height(8.dp))
         MetadataItem(
@@ -382,6 +394,24 @@ fun FskBadge(age: Int) {
                 fontWeight = FontWeight.Bold
             )
         }
+    }
+}
+
+@Composable
+fun TagBadge(tag: String) {
+    val (bg, label) = at.neuhaus.movieshelf.ui.dashboard.movieTagStyle(tag)
+    Surface(
+        color = bg,
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Text(
+            text = label,
+            color = Color.White,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Black,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            letterSpacing = 1.sp
+        )
     }
 }
 
