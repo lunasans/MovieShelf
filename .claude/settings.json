@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Read(//c/xampp/mysql/data/**)"
+    ],
+    "additionalDirectories": [
+      "q:\\cloud.neuhaus.or.at\\repos\\dvd\\versions\\filmdb\\src\\pages\\api\\queue",
+      "q:\\cloud.neuhaus.or.at\\repos\\dvd\\versions\\filmdb"
+    ]
+  }
+}

@@ -9,6 +9,12 @@ Route::get('/info', [\App\Http\Controllers\Api\InfoController::class, 'index']);
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/login/2fa', [AuthController::class, 'login2fa'])->middleware('throttle:5,1');
 
+// OAuth2 Authorization Code Flow
+Route::get('/oauth/authorize',  [\App\Http\Controllers\Api\OAuthController::class, 'authorize']);
+Route::post('/oauth/authorize', [\App\Http\Controllers\Api\OAuthController::class, 'approveAuthorize'])->middleware('auth');
+Route::post('/oauth/token',     [\App\Http\Controllers\Api\OAuthController::class, 'token']);
+Route::get('/oauth/userinfo',   [\App\Http\Controllers\Api\OAuthController::class, 'userinfo'])->middleware('auth:sanctum');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', function (Request $request) {
