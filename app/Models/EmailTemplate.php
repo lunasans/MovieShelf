@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Blade;
 
 class EmailTemplate extends Model
 {
+    protected $connection = 'central';
+
     protected $fillable = [
         'slug',
         'name',
