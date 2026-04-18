@@ -107,6 +107,16 @@
                                 </form>
                                 @endif
 
+                                <form action="{{ route('cadmin.tenants.resend-activation', $tenant) }}" method="POST"
+                                      onsubmit="return confirm('Aktivierungs-E-Mail erneut an {{ $tenant->email }} senden?')">
+                                    @csrf
+                                    <button type="submit"
+                                            class="w-9 h-9 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 hover:border-amber-500/40 rounded-xl transition-all flex items-center justify-center"
+                                            title="Aktivierungs-E-Mail erneut senden">
+                                        <i class="bi bi-envelope-arrow-up text-sm"></i>
+                                    </button>
+                                </form>
+
                                 <form action="{{ route('cadmin.tenants.delete', $tenant) }}" method="POST"
                                       onsubmit="return confirm('Soll dieses Filmregal wirklich unwiderruflich gelöscht werden?')">
                                     @csrf

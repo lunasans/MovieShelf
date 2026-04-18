@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use App\Mail\TenantActivated;
+use App\Mail\TenantWelcome;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -118,6 +119,36 @@ class GlobalAdminController extends Controller
         $centralDomain = parse_url(config('app.url'), PHP_URL_HOST);
         $hostname = $domainRecord ? $domainRecord->domain : $tenant->id . '.' . $centralDomain;
         return 'https://' . $hostname . '/login';
+    }
+
+    public function resendActivationMail(Tenant $tenant)
+    {
+        if (!$tenant->email) {
+            return back()->with('error', "Kein E-Mail für Tenant '{$tenant->id}' hinterlegt.");
+        }
+
+        try {
+            $tenantUrl = $this->getTenantUrl($tenant);
+            $user = $tenant->run(fn () => User::where('is_admin', true)->first());
+
+            if (!$user) {
+                return back()->with('error', "Kein Admin-User für Tenant '{$tenant->id}' gefunden.");
+            }
+
+            if ($tenant->activated_at) {
+                Mail::to($tenant->email)->send(new TenantActivated($tenant, $user, $tenantUrl));
+            } else {
+                $activationUrl = route('tenant.activate', ['token' => $tenant->activation_token]);
+                Mail::to($tenant->email)->send(new TenantWelcome($tenant, $user, $activationUrl, $tenantUrl));
+            }
+
+            Log::info("Cadmin resent activation mail for tenant {$tenant->id}");
+        } catch (\Exception $e) {
+            Log::error("Resend activation mail failed for tenant {$tenant->id}: " . $e->getMessage());
+            return back()->with('error', "E-Mail konnte nicht gesendet werden: " . $e->getMessage());
+        }
+
+        return back()->with('success', "Aktivierungs-E-Mail wurde erneut an {$tenant->email} gesendet.");
     }
 
     public function delete(Tenant $tenant)
