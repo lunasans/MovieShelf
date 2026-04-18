@@ -38,9 +38,11 @@ trait ManagesEmailTemplates
         $template = EmailTemplate::getBySlug($this->templateSlug());
 
         if ($template) {
-            return new Content(
-                htmlString: $this->interpolateTemplate($template->content, $this->templateData()),
+            $html = \Illuminate\Support\Facades\Blade::render(
+                $template->content,
+                $this->templateData()
             );
+            return new Content(htmlString: $html);
         }
 
         return new Content(
