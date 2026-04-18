@@ -23,25 +23,23 @@
             <!-- Navigation Links -->
             <nav class="flex flex-wrap justify-center gap-4 md:gap-12">
                 @php
-                    $navClass = "text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2 " . 
+                    $navClass = "text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-2 " .
                                ($isStreaming ? "text-white/40 hover:text-rose-500" : "text-gray-500 hover:text-rose-500");
                 @endphp
 
-                @if(Route::has('dashboard'))
+                @if(Route::has('impressum'))
+                <a href="{{ route('impressum') }}" class="{{ $navClass }}">
+                    <i class="bi bi-info-circle"></i>
+                    {{ __('Imprint') }}
+                </a>
+                @elseif(Route::has('dashboard'))
                 <a href="{{ route('dashboard', ['impressum' => 1]) }}"
-                   @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('impressum-open') } else { window.location.href = $el.href }"
+                   @click.prevent="$dispatch('impressum-open')"
                    class="{{ $navClass }}">
                     <i class="bi bi-info-circle"></i>
                     {{ __('Imprint') }}
                 </a>
                 @endif
-                
-                @guest
-                    <a href="{{ route('login') }}" class="{{ $navClass }}">
-                        <i class="bi bi-person"></i>
-                        Login
-                    </a>
-                @endguest
             </nav>
 
             <!-- Stats Section -->
@@ -103,8 +101,8 @@
                         <span class="text-rose-500 font-black">v</span>{{ function_exists('tenant') && tenant() ? config('app.shelf_version') : config('app.saas_version') }}
                     </div>
                 </div>
-                <a href="https://github.com/lunasans/dvdprofiler.liste" target="_blank" class="text-white/10 hover:text-white transition-all transform hover:scale-125">
-                    <i class="bi bi-github text-xl md:text-2xl"></i>
+                <a href="{{ config('app.url') }}" target="_blank" class="text-white/10 hover:text-rose-500 transition-all transform hover:scale-125" title="MovieShelf Cloud">
+                    <i class="bi bi-cloud text-xl md:text-2xl"></i>
                 </a>
             </div>
 
@@ -118,6 +116,13 @@
                         Gratis gehostet auf {{ \App\Models\Setting::get('saas_name', 'MovieShelf Cloud') }}
                     </span>
                 </a>
+                @else
+                <div class="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/5 bg-white/[0.02]">
+                    <x-application-logo class="h-5 w-auto opacity-20" />
+                    <span class="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">
+                        {{ \App\Models\Setting::get('saas_name', 'MovieShelf Cloud') }}
+                    </span>
+                </div>
                 @endif
             </div>
 
