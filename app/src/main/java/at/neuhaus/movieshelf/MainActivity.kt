@@ -1,5 +1,7 @@
 package at.neuhaus.movieshelf
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -32,22 +34,37 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+    val oauthCallbackUri = mutableStateOf<Uri?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Aktiviert die randlose Anzeige (Edge-to-Edge) für Android 15 Kompatibilität
         enableEdgeToEdge()
+        handleIntent(intent)
 
         setContent {
             MovieShelfTheme {
-                MovieShelfApp()
+                MovieShelfApp(oauthCallbackUri)
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        val uri = intent.data
+        if (uri?.scheme == "movieshelf" && uri.host == "oauth") {
+            oauthCallbackUri.value = uri
         }
     }
 }
 
 @Composable
-fun MovieShelfApp() {
+fun MovieShelfApp(oauthCallbackUri: MutableState<Uri?> = mutableStateOf(null)) {
     val context = LocalContext.current
     val dataStoreManager = remember { DataStoreManager(context) }
     val serverUrl by dataStoreManager.serverUrl.collectAsState(initial = null)
@@ -108,7 +125,9 @@ fun MovieShelfApp() {
                             dataStoreManager.saveServerUrl("")
                             dataStoreManager.saveAuthToken(null)
                         }
-                    }
+                    },
+                    oauthCallbackUri = oauthCallbackUri.value,
+                    onOAuthCallbackConsumed = { oauthCallbackUri.value = null }
                 )
             }
             composable("dashboard") {

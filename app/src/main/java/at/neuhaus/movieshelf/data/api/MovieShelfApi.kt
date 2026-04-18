@@ -74,4 +74,11 @@ interface MovieShelfApi {
     // Stats - Rückgabe ist direkt das Stats Objekt
     @GET("api/stats")
     suspend fun getStats(): Stats
+
+    // OAuth
+    @POST("api/oauth/token")
+    suspend fun exchangeOAuthCode(@Body request: Map<String, String>): OAuthTokenResponse
+
+    @GET("api/oauth/userinfo")
+    suspend fun getOAuthUserInfo(@Header("Authorization") bearer: String): OAuthUserInfo
 }

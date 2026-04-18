@@ -145,3 +145,15 @@ data class ServerInfo(
     @SerializedName("app_name") val appName: String? = null,
     val version: String? = null
 )
+
+data class OAuthTokenResponse(
+    @SerializedName("access_token") val accessToken: String,
+    @SerializedName("token_type")   val tokenType: String = "Bearer"
+)
+
+data class OAuthUserInfo(
+    val id: Int,
+    val name: String,
+    val username: String?,
+    val email: String
+)
