@@ -12,14 +12,15 @@ use Illuminate\Support\Str;
 class OAuthController extends Controller
 {
     // GET /oauth/authorize
-    // Zeigt dem eingeloggten User die Berechtigungsseite
     public function authorize(Request $request)
     {
         $request->validate([
-            'client_id'     => 'required|string',
-            'redirect_uri'  => 'required|url',
-            'response_type' => 'required|in:code',
-            'state'         => 'required|string',
+            'client_id'              => 'required|string',
+            'redirect_uri'           => 'required|url',
+            'response_type'          => 'required|in:code',
+            'state'                  => 'required|string',
+            'code_challenge'         => 'nullable|string',
+            'code_challenge_method'  => 'nullable|in:S256',
         ]);
 
         $client = OAuthClient::where('client_id', $request->client_id)
@@ -31,27 +32,28 @@ class OAuthController extends Controller
         }
 
         if (! Auth::check()) {
-            return redirect()->route('login', [
-                'intended' => $request->fullUrl(),
-            ]);
+            return redirect()->route('login', ['intended' => $request->fullUrl()]);
         }
 
         return view('oauth.authorize', [
-            'client'       => $client,
-            'redirect_uri' => $request->redirect_uri,
-            'state'        => $request->state,
+            'client'                => $client,
+            'redirect_uri'          => $request->redirect_uri,
+            'state'                 => $request->state,
+            'code_challenge'        => $request->code_challenge,
+            'code_challenge_method' => $request->code_challenge_method ?? 'S256',
         ]);
     }
 
     // POST /oauth/authorize
-    // User genehmigt oder lehnt ab
     public function approveAuthorize(Request $request)
     {
         $request->validate([
-            'client_id'    => 'required|string',
-            'redirect_uri' => 'required|url',
-            'state'        => 'required|string',
-            'approved'     => 'required|boolean',
+            'client_id'              => 'required|string',
+            'redirect_uri'           => 'required|url',
+            'state'                  => 'required|string',
+            'approved'               => 'required|boolean',
+            'code_challenge'         => 'nullable|string',
+            'code_challenge_method'  => 'nullable|in:S256',
         ]);
 
         $redirectUri = $request->redirect_uri;
@@ -71,11 +73,13 @@ class OAuthController extends Controller
         $code = Str::random(40);
 
         OAuthAuthCode::create([
-            'code'         => $code,
-            'user_id'      => Auth::id(),
-            'client_id'    => $client->client_id,
-            'redirect_uri' => $redirectUri,
-            'expires_at'   => now()->addMinutes(5),
+            'code'                  => $code,
+            'user_id'               => Auth::id(),
+            'client_id'             => $client->client_id,
+            'redirect_uri'          => $redirectUri,
+            'expires_at'            => now()->addMinutes(5),
+            'code_challenge'        => $request->code_challenge,
+            'code_challenge_method' => $request->code_challenge_method,
         ]);
 
         return redirect($redirectUri . '?' . http_build_query([
@@ -85,7 +89,6 @@ class OAuthController extends Controller
     }
 
     // POST /oauth/token
-    // Tauscht Authorization Code gegen Sanctum-Token
     public function token(Request $request)
     {
         $request->validate([
@@ -93,16 +96,23 @@ class OAuthController extends Controller
             'code'          => 'required|string',
             'redirect_uri'  => 'required|url',
             'client_id'     => 'required|string',
-            'client_secret' => 'required|string',
+            'client_secret' => 'nullable|string',
+            'code_verifier' => 'nullable|string',
         ]);
 
         $client = OAuthClient::where('client_id', $request->client_id)
-            ->where('client_secret', $request->client_secret)
             ->where('is_active', true)
             ->first();
 
         if (! $client) {
             return response()->json(['error' => 'invalid_client'], 401);
+        }
+
+        // Public clients brauchen kein Secret, vertrauliche Clients müssen es prüfen
+        if (! $client->is_public) {
+            if (! $request->client_secret || $client->client_secret !== $request->client_secret) {
+                return response()->json(['error' => 'invalid_client'], 401);
+            }
         }
 
         $authCode = OAuthAuthCode::where('code', $request->code)
@@ -119,6 +129,16 @@ class OAuthController extends Controller
             return response()->json(['error' => 'invalid_grant'], 400);
         }
 
+        // PKCE-Verifier prüfen, wenn ein Challenge gespeichert wurde
+        if ($authCode->code_challenge) {
+            if (! $request->code_verifier) {
+                return response()->json(['error' => 'code_verifier fehlt'], 400);
+            }
+            if (! $this->verifyPkce($request->code_verifier, $authCode->code_challenge, $authCode->code_challenge_method)) {
+                return response()->json(['error' => 'invalid_grant'], 400);
+            }
+        }
+
         $authCode->update(['used' => true]);
 
         $user  = $authCode->user;
@@ -130,21 +150,7 @@ class OAuthController extends Controller
         ]);
     }
 
-    private function redirectUriMatches(string $registered, string $provided): bool
-    {
-        // Exakter Match
-        if ($registered === $provided) return true;
-
-        // Custom-Protocol (z.B. movieshelf://) – Schema + Host müssen übereinstimmen
-        $r = parse_url($registered);
-        $p = parse_url($provided);
-
-        return ($r['scheme'] ?? '') === ($p['scheme'] ?? '')
-            && ($r['host']   ?? '') === ($p['host']   ?? '')
-            && ($r['path']   ?? '/') === ($p['path']  ?? '/');
-    }
-
-    // GET /oauth/userinfo  (Authorization: Bearer <token>)
+    // GET /oauth/userinfo
     public function userinfo(Request $request)
     {
         $user = $request->user();
@@ -155,5 +161,29 @@ class OAuthController extends Controller
             'username' => $user->username,
             'email'    => $user->email,
         ]);
+    }
+
+    private function verifyPkce(string $verifier, string $storedChallenge, ?string $method): bool
+    {
+        $method = $method ?? 'S256';
+
+        if ($method === 'S256') {
+            $computed = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
+            return hash_equals($storedChallenge, $computed);
+        }
+
+        return false;
+    }
+
+    private function redirectUriMatches(string $registered, string $provided): bool
+    {
+        if ($registered === $provided) return true;
+
+        $r = parse_url($registered);
+        $p = parse_url($provided);
+
+        return ($r['scheme'] ?? '') === ($p['scheme'] ?? '')
+            && ($r['host']   ?? '') === ($p['host']   ?? '')
+            && ($r['path']   ?? '/') === ($p['path']  ?? '/');
     }
 }

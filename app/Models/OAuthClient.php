@@ -10,5 +10,5 @@ class OAuthClient extends Model
     protected $keyType    = 'string';
     public    $incrementing = false;
 
-    protected $fillable = ['client_id', 'client_secret', 'name', 'redirect_uri', 'is_active'];
+    protected $fillable = ['client_id', 'client_secret', 'name', 'redirect_uri', 'is_active', 'is_public'];
 }

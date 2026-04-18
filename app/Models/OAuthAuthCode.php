@@ -10,7 +10,7 @@ class OAuthAuthCode extends Model
     protected $keyType    = 'string';
     public    $incrementing = false;
 
-    protected $fillable = ['code', 'user_id', 'client_id', 'redirect_uri', 'used', 'expires_at'];
+    protected $fillable = ['code', 'user_id', 'client_id', 'redirect_uri', 'used', 'expires_at', 'code_challenge', 'code_challenge_method'];
 
     protected $casts = [
         'expires_at' => 'datetime',

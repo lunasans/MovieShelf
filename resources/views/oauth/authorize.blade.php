@@ -44,20 +44,28 @@
             <div class="flex gap-3">
                 <form method="POST" action="/oauth/authorize" class="flex-1">
                     @csrf
-                    <input type="hidden" name="client_id"    value="{{ $client->client_id }}">
-                    <input type="hidden" name="redirect_uri" value="{{ $redirect_uri }}">
-                    <input type="hidden" name="state"        value="{{ $state }}">
-                    <input type="hidden" name="approved"     value="0">
+                    <input type="hidden" name="client_id"             value="{{ $client->client_id }}">
+                    <input type="hidden" name="redirect_uri"          value="{{ $redirect_uri }}">
+                    <input type="hidden" name="state"                  value="{{ $state }}">
+                    <input type="hidden" name="approved"               value="0">
+                    @if($code_challenge)
+                    <input type="hidden" name="code_challenge"         value="{{ $code_challenge }}">
+                    <input type="hidden" name="code_challenge_method"  value="{{ $code_challenge_method }}">
+                    @endif
                     <button type="submit" class="w-full border border-gray-600 text-gray-300 py-2.5 rounded-xl hover:bg-gray-800 transition-colors text-sm">
                         Ablehnen
                     </button>
                 </form>
                 <form method="POST" action="/oauth/authorize" class="flex-1">
                     @csrf
-                    <input type="hidden" name="client_id"    value="{{ $client->client_id }}">
-                    <input type="hidden" name="redirect_uri" value="{{ $redirect_uri }}">
-                    <input type="hidden" name="state"        value="{{ $state }}">
-                    <input type="hidden" name="approved"     value="1">
+                    <input type="hidden" name="client_id"             value="{{ $client->client_id }}">
+                    <input type="hidden" name="redirect_uri"          value="{{ $redirect_uri }}">
+                    <input type="hidden" name="state"                  value="{{ $state }}">
+                    <input type="hidden" name="approved"               value="1">
+                    @if($code_challenge)
+                    <input type="hidden" name="code_challenge"         value="{{ $code_challenge }}">
+                    <input type="hidden" name="code_challenge_method"  value="{{ $code_challenge_method }}">
+                    @endif
                     <button type="submit" class="w-full bg-amber-400 text-gray-950 font-semibold py-2.5 rounded-xl hover:bg-amber-300 transition-colors text-sm">
                         Erlauben
                     </button>
