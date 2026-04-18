@@ -53,6 +53,24 @@
         <template v-if="settings.mode === 'online'">
           <div class="space-y-4">
             <SettingsInput label="Shelf URL" type="url" v-model="settings.shelfUrl" placeholder="https://dein-name.movieshelf.info" />
+
+            <!-- OAuth Login -->
+            <button
+              @click="doOAuthLogin"
+              :disabled="oauthLoading || !settings.shelfUrl"
+              class="w-full bg-[var(--bg-card)] hover:bg-[var(--bg-elevated)] border border-[var(--border-ui)] disabled:opacity-40 text-[var(--text-main)] font-bold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+            >
+              <i class="bi bi-shield-lock"></i>
+              {{ oauthLoading ? 'Warte auf Browser...' : 'Mit Movieshelf anmelden' }}
+            </button>
+
+            <!-- Divider -->
+            <div class="flex items-center gap-3">
+              <div class="flex-1 h-px bg-[var(--border-ui)]"></div>
+              <span class="text-xs text-[var(--text-muted)] opacity-50">oder manuell</span>
+              <div class="flex-1 h-px bg-[var(--border-ui)]"></div>
+            </div>
+
             <SettingsInput label="E-Mail" type="email" v-model="loginEmail" placeholder="deine@email.de" />
             <SettingsInput label="Passwort" type="password" v-model="loginPassword" placeholder="••••••••" />
 
@@ -171,6 +189,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, defineComponent, h } from 'vue'
+import axios from 'axios'
 import { useSettingsStore } from '@/stores/settings'
 import { useApi } from '@/composables/useApi'
 import { useUpdateService } from '@/services/updateService'
@@ -269,6 +288,9 @@ const loginLoading     = ref(false)
 const loginError       = ref('')
 const loginSuccess     = ref(false)
 
+const oauthLoading     = ref(false)
+const oauthState       = ref('')
+
 const checkingUpdate   = ref(false)
 const downloading      = ref(false)
 const downloadProgress = ref(0)
@@ -304,6 +326,67 @@ onMounted(async () => {
 async function handleUpdateCheck() {
   checkingUpdate.value = true
   try { await checkForUpdates() } finally { checkingUpdate.value = false }
+}
+
+async function generatePkce(): Promise<{ verifier: string; challenge: string }> {
+  const array = new Uint8Array(32)
+  window.crypto.getRandomValues(array)
+  const verifier = btoa(String.fromCharCode(...array))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+
+  const data    = new TextEncoder().encode(verifier)
+  const hash    = await window.crypto.subtle.digest('SHA-256', data)
+  const challenge = btoa(String.fromCharCode(...new Uint8Array(hash)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+
+  return { verifier, challenge }
+}
+
+async function doOAuthLogin() {
+  if (!settings.shelfUrl) return
+  loginError.value   = ''
+  loginSuccess.value = false
+  oauthLoading.value = true
+
+  const state = crypto.randomUUID()
+  oauthState.value = state
+
+  const { verifier, challenge } = await generatePkce()
+
+  const params = new URLSearchParams({
+    response_type:          'code',
+    client_id:              'filmdb-desktop',
+    redirect_uri:           'movieshelf://oauth/callback',
+    state,
+    code_challenge:         challenge,
+    code_challenge_method:  'S256',
+  })
+
+  window.electron.oauth.onCallback(async ({ code, state: returnedState }) => {
+    oauthLoading.value = false
+    if (returnedState !== oauthState.value) {
+      loginError.value = 'OAuth Sicherheitsfehler – bitte erneut versuchen.'
+      return
+    }
+    try {
+      const res = await axios.post(`${settings.shelfUrl}/api/oauth/token`, {
+        grant_type:    'authorization_code',
+        code,
+        redirect_uri:  'movieshelf://oauth/callback',
+        client_id:     'filmdb-desktop',
+        code_verifier: verifier,
+      })
+      settings.token = res.data.access_token
+      await settings.save()
+      loginSuccess.value = true
+    } catch {
+      loginError.value = 'Token-Austausch fehlgeschlagen.'
+    }
+  })
+
+  await window.electron.oauth.openBrowser(
+    `${settings.shelfUrl}/api/oauth/authorize?${params}`
+  )
 }
 
 async function doLogin() {

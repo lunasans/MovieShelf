@@ -10,10 +10,41 @@ import { registerSettingsHandlers } from './handlers/settings'
 import { registerMediaHandlers } from './handlers/media'
 import { registerListHandlers } from './handlers/lists'
 import { registerStatsHandlers } from './handlers/stats'
+import { registerOAuthHandlers } from './handlers/oauth'
 
 const isDev = !app.isPackaged || process.env.NODE_ENV === 'development'
 
 let mainWindow: BrowserWindow | null = null
+
+// ── OAuth Deep-Link Handler ───────────────────────────────────────────────────
+
+function handleDeepLink(url: string) {
+  if (!url.startsWith('movieshelf://oauth/callback')) return
+  try {
+    const parsed = new URL(url)
+    const code   = parsed.searchParams.get('code')
+    const state  = parsed.searchParams.get('state')
+    if (code) mainWindow?.webContents.send('oauth:callback', { code, state })
+  } catch { /* ignore malformed URLs */ }
+}
+
+// Single-instance lock so deep links on Windows/Linux reach the running app
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+if (!gotSingleInstanceLock) {
+  app.quit()
+}
+
+app.on('second-instance', (_event, argv) => {
+  const deepLink = argv.find(a => a.startsWith('movieshelf://'))
+  if (deepLink) handleDeepLink(deepLink)
+  if (mainWindow) { mainWindow.show(); mainWindow.focus() }
+})
+
+// macOS deep link
+app.on('open-url', (event, url) => {
+  event.preventDefault()
+  handleDeepLink(url)
+})
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -91,12 +122,16 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Register custom protocol for OAuth deep links
+  app.setAsDefaultProtocolClient('movieshelf')
+
   setupDatabase()
   registerMovieHandlers()
   registerSettingsHandlers()
   registerMediaHandlers()
   registerListHandlers()
   registerStatsHandlers()
+  registerOAuthHandlers()
 
   // Register local resource protocol
   protocol.handle('movie-resource', (request) => {

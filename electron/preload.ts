@@ -78,4 +78,13 @@ contextBridge.exposeInMainWorld('electron', {
     set:    (key: string, value: unknown) => ipcRenderer.invoke('settings:set', key, value),
     getAll: ()                         => ipcRenderer.invoke('settings:getAll'),
   },
+
+  // OAuth
+  oauth: {
+    openBrowser: (url: string) => ipcRenderer.invoke('oauth:open-browser', url),
+    onCallback:  (cb: (payload: { code: string; state: string }) => void) => {
+      ipcRenderer.removeAllListeners('oauth:callback')
+      ipcRenderer.on('oauth:callback', (_event, payload) => cb(payload))
+    },
+  },
 })
