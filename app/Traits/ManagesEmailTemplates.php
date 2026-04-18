@@ -54,17 +54,29 @@ trait ManagesEmailTemplates
      */
     protected function interpolateTemplate(string $template, array $data): string
     {
+        // Handle {{ $object->property }}
+        $template = preg_replace_callback('/\{\{\s*\$(\w+)->(\w+)\s*\}\}/', function ($m) use ($data) {
+            $obj = $data[$m[1]] ?? null;
+            return $obj && is_object($obj) ? e((string) ($obj->{$m[2]} ?? '')) : '';
+        }, $template);
+
+        // Handle {{ config('key') }} and {{ config("key") }}
+        $template = preg_replace_callback('/\{\{\s*config\([\'"]([^\'"]+)[\'"]\)\s*\}\}/', function ($m) {
+            return e((string) (config($m[1]) ?? ''));
+        }, $template);
+
+        // Handle simple {{ $key }} and {!! $key !!}
         foreach ($data as $key => $value) {
+            if (!is_scalar($value)) continue;
             $escaped = e((string) $value);
-            // Escaped output: {{ $key }}
             $template = str_replace('{{ $'.$key.' }}', $escaped, $template);
             $template = str_replace('{{$'.$key.'}}', $escaped, $template);
             $template = str_replace('{{ $'.$key.'}}', $escaped, $template);
             $template = str_replace('{{$'.$key.' }}', $escaped, $template);
-            // Unescaped output: {!! $key !!}
             $template = str_replace('{!! $'.$key.' !!}', (string) $value, $template);
             $template = str_replace('{!!$'.$key.'!!}', (string) $value, $template);
         }
+
         return $template;
     }
 
