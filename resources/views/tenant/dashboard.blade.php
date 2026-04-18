@@ -1,4 +1,4 @@
-<x-app-layout>
+ <x-app-layout>
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('dashboard', () => ({

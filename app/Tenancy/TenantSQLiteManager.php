@@ -25,6 +25,13 @@ class TenantSQLiteManager extends SQLiteDatabaseManager
         return $path . DIRECTORY_SEPARATOR . 'database.sqlite';
     }
 
+    public function createDatabase(TenantWithDatabase $tenant): bool
+    {
+        $path = $this->getTenantDatabasePath($tenant->database()->getName());
+
+        return file_put_contents($path, '') !== false;
+    }
+
     public function databaseExists(string $name): bool
     {
         return file_exists($this->getTenantDatabasePath($name));
