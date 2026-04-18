@@ -100,14 +100,10 @@ class RegisterTenantController extends Controller
         $defaultLayout = Setting::get('default_tenant_layout', 'classic');
         $defaultLanguage = Setting::get('default_tenant_language', 'de');
 
-        $tenant->run(function () use ($defaultLayout, $defaultLanguage) {
+        $tenant->run(function () use ($defaultLayout) {
             DB::table('settings')->updateOrInsert(
-                ['key' => 'site_layout'],
-                ['value' => $defaultLayout, 'group' => 'pwa', 'updated_at' => now()]
-            );
-            DB::table('settings')->updateOrInsert(
-                ['key' => 'app_language'],
-                ['value' => $defaultLanguage, 'group' => 'pwa', 'updated_at' => now()]
+                ['key' => 'default_guest_layout'],
+                ['value' => $defaultLayout, 'group' => 'ui', 'updated_at' => now()]
             );
             DB::table('settings')->updateOrInsert(
                 ['key' => 'site_title'],
@@ -126,6 +122,7 @@ class RegisterTenantController extends Controller
             'username' => $username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'language' => $defaultLanguage,
             'is_admin' => true,
         ];
 
