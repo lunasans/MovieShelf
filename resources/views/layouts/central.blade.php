@@ -28,6 +28,7 @@
         }
 
         h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .display, .display-italic { font-family: 'Fraunces', Georgia, serif; }
         
         .glass-ultra {
             background: rgba(255, 255, 255, 0.8);
@@ -77,9 +78,8 @@
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 right-0 z-50 px-8 py-6" x-data="{ menuOpen: false }">
         <div class="max-w-[1400px] mx-auto rounded-[8px] px-8 py-4 flex items-center justify-between transition-all duration-1200 glass-ultra shadow-sm relative">
-            <div class="flex items-center gap-4">
-                <img src="/img/logo/logo_small.png" alt="Logo" class="h-10 bg-black/5 p-2 rounded-lg">
-                <span class="text-2xl font-black tracking-tight text-[#222222]">MOVIE<span class="text-orange-600">SHELF</span></span>
+            <div class="flex items-center">
+                <img src="/img/logo/logo.png" alt="MovieShelf" class="h-9 object-contain">
             </div>
             {{-- Desktop nav --}}
             <div class="hidden md:flex items-center gap-10 text-[13px] font-bold tracking-tight text-gray-500">
@@ -146,9 +146,8 @@
         <div class="max-w-[1400px] mx-auto px-8 grid md:grid-cols-4 gap-12">
             {{-- Brand --}}
             <div class="space-y-4">
-                <div class="flex items-center gap-4">
-                    <img src="/img/logo/logo_small.png" alt="Logo" class="h-10 p-1">
-                    <span class="font-extrabold text-2xl text-[#222222]">MovieShelf</span>
+                <div class="flex items-center">
+                    <img src="/img/logo/logo_small.png" alt="MovieShelf" class="h-11 w-11 object-contain">
                 </div>
                 <p class="text-gray-500 text-sm font-medium leading-relaxed">
                     Deine Filmsammlung in der Cloud –<br>

@@ -31,10 +31,6 @@ class OAuthController extends Controller
             return response()->json(['error' => 'redirect_uri stimmt nicht überein'], 400);
         }
 
-        if (! Auth::check()) {
-            return redirect()->route('login', ['intended' => $request->fullUrl()]);
-        }
-
         return view('oauth.authorize', [
             'client'                => $client,
             'redirect_uri'          => $request->redirect_uri,

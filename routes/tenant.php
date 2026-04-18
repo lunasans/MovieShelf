@@ -188,6 +188,10 @@ Route::middleware([
     // Signatur-Banner
     Route::get('/signature', [\App\Http\Controllers\SignatureController::class, 'show'])->name('signature');
 
+    // OAuth2 Authorization (needs session/web context)
+    Route::get('/oauth/authorize',  [\App\Http\Controllers\Api\OAuthController::class, 'authorize'])->middleware('auth');
+    Route::post('/oauth/authorize', [\App\Http\Controllers\Api\OAuthController::class, 'approveAuthorize'])->middleware('auth');
+
     // Auth Routes for Tenants
     require __DIR__.'/auth.php';
 });
