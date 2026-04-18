@@ -21,6 +21,7 @@ class MovieResource extends JsonResource
             'rating' => $this->rating,
             'rating_age' => (int) $this->rating_age,
             'genre' => $this->genre,
+            'tag' => $this->tag,
             'overview' => $this->overview,
             'runtime' => $this->runtime,
             'director' => $this->director,

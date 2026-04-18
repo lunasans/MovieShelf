@@ -17,8 +17,9 @@ class MovieController extends Controller
         tags: ['Movies'],
         security: [['apiAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'per_page', in: 'query', description: 'Anzahl der Filme pro Seite', required: false, schema: new OA\Schema(type: 'integer', default: 20)), // Default 20 in docs as placeholder
-            new OA\Parameter(name: 'page', in: 'query', description: 'Seitenzahl', required: false, schema: new OA\Schema(type: 'integer', default: 1))
+            new OA\Parameter(name: 'per_page', in: 'query', description: 'Anzahl der Filme pro Seite', required: false, schema: new OA\Schema(type: 'integer', default: 20)),
+            new OA\Parameter(name: 'page', in: 'query', description: 'Seitenzahl', required: false, schema: new OA\Schema(type: 'integer', default: 1)),
+            new OA\Parameter(name: 'tag', in: 'query', description: 'Nach Tag filtern', required: false, schema: new OA\Schema(type: 'string'))
         ],
         responses: [
             new OA\Response(
@@ -32,14 +33,20 @@ class MovieController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Nicht autorisiert')
         ]
     )]
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', \App\Models\Setting::get('items_per_page', 20));
-        $movies = Movie::where('is_deleted', false)
-            ->with(['actors'])
+        $tag = $request->get('tag');
+
+        $query = Movie::where('is_deleted', false);
+
+        if ($tag) {
+            $query->where('tag', 'like', "%{$tag}%");
+        }
+
+        $movies = $query->with(['actors'])
             ->withCount('boxsetChildren')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
@@ -77,7 +84,8 @@ class MovieController extends Controller
         tags: ['Movies'],
         security: [['apiAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'q', in: 'query', description: 'Suchbegriff (Titel oder Regisseur)', required: true, schema: new OA\Schema(type: 'string'))
+            new OA\Parameter(name: 'q', in: 'query', description: 'Suchbegriff (Titel oder Regisseur)', required: true, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'tag', in: 'query', description: 'Zusätzlich nach Tag filtern', required: false, schema: new OA\Schema(type: 'string'))
         ],
         responses: [
             new OA\Response(
@@ -89,19 +97,29 @@ class MovieController extends Controller
     )]
     public function search(Request $request)
     {
-        $query = $request->get('q');
+        $queryStr = $request->get('q');
+        $tag = $request->get('tag');
         
-        if (empty($query)) {
+        if (empty($queryStr) && empty($tag)) {
             return response()->json(['data' => []]);
         }
 
         $perPage = \App\Models\Setting::get('items_per_page', 20);
-        $movies = Movie::where('is_deleted', false)
-            ->where(function($q) use ($query) {
-                $q->where('title', 'like', "%{$query}%")
-                  ->orWhere('director', 'like', "%{$query}%");
-            })
-            ->with(['actors'])
+        $moviesQuery = Movie::where('is_deleted', false);
+
+        if ($queryStr) {
+            $moviesQuery->where(function($q) use ($queryStr) {
+                $q->where('title', 'like', "%{$queryStr}%")
+                  ->orWhere('director', 'like', "%{$queryStr}%")
+                  ->orWhere('tag', 'like', "%{$queryStr}%");
+            });
+        }
+
+        if ($tag) {
+            $moviesQuery->where('tag', 'like', "%{$tag}%");
+        }
+
+        $movies = $moviesQuery->with(['actors'])
             ->withCount('boxsetChildren')
             ->paginate($perPage);
 
