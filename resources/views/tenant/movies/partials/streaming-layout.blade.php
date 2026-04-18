@@ -103,18 +103,19 @@
         @endphp
         <div class="px-12 md:px-20 mt-6">
             <form action="{{ route('dashboard') }}" method="GET"
-                  class="glass border {{ $hasActiveFilters ? 'border-blue-500/30' : 'border-white/10' }} rounded-2xl p-4 flex flex-wrap gap-3 items-end">
+                  class="glass border {{ $hasActiveFilters ? 'border-blue-500/30' : 'border-white/10' }} rounded-2xl p-5 w-full"
+                  style="display:grid; grid-template-columns: auto 1fr 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
                 <input type="hidden" name="q" value="{{ request('q') }}">
                 <input type="hidden" name="type" value="{{ request('type') }}">
 
-                <div class="flex items-center gap-1.5 text-gray-500 self-center shrink-0">
+                <div class="flex items-center gap-2 text-gray-500 self-center shrink-0 pr-2 border-r border-white/10">
                     <i class="bi bi-funnel-fill text-sm {{ $hasActiveFilters ? 'text-blue-400' : '' }}"></i>
                     <span class="text-[9px] font-black uppercase tracking-widest {{ $hasActiveFilters ? 'text-blue-400' : '' }}">Filter</span>
                 </div>
 
-                <div class="flex flex-col gap-1 min-w-[120px]">
+                <div style="display:flex;flex-direction:column;gap:0.375rem;">
                     <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Genre</label>
-                    <select name="genre" class="bg-white/5 border {{ request('genre') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 appearance-none cursor-pointer">
+                    <select name="genre" class="w-full bg-white/5 border {{ request('genre') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 appearance-none cursor-pointer">
                         <option value="">Alle</option>
                         @foreach($genres as $genre)
                             <option value="{{ $genre }}" {{ request('genre') === $genre ? 'selected' : '' }} class="bg-zinc-900 text-white">{{ $genre }}</option>
@@ -122,27 +123,27 @@
                     </select>
                 </div>
 
-                <div class="flex flex-col gap-1">
+                <div style="display:flex;flex-direction:column;gap:0.375rem;">
                     <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Jahr</label>
-                    <div class="flex items-center gap-1">
+                    <div class="flex items-center gap-2">
                         <input type="number" name="year_from" value="{{ request('year_from') }}" placeholder="von" min="1900" max="{{ date('Y') }}"
-                            class="w-20 bg-white/5 border {{ request('year_from') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
-                        <span class="text-gray-600 text-xs">–</span>
+                            class="w-full bg-white/5 border {{ request('year_from') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                        <span class="text-gray-600 text-xs shrink-0">–</span>
                         <input type="number" name="year_to" value="{{ request('year_to') }}" placeholder="bis" min="1900" max="{{ date('Y') }}"
-                            class="w-20 bg-white/5 border {{ request('year_to') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                            class="w-full bg-white/5 border {{ request('year_to') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-1">
+                <div style="display:flex;flex-direction:column;gap:0.375rem;">
                     <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Mind. Bewertung</label>
                     <input type="number" name="rating_min" value="{{ request('rating_min') }}" placeholder="0–10" min="0" max="10" step="0.5"
-                        class="w-24 bg-white/5 border {{ request('rating_min') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                        class="w-full bg-white/5 border {{ request('rating_min') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
                 </div>
 
-                <div class="flex flex-col gap-1">
+                <div style="display:flex;flex-direction:column;gap:0.375rem;">
                     <label class="text-[9px] font-black text-white/30 uppercase tracking-widest px-1">Max. Laufzeit (Min.)</label>
                     <input type="number" name="runtime_max" value="{{ request('runtime_max') }}" placeholder="z.B. 120" min="1"
-                        class="w-28 bg-white/5 border {{ request('runtime_max') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
+                        class="w-full bg-white/5 border {{ request('runtime_max') ? 'border-blue-500/50 text-white' : 'border-white/10 text-gray-400' }} rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-blue-500/50 placeholder:text-gray-600">
                 </div>
 
                 <div class="flex gap-2 self-end">
