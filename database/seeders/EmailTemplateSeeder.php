@@ -99,6 +99,30 @@ Danke,<br>
             'variables_hint' => '$tenantId, $inactiveDays, $daysUntilDeletion, $loginUrl'
         ]);
 
+        EmailTemplate::updateOrCreate(['slug' => 'password_reset'], [
+            'name' => 'Passwort zurücksetzen',
+            'subject' => 'Passwort zurücksetzen – {{ config(\'app.name\') }}',
+            'content' => '<x-mail::message>
+# Passwort zurücksetzen
+
+Hallo {{ $user->name }},
+
+du hast eine Anfrage zum Zurücksetzen deines Passworts gestellt.
+
+<x-mail::button :url="$resetUrl">
+Passwort zurücksetzen
+</x-mail::button>
+
+Dieser Link ist **60 Minuten** gültig.
+
+Falls du keine Passwortzurücksetzung angefordert hast, kannst du diese E-Mail ignorieren.
+
+Danke,<br>
+{{ config(\'app.name\') }}
+</x-mail::message>',
+            'variables_hint' => '$user->name, $resetUrl'
+        ]);
+
         EmailTemplate::updateOrCreate(['slug' => 'tenant_inactivity_warning'], [
             'name' => 'Inaktivitäts-Warnung',
             'subject' => 'Dein MovieShelf wartet auf dich!',

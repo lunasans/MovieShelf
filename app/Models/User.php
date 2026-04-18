@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Mail\PasswordResetMail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 
@@ -62,6 +64,12 @@ class User extends Authenticatable
     public function hasTwoFactorEnabled(): bool
     {
         return ! is_null($this->two_factor_confirmed_at);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $resetUrl = url(route('password.reset', ['token' => $token, 'email' => $this->email], false));
+        Mail::to($this->email)->send(new PasswordResetMail($this, $resetUrl));
     }
 
     public function watchedMovies()
