@@ -1,7 +1,7 @@
 @php
-    $currentHost = request()->getHost();
-    $centralDomains = explode(',', env('CENTRAL_DOMAINS', 'movieshelf.info,www.movieshelf.info'));
-    $isCentral = in_array($currentHost, array_merge(['localhost', '127.0.0.1'], $centralDomains));
+    $isCentral = !(function_exists('tenancy') && tenancy()->initialized);
+    $adminEmails = array_filter(array_map('trim', explode(',', config('app.central_admin_emails', ''))));
+    $isCentralAdmin = $isCentral && auth()->check() && in_array(auth()->user()->email, $adminEmails);
     $siteTitle = $isCentral ? \App\Models\Setting::get('saas_name', 'MovieShelf Cloud') : \App\Models\Setting::get('site_title', 'MovieShelf');
     $homeLink = Route::has('dashboard') ? route('dashboard') : (Route::has('landing') ? route('landing') : '/');
 @endphp
@@ -101,7 +101,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
             </a>
             @endif
 
-            @if($isCentral && Route::has('cadmin.settings'))
+            @if($isCentralAdmin && Route::has('cadmin.settings'))
             <a href="{{ route('cadmin.settings') }}"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('cadmin.settings') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-gear-fill mr-2"></i> {{ __('SaaS Settings') }}
@@ -157,19 +157,19 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                                 </x-dropdown-link>
                                 @endif
 
-                                @if($isCentral && Route::has('cadmin.dashboard'))
+                                @if($isCentralAdmin && Route::has('cadmin.dashboard'))
                                 <x-dropdown-link :href="route('cadmin.dashboard')" class="rounded-xl flex items-center gap-3">
                                     <i class="bi bi-speedometer2 text-sm opacity-50"></i>
                                     <span>{{ __('Admin Panel') }}</span>
                                 </x-dropdown-link>
-                                @elseif(Route::has('admin.dashboard'))
+                                @elseif(!$isCentral && auth()->user()?->is_admin && Route::has('admin.dashboard'))
                                 <x-dropdown-link :href="route('admin.dashboard')" class="rounded-xl flex items-center gap-3">
                                     <i class="bi bi-speedometer2 text-sm opacity-50"></i>
                                     <span>{{ __('Admin Panel') }}</span>
                                 </x-dropdown-link>
                                 @endif
 
-                                @if($isCentral && Route::has('cadmin.settings'))
+                                @if($isCentralAdmin && Route::has('cadmin.settings'))
                                 <x-dropdown-link :href="route('cadmin.settings')" class="rounded-xl flex items-center gap-3">
                                     <i class="bi bi-gear-fill text-sm opacity-50"></i>
                                     <span>{{ __('SaaS Settings') }}</span>
