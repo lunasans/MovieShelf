@@ -38,11 +38,8 @@ trait ManagesEmailTemplates
         $template = EmailTemplate::getBySlug($this->templateSlug());
 
         if ($template) {
-            $tmpPath = storage_path('framework/views/email_dyn_' . md5($template->slug . $template->updated_at) . '.blade.php');
-            if (!file_exists($tmpPath)) {
-                file_put_contents($tmpPath, $template->content);
-            }
-            $html = view()->file($tmpPath, $this->templateData())->render();
+            $body = $this->renderTemplateBody($template->content, $this->templateData());
+            $html = view('emails.dynamic', ['body' => $body])->render();
             return new Content(htmlString: $html);
         }
 
@@ -55,6 +52,29 @@ trait ManagesEmailTemplates
      * Safely interpolate template variables using only {{ $var }} and {!! $var !!} syntax.
      * Prevents arbitrary Blade/PHP code execution from database-stored templates.
      */
+    protected function renderTemplateBody(string $content, array $data): string
+    {
+        // Strip <x-mail::message> wrapper
+        $content = preg_replace('/<x-mail::message[^>]*>\s*/s', '', $content);
+        $content = preg_replace('/\s*<\/x-mail::message>/s', '', $content);
+
+        // Interpolate variables first
+        $content = $this->interpolateTemplate($content, $data);
+
+        // Convert <x-mail::button :url="...">text</x-mail::button> to HTML button
+        $content = preg_replace_callback(
+            '/<x-mail::button\s+:url="([^"]*)"[^>]*>(.*?)<\/x-mail::button>/s',
+            fn($m) => '<p style="text-align:center;margin:2rem 0;">'
+                . '<a href="' . e($m[1]) . '" style="display:inline-block;background:#3b82f6;color:#ffffff;'
+                . 'padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">'
+                . trim($m[2]) . '</a></p>',
+            $content
+        );
+
+        // Parse remaining Markdown to HTML
+        return \Illuminate\Support\Str::markdown($content);
+    }
+
     protected function interpolateTemplate(string $template, array $data): string
     {
         // Handle {{ $object->property }}
