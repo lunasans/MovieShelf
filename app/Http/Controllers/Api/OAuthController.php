@@ -141,7 +141,11 @@ class OAuthController extends Controller
 
         $authCode->update(['used' => true]);
 
-        $user  = $authCode->user;
+        // User aus der aktiven Tenant-DB laden (nicht über die central-Relation)
+        $user  = \App\Models\User::find($authCode->user_id);
+        if (! $user) {
+            return response()->json(['error' => 'user_not_found'], 400);
+        }
         $token = $user->createToken('filmdb')->plainTextToken;
 
         return response()->json([

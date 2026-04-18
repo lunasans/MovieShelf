@@ -19,8 +19,4 @@ class OAuthAuthCode extends Model
         'used'       => 'boolean',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 }
