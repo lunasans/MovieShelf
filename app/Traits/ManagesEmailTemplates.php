@@ -61,13 +61,20 @@ trait ManagesEmailTemplates
         // Interpolate variables first
         $content = $this->interpolateTemplate($content, $data);
 
-        // Convert <x-mail::button :url="...">text</x-mail::button> to HTML button
+        // Convert <x-mail::button :url="$var"> — resolve variable first, then build HTML
         $content = preg_replace_callback(
             '/<x-mail::button\s+:url="([^"]*)"[^>]*>(.*?)<\/x-mail::button>/s',
-            fn($m) => '<p style="text-align:center;margin:2rem 0;">'
-                . '<a href="' . e($m[1]) . '" style="display:inline-block;background:#3b82f6;color:#ffffff;'
-                . 'padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">'
-                . trim($m[2]) . '</a></p>',
+            function ($m) use ($data) {
+                $url = $m[1];
+                // Resolve bare $variable references like $tenantUrl
+                $url = preg_replace_callback('/\$(\w+)/', function ($vm) use ($data) {
+                    return isset($data[$vm[1]]) && is_scalar($data[$vm[1]]) ? $data[$vm[1]] : $vm[0];
+                }, $url);
+                return '<p style="text-align:center;margin:2rem 0;">'
+                    . '<a href="' . e($url) . '" style="display:inline-block;background:#3b82f6;color:#ffffff;'
+                    . 'padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">'
+                    . trim($m[2]) . '</a></p>';
+            },
             $content
         );
 
