@@ -191,6 +191,8 @@ Route::middleware([
     // OAuth2 Authorization (needs session/web context)
     Route::get('/oauth/authorize',  [\App\Http\Controllers\Api\OAuthController::class, 'authorize']);
     Route::post('/oauth/authorize', [\App\Http\Controllers\Api\OAuthController::class, 'approveAuthorize'])->middleware('auth');
+    Route::post('/oauth/token',     [\App\Http\Controllers\Api\OAuthController::class, 'token']);
+    Route::get('/oauth/userinfo',   [\App\Http\Controllers\Api\OAuthController::class, 'userinfo'])->middleware('auth:sanctum');
 
     // Auth Routes for Tenants
     require __DIR__.'/auth.php';
