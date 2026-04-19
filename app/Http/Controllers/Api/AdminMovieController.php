@@ -114,7 +114,10 @@ class AdminMovieController extends Controller
     {
         $since = $request->query('since');
 
-        $query = Movie::with('actors')->withCount('boxsetChildren')->orderBy('title');
+        $userId = $request->user()->id;
+        $query = Movie::with(['actors', 'watchedByUsers' => fn($q) => $q->where('users.id', $userId)])
+            ->withCount('boxsetChildren')
+            ->orderBy('title');
 
         if ($since) {
             // Delta: alle seit `since` geänderten Einträge – auch gelöschte
