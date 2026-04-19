@@ -31,6 +31,14 @@ class OAuthController extends Controller
             return response()->json(['error' => 'redirect_uri stimmt nicht überein'], 400);
         }
 
+        if (! Auth::check()) {
+            session(['oauth_pending' => $request->only([
+                'client_id', 'redirect_uri', 'response_type', 'state',
+                'code_challenge', 'code_challenge_method',
+            ])]);
+            return redirect()->route('login');
+        }
+
         return view('oauth.authorize', [
             'client'                => $client,
             'redirect_uri'          => $request->redirect_uri,

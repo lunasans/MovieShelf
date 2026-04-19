@@ -34,6 +34,12 @@ class AuthenticatedSessionController extends Controller
             tenancy()->tenant->update(['last_login_at' => now()]);
         }
 
+        // After OAuth login: redirect back to authorize endpoint with stored params
+        if ($request->session()->has('oauth_pending')) {
+            $params = $request->session()->pull('oauth_pending');
+            return redirect('/oauth/authorize?' . http_build_query($params));
+        }
+
         // Central domain login is only for the Global Admin.
         // Tenant users log in via their own subdomain.
         return redirect()->intended(route('cadmin.dashboard', absolute: false));

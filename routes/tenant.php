@@ -189,7 +189,7 @@ Route::middleware([
     Route::get('/signature', [\App\Http\Controllers\SignatureController::class, 'show'])->name('signature');
 
     // OAuth2 Authorization (needs session/web context)
-    Route::get('/oauth/authorize',  [\App\Http\Controllers\Api\OAuthController::class, 'authorize'])->middleware('auth');
+    Route::get('/oauth/authorize',  [\App\Http\Controllers\Api\OAuthController::class, 'authorize']);
     Route::post('/oauth/authorize', [\App\Http\Controllers\Api\OAuthController::class, 'approveAuthorize'])->middleware('auth');
 
     // Auth Routes for Tenants
