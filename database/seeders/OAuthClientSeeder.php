@@ -25,7 +25,7 @@ class OAuthClientSeeder extends Seeder
             ['client_id' => 'filmdb-desktop'],
             [
                 'client_secret' => null,
-                'name'          => 'FilmDB Desktop & Android',
+                'name'          => 'MovieShelf',
                 'redirect_uri'  => 'movieshelf://oauth/callback',
                 'is_active'     => true,
                 'is_public'     => true,
