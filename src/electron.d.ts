@@ -64,6 +64,11 @@ interface Window {
       }>
     }
 
+    oauth: {
+      openBrowser: (url: string) => Promise<void>
+      onCallback:  (callback: (payload: { code: string; state: string }) => void) => void
+    }
+
     onNavigate: (callback: (path: string) => void) => void
 
     update: {

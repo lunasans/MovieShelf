@@ -344,6 +344,7 @@ async function generatePkce(): Promise<{ verifier: string; challenge: string }> 
 
 async function doOAuthLogin() {
   if (!settings.shelfUrl) return
+  const baseUrl = new URL(settings.shelfUrl).origin
   loginError.value   = ''
   loginSuccess.value = false
   oauthLoading.value = true
@@ -369,7 +370,7 @@ async function doOAuthLogin() {
       return
     }
     try {
-      const res = await axios.post(`${settings.shelfUrl}/api/oauth/token`, {
+      const res = await axios.post(`${baseUrl}/api/oauth/token`, {
         grant_type:    'authorization_code',
         code,
         redirect_uri:  'movieshelf://oauth/callback',
@@ -385,7 +386,7 @@ async function doOAuthLogin() {
   })
 
   await window.electron.oauth.openBrowser(
-    `${settings.shelfUrl}/api/oauth/authorize?${params}`
+    `${baseUrl}/oauth/authorize?${params}`
   )
 }
 

@@ -1,6 +1,6 @@
 <template>
   <div class="group cursor-pointer" @click="router.push(`/movies/${movie.id}`)">
-    <!-- Wrapper for card image area — banderole sits here, outside overflow-hidden -->
+    <!-- Wrapper for card image area -->
     <div class="relative aspect-[2/3]">
       <div class="absolute inset-0 rounded-2xl overflow-hidden bg-[var(--bg-card)] border border-[var(--border-ui)] group-hover:border-blue-500/50 group-hover:scale-105 transition-all duration-300 shadow-[var(--shadow-main)]">
         <img
@@ -18,8 +18,13 @@
         <!-- Cover gradient overlay -->
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
 
+        <!-- Tag Banderole -->
+        <div v-if="movie.tag" :class="['absolute top-[18px] -right-[38px] z-30 w-[150px] py-[5px] rotate-45 text-center pointer-events-none', tagStyle(movie.tag).bg]">
+          <span class="text-[8px] font-black text-white uppercase tracking-widest drop-shadow-sm">{{ tagStyle(movie.tag).label }}</span>
+        </div>
+
         <!-- Rating Badge (top right, visible on hover) -->
-        <div v-if="movie.rating" class="absolute top-3 right-3 z-20 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
+        <div v-if="movie.rating" class="absolute top-3 left-3 z-20 -translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
           <div class="bg-blue-600 px-2 py-1 rounded-lg border border-white/20 flex items-center gap-1 shadow-xl">
             <i class="bi bi-star-fill text-[10px] text-yellow-400"></i>
             <span class="text-[11px] font-black text-white">{{ movie.rating.toFixed(1) }}</span>
@@ -51,10 +56,6 @@
         </div>
       </div>
 
-      <!-- Tag Banderole — außerhalb von overflow-hidden, damit rotate-45 nicht weggeclippt wird -->
-      <div v-if="movie.tag" :class="['absolute top-[22px] -right-[55px] z-30 w-[180px] py-[5px] rotate-45 text-center pointer-events-none', tagStyle(movie.tag).bg]">
-        <span class="text-[9px] font-black text-white uppercase tracking-widest drop-shadow-sm">{{ tagStyle(movie.tag).label }}</span>
-      </div>
     </div>
 
     <div class="mt-2 px-1">

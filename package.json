@@ -1,6 +1,6 @@
 {
   "name": "movieshelf-desktop",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "MovieShelf Desktop – Filmsammlung lokal verwalten & mit deiner Shelf synchronisieren",
   "main": "dist-electron/main.js",
   "author": "Rene Neuhaus",
@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "electron:dev": "concurrently \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "electron:dev": "vite",
     "electron:build": "vite build && electron-builder",
     "preview": "vite preview"
   },

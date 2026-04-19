@@ -8,7 +8,7 @@ export function useApi() {
 
   function client() {
     return axios.create({
-      baseURL: `${settings.shelfUrl}/api`,
+      baseURL: `${new URL(settings.shelfUrl).origin}/api`,
       headers: {
         Authorization: `Bearer ${settings.token}`,
         Accept: 'application/json',
