@@ -43,7 +43,8 @@ class OAuthViewModel : ViewModel() {
         pendingVerifier = generateCodeVerifier()
         val challenge   = generateCodeChallenge(pendingVerifier!!)
 
-        val uri = Uri.parse("$shelfUrl/api/oauth/authorize").buildUpon()
+        val baseUrl = shelfUrl.trimEnd('/')
+        val uri = Uri.parse("$baseUrl/oauth/authorize").buildUpon()
             .appendQueryParameter("response_type",         "code")
             .appendQueryParameter("client_id",             CLIENT_ID)
             .appendQueryParameter("redirect_uri",          REDIRECT_URI)
