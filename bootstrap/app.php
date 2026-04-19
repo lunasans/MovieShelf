@@ -17,7 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // Only global-safe middleware here
         ]);
 
-        $middleware->validateCsrfTokens(except: []);
+        $middleware->validateCsrfTokens(except: [
+            'oauth/token',
+        ]);
 
         $middleware->redirectTo(
             guests: '/login',
