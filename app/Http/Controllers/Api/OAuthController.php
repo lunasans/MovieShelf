@@ -16,7 +16,7 @@ class OAuthController extends Controller
     {
         $request->validate([
             'client_id'              => 'required|string',
-            'redirect_uri'           => 'required|url',
+            'redirect_uri'           => 'required|string',
             'response_type'          => 'required|in:code',
             'state'                  => 'required|string',
             'code_challenge'         => 'nullable|string',
@@ -53,7 +53,7 @@ class OAuthController extends Controller
     {
         $request->validate([
             'client_id'              => 'required|string',
-            'redirect_uri'           => 'required|url',
+            'redirect_uri'           => 'required|string',
             'state'                  => 'required|string',
             'approved'               => 'required|boolean',
             'code_challenge'         => 'nullable|string',
@@ -98,7 +98,7 @@ class OAuthController extends Controller
         $request->validate([
             'grant_type'    => 'required|in:authorization_code',
             'code'          => 'required|string',
-            'redirect_uri'  => 'required|url',
+            'redirect_uri'  => 'required|string',
             'client_id'     => 'required|string',
             'client_secret' => 'nullable|string',
             'code_verifier' => 'nullable|string',
