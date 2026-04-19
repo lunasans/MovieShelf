@@ -112,14 +112,25 @@ class AdminMovieController extends Controller
 
     public function export(Request $request)
     {
-        $movies = Movie::where('is_deleted', false)
-            ->with('actors')
-            ->orderBy('title')
-            ->get();
+        $since = $request->query('since');
+
+        $query = Movie::with('actors')->orderBy('title');
+
+        if ($since) {
+            // Delta: alle seit `since` geänderten Einträge – auch gelöschte
+            $query->where('updated_at', '>', $since);
+        } else {
+            // Vollsync: nur nicht-gelöschte
+            $query->where('is_deleted', false);
+        }
+
+        $movies = $query->get();
 
         return response()->json([
             'exported_at' => now()->toIso8601String(),
-            'count'       => $movies->count(),
+            'is_delta'    => (bool) $since,
+            'since'       => $since,
+            'count'       => $movies->where('is_deleted', false)->count(),
             'movies'      => MovieResource::collection($movies),
         ]);
     }

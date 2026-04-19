@@ -37,6 +37,9 @@ class MovieResource extends JsonResource
             'boxset_parent_id' => $this->boxset_parent,
             'boxset_children' => MovieResource::collection($this->whenLoaded('boxsetChildren')),
             'tmdb_id' => $this->tmdb_id,
+            'collection_type' => $this->collection_type,
+            'actors_names' => $this->whenLoaded('actors', fn () => $this->actors->pluck('name')->join(', ')),
+            'is_deleted' => $this->is_deleted,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
