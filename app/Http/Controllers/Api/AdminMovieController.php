@@ -30,6 +30,7 @@ class AdminMovieController extends Controller
             'tmdb_id'         => 'nullable|integer',
             'cover_id'        => 'nullable|string',
             'backdrop_id'     => 'nullable|string',
+            'in_collection'   => 'nullable|boolean',
         ]);
 
         $validated['user_id'] = $request->user()->id;
@@ -58,6 +59,7 @@ class AdminMovieController extends Controller
             'tmdb_id'         => 'nullable|integer',
             'cover_id'        => 'nullable|string',
             'backdrop_id'     => 'nullable|string',
+            'in_collection'   => 'nullable|boolean',
         ]);
 
         $this->handleImageDownloads($validated);
