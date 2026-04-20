@@ -51,12 +51,37 @@
                 </div>
             </div>
 
-            <!-- Download URL -->
-            <div class="space-y-2">
-                <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Download URL (Extern, optional)</label>
-                <input type="url" name="download_url" id="download_url"
-                       value="{{ old('download_url', $release->download_url) }}" placeholder="https://github.com/..."
-                       class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold italic">
+            <!-- Download URLs -->
+            <div class="space-y-4">
+                <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Download URLs (extern, optional)</label>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase w-20 shrink-0">Windows</span>
+                        <input type="url" name="download_url" id="download_url"
+                               value="{{ old('download_url', $release->download_url) }}" placeholder="https://... .exe"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold italic text-sm">
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase w-20 shrink-0">AppImage</span>
+                        <input type="url" name="download_url_linux_appimage" id="download_url_linux_appimage"
+                               value="{{ old('download_url_linux_appimage', $release->download_url_linux_appimage) }}" placeholder="https://... .AppImage"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold italic text-sm">
+                        <input type="text" name="file_hash_linux_appimage" id="file_hash_linux_appimage"
+                               value="{{ old('file_hash_linux_appimage', $release->file_hash_linux_appimage) }}"
+                               placeholder="SHA-256..."
+                               class="w-64 shrink-0 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-mono text-xs">
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] font-bold text-gray-500 uppercase w-20 shrink-0">Debian</span>
+                        <input type="url" name="download_url_linux_deb" id="download_url_linux_deb"
+                               value="{{ old('download_url_linux_deb', $release->download_url_linux_deb) }}" placeholder="https://... .deb"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold italic text-sm">
+                        <input type="text" name="file_hash_linux_deb" id="file_hash_linux_deb"
+                               value="{{ old('file_hash_linux_deb', $release->file_hash_linux_deb) }}"
+                               placeholder="SHA-256..."
+                               class="w-64 shrink-0 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-mono text-xs">
+                    </div>
+                </div>
             </div>
 
             <!-- SHA-256 Hash -->

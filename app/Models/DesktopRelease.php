@@ -13,8 +13,12 @@ class DesktopRelease extends Model
         'version',
         'changelog',
         'download_url',
+        'download_url_linux_appimage',
+        'download_url_linux_deb',
         'file_path',
         'file_hash',
+        'file_hash_linux_appimage',
+        'file_hash_linux_deb',
         'is_public',
     ];
 

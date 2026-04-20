@@ -333,22 +333,33 @@
                     </div>
                 </div>
             </div>
-            <div class="beta-actions">
+            <div class="beta-actions" x-data="desktopDownload()" x-init="init()">
                 @if($latestDesktop)
                     <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
-                        <a href="{{ $latestDesktop->download_url }}" class="btn-primary" style="padding: 0.8rem 1.8rem; display: inline-flex; align-items: center; gap: 10px; width: auto; box-shadow: 0 10px 20px rgba(204, 75, 6, 0.15);">
-                            <i class="bi bi-download"></i> Download {{ $latestDesktop->version }} (.exe)
+                        {{-- Primary download button (OS-specific) --}}
+                        <a :href="primaryUrl" class="btn-primary" style="padding: 0.8rem 1.8rem; display: inline-flex; align-items: center; gap: 10px; width: auto; box-shadow: 0 10px 20px rgba(204, 75, 6, 0.15);">
+                            <i :class="primaryIcon"></i>
+                            <span x-text="primaryLabel"></span>
                         </a>
+
                         <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
-                            <span style="font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;">
-                                Windows 10/11 · x64
-                            </span>
-                            @if($latestDesktop->file_hash)
-                            <span style="font-size: 9px; font-weight: 500; color: #9CA3AF; font-family: monospace;" title="SHA-256: {{ $latestDesktop->file_hash }}">
-                                <i class="bi bi-shield-check" style="color: #10B981; font-style: normal;"></i>
-                                SHA-256 verifiziert
-                            </span>
-                            @endif
+                            <span style="font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;" x-text="primaryPlatform"></span>
+                            <template x-if="primaryHash">
+                                <span style="font-size: 9px; font-weight: 500; color: #9CA3AF; font-family: monospace;" :title="'SHA-256: ' + primaryHash">
+                                    <i class="bi bi-shield-check" style="color: #10B981; font-style: normal;"></i>
+                                    SHA-256 verifiziert
+                                </span>
+                            </template>
+                        </div>
+
+                        {{-- Secondary links for other platforms --}}
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-top: 0.25rem;">
+                            <template x-for="alt in altDownloads" :key="alt.url">
+                                <a :href="alt.url" style="font-size: 10px; color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px 10px; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=''">
+                                    <i :class="alt.icon"></i>
+                                    <span x-text="alt.label"></span>
+                                </a>
+                            </template>
                         </div>
                     </div>
                 @else
@@ -437,5 +448,71 @@
 @push('scripts')
 <script>
     // GLightbox logic handles dynamic slides via Alpine init
+
+    @if($latestDesktop)
+    function desktopDownload() {
+        const version = @json($latestDesktop->version);
+
+        const platforms = [
+            {
+                key:      'win',
+                url:      @json($latestDesktop->download_url),
+                hash:     @json($latestDesktop->file_hash),
+                icon:     'bi bi-windows',
+                label:    `Download ${version} (.exe)`,
+                platform: 'Windows 10/11 · x64',
+            },
+            {
+                key:      'appimage',
+                url:      @json($latestDesktop->download_url_linux_appimage),
+                hash:     @json($latestDesktop->file_hash_linux_appimage),
+                icon:     'bi bi-ubuntu',
+                label:    `Download ${version} (.AppImage)`,
+                platform: 'Linux · AppImage',
+            },
+            {
+                key:      'deb',
+                url:      @json($latestDesktop->download_url_linux_deb),
+                hash:     @json($latestDesktop->file_hash_linux_deb),
+                icon:     'bi bi-terminal',
+                label:    `Download ${version} (.deb)`,
+                platform: 'Linux · Debian/Ubuntu',
+            },
+        ];
+
+        function detectOs() {
+            const ua = navigator.userAgent.toLowerCase();
+            if (ua.includes('linux')) return 'appimage';
+            return 'win';
+        }
+
+        return {
+            primaryUrl:      '#',
+            primaryIcon:     'bi bi-download',
+            primaryLabel:    `Download ${version}`,
+            primaryPlatform: '',
+            primaryHash:     null,
+            altDownloads:    [],
+
+            init() {
+                const os = detectOs();
+                const primary = platforms.find(p => p.key === os && p.url) || platforms.find(p => p.url);
+                if (!primary) return;
+
+                this.primaryUrl      = primary.url;
+                this.primaryIcon     = 'bi bi-download';
+                this.primaryLabel    = primary.label;
+                this.primaryPlatform = primary.platform;
+                this.primaryHash     = primary.hash || null;
+
+                this.altDownloads = platforms.filter(p => p.key !== primary.key && p.url).map(p => ({
+                    url:   p.url,
+                    icon:  p.icon,
+                    label: p.label,
+                }));
+            }
+        };
+    }
+    @endif
 </script>
 @endpush

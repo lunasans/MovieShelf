@@ -28,11 +28,15 @@ class DesktopReleaseController extends Controller
         }
 
         $request->validate([
-            'version'      => 'required|string|unique:desktop_releases,version',
-            'changelog'    => 'nullable|string',
-            'download_url' => 'nullable|url',
-            'file_hash'    => 'nullable|string|max:128',
-            'exe_file'     => [
+            'version'                      => 'required|string|unique:desktop_releases,version',
+            'changelog'                    => 'nullable|string',
+            'download_url'                 => 'nullable|url',
+            'download_url_linux_appimage'  => 'nullable|url',
+            'download_url_linux_deb'       => 'nullable|url',
+            'file_hash'                    => 'nullable|string|max:128',
+            'file_hash_linux_appimage'     => 'nullable|string|max:128',
+            'file_hash_linux_deb'          => 'nullable|string|max:128',
+            'exe_file'                     => [
                 'nullable',
                 'file',
                 'max:204800', // 200MB
@@ -43,10 +47,10 @@ class DesktopReleaseController extends Controller
                     }
                 },
             ],
-            'is_public'    => 'nullable|boolean',
+            'is_public'                    => 'nullable|boolean',
         ]);
 
-        $data = $request->only(['version', 'changelog', 'download_url']);
+        $data = $request->only(['version', 'changelog', 'download_url', 'download_url_linux_appimage', 'download_url_linux_deb', 'file_hash_linux_appimage', 'file_hash_linux_deb']);
         $data['is_public'] = $request->boolean('is_public');
 
         if ($request->hasFile('exe_file')) {
@@ -74,14 +78,18 @@ class DesktopReleaseController extends Controller
     public function update(Request $request, DesktopRelease $desktop)
     {
         $request->validate([
-            'version'      => 'required|string|unique:desktop_releases,version,' . $desktop->id,
-            'changelog'    => 'nullable|string',
-            'download_url' => 'nullable|url',
-            'file_hash'    => 'nullable|string|max:128',
-            'is_public'    => 'nullable|boolean',
+            'version'                      => 'required|string|unique:desktop_releases,version,' . $desktop->id,
+            'changelog'                    => 'nullable|string',
+            'download_url'                 => 'nullable|url',
+            'download_url_linux_appimage'  => 'nullable|url',
+            'download_url_linux_deb'       => 'nullable|url',
+            'file_hash'                    => 'nullable|string|max:128',
+            'file_hash_linux_appimage'     => 'nullable|string|max:128',
+            'file_hash_linux_deb'          => 'nullable|string|max:128',
+            'is_public'                    => 'nullable|boolean',
         ]);
 
-        $data = $request->only(['version', 'changelog', 'download_url', 'file_hash']);
+        $data = $request->only(['version', 'changelog', 'download_url', 'download_url_linux_appimage', 'download_url_linux_deb', 'file_hash', 'file_hash_linux_appimage', 'file_hash_linux_deb']);
         $data['is_public'] = $request->boolean('is_public');
 
         $desktop->update($data);
