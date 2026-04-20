@@ -39,6 +39,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/import', [\App\Http\Controllers\Api\TmdbController::class, 'import']);
     });
 
+    // Lists
+    Route::get('/lists', [\App\Http\Controllers\Api\ListController::class, 'index']);
+    Route::post('/lists', [\App\Http\Controllers\Api\ListController::class, 'store']);
+    Route::put('/lists/{list}', [\App\Http\Controllers\Api\ListController::class, 'update']);
+    Route::delete('/lists/{list}', [\App\Http\Controllers\Api\ListController::class, 'destroy']);
+
     // Admin-only endpoints
     Route::middleware('admin')->prefix('admin')->group(function () {
         Route::post('/movies', [\App\Http\Controllers\Api\AdminMovieController::class, 'store']);
