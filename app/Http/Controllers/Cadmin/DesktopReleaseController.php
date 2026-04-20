@@ -30,9 +30,9 @@ class DesktopReleaseController extends Controller
         $request->validate([
             'version'                      => 'required|string|unique:desktop_releases,version',
             'changelog'                    => 'nullable|string',
-            'download_url'                 => 'nullable|url',
-            'download_url_linux_appimage'  => 'nullable|url',
-            'download_url_linux_deb'       => 'nullable|url',
+            'download_url'                 => 'nullable|string|max:500',
+            'download_url_linux_appimage'  => 'nullable|string|max:500',
+            'download_url_linux_deb'       => 'nullable|string|max:500',
             'file_hash'                    => 'nullable|string|max:128',
             'file_hash_linux_appimage'     => 'nullable|string|max:128',
             'file_hash_linux_deb'          => 'nullable|string|max:128',
@@ -67,6 +67,10 @@ class DesktopReleaseController extends Controller
 
         DesktopRelease::create($data);
 
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true, 'redirect' => route('cadmin.desktop.index')]);
+        }
+
         return redirect()->route('cadmin.desktop.index')->with('success', 'Release wurde erfolgreich angelegt.');
     }
 
@@ -80,9 +84,9 @@ class DesktopReleaseController extends Controller
         $request->validate([
             'version'                      => 'required|string|unique:desktop_releases,version,' . $desktop->id,
             'changelog'                    => 'nullable|string',
-            'download_url'                 => 'nullable|url',
-            'download_url_linux_appimage'  => 'nullable|url',
-            'download_url_linux_deb'       => 'nullable|url',
+            'download_url'                 => 'nullable|string|max:500',
+            'download_url_linux_appimage'  => 'nullable|string|max:500',
+            'download_url_linux_deb'       => 'nullable|string|max:500',
             'file_hash'                    => 'nullable|string|max:128',
             'file_hash_linux_appimage'     => 'nullable|string|max:128',
             'file_hash_linux_deb'          => 'nullable|string|max:128',
@@ -93,6 +97,10 @@ class DesktopReleaseController extends Controller
         $data['is_public'] = $request->boolean('is_public');
 
         $desktop->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true, 'redirect' => route('cadmin.desktop.index')]);
+        }
 
         return redirect()->route('cadmin.desktop.index')->with('success', 'Release wurde aktualisiert.');
     }
@@ -207,9 +215,9 @@ class DesktopReleaseController extends Controller
                 'filename'                     => 'required|string|max:255',
                 'version'                      => 'required|string|unique:desktop_releases,version',
                 'changelog'                    => 'nullable|string',
-                'download_url'                 => 'nullable|url',
-                'download_url_linux_appimage'  => 'nullable|url',
-                'download_url_linux_deb'       => 'nullable|url',
+                'download_url'                 => 'nullable|string|max:500',
+                'download_url_linux_appimage'  => 'nullable|string|max:500',
+                'download_url_linux_deb'       => 'nullable|string|max:500',
                 'file_hash_linux_appimage'     => 'nullable|string|max:128',
                 'file_hash_linux_deb'          => 'nullable|string|max:128',
                 'is_public'                    => 'nullable|boolean',

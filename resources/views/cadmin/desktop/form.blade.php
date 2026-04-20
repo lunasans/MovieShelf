@@ -96,7 +96,7 @@
                         </div>
 
                         {{-- URL --}}
-                        <input type="url"
+                        <input type="text"
                                name="{{ $p['key'] === 'win' ? 'download_url' : 'download_url_linux_' . $p['key'] }}"
                                id="{{ $p['key'] === 'win' ? 'download_url' : 'download_url_linux_' . $p['key'] }}"
                                value="{{ old($p['key'] === 'win' ? 'download_url' : 'download_url_linux_' . $p['key'], $release->{$p['key'] === 'win' ? 'download_url' : 'download_url_linux_' . $p['key']} ?? '') }}"
@@ -236,34 +236,50 @@ function chunkUploader() {
 
         async handleSubmit(event) {
             this.errorMsg = '';
+            const form    = event.target;
             const hasFiles = PLATFORMS.some(p => this.files[p] !== null);
 
             if (!hasFiles) {
-                event.target.submit();
+                form.submit();
                 return;
             }
 
             this.uploading = true;
-            const token   = event.target.querySelector('[name="_token"]').value;
-            const version = event.target.querySelector('[name="version"]').value;
+            const token   = form.querySelector('[name="_token"]').value;
+            const version = form.querySelector('[name="version"]').value;
 
             try {
-                // Alle Plattformen parallel hochladen
+                // Alle Plattformen parallel hochladen + zusammensetzen
                 const results = await Promise.all(
                     PLATFORMS.map(p => this.uploadPlatform(p, token, version))
                 );
 
-                // URL + Hash-Felder befüllen
-                const map = { win: 'download_url', appimage: 'download_url_linux_appimage', deb: 'download_url_linux_deb' };
+                // FormData aus dem Formular bauen und URLs/Hashes eintragen
+                const map     = { win: 'download_url', appimage: 'download_url_linux_appimage', deb: 'download_url_linux_deb' };
                 const mapHash = { win: 'file_hash', appimage: 'file_hash_linux_appimage', deb: 'file_hash_linux_deb' };
+
+                const fd = new FormData(form);
                 PLATFORMS.forEach((p, i) => {
                     if (!results[i]) return;
-                    if (results[i].url)  document.getElementById(map[p]).value     = results[i].url;
-                    if (results[i].hash) document.getElementById(mapHash[p]).value = results[i].hash;
+                    if (results[i].url)  fd.set(map[p],     results[i].url);
+                    if (results[i].hash) fd.set(mapHash[p], results[i].hash);
                 });
+                // _method (PUT) aus dem Formular übernehmen, _token ist schon drin
+                fd.delete('exe_file'); // keine leere Datei mitsenden
 
-                this.uploading = false;
-                event.target.submit();
+                const res  = await fetch(form.action, {
+                    method:  'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body:    fd,
+                });
+                const data = await res.json();
+
+                if (data.ok) {
+                    this.uploading = false;
+                    window.location.href = data.redirect;
+                } else {
+                    throw new Error(data.message || JSON.stringify(data.errors || data));
+                }
             } catch (e) {
                 this.uploading = false;
                 this.errorMsg  = e.message;
