@@ -24,7 +24,7 @@ class TmdbImportService
     }
 
     /* Import a movie from TMDb. */
-    public function importMovie(int $tmdbId)
+    public function importMovie(int $tmdbId, bool $inCollection = true)
     {
         $details = $this->tmdb->getMovieDetails($tmdbId);
         if (isset($details['error'])) {
@@ -32,7 +32,7 @@ class TmdbImportService
         }
 
         try {
-            return DB::transaction(function () use ($details, $tmdbId) {
+            return DB::transaction(function () use ($details, $tmdbId, $inCollection) {
                 $movie = Movie::create([
                     'title' => $details['title'],
                     'year' => isset($details['release_date']) ? (int) substr($details['release_date'], 0, 4) : null,
@@ -48,6 +48,7 @@ class TmdbImportService
                     'tmdb_id' => $tmdbId,
                     'tmdb_type' => 'movie',
                     'tmdb_json' => $details,
+                    'in_collection' => $inCollection,
                 ]);
 
                 $this->handleImages($movie, $details);

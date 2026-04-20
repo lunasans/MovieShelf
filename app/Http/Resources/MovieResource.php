@@ -40,6 +40,7 @@ class MovieResource extends JsonResource
             'collection_type' => $this->collection_type,
             'actors_names' => $this->whenLoaded('actors', fn () => $this->actors->pluck('name')->join(', ')),
             'is_deleted' => $this->is_deleted,
+            'in_collection' => $this->in_collection ?? true,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

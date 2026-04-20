@@ -21,7 +21,7 @@ class MovieController extends Controller
             }
         }
 
-        $query = Movie::query();
+        $query = Movie::query()->where('in_collection', true);
 
         $hasFilters = $request->hasAny(['q', 'type', 'genre', 'year_from', 'year_to', 'rating_min', 'runtime_max']);
         if (! $hasFilters) {
@@ -64,21 +64,20 @@ class MovieController extends Controller
 
         $perPage = Setting::get('items_per_page', 20);
         $movies = $query->withCount('boxsetChildren')->orderBy('title')->paginate($perPage)->withQueryString();
-        $collectionTypes = Movie::distinct()->whereNotNull('collection_type')->orderBy('collection_type')->pluck('collection_type');
+        $collectionTypes = Movie::where('in_collection', true)->distinct()->whereNotNull('collection_type')->orderBy('collection_type')->pluck('collection_type');
 
-        $genres = Movie::whereNotNull('genre')->pluck('genre')
+        $genres = Movie::where('in_collection', true)->whereNotNull('genre')->pluck('genre')
             ->flatMap(fn($g) => array_map('trim', explode(',', $g)))
             ->filter()->unique()->sort()->values();
 
         $latestCount = (int) Setting::where('key', 'latest_films_count')->value('value') ?: 15;
-        $latestMovies = Movie::whereNull('boxset_parent')->withCount('boxsetChildren')->orderBy('created_at', 'desc')->limit($latestCount)->get();
+        $latestMovies = Movie::where('in_collection', true)->whereNull('boxset_parent')->withCount('boxsetChildren')->orderBy('created_at', 'desc')->limit($latestCount)->get();
 
+        $genreRows = [];
 
-        $genreRows = []; // Genre rows removed in favor of a unified grid
-
-        $featuredMovies = Movie::whereNotNull('backdrop_url')->whereNull('boxset_parent')->inRandomOrder()->limit(5)->get();
+        $featuredMovies = Movie::where('in_collection', true)->whereNotNull('backdrop_url')->whereNull('boxset_parent')->inRandomOrder()->limit(5)->get();
         if ($featuredMovies->isEmpty()) {
-            $featuredMovies = Movie::whereNull('boxset_parent')->latest()->limit(1)->get();
+            $featuredMovies = Movie::where('in_collection', true)->whereNull('boxset_parent')->latest()->limit(1)->get();
         }
 
         $defaultViewMode = Setting::get('default_view_mode', 'grid');
@@ -141,7 +140,7 @@ class MovieController extends Controller
 
     public function random(Request $request)
     {
-        $query = Movie::query()->whereNull('boxset_parent');
+        $query = Movie::query()->where('in_collection', true)->whereNull('boxset_parent');
 
         if ($request->filled('q')) {
             $query->where('title', 'like', '%'.$request->q.'%');

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Actor;
 use App\Models\Movie;
+use App\Models\MovieList;
 use App\Services\TmdbService;
 use App\Services\TmdbImportService;
 use Illuminate\Http\Request;
@@ -28,7 +29,9 @@ class TmdbImportController extends Controller
 
     public function index()
     {
-        return view('admin.tmdb.index');
+        $lists = MovieList::where('user_id', auth()->id())->orderBy('name')->get();
+
+        return view('admin.tmdb.index', compact('lists'));
     }
 
     public function search(Request $request)

@@ -101,6 +101,15 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
             </a>
             @endif
 
+            @auth
+            @if(Route::has('lists.index'))
+            <a href="{{ route('lists.index') }}"
+                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('lists.*') ? 'bg-white/10' : '' }}">
+                <i class="bi bi-collection-fill mr-2"></i> {{ __('Lists') }}
+            </a>
+            @endif
+            @endauth
+
             @if($isCentralAdmin && Route::has('cadmin.settings'))
             <a href="{{ route('cadmin.settings') }}"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('cadmin.settings') ? 'bg-white/10' : '' }}">

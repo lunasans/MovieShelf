@@ -125,6 +125,16 @@ Route::middleware([
         Route::post('/movies/{movie}/wishlist', [\App\Http\Controllers\MovieWishlistController::class, 'toggle'])->name('movies.wishlist.toggle');
         Route::post('/movies/{movie}/rate', [\App\Http\Controllers\MovieRatingController::class, 'store'])->name('movies.rate');
 
+        // Lists
+        Route::get('/lists', [\App\Http\Controllers\ListController::class, 'index'])->name('lists.index');
+        Route::post('/lists', [\App\Http\Controllers\ListController::class, 'store'])->name('lists.store');
+        Route::get('/lists/{list}', [\App\Http\Controllers\ListController::class, 'show'])->name('lists.show');
+        Route::patch('/lists/{list}', [\App\Http\Controllers\ListController::class, 'update'])->name('lists.update');
+        Route::delete('/lists/{list}', [\App\Http\Controllers\ListController::class, 'destroy'])->name('lists.destroy');
+        Route::post('/lists/{list}/movies', [\App\Http\Controllers\ListController::class, 'addMovie'])->name('lists.add-movie');
+        Route::delete('/lists/{list}/movies/{movie}', [\App\Http\Controllers\ListController::class, 'removeMovie'])->name('lists.remove-movie');
+        Route::post('/lists/{list}/import-tmdb', [\App\Http\Controllers\ListController::class, 'importFromTmdb'])->name('lists.import-tmdb');
+
         // Admin Area
         Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\AdminController::class, 'index'])->name('dashboard');

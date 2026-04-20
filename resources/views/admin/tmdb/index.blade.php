@@ -72,14 +72,34 @@
                         <!-- Hover Overlay -->
                         <div class="absolute inset-0 bg-gradient-to-t from-rose-900/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end p-8">
                             <template x-if="type === 'movie'">
-                                <form :action="'{{ route('admin.tmdb.import') }}'" method="POST" class="w-full">
-                                    @csrf
-                                    <input type="hidden" name="tmdb_id" :value="item.id">
-                                    <input type="hidden" name="media_type" :value="type">
-                                    <button type="submit" class="w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all transform group-hover:translate-y-0 translate-y-6 duration-500 uppercase tracking-widest text-[10px] shadow-2xl">
-                                        <i class="bi bi-download mr-2 text-base"></i> Importieren
-                                    </button>
-                                </form>
+                                <div class="w-full flex flex-col gap-2">
+                                    <form :action="'{{ route('admin.tmdb.import') }}'" method="POST" class="w-full">
+                                        @csrf
+                                        <input type="hidden" name="tmdb_id" :value="item.id">
+                                        <input type="hidden" name="media_type" :value="type">
+                                        <button type="submit" class="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all uppercase tracking-widest text-[10px] shadow-2xl">
+                                            <i class="bi bi-download mr-2"></i> Importieren
+                                        </button>
+                                    </form>
+                                    @if($lists->isNotEmpty())
+                                        <div x-data="{ open: false }" class="relative">
+                                            <button @click.stop="open = !open" class="w-full py-3 bg-white/20 hover:bg-white/30 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest transition-all">
+                                                <i class="bi bi-collection-fill mr-1"></i> Zur Liste
+                                            </button>
+                                            <div x-show="open" x-cloak @click.away="open = false"
+                                                class="absolute bottom-full mb-2 left-0 right-0 bg-gray-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+                                                @foreach($lists as $list)
+                                                    <button
+                                                        @click.stop="addToList(item.id, {{ $list->id }}); open = false"
+                                                        class="w-full text-left px-4 py-2.5 text-xs font-bold text-white hover:bg-white/10 transition-colors flex items-center gap-2">
+                                                        <i class="bi bi-collection-fill text-rose-500 text-[10px]"></i>
+                                                        {{ $list->name }}
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
                             </template>
                             <template x-if="type === 'tv'">
                                 <button @click="openSeasonModal(item)" class="w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all transform group-hover:translate-y-0 translate-y-6 duration-500 uppercase tracking-widest text-[10px] shadow-2xl">
@@ -426,6 +446,32 @@
                     this.shouldCancel = true;
                     this.updating = false;
                     this.showMassUpdateModal = false;
+                },
+
+                async addToList(tmdbId, listId) {
+                    this.loading = true;
+                    this.error = null;
+                    try {
+                        const res = await fetch(`/lists/${listId}/import-tmdb`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ tmdb_id: tmdbId })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            // Brief success feedback via error display (reuse field)
+                            this.error = null;
+                        } else {
+                            this.error = 'Fehler beim Hinzufügen zur Liste.';
+                        }
+                    } catch (err) {
+                        this.error = 'Netzwerkfehler.';
+                    } finally {
+                        this.loading = false;
+                    }
                 }
             };
         }

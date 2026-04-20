@@ -32,6 +32,7 @@ class Movie extends Model
         'tmdb_id',
         'tmdb_type',
         'tmdb_json',
+        'in_collection',
         'created_at',
         'updated_at',
     ];
@@ -47,6 +48,7 @@ class Movie extends Model
         'runtime' => 'integer',
         'view_count' => 'integer',
         'tmdb_json' => 'array',
+        'in_collection' => 'boolean',
     ];
 
     public function user()
@@ -78,6 +80,12 @@ class Movie extends Model
     public function watchedByUsers()
     {
         return $this->belongsToMany(User::class, 'movie_user_watched');
+    }
+
+    public function lists()
+    {
+        return $this->belongsToMany(MovieList::class, 'list_movies', 'movie_id', 'list_id')
+            ->withPivot('added_at');
     }
 
     public function getCoverUrlAttribute()
