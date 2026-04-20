@@ -1,6 +1,6 @@
 @php
     $isAuthPage = request()->routeIs('login', 'two-factor.login');
-    $isStreaming = $isAuthPage || ((request()->routeIs('dashboard', 'movies.show', 'actors.show', 'actors.index', 'movies.trailers', 'profile.edit', 'statistics', 'impressum')) && (optional(auth()->user())->layout ?? \App\Models\Setting::get('default_guest_layout', 'classic')) === 'streaming');
+    $isStreaming = $isAuthPage || ((request()->routeIs('dashboard', 'movies.show', 'actors.show', 'actors.index', 'movies.trailers', 'profile.edit', 'statistics', 'impressum', 'lists.*')) && (optional(auth()->user())->layout ?? \App\Models\Setting::get('default_guest_layout', 'classic')) === 'streaming');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" 
