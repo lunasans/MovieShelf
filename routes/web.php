@@ -28,6 +28,7 @@ Route::get('/impressum', function () {
     return view('central.impressum');
 })->name('saas.impressum');
 
+Route::get('/releases', [\App\Http\Controllers\Central\LandingController::class, 'releases'])->name('releases');
 Route::get('/p/{slug}', [\App\Http\Controllers\Central\LandingController::class, 'page'])->name('landing.page');
 
 Route::get('/api/check-subdomain', [\App\Http\Controllers\Central\RegisterTenantController::class, 'checkSubdomain'])->name('api.check.subdomain')->middleware('throttle:30,1');
@@ -105,6 +106,7 @@ Route::middleware(['web', 'auth', 'central.admin'])->group(function () {
             'destroy' => 'desktop.destroy',
         ]);
         Route::post('/desktop/upload-chunk', [\App\Http\Controllers\Cadmin\DesktopReleaseController::class, 'uploadChunk'])->name('desktop.upload-chunk');
+        Route::post('/desktop/assemble-file', [\App\Http\Controllers\Cadmin\DesktopReleaseController::class, 'assembleFile'])->name('desktop.assemble-file');
         Route::post('/desktop/finalize-upload', [\App\Http\Controllers\Cadmin\DesktopReleaseController::class, 'finalizeUpload'])->name('desktop.finalize-upload');
 
         // Email Templates

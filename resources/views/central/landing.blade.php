@@ -361,6 +361,10 @@
                                 </a>
                             </template>
                         </div>
+
+                        <a href="{{ route('releases') }}" style="font-size: 10px; color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 0.25rem; opacity: .6; transition: opacity .2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.6'">
+                            <i class="bi bi-clock-history"></i> Alle Versionen ansehen
+                        </a>
                     </div>
                 @else
                     <span class="btn-outline" style="opacity: 0.5; cursor: not-allowed; width: auto; padding: 0.8rem 1.8rem;">

@@ -22,26 +22,22 @@
     <div class="glass rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl p-10"
          x-data="chunkUploader()">
 
-        {{-- Reguläres HTML-Formular – alle Felder werden normal übermittelt --}}
         <form id="release-form"
               action="{{ $release->exists ? route('cadmin.desktop.update', $release) : route('cadmin.desktop.store') }}"
               method="POST"
-              enctype="multipart/form-data"
-              class="space-y-8"
+              class="space-y-10"
               @submit.prevent="handleSubmit($event)">
             @csrf
             @if($release->exists) @method('PUT') @endif
 
+            {{-- Version + Status --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Version -->
                 <div class="space-y-2">
                     <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Versionsnummer</label>
                     <input type="text" name="version" id="version"
                            value="{{ old('version', $release->version) }}" placeholder="v0.1.0"
                            class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold" required>
                 </div>
-
-                <!-- Status -->
                 <div class="space-y-2">
                     <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Verfügbarkeit</label>
                     <select name="is_public" id="is_public" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-rose-500/50 transition-all font-bold cursor-pointer">
@@ -51,110 +47,97 @@
                 </div>
             </div>
 
-            <!-- Download URLs -->
-            <div class="space-y-4">
-                <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Download URLs (extern, optional)</label>
-                <div class="space-y-2">
-                    <div class="flex items-center gap-3">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase w-20 shrink-0">Windows</span>
-                        <input type="url" name="download_url" id="download_url"
-                               value="{{ old('download_url', $release->download_url) }}" placeholder="https://... .exe"
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold italic text-sm">
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase w-20 shrink-0">AppImage</span>
-                        <input type="url" name="download_url_linux_appimage" id="download_url_linux_appimage"
-                               value="{{ old('download_url_linux_appimage', $release->download_url_linux_appimage) }}" placeholder="https://... .AppImage"
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold italic text-sm">
-                        <input type="text" name="file_hash_linux_appimage" id="file_hash_linux_appimage"
-                               value="{{ old('file_hash_linux_appimage', $release->file_hash_linux_appimage) }}"
-                               placeholder="SHA-256..."
-                               class="w-64 shrink-0 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-mono text-xs">
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase w-20 shrink-0">Debian</span>
-                        <input type="url" name="download_url_linux_deb" id="download_url_linux_deb"
-                               value="{{ old('download_url_linux_deb', $release->download_url_linux_deb) }}" placeholder="https://... .deb"
-                               class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-bold italic text-sm">
-                        <input type="text" name="file_hash_linux_deb" id="file_hash_linux_deb"
-                               value="{{ old('file_hash_linux_deb', $release->file_hash_linux_deb) }}"
-                               placeholder="SHA-256..."
-                               class="w-64 shrink-0 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-mono text-xs">
-                    </div>
-                </div>
-            </div>
-
-            <!-- SHA-256 Hash -->
-            <div class="space-y-2">
-                <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">SHA-256 Hashwert (optional)</label>
-                <div class="relative">
-                    <input type="text" name="file_hash" id="file_hash"
-                           value="{{ old('file_hash', $release->file_hash) }}"
-                           placeholder="Wird beim Datei-Upload automatisch berechnet..."
-                           class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 pr-20 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-mono text-xs">
-                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 text-xs font-black uppercase tracking-widest">SHA256</div>
-                </div>
-                <p class="text-[10px] text-gray-600 px-2">Manuell eintragen oder wird beim Datei-Upload automatisch berechnet.</p>
-            </div>
-
-            <!-- EXE Upload (Chunked) -->
+            {{-- Platform Upload-Zonen --}}
             <div class="space-y-3">
-                <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Installer Upload (.exe / .msi / .zip)</label>
+                <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Dateien hochladen</label>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-                <div class="relative">
-                    <input type="file" id="exe_file" name="exe_file" accept=".exe,.msi,.zip" class="hidden"
-                           @change="onFileSelected($event)">
-                    <label for="exe_file"
-                           class="flex items-center justify-center w-full h-32 border-2 border-dashed rounded-3xl transition-all cursor-pointer"
-                           :class="selectedFile ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-white/10 hover:border-rose-500/30 hover:bg-rose-500/5'">
-                        <div class="text-center" x-show="!selectedFile">
-                            <i class="bi bi-cloud-arrow-up text-3xl text-gray-400"></i>
-                            <p class="mt-2 text-xs text-gray-500 font-bold uppercase tracking-widest">Klicken zum Auswählen</p>
-                            <p class="text-[10px] text-gray-600 mt-1">Erlaubt: .exe, .msi, .zip · Kein Größenlimit (Chunk-Upload)</p>
+                    @foreach([
+                        ['key' => 'win',      'label' => 'Windows',        'icon' => 'bi-windows',  'accept' => '.exe,.msi,.zip',  'hint' => '.exe · .msi · .zip'],
+                        ['key' => 'appimage', 'label' => 'Linux AppImage', 'icon' => 'bi-ubuntu',   'accept' => '.AppImage',       'hint' => '.AppImage'],
+                        ['key' => 'deb',      'label' => 'Linux Debian',   'icon' => 'bi-terminal', 'accept' => '.deb',            'hint' => '.deb'],
+                    ] as $p)
+                    <div class="space-y-3">
+                        {{-- Drop Zone --}}
+                        <div class="relative">
+                            <input type="file" id="file_{{ $p['key'] }}" accept="{{ $p['accept'] }}" class="hidden"
+                                   @change="onFile('{{ $p['key'] }}', $event)">
+                            <label for="file_{{ $p['key'] }}"
+                                   class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-3xl transition-all cursor-pointer"
+                                   :class="files.{{ $p['key'] }} ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-white/10 hover:border-rose-500/30 hover:bg-rose-500/5'">
+                                <template x-if="!files.{{ $p['key'] }}">
+                                    <div class="text-center">
+                                        <i class="bi {{ $p['icon'] }} text-2xl text-gray-500"></i>
+                                        <p class="mt-1 text-[10px] text-gray-500 font-bold uppercase tracking-widest">{{ $p['label'] }}</p>
+                                        <p class="text-[9px] text-gray-600 mt-0.5">{{ $p['hint'] }}</p>
+                                    </div>
+                                </template>
+                                <template x-if="files.{{ $p['key'] }}">
+                                    <div class="text-center px-3">
+                                        <i class="bi bi-file-earmark-check text-2xl text-emerald-400"></i>
+                                        <p class="mt-1 text-[10px] text-emerald-400 font-bold truncate max-w-full" x-text="files.{{ $p['key'] }}?.name"></p>
+                                        <p class="text-[9px] text-gray-500 mt-0.5" x-text="sizes.{{ $p['key'] }}"></p>
+                                    </div>
+                                </template>
+                            </label>
                         </div>
-                        <div class="text-center" x-show="selectedFile" x-cloak>
-                            <i class="bi bi-file-earmark-check text-3xl text-emerald-400"></i>
-                            <p class="mt-2 text-xs text-emerald-400 font-bold" x-text="selectedFile?.name"></p>
-                            <p class="text-[10px] text-gray-500 mt-1" x-text="fileSize"></p>
+
+                        {{-- Fortschrittsbalken --}}
+                        <div x-show="progress.{{ $p['key'] }} > 0" x-cloak class="space-y-1.5">
+                            <div class="flex justify-between text-[9px] font-bold uppercase tracking-widest px-1">
+                                <span class="text-gray-400" x-text="status.{{ $p['key'] }}"></span>
+                                <span :class="done.{{ $p['key'] }} ? 'text-emerald-400' : 'text-white'" x-text="progress.{{ $p['key'] }} + '%'"></span>
+                            </div>
+                            <div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-300"
+                                     :class="done.{{ $p['key'] }} ? 'bg-gradient-to-r from-emerald-600 to-emerald-400' : 'bg-gradient-to-r from-rose-600 to-rose-400'"
+                                     :style="'width:' + progress.{{ $p['key'] }} + '%'"></div>
+                            </div>
                         </div>
-                    </label>
+
+                        {{-- URL --}}
+                        <input type="url"
+                               name="{{ $p['key'] === 'win' ? 'download_url' : 'download_url_linux_' . $p['key'] }}"
+                               id="{{ $p['key'] === 'win' ? 'download_url' : 'download_url_linux_' . $p['key'] }}"
+                               value="{{ old($p['key'] === 'win' ? 'download_url' : 'download_url_linux_' . $p['key'], $release->{$p['key'] === 'win' ? 'download_url' : 'download_url_linux_' . $p['key']} ?? '') }}"
+                               placeholder="URL (wird automatisch gefüllt)"
+                               class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/15 focus:outline-none focus:border-rose-500/50 transition-all font-medium italic text-xs">
+
+                        {{-- SHA-256 --}}
+                        <div class="relative">
+                            <input type="text"
+                                   name="{{ $p['key'] === 'win' ? 'file_hash' : 'file_hash_linux_' . $p['key'] }}"
+                                   id="{{ $p['key'] === 'win' ? 'file_hash' : 'file_hash_linux_' . $p['key'] }}"
+                                   value="{{ old($p['key'] === 'win' ? 'file_hash' : 'file_hash_linux_' . $p['key'], $release->{$p['key'] === 'win' ? 'file_hash' : 'file_hash_linux_' . $p['key']} ?? '') }}"
+                                   placeholder="SHA-256 (automatisch berechnet)"
+                                   class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 pr-14 text-white placeholder-white/15 focus:outline-none focus:border-rose-500/50 transition-all font-mono text-[10px]">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-black text-white/15 uppercase tracking-widest">SHA256</span>
+                        </div>
+                    </div>
+                    @endforeach
+
                 </div>
 
-                @if($release->file_path)
-                    <p class="text-[10px] text-emerald-500/60 font-medium px-2">✓ Bereits hochgeladen: {{ basename($release->file_path) }}</p>
-                @endif
-
-                <!-- Fortschrittsbalken -->
-                <div x-show="uploading || uploadDone" x-cloak class="space-y-2 pt-2">
-                    <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest px-1">
-                        <span class="text-gray-400" x-text="statusText"></span>
-                        <span class="text-white" x-text="progress + '%'"></span>
-                    </div>
-                    <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-rose-600 to-rose-400 rounded-full transition-all duration-300"
-                             :style="'width:' + progress + '%'"></div>
-                    </div>
-                </div>
-
-                <p x-show="errorMsg" x-cloak class="text-xs text-rose-400 font-bold px-2">
+                {{-- Globale Fehlermeldung --}}
+                <p x-show="errorMsg" x-cloak class="text-xs text-rose-400 font-bold px-2 pt-1">
                     <i class="bi bi-exclamation-triangle-fill"></i> <span x-text="errorMsg"></span>
                 </p>
             </div>
 
-            <!-- Changelog -->
+            {{-- Changelog --}}
             <div class="space-y-2">
                 <label class="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] px-2">Changelog / Release Notes</label>
                 <textarea name="changelog" rows="6" placeholder="Was ist neu in dieser Version?"
                           class="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-4 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-all font-medium custom-scrollbar">{{ old('changelog', $release->changelog) }}</textarea>
             </div>
 
-            <div class="pt-6 flex flex-col sm:flex-row items-center gap-4">
+            <div class="pt-2 flex flex-col sm:flex-row items-center gap-4">
                 <button type="submit"
                         :disabled="uploading"
                         :class="uploading ? 'opacity-50 cursor-not-allowed' : ''"
                         class="w-full sm:w-auto px-10 py-4 bg-rose-600 hover:bg-rose-500 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-rose-600/20 transition-all flex items-center justify-center gap-2">
-                    <i class="bi bi-check2-circle text-lg" x-show="!uploading"></i>
                     <i class="bi bi-arrow-repeat text-lg animate-spin" x-show="uploading" x-cloak></i>
+                    <i class="bi bi-check2-circle text-lg" x-show="!uploading"></i>
                     <span x-text="uploading ? 'Wird hochgeladen...' : 'Release speichern'"></span>
                 </button>
                 <a href="{{ route('cadmin.desktop.index') }}" class="w-full sm:w-auto px-10 py-4 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all text-center">
@@ -169,111 +152,123 @@
 @push('scripts')
 <script>
 function chunkUploader() {
-    return {
-        selectedFile: null,
-        fileSize: '',
-        uploading: false,
-        uploadDone: false,
-        progress: 0,
-        statusText: '',
-        errorMsg: '',
-        CHUNK_SIZE: 2 * 1024 * 1024, // 2 MB
+    const CHUNK_SIZE = 2 * 1024 * 1024; // 2 MB
+    const PLATFORMS  = ['win', 'appimage', 'deb'];
 
-        onFileSelected(event) {
+    function makeState() {
+        const o = {};
+        PLATFORMS.forEach(p => o[p] = null);
+        return o;
+    }
+
+    return {
+        files:    makeState(),
+        sizes:    makeState(),
+        progress: { win: 0, appimage: 0, deb: 0 },
+        status:   { win: '', appimage: '', deb: '' },
+        done:     { win: false, appimage: false, deb: false },
+        uploading: false,
+        errorMsg:  '',
+
+        onFile(platform, event) {
             const file = event.target.files[0];
             if (!file) return;
-            this.selectedFile = file;
-            this.fileSize = (file.size / 1024 / 1024).toFixed(1) + ' MB';
-            this.errorMsg = '';
-            this.uploadDone = false;
-            this.progress = 0;
+            this.files[platform]    = file;
+            this.sizes[platform]    = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+            this.progress[platform] = 0;
+            this.done[platform]     = false;
+            this.status[platform]   = '';
+            this.errorMsg           = '';
+        },
+
+        generateId() {
+            return Math.random().toString(36).slice(2, 18) + Math.random().toString(36).slice(2, 18);
+        },
+
+        async uploadPlatform(platform, token, version) {
+            const file = this.files[platform];
+            if (!file) return null;
+
+            const uploadId    = this.generateId();
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+            // Chunks hochladen
+            for (let i = 0; i < totalChunks; i++) {
+                const fd = new FormData();
+                fd.append('_token',       token);
+                fd.append('chunk',        file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE), file.name);
+                fd.append('upload_id',    uploadId);
+                fd.append('chunk_index',  i);
+                fd.append('total_chunks', totalChunks);
+                fd.append('filename',     file.name);
+
+                this.status[platform]   = `Chunk ${i + 1}/${totalChunks}`;
+                this.progress[platform] = Math.round((i / totalChunks) * 85);
+
+                const res = await fetch('{{ route("cadmin.desktop.upload-chunk") }}', { method: 'POST', body: fd });
+                if (!res.ok) throw new Error(`[${platform}] Chunk ${i + 1}: ` + await res.text());
+            }
+
+            // Zusammensetzen
+            this.status[platform]   = 'Zusammensetzen…';
+            this.progress[platform] = 90;
+
+            const fd = new FormData();
+            fd.append('_token',       token);
+            fd.append('upload_id',    uploadId);
+            fd.append('total_chunks', totalChunks);
+            fd.append('filename',     file.name);
+            fd.append('version',      version);
+            fd.append('platform',     platform);
+
+            const res  = await fetch('{{ route("cadmin.desktop.assemble-file") }}', {
+                method: 'POST', headers: { Accept: 'application/json' }, body: fd,
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(`[${platform}] ` + (data.error || 'Unbekannter Fehler'));
+
+            this.progress[platform] = 100;
+            this.status[platform]   = 'Fertig';
+            this.done[platform]     = true;
+
+            return { url: data.url, hash: data.hash };
         },
 
         async handleSubmit(event) {
             this.errorMsg = '';
+            const hasFiles = PLATFORMS.some(p => this.files[p] !== null);
 
-            // Kein Datei-Upload → normales HTML-Formular absenden
-            if (!this.selectedFile) {
+            if (!hasFiles) {
                 event.target.submit();
                 return;
             }
 
-            // Mit Datei → Chunk-Upload, dann redirect
-            await this.uploadInChunks(event.target);
-        },
-
-        generateId() {
-            return Math.random().toString(36).substring(2, 18) +
-                   Math.random().toString(36).substring(2, 18);
-        },
-
-        async uploadInChunks(form) {
             this.uploading = true;
-            const file = this.selectedFile;
-            const uploadId = this.generateId();
-            const totalChunks = Math.ceil(file.size / this.CHUNK_SIZE);
-            const token = form.querySelector('input[name="_token"]').value;
-
-            // Chunks hochladen
-            for (let i = 0; i < totalChunks; i++) {
-                const start = i * this.CHUNK_SIZE;
-                const chunk = file.slice(start, start + this.CHUNK_SIZE);
-
-                const fd = new FormData();
-                fd.append('_token', token);
-                fd.append('chunk', chunk, file.name);
-                fd.append('upload_id', uploadId);
-                fd.append('chunk_index', i);
-                fd.append('total_chunks', totalChunks);
-                fd.append('filename', file.name);
-
-                this.statusText = `Chunk ${i + 1} / ${totalChunks} wird hochgeladen...`;
-                this.progress = Math.round((i / totalChunks) * 90);
-
-                try {
-                    const res = await fetch('{{ route("cadmin.desktop.upload-chunk") }}', {
-                        method: 'POST', body: fd
-                    });
-                    if (!res.ok) throw new Error(await res.text());
-                } catch (e) {
-                    this.uploading = false;
-                    this.errorMsg = 'Upload-Fehler bei Chunk ' + (i + 1) + ': ' + e.message;
-                    return;
-                }
-            }
-
-            // Alle Metadaten aus dem Formular lesen (native FormData → zuverlässig!)
-            this.statusText = 'Datei wird zusammengesetzt...';
-            this.progress = 95;
-
-            const metaFd = new FormData(form);
-            metaFd.delete('exe_file');   // Datei nicht nochmal senden
-            metaFd.delete('_method');    // PUT/PATCH nicht an die finalize-Route senden
-            metaFd.append('upload_id', uploadId);
-            metaFd.append('total_chunks', totalChunks);
-            metaFd.append('filename', file.name);
+            const token   = event.target.querySelector('[name="_token"]').value;
+            const version = event.target.querySelector('[name="version"]').value;
 
             try {
-                const res = await fetch('{{ route("cadmin.desktop.finalize-upload") }}', {
-                    method: 'POST',
-                    headers: { 'Accept': 'application/json' },
-                    body: metaFd
+                // Alle Plattformen parallel hochladen
+                const results = await Promise.all(
+                    PLATFORMS.map(p => this.uploadPlatform(p, token, version))
+                );
+
+                // URL + Hash-Felder befüllen
+                const map = { win: 'download_url', appimage: 'download_url_linux_appimage', deb: 'download_url_linux_deb' };
+                const mapHash = { win: 'file_hash', appimage: 'file_hash_linux_appimage', deb: 'file_hash_linux_deb' };
+                PLATFORMS.forEach((p, i) => {
+                    if (!results[i]) return;
+                    if (results[i].url)  document.getElementById(map[p]).value     = results[i].url;
+                    if (results[i].hash) document.getElementById(mapHash[p]).value = results[i].hash;
                 });
-                const data = await res.json();
-                if (data.ok) {
-                    this.progress = 100;
-                    this.statusText = 'Fertig! Weiterleitung...';
-                    this.uploadDone = true;
-                    this.uploading = false;
-                    setTimeout(() => window.location.href = data.redirect, 800);
-                } else {
-                    throw new Error(data.error || 'Unbekannter Fehler');
-                }
+
+                this.uploading = false;
+                event.target.submit();
             } catch (e) {
                 this.uploading = false;
-                this.errorMsg = 'Fehler beim Finalisieren: ' + e.message;
+                this.errorMsg  = e.message;
             }
-        }
+        },
     };
 }
 </script>

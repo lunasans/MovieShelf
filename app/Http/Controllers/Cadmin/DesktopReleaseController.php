@@ -50,7 +50,7 @@ class DesktopReleaseController extends Controller
             'is_public'                    => 'nullable|boolean',
         ]);
 
-        $data = $request->only(['version', 'changelog', 'download_url', 'download_url_linux_appimage', 'download_url_linux_deb', 'file_hash_linux_appimage', 'file_hash_linux_deb']);
+        $data = $request->only(['version', 'changelog', 'download_url', 'download_url_linux_appimage', 'download_url_linux_deb', 'file_hash', 'file_hash_linux_appimage', 'file_hash_linux_deb']);
         $data['is_public'] = $request->boolean('is_public');
 
         if ($request->hasFile('exe_file')) {
@@ -107,6 +107,69 @@ class DesktopReleaseController extends Controller
     }
 
     /**
+     * Setzt Chunks einer einzelnen Datei zusammen und gibt URL + SHA-256 zurück.
+     * Legt kein Release an – das übernimmt store()/update().
+     */
+    public function assembleFile(Request $request): \Illuminate\Http\JsonResponse
+    {
+        try {
+            $request->validate([
+                'upload_id'    => 'required|string|alpha_num|max:64',
+                'total_chunks' => 'required|integer|min:1',
+                'filename'     => 'required|string|max:255',
+                'version'      => 'required|string|max:50',
+                'platform'     => 'required|in:win,appimage,deb',
+            ]);
+
+            $uploadId    = $request->input('upload_id');
+            $totalChunks = (int) $request->input('total_chunks');
+            $ext         = pathinfo($request->input('filename'), PATHINFO_EXTENSION);
+            $safeVersion = preg_replace('/[^a-zA-Z0-9.\-_]/', '_', $request->input('version'));
+            $platform    = $request->input('platform');
+
+            $suffix = match ($platform) {
+                'appimage' => '_linux',
+                'deb'      => '_linux_deb',
+                default    => '',
+            };
+
+            $finalName = "MovieShelf_v{$safeVersion}{$suffix}.{$ext}";
+            $finalPath = storage_path("app/public/releases/{$finalName}");
+            $tmpDir    = storage_path("app/chunks/{$uploadId}");
+
+            if (!is_dir(dirname($finalPath))) {
+                mkdir(dirname($finalPath), 0755, true);
+            }
+
+            $out = fopen($finalPath, 'wb');
+            for ($i = 0; $i < $totalChunks; $i++) {
+                $chunkFile = "{$tmpDir}/chunk_{$i}";
+                if (!file_exists($chunkFile)) {
+                    fclose($out);
+                    return response()->json(['error' => "Chunk {$i} fehlt."], 422);
+                }
+                fwrite($out, file_get_contents($chunkFile));
+                unlink($chunkFile);
+            }
+            fclose($out);
+            @rmdir($tmpDir);
+
+            $storagePath = "releases/{$finalName}";
+
+            return response()->json([
+                'ok'   => true,
+                'url'  => Storage::disk('public')->url($storagePath),
+                'hash' => hash_file('sha256', $finalPath),
+                'path' => $storagePath,
+            ]);
+
+        } catch (\Throwable $e) {
+            \Log::error('assembleFile error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Empfängt einen einzelnen Chunk und speichert ihn temporär.
      */
     public function uploadChunk(Request $request)
@@ -139,13 +202,17 @@ class DesktopReleaseController extends Controller
     {
         try {
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-                'upload_id'    => 'required|string|alpha_num|max:64',
-                'total_chunks' => 'required|integer|min:1',
-                'filename'     => 'required|string|max:255',
-                'version'      => 'required|string|unique:desktop_releases,version',
-                'changelog'    => 'nullable|string',
-                'download_url' => 'nullable|url',
-                'is_public'    => 'nullable|boolean',
+                'upload_id'                    => 'required|string|alpha_num|max:64',
+                'total_chunks'                 => 'required|integer|min:1',
+                'filename'                     => 'required|string|max:255',
+                'version'                      => 'required|string|unique:desktop_releases,version',
+                'changelog'                    => 'nullable|string',
+                'download_url'                 => 'nullable|url',
+                'download_url_linux_appimage'  => 'nullable|url',
+                'download_url_linux_deb'       => 'nullable|url',
+                'file_hash_linux_appimage'     => 'nullable|string|max:128',
+                'file_hash_linux_deb'          => 'nullable|string|max:128',
+                'is_public'                    => 'nullable|boolean',
             ]);
 
             if ($validator->fails()) {
@@ -185,12 +252,16 @@ class DesktopReleaseController extends Controller
             $fileHash    = hash_file('sha256', $finalPath);
 
             $release = DesktopRelease::create([
-                'version'      => $request->input('version'),
-                'changelog'    => $request->input('changelog'),
-                'download_url' => $downloadUrl,
-                'file_path'    => $storagePath,
-                'file_hash'    => $fileHash,
-                'is_public'    => $request->boolean('is_public'),
+                'version'                     => $request->input('version'),
+                'changelog'                   => $request->input('changelog'),
+                'download_url'                => $downloadUrl,
+                'download_url_linux_appimage' => $request->input('download_url_linux_appimage'),
+                'download_url_linux_deb'      => $request->input('download_url_linux_deb'),
+                'file_path'                   => $storagePath,
+                'file_hash'                   => $fileHash,
+                'file_hash_linux_appimage'    => $request->input('file_hash_linux_appimage'),
+                'file_hash_linux_deb'         => $request->input('file_hash_linux_deb'),
+                'is_public'                   => $request->boolean('is_public'),
             ]);
 
             return response()->json([

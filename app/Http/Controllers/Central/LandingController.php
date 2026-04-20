@@ -21,6 +21,14 @@ class LandingController extends Controller
         return view('central.landing', compact('faqs', 'screenshots', 'navPages', 'latestDesktop'));
     }
 
+    public function releases()
+    {
+        $releases  = DesktopRelease::where('is_public', true)->orderBy('created_at', 'desc')->get();
+        $navPages  = LandingPage::where('is_active', true)->where('show_in_nav', true)->orderBy('sort_order')->get();
+
+        return view('central.releases', compact('releases', 'navPages'));
+    }
+
     public function page(string $slug)
     {
         $page = LandingPage::where('slug', $slug)->where('is_active', true)->firstOrFail();
