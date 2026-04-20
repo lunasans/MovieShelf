@@ -207,7 +207,7 @@ import { useApi } from '@/composables/useApi'
 import { useUiStore } from '@/stores/ui'
 import { useListStore } from '@/stores/lists'
 const route = useRoute()
-const { isOnline, apiGet, resolveMediaUrl } = useApi()
+const { resolveMediaUrl } = useApi()
 const ui = useUiStore()
 const listStore = useListStore()
 const movie = ref<any>(null)
@@ -358,24 +358,9 @@ onMounted(async () => {
     scroller.addEventListener('scroll', handleScroll)
   }
 
-  if (isOnline.value) {
-    const res = await apiGet(`/movies/${id}`)
-    movie.value = res.data
-    linkedActors.value = res.data.actors?.map((a: any) => ({
-      id: a.id,
-      remote_id: a.id,
-      name: a.name,
-      role: a.role,
-      image_path: a.image_url
-    })) || []
-  } else {
-    movie.value = await window.electron.db.movies.get(id)
-    linkedActors.value = await window.electron.db.movies.actors.getForMovie(id)
-  }
-
-  // Lokale ID ermitteln (im Online-Modus ist route param die Remote-ID)
-  const localMovie = await window.electron.db.movies.get(id) as any
-  localMovieId.value = localMovie?.id ?? null   // null = Film noch nicht lokal synchronisiert
+  movie.value = await window.electron.db.movies.get(id)
+  linkedActors.value = await window.electron.db.movies.actors.getForMovie(id)
+  localMovieId.value = id
 
   await listStore.fetchLists()
   if (localMovieId.value !== null) {

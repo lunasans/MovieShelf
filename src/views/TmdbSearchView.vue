@@ -58,9 +58,7 @@
         <div
           v-for="result in results"
           :key="result.id"
-          class="group"
-          :class="importedIds.has(result.id) ? 'cursor-default' : 'cursor-pointer'"
-          @click="importMovie(result)"
+          class="group relative"
         >
           <div
             class="relative aspect-[2/3] rounded-2xl overflow-hidden bg-[var(--bg-card)] border transition-all duration-300"
@@ -84,14 +82,44 @@
             </div>
 
             <!-- Hover overlay -->
-            <div v-else class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-              <span v-if="importing === result.id" class="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-1">
+            <div v-else class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-stretch justify-end p-2 gap-1.5">
+              <span v-if="importing === result.id" class="text-[10px] font-black text-white uppercase tracking-widest flex items-center justify-center gap-1 py-1">
                 <span class="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></span>
                 Lädt...
               </span>
-              <span v-else class="text-[10px] font-black text-white uppercase tracking-widest">Hinzufügen</span>
+              <template v-else>
+                <button
+                  @click.stop="importMovie(result)"
+                  class="w-full bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest py-1.5 rounded-lg transition-colors"
+                >
+                  <i class="bi bi-plus-lg mr-1"></i>Sammlung
+                </button>
+                <button
+                  @click.stop="listPickerFor = listPickerFor === result.id ? null : result.id"
+                  class="w-full bg-white/20 hover:bg-white/30 text-white text-[10px] font-black uppercase tracking-widest py-1.5 rounded-lg transition-colors"
+                >
+                  <i class="bi bi-collection-fill mr-1"></i>Liste
+                </button>
+              </template>
             </div>
           </div>
+
+          <!-- List picker dropdown -->
+          <div
+            v-if="listPickerFor === result.id"
+            class="absolute z-50 top-full mt-1 left-0 right-0 bg-[var(--bg-elevated)] border border-[var(--border-ui)] rounded-xl shadow-xl overflow-hidden"
+          >
+            <div v-if="listStore.lists.length === 0" class="px-3 py-2 text-xs text-[var(--text-muted)] opacity-50">Keine Listen vorhanden</div>
+            <button
+              v-for="list in listStore.lists"
+              :key="list.id"
+              @click.stop="addToList(result, list.id)"
+              class="w-full text-left px-3 py-2 text-xs font-bold text-[var(--text-main)] hover:bg-[var(--bg-card)] transition-colors truncate"
+            >
+              <i class="bi bi-collection-fill text-red-500 mr-2"></i>{{ list.name }}
+            </button>
+          </div>
+
           <p class="mt-2 text-xs font-bold truncate"
             :class="importedIds.has(result.id) ? 'text-[var(--status-green)]' : 'text-[var(--text-main)] opacity-70'">
             {{ result.title }}
@@ -104,10 +132,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useApi } from '@/composables/useApi'
 import { useSettingsStore } from '@/stores/settings'
+import { useListStore } from '@/stores/lists'
 
 const TMDB_BASE = 'https://api.themoviedb.org/3'
 
@@ -118,17 +147,21 @@ interface TmdbResult {
   release_date: string
 }
 
-const settings = useSettingsStore()
+const settings   = useSettingsStore()
+const listStore  = useListStore()
 const { apiGet, apiPost, isOnline } = useApi()
 
-const query      = ref('')
-const results    = ref<TmdbResult[]>([])
-const loading    = ref(false)
-const importing  = ref<number | null>(null)
+const query       = ref('')
+const results     = ref<TmdbResult[]>([])
+const loading     = ref(false)
+const importing   = ref<number | null>(null)
 const importedIds = ref(new Set<number>())
-const error      = ref('')
-const toast      = ref('')
+const error       = ref('')
+const toast       = ref('')
+const listPickerFor = ref<number | null>(null)
 let toastTimer: ReturnType<typeof setTimeout> | null = null
+
+onMounted(() => listStore.fetchLists())
 
 function showToast(message: string) {
   if (toastTimer) clearTimeout(toastTimer)
@@ -186,7 +219,7 @@ async function importMovie(result: TmdbResult) {
   }
 }
 
-async function importLocally(tmdbId: number) {
+async function importLocally(tmdbId: number, inCollection = 1) {
   const [detailRes, videoRes] = await Promise.all([
     axios.get(`${TMDB_BASE}/movie/${tmdbId}`, {
       params: { api_key: settings.tmdbApiKey, language: 'de-DE', append_to_response: 'credits' }
@@ -221,9 +254,34 @@ async function importLocally(tmdbId: number) {
     tag:             null,
     tmdb_id:         m.id,
     remote_id:       null,
+    in_collection:   inCollection,
   }
 
-  await window.electron.db.movies.create(movieData)
+  return await window.electron.db.movies.create(movieData)
+}
+
+async function addToList(result: TmdbResult, listId: number) {
+  listPickerFor.value = null
+  try {
+    const existing = await window.electron.db.movies.getByRemoteId(result.id) as any
+    let localId: number
+
+    if (existing?.id) {
+      localId = existing.id
+    } else {
+      // Vollständige TMDb-Infos holen, aber in_collection=0
+      const created = await importLocally(result.id, 0) as any
+      localId = created?.id
+    }
+
+    if (localId) {
+      await listStore.addMovie(listId, localId)
+      const listName = listStore.lists.find(l => l.id === listId)?.name ?? 'Liste'
+      showToast(`„${result.title}" zu „${listName}" hinzugefügt.`)
+    }
+  } catch (e: any) {
+    error.value = `Fehler: ${e.message}`
+  }
 }
 </script>
 

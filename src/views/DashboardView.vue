@@ -14,9 +14,9 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-      <StatCard label="Filme gesamt" :value="stats.total" icon="film" />
-      <StatCard label="Gesehen"      :value="stats.watched" icon="eye" />
-      <StatCard label="Bewertungen"  :value="stats.rated" icon="star-fill" />
+      <StatCard label="Filme gesamt"   :value="stats.total" icon="film" />
+      <StatCard label="Gesehen"        :value="stats.watched" icon="eye" />
+      <StatCard label="Ø Bewertung"    :value="stats.avgRating" icon="star-fill" />
     </div>
 
     <div class="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-ui)] p-8 shadow-[var(--shadow-main)]">
@@ -35,23 +35,21 @@
 import { ref, onMounted } from 'vue'
 import StatCard from '@/components/ui/StatCard.vue'
 import MovieListRow from '@/components/movies/MovieListRow.vue'
-import { useMovieStore } from '@/stores/movies'
-
-const store = useMovieStore()
-const recent = ref(store.movies.slice(0, 10))
-const stats  = ref({ total: 0, watched: 0, rated: 0 })
+const recent = ref<any[]>([])
+const stats  = ref({ total: 0, watched: 0, avgRating: 0 })
 
 function openStats() {
   window.electron.stats.openWindow()
 }
 
 onMounted(async () => {
-  await store.fetchMovies()
-  recent.value = store.movies.slice(0, 10)
-  stats.value.total = store.total
-
-  const s = await window.electron.stats.get()
-  stats.value.watched = s.watchedMovies ?? 0
-  stats.value.rated   = s.ratedMovies   ?? 0
+  const [recentMovies, s] = await Promise.all([
+    window.electron.db.movies.recent(10),
+    window.electron.stats.get(),
+  ])
+  recent.value = recentMovies as any[]
+  stats.value.total     = s.totalMovies   ?? 0
+  stats.value.watched   = s.watchedMovies ?? 0
+  stats.value.avgRating = s.avgRating     ?? 0
 })
 </script>

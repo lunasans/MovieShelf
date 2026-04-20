@@ -11,13 +11,15 @@ async function init() {
   app.use(pinia)
   app.use(router)
 
-  await useSettingsStore(pinia).load()
+  // App sofort mounten — Settings werden in App.vue nachgeladen
+  app.mount('#app')
+
+  // Settings im Hintergrund laden (blockiert nicht mehr das Rendering)
+  useSettingsStore(pinia).load().catch(console.error)
 
   window.electron.onNavigate((path: string) => {
     router.push(path)
   })
-
-  app.mount('#app')
 }
 
 init()

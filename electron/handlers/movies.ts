@@ -18,27 +18,37 @@ export function registerMovieHandlers(): void {
       const like = `%${q}%`
       const rows = db().prepare(`
         SELECT * FROM movies
-        WHERE is_deleted = 0 AND (title LIKE ? OR director LIKE ? OR genre LIKE ?)
+        WHERE is_deleted = 0 AND in_collection = 1 AND (title LIKE ? OR director LIKE ? OR genre LIKE ?)
         ORDER BY title ASC LIMIT ? OFFSET ?
       `).all(like, like, like, perPage, offset)
 
       const total = (db().prepare(`
         SELECT COUNT(*) as count FROM movies
-        WHERE is_deleted = 0 AND (title LIKE ? OR director LIKE ? OR genre LIKE ?)
+        WHERE is_deleted = 0 AND in_collection = 1 AND (title LIKE ? OR director LIKE ? OR genre LIKE ?)
       `).get(like, like, like) as { count: number }).count
 
       return { data: rows, total, page, perPage }
     }
 
-    const rows = db().prepare('SELECT * FROM movies WHERE is_deleted = 0 ORDER BY title ASC LIMIT ? OFFSET ?').all(perPage, offset)
-    const total = (db().prepare('SELECT COUNT(*) as count FROM movies WHERE is_deleted = 0').get() as { count: number }).count
+    const rows = db().prepare('SELECT * FROM movies WHERE is_deleted = 0 AND in_collection = 1 ORDER BY title ASC LIMIT ? OFFSET ?').all(perPage, offset)
+    const total = (db().prepare('SELECT COUNT(*) as count FROM movies WHERE is_deleted = 0 AND in_collection = 1').get() as { count: number }).count
 
     return { data: rows, total, page, perPage }
+  })
+
+  ipcMain.handle('db:movies:recent', (_event, limit = 10) => {
+    return db().prepare(
+      "SELECT * FROM movies WHERE is_deleted = 0 AND is_boxset = 0 AND in_collection = 1 ORDER BY created_at DESC LIMIT ?"
+    ).all(limit)
   })
 
   ipcMain.handle('db:movies:get', (_event, id: number) => {
     return db().prepare('SELECT * FROM movies WHERE id = ? AND is_deleted = 0').get(id)
         ?? db().prepare('SELECT * FROM movies WHERE remote_id = ? AND is_deleted = 0').get(id)
+  })
+
+  ipcMain.handle('db:movies:get-by-remote-id', (_event, remoteId: number) => {
+    return db().prepare('SELECT * FROM movies WHERE remote_id = ? AND is_deleted = 0').get(remoteId) ?? null
   })
 
   ipcMain.handle('db:movies:create', (_event, data: Record<string, unknown>) => {
@@ -59,7 +69,8 @@ export function registerMovieHandlers(): void {
             director = @director, runtime = @runtime, rating = @rating, rating_age = @rating_age,
             overview = @overview, cover_path = @cover_path, backdrop_path = @backdrop_path,
             actors_names = @actors_names, trailer_url = @trailer_url,
-            collection_type = @collection_type, tag = @tag, updated_at = @updated_at
+            collection_type = @collection_type, tag = @tag,
+            is_boxset = @is_boxset, boxset_parent_id = @boxset_parent_id, updated_at = @updated_at
           WHERE id = @id
         `).run({ ...data, updated_at: data.updated_at || now, id: orphan.id })
         return db().prepare('SELECT * FROM movies WHERE id = ?').get(orphan.id)
@@ -68,9 +79,11 @@ export function registerMovieHandlers(): void {
 
     const stmt = db().prepare(`
       INSERT INTO movies (title, year, genre, director, runtime, rating, rating_age, overview,
-        cover_path, backdrop_path, actors_names, trailer_url, collection_type, tag, tmdb_id, remote_id, created_at, updated_at)
+        cover_path, backdrop_path, actors_names, trailer_url, collection_type, tag, tmdb_id, remote_id,
+        is_boxset, boxset_parent_id, view_count, is_watched, in_collection, created_at, updated_at)
       VALUES (@title, @year, @genre, @director, @runtime, @rating, @rating_age, @overview,
-        @cover_path, @backdrop_path, @actors_names, @trailer_url, @collection_type, @tag, @tmdb_id, @remote_id, @created_at, @updated_at)
+        @cover_path, @backdrop_path, @actors_names, @trailer_url, @collection_type, @tag, @tmdb_id, @remote_id,
+        @is_boxset, @boxset_parent_id, @view_count, @is_watched, @in_collection, @created_at, @updated_at)
       ON CONFLICT(remote_id) DO UPDATE SET
         title = EXCLUDED.title,
         year = EXCLUDED.year,
@@ -87,12 +100,29 @@ export function registerMovieHandlers(): void {
         collection_type = EXCLUDED.collection_type,
         tag = EXCLUDED.tag,
         tmdb_id = EXCLUDED.tmdb_id,
+        is_boxset = EXCLUDED.is_boxset,
+        boxset_parent_id = EXCLUDED.boxset_parent_id,
+        view_count = EXCLUDED.view_count,
+        is_watched = EXCLUDED.is_watched,
         updated_at = EXCLUDED.updated_at
-      WHERE EXCLUDED.updated_at > movies.updated_at
+      WHERE EXCLUDED.updated_at >= movies.updated_at
     `)
-    const result = stmt.run({ ...data, created_at: now, updated_at: data.updated_at || now })
-    const id = result.lastInsertRowid
-    return db().prepare('SELECT * FROM movies WHERE id = ?').get(id)
+    const result = stmt.run({
+      genre: null, director: null, runtime: null, rating: null, rating_age: null,
+      overview: null, cover_path: null, backdrop_path: null, actors_names: null,
+      trailer_url: null, collection_type: 'Film', tag: null, tmdb_id: null, remote_id: null,
+      is_boxset: 0, boxset_parent_id: null, view_count: 0, is_watched: 0, in_collection: 1,
+      ...data,
+      created_at: data.created_at || now, updated_at: data.updated_at || now,
+    })
+    // is_boxset, boxset_parent_id und view_count immer aktualisieren (unabhängig vom Timestamp-Vergleich)
+    if (data.remote_id != null) {
+      db().prepare(
+        'UPDATE movies SET is_boxset = ?, boxset_parent_id = ?, view_count = ?, is_watched = ?, created_at = COALESCE(?, created_at) WHERE remote_id = ?'
+      ).run(data.is_boxset ?? 0, data.boxset_parent_id ?? null, data.view_count ?? 0, data.is_watched ?? 0, data.created_at ?? null, data.remote_id)
+      return db().prepare('SELECT * FROM movies WHERE remote_id = ?').get(data.remote_id)
+    }
+    return db().prepare('SELECT * FROM movies WHERE id = ?').get(result.lastInsertRowid)
   })
 
   ipcMain.handle('db:movies:actors', (_event, movieId: number) => {
@@ -205,7 +235,7 @@ export function registerMovieHandlers(): void {
     if (!Array.isArray(tmdbIds) || tmdbIds.length === 0) return []
     const placeholders = tmdbIds.map(() => '?').join(', ')
     const rows = db().prepare(
-      `SELECT tmdb_id FROM movies WHERE is_deleted = 0 AND tmdb_id IN (${placeholders})`
+      `SELECT tmdb_id FROM movies WHERE is_deleted = 0 AND in_collection = 1 AND tmdb_id IN (${placeholders})`
     ).all(...tmdbIds) as { tmdb_id: number }[]
     return rows.map(r => r.tmdb_id)
   })

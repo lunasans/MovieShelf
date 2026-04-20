@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import { getDb } from '../database'
 
-const ALLOWED_SETTINGS_KEYS = new Set(['mode', 'theme', 'shelf_url', 'shelf_token', 'tmdb_api_key'])
+const ALLOWED_SETTINGS_KEYS = new Set(['mode', 'theme', 'shelf_url', 'shelf_token', 'tmdb_api_key', 'last_sync_at'])
 
 export function registerSettingsHandlers(): void {
   const db = () => getDb()

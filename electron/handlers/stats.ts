@@ -24,7 +24,7 @@ export function registerStatsHandlers(): void {
       titleBarStyle: 'hidden',
       backgroundColor: '#0a0a0f',
       webPreferences: {
-        preload: join(__dirname, '../preload.js'),
+        preload: join(__dirname, 'preload.js'),
         contextIsolation: true,
         nodeIntegration: false,
       },
@@ -45,17 +45,19 @@ export function registerStatsHandlers(): void {
   })
 
   ipcMain.handle('db:stats:get', () => {
+    const BASE = "is_deleted = 0 AND is_boxset = 0 AND in_collection = 1"
+
     const totalMovies = (db().prepare(
-      'SELECT COUNT(*) as count FROM movies WHERE is_deleted = 0'
+      `SELECT COUNT(*) as count FROM movies WHERE ${BASE}`
     ).get() as { count: number }).count
 
     const totalRuntime = (db().prepare(
-      'SELECT COALESCE(SUM(runtime), 0) as total FROM movies WHERE is_deleted = 0 AND runtime IS NOT NULL'
+      `SELECT COALESCE(SUM(runtime), 0) as total FROM movies WHERE ${BASE} AND runtime IS NOT NULL`
     ).get() as { total: number }).total
 
     // Genre counts — split comma-separated values
     const movieGenres = db().prepare(
-      "SELECT genre FROM movies WHERE is_deleted = 0 AND genre IS NOT NULL AND genre != ''"
+      `SELECT genre FROM movies WHERE ${BASE} AND genre IS NOT NULL AND genre != ''`
     ).all() as { genre: string }[]
 
     const genreMap: Record<string, number> = {}
@@ -74,24 +76,24 @@ export function registerStatsHandlers(): void {
     const byYear = db().prepare(`
       SELECT year, COUNT(*) as count
       FROM movies
-      WHERE is_deleted = 0 AND year IS NOT NULL
+      WHERE ${BASE} AND year IS NOT NULL
       GROUP BY year
       ORDER BY year ASC
     `).all() as { year: number; count: number }[]
 
     // Top actors from actors table
     const topActors = db().prepare(`
-      SELECT a.name, a.image_path, COUNT(fa.film_id) as movie_count
+      SELECT a.name, a.remote_id, a.image_path, COUNT(fa.film_id) as movie_count
       FROM actors a
       JOIN film_actor fa ON a.id = fa.actor_id
       JOIN movies m ON fa.film_id = m.id
-      WHERE m.is_deleted = 0
+      WHERE m.${BASE}
       GROUP BY a.id
       ORDER BY movie_count DESC
       LIMIT 10
-    `).all() as { name: string; image_path: string | null; movie_count: number }[]
+    `).all() as { name: string; remote_id: number | null; image_path: string | null; movie_count: number }[]
 
-    // Films per collection type
+    // Films per collection type (BoxSet included here intentionally for overview)
     const byType = db().prepare(`
       SELECT collection_type, COUNT(*) as count
       FROM movies
@@ -111,18 +113,18 @@ export function registerStatsHandlers(): void {
     const byRuntime = runtimeBuckets.map(b => ({
       label: b.label,
       count: (db().prepare(
-        'SELECT COUNT(*) as count FROM movies WHERE is_deleted = 0 AND runtime >= ? AND runtime <= ?'
+        `SELECT COUNT(*) as count FROM movies WHERE ${BASE} AND runtime >= ? AND runtime <= ?`
       ).get(b.min, b.max) as { count: number }).count,
     }))
 
     const watchedMovies = (db().prepare(
-      'SELECT COUNT(*) as count FROM movies WHERE is_deleted = 0 AND rating IS NOT NULL'
+      `SELECT COUNT(*) as count FROM movies WHERE ${BASE} AND is_watched = 1`
     ).get() as { count: number }).count
 
-    const ratedMovies = (db().prepare(
-      'SELECT COUNT(*) as count FROM movies WHERE is_deleted = 0 AND rating IS NOT NULL AND rating > 0'
-    ).get() as { count: number }).count
+    const avgRating = (db().prepare(
+      `SELECT ROUND(AVG(rating), 1) as avg FROM movies WHERE ${BASE} AND rating > 0`
+    ).get() as { avg: number | null }).avg ?? 0
 
-    return { totalMovies, totalRuntime, genres, byYear, topActors, byType, byRuntime, watchedMovies, ratedMovies }
+    return { totalMovies, totalRuntime, genres, byYear, topActors, byType, byRuntime, watchedMovies, avgRating }
   })
 }

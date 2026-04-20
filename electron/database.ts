@@ -87,6 +87,11 @@ function runMigrations(): void {
   try { db.exec('ALTER TABLE movies ADD COLUMN trailer_url TEXT') } catch (e) {}
   try { db.exec('ALTER TABLE movies ADD COLUMN is_deleted INTEGER DEFAULT 0') } catch (e) {}
   try { db.exec('ALTER TABLE movies ADD COLUMN tag TEXT') } catch (e) {}
+  try { db.exec('ALTER TABLE movies ADD COLUMN is_boxset INTEGER DEFAULT 0') } catch (e) {}
+  try { db.exec('ALTER TABLE movies ADD COLUMN boxset_parent_id INTEGER') } catch (e) {}
+  try { db.exec('ALTER TABLE movies ADD COLUMN view_count INTEGER DEFAULT 0') } catch (e) {}
+  try { db.exec('ALTER TABLE movies ADD COLUMN is_watched INTEGER DEFAULT 0') } catch (e) {}
+  try { db.exec('ALTER TABLE movies ADD COLUMN in_collection INTEGER DEFAULT 1') } catch (e) {}
   
   // Cleanup duplicates before creating unique index
   try {
@@ -109,8 +114,10 @@ function runMigrations(): void {
     CREATE TABLE IF NOT EXISTS lists (
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
       name       TEXT    NOT NULL,
+      remote_id  INTEGER,
       created_at TEXT    DEFAULT (datetime('now')),
-      updated_at TEXT    DEFAULT (datetime('now'))
+      updated_at TEXT    DEFAULT (datetime('now')),
+      synced_at  TEXT
     );
 
     CREATE TABLE IF NOT EXISTS list_movies (
@@ -123,4 +130,6 @@ function runMigrations(): void {
     );
   `)
 
+  try { db.exec('ALTER TABLE lists ADD COLUMN remote_id INTEGER') } catch (e) {}
+  try { db.exec('ALTER TABLE lists ADD COLUMN synced_at TEXT') } catch (e) {}
 }

@@ -125,9 +125,9 @@ async function save() {
   saving.value = true
   try {
     if (isEdit.value) {
-      await window.electron.db.movies.update(Number(route.params.id), form.value)
+      await window.electron.db.movies.update(Number(route.params.id), { ...form.value })
     } else {
-      await window.electron.db.movies.create(form.value)
+      await window.electron.db.movies.create({ ...form.value })
     }
     router.push('/movies')
   } finally {

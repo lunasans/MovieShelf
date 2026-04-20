@@ -47,6 +47,45 @@ export function registerListHandlers(): void {
     return { success: true }
   })
 
+  // Returns all lists with their movie remote_ids (for sync)
+  ipcMain.handle('db:lists:sync-state', () => {
+    const lists = db().prepare('SELECT * FROM lists').all() as any[]
+    return lists.map(list => {
+      const movies = db().prepare(`
+        SELECT m.remote_id FROM movies m
+        JOIN list_movies lm ON m.id = lm.movie_id
+        WHERE lm.list_id = ? AND m.remote_id IS NOT NULL
+      `).all(list.id) as { remote_id: number }[]
+      return {
+        id: list.id,
+        name: list.name,
+        remote_id: list.remote_id ?? null,
+        synced_at: list.synced_at ?? null,
+        updated_at: list.updated_at,
+        movie_remote_ids: movies.map(m => m.remote_id),
+      }
+    })
+  })
+
+  ipcMain.handle('db:lists:set-remote-id', (_event, id: number, remoteId: number) => {
+    const now = new Date().toISOString()
+    db().prepare('UPDATE lists SET remote_id = ?, synced_at = ? WHERE id = ?').run(remoteId, now, id)
+    return { success: true }
+  })
+
+  ipcMain.handle('db:lists:mark-synced', (_event, id: number) => {
+    const now = new Date().toISOString()
+    db().prepare('UPDATE lists SET synced_at = ? WHERE id = ?').run(now, id)
+    return { success: true }
+  })
+
+  ipcMain.handle('db:lists:delete-by-remote-id', (_event, remoteId: number) => {
+    const list = db().prepare('SELECT id FROM lists WHERE remote_id = ?').get(remoteId) as { id: number } | undefined
+    if (!list) return { success: false }
+    db().prepare('DELETE FROM lists WHERE id = ?').run(list.id)
+    return { success: true }
+  })
+
   ipcMain.handle('db:lists:add-movie', (_event, listId: number, movieId: number) => {
     const now = new Date().toISOString()
     db().prepare(
@@ -58,6 +97,22 @@ export function registerListHandlers(): void {
 
   ipcMain.handle('db:lists:remove-movie', (_event, listId: number, movieId: number) => {
     db().prepare('DELETE FROM list_movies WHERE list_id = ? AND movie_id = ?').run(listId, movieId)
+
+    // Film mit in_collection=0 der nirgendwo mehr in einer Liste ist → löschen
+    const movie = db().prepare(
+      'SELECT in_collection FROM movies WHERE id = ?'
+    ).get(movieId) as { in_collection: number } | undefined
+
+    if (movie?.in_collection === 0) {
+      const remaining = (db().prepare(
+        'SELECT COUNT(*) as count FROM list_movies WHERE movie_id = ?'
+      ).get(movieId) as { count: number }).count
+
+      if (remaining === 0) {
+        db().prepare('DELETE FROM movies WHERE id = ?').run(movieId)
+      }
+    }
+
     return { success: true }
   })
 

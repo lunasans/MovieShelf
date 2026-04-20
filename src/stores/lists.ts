@@ -28,10 +28,11 @@ export const useListStore = defineStore('lists', () => {
   }
 
   async function createList(name: string): Promise<MovieList> {
-    const created = (await window.electron.db.lists.create(name)) as MovieList
-    lists.value.push({ ...created, movie_count: 0 })
+    const created = await window.electron.db.lists.create(name)
+    const entry: MovieList = { ...created, movie_count: 0, created_at: '', updated_at: '' }
+    lists.value.push(entry)
     lists.value.sort((a, b) => a.name.localeCompare(b.name))
-    return created
+    return entry
   }
 
   async function renameList(id: number, name: string): Promise<void> {

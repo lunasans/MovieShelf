@@ -68,25 +68,14 @@ import { useApi } from '@/composables/useApi'
 import MovieCard from '@/components/movies/MovieCard.vue'
 
 const route = useRoute()
-const { isOnline, apiGet, resolveMediaUrl } = useApi()
+const { resolveMediaUrl } = useApi()
 
 const actor = ref<any>(null)
 const movies = ref<any[]>([])
 
 onMounted(async () => {
   const id = Number(route.params.id)
-  
-  if (isOnline.value) {
-    try {
-      const res = await apiGet(`/actors/${id}`)
-      actor.value = res.data
-      movies.value = res.data.movies || []
-    } catch (e) {
-      console.error('Failed to load actor from API:', e)
-    }
-  } else {
-    actor.value = await window.electron.db.movies.actors.get(id)
-    movies.value = await window.electron.db.movies.actors.movies(id)
-  }
+  actor.value = await window.electron.db.movies.actors.get(id)
+  movies.value = await window.electron.db.movies.actors.movies(id)
 })
 </script>

@@ -33,10 +33,12 @@ const applyTheme = (theme: string) => {
   if (theme === 'system') {
     finalTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
-  
   document.documentElement.classList.remove('theme-light', 'theme-dark')
   document.documentElement.classList.add(`theme-${finalTheme}`)
 }
+
+// Theme sofort anwenden bevor Settings async geladen werden
+applyTheme('dark')
 
 onMounted(async () => {
   await settings.load()

@@ -1,6 +1,6 @@
 {
   "name": "movieshelf-desktop",
-  "version": "0.2.2",
+  "version": "0.3.1",
   "description": "MovieShelf Desktop – Filmsammlung lokal verwalten & mit deiner Shelf synchronisieren",
   "main": "dist-electron/main.js",
   "author": "Rene Neuhaus",
@@ -48,8 +48,8 @@
         "portable"
       ],
       "icon": "public/logo_small.png",
-      "certificateFile": "cert.pfx",
-      "certificatePassword": "${env.CSC_KEY_PASSWORD}"
+      "publisherName": "Rene Neuhaus",
+      "signingHashAlgorithms": null
     },
     "mac": {
       "target": "dmg",

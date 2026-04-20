@@ -40,6 +40,23 @@
       <div class="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
+    <!-- Error -->
+    <div v-else-if="loadError" class="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8">
+      <i class="bi bi-exclamation-triangle text-3xl text-[var(--status-yellow)]"></i>
+      <p class="text-sm font-black text-[var(--text-main)]">Statistiken konnten nicht geladen werden</p>
+      <p class="text-xs text-[var(--text-muted)] opacity-60 max-w-xs">{{ loadError }}</p>
+      <button @click="reload" class="mt-2 px-5 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-ui)] rounded-xl text-sm font-bold text-[var(--text-main)] hover:bg-[var(--bg-card)] transition-colors">
+        Neu laden
+      </button>
+    </div>
+
+    <!-- Empty -->
+    <div v-else-if="stats && stats.totalMovies === 0" class="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8">
+      <i class="bi bi-film text-3xl text-[var(--text-muted)] opacity-30"></i>
+      <p class="text-sm font-black text-[var(--text-main)]">Noch keine Filme in der Sammlung</p>
+      <p class="text-xs text-[var(--text-muted)] opacity-50 max-w-xs">Synchronisiere zuerst mit deiner MovieShelf oder füge Filme hinzu.</p>
+    </div>
+
     <div v-else-if="stats" class="flex-1 overflow-y-auto">
 
       <!-- Tab: Übersicht -->
@@ -124,8 +141,8 @@
               <span class="w-5 text-[11px] font-black text-[var(--text-muted)] opacity-40 text-right flex-shrink-0">{{ i + 1 }}</span>
               <div class="w-10 h-10 rounded-full bg-[var(--bg-app)] border border-[var(--border-ui)] overflow-hidden flex-shrink-0 flex items-center justify-center text-[var(--text-muted)] opacity-40">
                 <img
-                  v-if="actor.image_path"
-                  :src="`movie-resource://${actor.image_path.split('/').pop()}`"
+                  v-if="actor.remote_id"
+                  :src="`movie-resource://actor_${actor.remote_id}.jpg`"
                   class="w-full h-full object-cover opacity-100"
                 />
                 <i v-else class="bi bi-person-fill text-lg"></i>
@@ -216,8 +233,9 @@ import StatCard from '@/components/ui/StatCard.vue'
 
 type Stats = Awaited<ReturnType<typeof window.electron.stats.get>>
 
-const stats = ref<Stats | null>(null)
-const loading = ref(true)
+const stats     = ref<Stats | null>(null)
+const loading   = ref(true)
+const loadError = ref('')
 const activeTab = ref('overview')
 
 const tabs = [
@@ -272,11 +290,18 @@ const maxRuntimeCount = computed(() =>
   stats.value ? Math.max(...stats.value.byRuntime.map(b => b.count), 1) : 1
 )
 
-onMounted(async () => {
+async function reload() {
+  loading.value   = true
+  loadError.value = ''
+  stats.value     = null
   try {
     stats.value = await window.electron.stats.get()
+  } catch (e: any) {
+    loadError.value = e?.message ?? 'Unbekannter Fehler'
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(reload)
 </script>
