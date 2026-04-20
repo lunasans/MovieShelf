@@ -397,6 +397,7 @@ async function pull(full = false): Promise<{ pulled: number; deleted: number; me
         boxset_parent_id: movie.boxset_parent_id ?? null,
         view_count:       movie.view_count ?? 0,
         is_watched:       movie.is_watched ? 1 : 0,
+        in_collection:    movie.in_collection != null ? (movie.in_collection ? 1 : 0) : 1,
       }) as { id: number } | null
 
       if (local) {
@@ -495,7 +496,8 @@ async function push(): Promise<{ pushed: number; pushErrors: number }> {
             title: movie.title, year: movie.year, genre: movie.genre, director: movie.director,
             runtime: movie.runtime, rating: movie.rating, rating_age: movie.rating_age,
             overview: movie.overview, collection_type: movie.collection_type,
-            tag: movie.tag, tmdb_id: movie.tmdb_id, trailer_url: movie.trailer_url
+            tag: movie.tag, tmdb_id: movie.tmdb_id, trailer_url: movie.trailer_url,
+            in_collection: movie.in_collection ?? 1,
           })
         }
         await window.electron.db.movies.sync.markSynced({ id: movie.id, remote_id: res.data.id, synced_at: new Date().toISOString() })
@@ -505,7 +507,8 @@ async function push(): Promise<{ pushed: number; pushErrors: number }> {
           title: movie.title, year: movie.year, genre: movie.genre, director: movie.director,
           runtime: movie.runtime, rating: movie.rating, rating_age: movie.rating_age,
           overview: movie.overview, collection_type: movie.collection_type,
-          tag: movie.tag, tmdb_id: movie.tmdb_id, trailer_url: movie.trailer_url
+          tag: movie.tag, tmdb_id: movie.tmdb_id, trailer_url: movie.trailer_url,
+          in_collection: movie.in_collection ?? 1,
         })
         await window.electron.db.movies.sync.markSynced({ id: movie.id, remote_id: movie.remote_id, synced_at: new Date().toISOString() })
         pushed++
