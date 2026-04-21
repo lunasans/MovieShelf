@@ -5,22 +5,59 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import at.neuhaus.movieshelf.data.SessionManager
-import at.neuhaus.movieshelf.data.api.RetrofitClient
 import at.neuhaus.movieshelf.data.model.Movie
+import at.neuhaus.movieshelf.data.repository.MovieRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class DashboardViewModel : ViewModel() {
+enum class SortOption(val label: String) {
+    BY_NEWEST("Zuletzt hinzugefügt"),
+    BY_ALPHA("Alphabetisch"),
+    BY_YEAR("Nach Jahr"),
+    BY_RATING("Nach Bewertung")
+}
+
+data class FilterState(
+    val selectedGenres: Set<String> = emptySet(),
+    val selectedDirectors: Set<String> = emptySet(),
+    val yearFrom: Int? = null,
+    val yearTo: Int? = null
+) {
+    val isActive: Boolean
+        get() = selectedGenres.isNotEmpty() || selectedDirectors.isNotEmpty() || yearFrom != null || yearTo != null
+}
+
+class DashboardViewModel(private val repository: MovieRepository) : ViewModel() {
+
     var movies by mutableStateOf<List<Movie>>(emptyList())
+        private set
     var isLoading by mutableStateOf(false)
     var isRefreshing by mutableStateOf(false)
+    var isLoadingMore by mutableStateOf(false)
+    var hasMore by mutableStateOf(true)
     var error by mutableStateOf<String?>(null)
-    
+    var isOffline by mutableStateOf(false)
+
     var searchQuery by mutableStateOf("")
-    var selectedTab by mutableIntStateOf(0) // 0 = Neu, 1 = Alle
+    var selectedTab by mutableIntStateOf(0)
+    var sortOption by mutableStateOf(SortOption.BY_NEWEST)
+    var filterState by mutableStateOf(FilterState())
+
+    // Für den Filter-BottomSheet
+    var availableGenres by mutableStateOf<List<String>>(emptyList())
+        private set
+    var availableDirectors by mutableStateOf<List<String>>(emptyList())
+        private set
+    var yearRange by mutableStateOf<Pair<Int, Int>?>(null)
+        private set
+
+    private var allLoadedMovies: List<Movie> = emptyList()
+    private var currentPage = 1
+    private val pageSize = 30
     private var searchJob: Job? = null
 
     init {
@@ -28,30 +65,29 @@ class DashboardViewModel : ViewModel() {
     }
 
     fun loadMovies(refresh: Boolean = false) {
+        if (SessionManager.isDemo) {
+            loadDemoMovies()
+            return
+        }
         viewModelScope.launch {
-            if (refresh) isRefreshing = true else isLoading = true
+            if (refresh) {
+                isRefreshing = true
+                currentPage = 1
+            } else {
+                isLoading = true
+            }
             error = null
             try {
-                if (SessionManager.isDemo) {
-                    delay(500)
-                    movies = getDemoMovies()
-                } else {
-                    val response = RetrofitClient.api.getMovies(
-                        page = 1,
-                        perPage = if (selectedTab == 1) 1000 else 20
-                    )
-                    
-                    val resultList = response.data ?: emptyList()
-                    val filteredList = resultList.filter { it.boxsetParentId == null }
-                    
-                    movies = if (selectedTab == 0) {
-                        filteredList.sortedByDescending { it.id }
-                    } else {
-                        filteredList.sortedBy { it.title?.lowercase() ?: "" }
-                    }
-                }
+                val tagFilter = if (selectedTab == 0) "new" else null
+                val result = repository.getMovies(page = 1, perPage = pageSize, tag = tagFilter)
+                isOffline = repository.isOffline
+                allLoadedMovies = result.filter { it.boxsetParentId == null }
+                currentPage = 1
+                hasMore = result.size >= pageSize && !isOffline
+                applyFiltersAndSort()
+                refreshFilterOptions()
             } catch (e: Exception) {
-                error = "Fehler beim Laden der Filme: ${e.message}"
+                error = friendlyError(e)
             } finally {
                 isLoading = false
                 isRefreshing = false
@@ -59,48 +95,51 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
-    private fun getDemoMovies(): List<Movie> {
-        return listOf(
-            Movie(
-                id = 1,
-                title = "Inception",
-                year = 2010,
-                rating = "8.8",
-                genre = "Sci-Fi",
-                overview = "Ein Dieb, der Geheimnisse aus dem Unterbewusstsein stiehlt.",
-                coverUrl = "res:inception_cover",
-                backdropUrl = "res:inception_backdrop",
-                runtime = 148,
-                director = "Christopher Nolan",
-                actors = emptyList(),
-                viewCount = 5,
-                isWatched = true,
-                tmdbId = "27205",
-                trailerUrl = "https://www.youtube.com/watch?v=YoHD9XEInc0"
-            ),
-            Movie(
-                id = 2,
-                title = "The Dark Knight",
-                year = 2008,
-                rating = "9.0",
-                genre = "Action",
-                overview = "Batman kämpft gegen den Joker in Gotham City.",
-                coverUrl = "res:dark_knight_cover",
-                backdropUrl = "res:dark_knight_backdrop",
-                runtime = 152,
-                director = "Christopher Nolan",
-                actors = emptyList(),
-                viewCount = 10,
-                isWatched = true,
-                tmdbId = "155",
-                trailerUrl = "https://www.youtube.com/watch?v=EXeTwQWaywY"
-            ),
-        )
+    fun loadMore() {
+        if (!hasMore || isLoadingMore || isLoading || searchQuery.isNotBlank() || isOffline) return
+        viewModelScope.launch {
+            isLoadingMore = true
+            try {
+                val nextPage = currentPage + 1
+                val tagFilter = if (selectedTab == 0) "new" else null
+                val newItems = repository.getMovies(page = nextPage, perPage = pageSize, tag = tagFilter)
+                    .filter { it.boxsetParentId == null }
+                if (newItems.isNotEmpty()) {
+                    currentPage = nextPage
+                    allLoadedMovies = allLoadedMovies + newItems
+                    applyFiltersAndSort()
+                    refreshFilterOptions()
+                }
+                hasMore = newItems.size >= pageSize
+            } catch (_: Exception) {
+                // Pagination-Fehler still ignorieren
+            } finally {
+                isLoadingMore = false
+            }
+        }
     }
 
     fun onTabSelected(index: Int) {
+        if (selectedTab == index) return
         selectedTab = index
+        // Setze Standard-Sortierung basierend auf dem Tab
+        sortOption = if (index == 0) SortOption.BY_NEWEST else SortOption.BY_ALPHA
         loadMovies()
+    }
+
+    fun onSortSelected(option: SortOption) {
+        sortOption = option
+        applyFiltersAndSort()
+    }
+
+    fun onFilterChanged(newFilter: FilterState) {
+        filterState = newFilter
+        applyFiltersAndSort()
+    }
+
+    fun clearFilters() {
+        filterState = FilterState()
+        applyFiltersAndSort()
     }
 
     fun onSearchQueryChange(newQuery: String) {
@@ -116,22 +155,151 @@ class DashboardViewModel : ViewModel() {
         }
     }
 
+    fun toggleWatched(movieId: Int) {
+        val movie = allLoadedMovies.find { it.id == movieId } ?: return
+        val currentState = movie.isWatched ?: false
+
+        // Optimistisches Update
+        allLoadedMovies = allLoadedMovies.map {
+            if (it.id == movieId) it.copy(isWatched = !currentState) else it
+        }
+        applyFiltersAndSort()
+
+        if (SessionManager.isDemo) return
+
+        viewModelScope.launch {
+            try {
+                repository.toggleWatched(movieId, currentState)
+            } catch (_: Exception) {
+                // Zurückrollen bei Fehler
+                allLoadedMovies = allLoadedMovies.map {
+                    if (it.id == movieId) it.copy(isWatched = currentState) else it
+                }
+                applyFiltersAndSort()
+            }
+        }
+    }
+
+    private fun applyFiltersAndSort() {
+        var filtered = allLoadedMovies
+
+        // Genre-Filter (Komma-separierte Genre-Spalte)
+        if (filterState.selectedGenres.isNotEmpty()) {
+            filtered = filtered.filter { movie ->
+                val movieGenres = movie.genre?.split(",")?.map { it.trim().lowercase() } ?: emptyList()
+                filterState.selectedGenres.any { selected -> movieGenres.contains(selected.lowercase()) }
+            }
+        }
+
+        // Regisseur-Filter
+        if (filterState.selectedDirectors.isNotEmpty()) {
+            filtered = filtered.filter { movie ->
+                filterState.selectedDirectors.contains(movie.director)
+            }
+        }
+
+        // Jahr-Filter
+        filterState.yearFrom?.let { from ->
+            filtered = filtered.filter { (it.year ?: 0) >= from }
+        }
+        filterState.yearTo?.let { to ->
+            filtered = filtered.filter { (it.year ?: Int.MAX_VALUE) <= to }
+        }
+
+        movies = when (sortOption) {
+            SortOption.BY_NEWEST -> filtered.sortedByDescending { it.id }
+            SortOption.BY_ALPHA  -> filtered.sortedWith(compareBy { it.title?.lowercase() ?: "" })
+            SortOption.BY_YEAR   -> filtered.sortedByDescending { it.year ?: 0 }
+            SortOption.BY_RATING -> filtered.sortedByDescending { it.rating?.toDoubleOrNull() ?: 0.0 }
+        }
+    }
+
+    private fun refreshFilterOptions() {
+        viewModelScope.launch {
+            availableGenres = repository.getDistinctGenres()
+            availableDirectors = repository.getDistinctDirectors()
+            yearRange = repository.getYearRange()
+        }
+    }
+
     private suspend fun performSearch(query: String) {
         isLoading = true
         error = null
         try {
-            if (SessionManager.isDemo) {
+            val result = if (SessionManager.isDemo) {
                 delay(300)
-                movies = getDemoMovies().filter { it.title?.contains(query, ignoreCase = true) == true }
+                getDemoMovies().filter { it.title?.contains(query, ignoreCase = true) == true }
             } else {
-                val response = RetrofitClient.api.searchMovies(query)
-                val resultList = response.data ?: emptyList()
-                movies = resultList.sortedBy { it.title?.lowercase() ?: "" }
+                repository.searchMovies(query)
             }
+            allLoadedMovies = result
+            isOffline = repository.isOffline
+            applyFiltersAndSort()
+            hasMore = false
         } catch (e: Exception) {
-            error = "Suche fehlgeschlagen: ${e.message}"
+            error = friendlyError(e)
         } finally {
             isLoading = false
+        }
+    }
+
+    private fun loadDemoMovies() {
+        viewModelScope.launch {
+            isLoading = true
+            delay(500)
+            allLoadedMovies = getDemoMovies()
+            isOffline = false
+            hasMore = false
+            applyFiltersAndSort()
+            availableGenres = listOf("Sci-Fi", "Action")
+            availableDirectors = listOf("Christopher Nolan")
+            yearRange = 2008 to 2014
+            isLoading = false
+        }
+    }
+
+    private fun friendlyError(e: Exception): String {
+        val msg = e.message ?: ""
+        return when {
+            msg.contains("Unable to resolve host", ignoreCase = true) ||
+            msg.contains("failed to connect", ignoreCase = true) ->
+                "Server nicht erreichbar. Zeige zwischengespeicherte Daten."
+            msg.contains("timeout", ignoreCase = true) ->
+                "Zeitüberschreitung. Zeige zwischengespeicherte Daten."
+            msg.contains("401") || msg.contains("Unauthorized", ignoreCase = true) ->
+                "Sitzung abgelaufen. Bitte erneut anmelden."
+            msg.contains("403") -> "Zugriff verweigert."
+            msg.contains("404") -> "Inhalte nicht gefunden."
+            msg.contains("500") || msg.contains("502") || msg.contains("503") ->
+                "Serverfehler. Bitte später erneut versuchen."
+            else -> "Filme konnten nicht geladen werden."
+        }
+    }
+
+    private fun getDemoMovies(): List<Movie> = listOf(
+        Movie(id = 1, title = "Inception", year = 2010, rating = "8.8", genre = "Sci-Fi",
+            overview = "Ein Dieb, der Geheimnisse aus dem Unterbewusstsein stiehlt.",
+            coverUrl = "res:inception_cover", backdropUrl = "res:inception_backdrop",
+            runtime = 148, director = "Christopher Nolan", actors = emptyList(),
+            viewCount = 5, isWatched = true, tmdbId = "27205",
+            trailerUrl = "https://www.youtube.com/watch?v=YoHD9XEInc0"),
+        Movie(id = 2, title = "The Dark Knight", year = 2008, rating = "9.0", genre = "Action",
+            overview = "Batman kämpft gegen den Joker in Gotham City.",
+            coverUrl = "res:dark_knight_cover", backdropUrl = "res:dark_knight_backdrop",
+            runtime = 152, director = "Christopher Nolan", actors = emptyList(),
+            viewCount = 10, isWatched = true, tmdbId = "155",
+            trailerUrl = "https://www.youtube.com/watch?v=EXeTwQWaywY"),
+        Movie(id = 3, title = "Interstellar", year = 2014, rating = "8.7", genre = "Sci-Fi",
+            overview = "Eine Reise durch ein Wurmloch.", coverUrl = null, backdropUrl = null,
+            runtime = 169, director = "Christopher Nolan", actors = emptyList(),
+            viewCount = 8, isWatched = false, tmdbId = "157336",
+            trailerUrl = "https://www.youtube.com/watch?v=zSWdZVtXT7E")
+    )
+
+    class Factory(private val repository: MovieRepository) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            @Suppress("UNCHECKED_CAST")
+            return DashboardViewModel(repository) as T
         }
     }
 }

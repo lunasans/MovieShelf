@@ -203,7 +203,7 @@ fun LoginScreen(
                 // OAuth-Login mit Movieshelf Cloud
                 if (!viewModel.is2faRequired) {
                     Button(
-                        onClick = { oauthViewModel.startOAuth(context, serverUrl ?: "") },
+                        onClick = { oauthViewModel.startOAuth(context, serverUrl ?: "", dataStoreManager) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),

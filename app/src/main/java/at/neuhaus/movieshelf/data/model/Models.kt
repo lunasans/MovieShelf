@@ -41,6 +41,7 @@ data class Movie(
     @SerializedName("tmdb_id") val tmdbId: String? = null,
     @SerializedName("rating_age") val ratingAge: Int? = null,
     val tag: String? = null,
+    @SerializedName("in_collection") val inCollection: Boolean? = true,
     // Felder für Boxsets
     @SerializedName("is_boxset") val isBoxset: Boolean? = false,
     @SerializedName("boxset_parent_id") val boxsetParentId: Int? = null,

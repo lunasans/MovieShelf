@@ -1,0 +1,95 @@
+package at.neuhaus.movieshelf.data.repository
+
+import at.neuhaus.movieshelf.data.api.MovieShelfApi
+import at.neuhaus.movieshelf.data.local.db.MovieDao
+import at.neuhaus.movieshelf.data.local.db.MovieEntity
+import at.neuhaus.movieshelf.data.model.Movie
+
+private const val CACHE_MAX_AGE_MS = 30 * 60 * 1000L // 30 Minuten
+
+class MovieRepository(
+    private val movieDao: MovieDao,
+    private val api: MovieShelfApi
+) {
+    var isOffline: Boolean = false
+        private set
+
+    /**
+     * Versucht alle Filme vom Server zu laden und cached sie.
+     * Fällt bei Fehler auf den lokalen Cache zurück.
+     * Bei pageSize=0 wird alles geladen (für Offline-Vollsync).
+     */
+    suspend fun getMovies(page: Int = 1, perPage: Int = 30, tag: String? = null): List<Movie> {
+        return try {
+            val response = api.getMovies(page = page, perPage = perPage, tag = tag)
+            val movies = response.data ?: emptyList()
+            // Erste Seite ersetzt den Cache, weitere Seiten werden ergänzt
+            if (page == 1) {
+                movieDao.deleteAll()
+            }
+            movieDao.insertMovies(movies.map { MovieEntity.fromMovie(it) })
+            isOffline = false
+            movies
+        } catch (e: Exception) {
+            isOffline = true
+            if (page == 1) movieDao.getAllMovies().map { it.toMovie() } else emptyList()
+        }
+    }
+
+    /**
+     * Suche — online wenn möglich, sonst lokale Suche.
+     */
+    suspend fun searchMovies(query: String): List<Movie> {
+        return try {
+            val response = api.searchMovies(query)
+            isOffline = false
+            response.data ?: emptyList()
+        } catch (e: Exception) {
+            isOffline = true
+            movieDao.searchMovies(query).map { it.toMovie() }
+        }
+    }
+
+    /** Watched-Status toggeln — optimistisch lokal + Remote-Aufruf. */
+    suspend fun toggleWatched(movieId: Int, currentState: Boolean) {
+        val newState = !currentState
+        movieDao.updateWatched(movieId, newState)
+        try {
+            api.toggleWatched(movieId)
+        } catch (e: Exception) {
+            // Bei Fehler Lokal-State zurücksetzen
+            movieDao.updateWatched(movieId, currentState)
+            throw e
+        }
+    }
+
+    /** Einzelnen Film laden — aus Cache wenn offline. */
+    suspend fun getMovie(id: Int): Movie? {
+        return try {
+            val response = api.getMovie(id)
+            response.data?.also { movie ->
+                movieDao.insertMovie(MovieEntity.fromMovie(movie))
+            }
+        } catch (e: Exception) {
+            movieDao.getMovieById(id)?.toMovie()
+        }
+    }
+
+    suspend fun getCachedMovies(): List<Movie> =
+        movieDao.getAllMovies().map { it.toMovie() }
+
+    suspend fun isCacheAvailable(): Boolean =
+        movieDao.getMovieCount() > 0
+
+    suspend fun getDistinctGenres(): List<String> =
+        movieDao.getDistinctGenres().flatMap { it.split(",") }.map { it.trim() }.filter { it.isNotBlank() }.distinct().sorted()
+
+    suspend fun getDistinctDirectors(): List<String> =
+        movieDao.getDistinctDirectors()
+
+    suspend fun getYearRange(): Pair<Int, Int>? {
+        val min = movieDao.getMinYear() ?: return null
+        val max = movieDao.getMaxYear() ?: return null
+        return min to max
+    }
+}

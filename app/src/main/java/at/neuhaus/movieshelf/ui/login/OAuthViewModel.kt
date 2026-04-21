@@ -33,7 +33,7 @@ class OAuthViewModel : ViewModel() {
     private var pendingState:    String? = null
     private var pendingVerifier: String? = null
 
-    fun startOAuth(context: Context, shelfUrl: String) {
+    fun startOAuth(context: Context, shelfUrl: String, dataStoreManager: DataStoreManager) {
         if (shelfUrl.isBlank()) {
             error = "Bitte zuerst die Server-URL eintragen."
             return
@@ -42,6 +42,11 @@ class OAuthViewModel : ViewModel() {
         pendingState    = UUID.randomUUID().toString()
         pendingVerifier = generateCodeVerifier()
         val challenge   = generateCodeChallenge(pendingVerifier!!)
+
+        // State und Verifier persistieren, damit sie Process-Death überleben
+        viewModelScope.launch {
+            dataStoreManager.saveOAuthState(pendingState!!, pendingVerifier!!)
+        }
 
         val baseUrl = shelfUrl.trimEnd('/')
         val uri = Uri.parse("$baseUrl/oauth/authorize").buildUpon()
@@ -77,18 +82,27 @@ class OAuthViewModel : ViewModel() {
             return
         }
 
-        if (code == null || state == null || state != pendingState) {
-            error = "OAuth Sicherheitsfehler – bitte erneut versuchen."
-            return
-        }
-
-        val verifier = pendingVerifier
-        if (verifier == null) {
-            error = "OAuth Sicherheitsfehler – bitte erneut versuchen."
-            return
-        }
-
         viewModelScope.launch {
+            // Wenn in-memory Werte fehlen (nach Process-Death), aus DataStore laden
+            if (pendingState == null || pendingVerifier == null) {
+                val (savedState, savedVerifier) = dataStoreManager.loadOAuthState()
+                pendingState    = savedState
+                pendingVerifier = savedVerifier
+            }
+
+            if (code == null || state == null || state != pendingState) {
+                error = "OAuth Sicherheitsfehler – bitte erneut versuchen."
+                dataStoreManager.clearOAuthState()
+                return@launch
+            }
+
+            val verifier = pendingVerifier
+            if (verifier == null) {
+                error = "OAuth Sicherheitsfehler – bitte erneut versuchen."
+                dataStoreManager.clearOAuthState()
+                return@launch
+            }
+
             isLoading = true
             error     = null
             try {
@@ -117,11 +131,12 @@ class OAuthViewModel : ViewModel() {
                 Log.i("MovieShelf_OAuth", "OAuth erfolgreich für ${userInfo.email}")
             } catch (e: Exception) {
                 Log.e("MovieShelf_OAuth", "Token-Austausch fehlgeschlagen", e)
-                error = "Anmeldung fehlgeschlagen: ${e.message}"
+                error = "Anmeldung fehlgeschlagen. Bitte erneut versuchen."
             } finally {
-                isLoading = false
-                pendingState    = null
-                pendingVerifier = null
+                isLoading        = false
+                pendingState     = null
+                pendingVerifier  = null
+                dataStoreManager.clearOAuthState()
             }
         }
     }

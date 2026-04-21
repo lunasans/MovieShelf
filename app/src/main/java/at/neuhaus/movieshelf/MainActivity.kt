@@ -7,6 +7,8 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import at.neuhaus.movieshelf.ui.components.FloatingNavBar
 import at.neuhaus.movieshelf.data.SessionManager
 import at.neuhaus.movieshelf.data.api.RetrofitClient
 import at.neuhaus.movieshelf.data.local.DataStoreManager
@@ -63,6 +67,29 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private val slideEnter = slideInHorizontally(
+    initialOffsetX = { it },
+    animationSpec = tween(300)
+) + fadeIn(animationSpec = tween(300))
+
+private val slideExit = slideOutHorizontally(
+    targetOffsetX = { -it / 3 },
+    animationSpec = tween(300)
+) + fadeOut(animationSpec = tween(200))
+
+private val slidePopEnter = slideInHorizontally(
+    initialOffsetX = { -it / 3 },
+    animationSpec = tween(300)
+) + fadeIn(animationSpec = tween(300))
+
+private val slidePopExit = slideOutHorizontally(
+    targetOffsetX = { it },
+    animationSpec = tween(300)
+) + fadeOut(animationSpec = tween(200))
+
+private val fadeEnter = fadeIn(animationSpec = tween(250))
+private val fadeExit = fadeOut(animationSpec = tween(200))
+
 @Composable
 fun MovieShelfApp(oauthCallbackUri: MutableState<Uri?> = mutableStateOf(null)) {
     val context = LocalContext.current
@@ -70,7 +97,12 @@ fun MovieShelfApp(oauthCallbackUri: MutableState<Uri?> = mutableStateOf(null)) {
     val serverUrl by dataStoreManager.serverUrl.collectAsState(initial = null)
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
-    
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val showNavBar = currentRoute in listOf("dashboard", "profile", "stats")
+
     var isInitialized by remember { mutableStateOf(false) }
     var initializationError by remember { mutableStateOf(false) }
     var startDestination by remember { mutableStateOf("login") }
@@ -82,8 +114,7 @@ fun MovieShelfApp(oauthCallbackUri: MutableState<Uri?> = mutableStateOf(null)) {
             isLoadingAuth = false
             return@LaunchedEffect
         }
-        
-        // Context wird hier übergeben, um den Cache zu aktivieren
+
         val success = RetrofitClient.initialize(serverUrl!!, context)
         if (success) {
             val savedToken = dataStoreManager.authToken.first()
@@ -112,57 +143,80 @@ fun MovieShelfApp(oauthCallbackUri: MutableState<Uri?> = mutableStateOf(null)) {
             CircularProgressIndicator()
         }
     } else {
-        NavHost(navController = navController, startDestination = startDestination) {
-            composable("login") {
-                LoginScreen(
-                    onLoginSuccess = {
-                        navController.navigate("dashboard") {
-                            popUpTo("login") { inclusive = true }
-                        }
-                    },
-                    onResetUrl = {
-                        scope.launch {
-                            dataStoreManager.saveServerUrl("")
-                            dataStoreManager.saveAuthToken(null)
-                        }
-                    },
-                    oauthCallbackUri = oauthCallbackUri.value,
-                    onOAuthCallbackConsumed = { oauthCallbackUri.value = null }
-                )
-            }
-            composable("dashboard") {
-                DashboardScreen(
-                    onMovieClick = { movie: Movie ->
-                        navController.navigate("movie_details/${movie.id}")
-                    },
-                    onLogout = {
-                        scope.launch {
-                            dataStoreManager.saveAuthToken(null)
-                            SessionManager.token = null
-                            navController.navigate("login") {
-                                popUpTo("dashboard") { inclusive = true }
+        Box(modifier = Modifier.fillMaxSize()) {
+            NavHost(
+                navController = navController,
+                startDestination = startDestination,
+                enterTransition = { slideEnter },
+                exitTransition = { slideExit },
+                popEnterTransition = { slidePopEnter },
+                popExitTransition = { slidePopExit }
+            ) {
+                composable(
+                    "login",
+                    enterTransition = { fadeEnter },
+                    exitTransition = { fadeExit },
+                    popEnterTransition = { fadeEnter },
+                    popExitTransition = { fadeExit }
+                ) {
+                    LoginScreen(
+                        onLoginSuccess = {
+                            navController.navigate("dashboard") {
+                                popUpTo("login") { inclusive = true }
                             }
+                        },
+                        onResetUrl = {
+                            scope.launch {
+                                dataStoreManager.saveServerUrl("")
+                                dataStoreManager.saveAuthToken(null)
+                            }
+                        },
+                        oauthCallbackUri = oauthCallbackUri.value,
+                        onOAuthCallbackConsumed = { oauthCallbackUri.value = null }
+                    )
+                }
+                composable(
+                    "dashboard",
+                    enterTransition = { fadeEnter },
+                    exitTransition = { fadeExit },
+                    popEnterTransition = { fadeEnter },
+                    popExitTransition = { fadeExit }
+                ) {
+                    DashboardScreen(
+                        onMovieClick = { movie: Movie, allIds: List<Int> ->
+                            val idsString = allIds.joinToString(",")
+                            navController.navigate("movie_details/${movie.id}?allIds=$idsString")
+                        },
+                        onAboutClick = { navController.navigate("about") }
+                    )
+                }
+                composable("profile") {
+                    ProfileScreen(
+                        onBack = { navController.popBackStack() },
+                        onStatsClick = { navController.navigate("stats") }
+                    )
+                }
+                composable("stats") {
+                    StatsScreen(onBack = { navController.popBackStack() })
+                }
+                composable(
+                    "movie_details/{movieId}?allIds={allIds}",
+                    arguments = listOf(
+                        androidx.navigation.navArgument("movieId") { type = androidx.navigation.NavType.IntType },
+                        androidx.navigation.navArgument("allIds") {
+                            type = androidx.navigation.NavType.StringType
+                            nullable = true
+                            defaultValue = null
                         }
-                    },
-                    onAddMovie = { navController.navigate("add_movie") },
-                    onAboutClick = { navController.navigate("about") },
-                    onProfileClick = { navController.navigate("profile") }
-                )
-            }
-            composable("profile") {
-                ProfileScreen(
-                    onBack = { navController.popBackStack() },
-                    onStatsClick = { navController.navigate("stats") }
-                )
-            }
-            composable("stats") {
-                StatsScreen(onBack = { navController.popBackStack() })
-            }
-            composable("movie_details/{movieId}") { backStackEntry ->
-                val movieId = backStackEntry.arguments?.getString("movieId")?.toIntOrNull()
-                if (movieId != null) {
+                    )
+                ) { backStackEntry ->
+                    val movieId = backStackEntry.arguments?.getInt("movieId") ?: 0
+                    val allIdsString = backStackEntry.arguments?.getString("allIds")
+                    val allMovieIds = allIdsString?.split(",")?.mapNotNull { it.toIntOrNull() } ?: emptyList()
+
                     MovieDetailScreen(
                         movieId = movieId,
+                        allMovieIds = allMovieIds,
                         onBack = { navController.popBackStack() },
                         onMovieClick = { movie: Movie ->
                             navController.navigate("movie_details/${movie.id}")
@@ -187,27 +241,63 @@ fun MovieShelfApp(oauthCallbackUri: MutableState<Uri?> = mutableStateOf(null)) {
                         }
                     )
                 }
-            }
-            composable("actor_details/{actorId}") { backStackEntry ->
-                val actorId = backStackEntry.arguments?.getString("actorId")?.toIntOrNull()
-                if (actorId != null) {
-                    ActorDetailScreen(
-                        actorId = actorId,
+                composable("actor_details/{actorId}") { backStackEntry ->
+                    val actorId = backStackEntry.arguments?.getString("actorId")?.toIntOrNull()
+                    if (actorId != null) {
+                        ActorDetailScreen(
+                            actorId = actorId,
+                            onBack = { navController.popBackStack() },
+                            onMovieClick = { movie: Movie ->
+                                navController.navigate("movie_details/${movie.id}")
+                            }
+                        )
+                    }
+                }
+                composable("add_movie") {
+                    AddMovieScreen(
                         onBack = { navController.popBackStack() },
-                        onMovieClick = { movie: Movie ->
-                            navController.navigate("movie_details/${movie.id}")
-                        }
+                        onMovieImported = { navController.popBackStack() }
                     )
                 }
+                composable("about") {
+                    AboutScreen(onBack = { navController.popBackStack() })
+                }
             }
-            composable("add_movie") {
-                AddMovieScreen(
-                    onBack = { navController.popBackStack() },
-                    onMovieImported = { navController.popBackStack() }
+
+            if (showNavBar) {
+                FloatingNavBar(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    currentRoute = currentRoute,
+                    onHomeClick = {
+                        if (currentRoute != "dashboard") {
+                            navController.navigate("dashboard") {
+                                popUpTo("dashboard") { inclusive = false }
+                            }
+                        }
+                    },
+                    onStatsClick = {
+                        if (currentRoute != "stats") {
+                            navController.navigate("stats")
+                        }
+                    },
+                    onProfileClick = {
+                        if (currentRoute != "profile") {
+                            navController.navigate("profile")
+                        }
+                    },
+                    onLogoutClick = {
+                        scope.launch {
+                            dataStoreManager.saveAuthToken(null)
+                            SessionManager.token = null
+                            navController.navigate("login") {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    },
+                    onAddClick = {
+                        navController.navigate("add_movie")
+                    }
                 )
-            }
-            composable("about") {
-                AboutScreen(onBack = { navController.popBackStack() })
             }
         }
     }

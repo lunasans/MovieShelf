@@ -6,11 +6,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -48,17 +51,65 @@ import coil.compose.AsyncImage
 @Composable
 fun MovieDetailScreen(
     movieId: Int,
+    allMovieIds: List<Int> = emptyList(),
     onBack: () -> Unit,
     onActorClick: (Int) -> Unit = {},
     onActorNameClick: (String) -> Unit = {},
     onMovieClick: (Movie) -> Unit
 ) {
-    val viewModel: MovieDetailViewModel = viewModel(factory = MovieDetailViewModel.Factory(movieId))
+    val context = LocalContext.current
+    val app = context.applicationContext as at.neuhaus.movieshelf.MovieShelfApplication
+
+    if (allMovieIds.isNotEmpty()) {
+        val pagerState = androidx.compose.foundation.pager.rememberPagerState(
+            initialPage = allMovieIds.indexOf(movieId).coerceAtLeast(0),
+            pageCount = { allMovieIds.size }
+        )
+
+        androidx.compose.foundation.pager.HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+            beyondViewportPageCount = 1
+        ) { page ->
+            MovieDetailContent(
+                movieId = allMovieIds[page],
+                onBack = onBack,
+                onActorClick = onActorClick,
+                onActorNameClick = onActorNameClick,
+                onMovieClick = onMovieClick,
+                repository = app.movieRepository
+            )
+        }
+    } else {
+        MovieDetailContent(
+            movieId = movieId,
+            onBack = onBack,
+            onActorClick = onActorClick,
+            onActorNameClick = onActorNameClick,
+            onMovieClick = onMovieClick,
+            repository = app.movieRepository
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MovieDetailContent(
+    movieId: Int,
+    onBack: () -> Unit,
+    onActorClick: (Int) -> Unit,
+    onActorNameClick: (String) -> Unit,
+    onMovieClick: (Movie) -> Unit,
+    repository: at.neuhaus.movieshelf.data.repository.MovieRepository
+) {
+    val viewModel: MovieDetailViewModel = viewModel(
+        key = movieId.toString(),
+        factory = MovieDetailViewModel.Factory(movieId, repository)
+    )
     val movie = viewModel.movie
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
     val uriHandler = LocalUriHandler.current
-    val context = LocalContext.current
 
     val headerHeightPx = with(density) { 350.dp.toPx() }
     val toolbarAlpha = (scrollState.value / (headerHeightPx * 0.8f)).coerceIn(0f, 1f)
@@ -98,7 +149,7 @@ fun MovieDetailScreen(
                             contentColor = iconContentColor
                         )
                     ) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Zurück")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
                     }
                 },
                 actions = {
@@ -128,13 +179,14 @@ fun MovieDetailScreen(
         }
     ) { padding ->
         if (viewModel.isLoading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else if (movie != null) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(padding)
                     .verticalScroll(scrollState)
             ) {
                 MovieBackdropHeader(
@@ -175,13 +227,13 @@ fun MovieDetailScreen(
                     if (!movie.actors.isNullOrEmpty()) {
                         Spacer(Modifier.height(32.dp))
                         Text(text = "Besetzung", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        Spacer(Modifier.height(16.dp))
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.padding(bottom = 32.dp)
+                        Spacer(Modifier.height(12.dp))
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            contentPadding = PaddingValues(bottom = 32.dp, end = 16.dp)
                         ) {
-                            movie.actors.forEach { actor ->
-                                ActorRowItem(actor = actor, onClick = { actor.id?.let { onActorClick(it) } })
+                            items(movie.actors) { actor ->
+                                ActorCardItem(actor = actor, onClick = { actor.id?.let { onActorClick(it) } })
                             }
                         }
                     }
@@ -232,8 +284,9 @@ private fun MovieBackdropHeader(
         )
 
         if (!movie.trailerUrl.isNullOrBlank()) {
+            val trailerUrl = movie.trailerUrl
             FilledIconButton(
-                onClick = { onTrailerClick(movie.trailerUrl!!) },
+                onClick = { onTrailerClick(trailerUrl) },
                 modifier = Modifier
                     .align(Alignment.Center)
                     .size(64.dp),
@@ -479,6 +532,56 @@ fun BoxsetMovieItem(movie: Movie, onClick: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun ActorCardItem(actor: Actor, onClick: () -> Unit) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .width(90.dp)
+            .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            modifier = Modifier.size(72.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            if (actor.imageUrl != null) {
+                val model: Any? = remember(actor.imageUrl) { resolveImageUrl(context, actor.imageUrl) }
+                AsyncImage(
+                    model = model,
+                    contentDescription = actor.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(text = actor.name?.take(1) ?: "?", style = MaterialTheme.typography.headlineSmall)
+                }
+            }
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = actor.name ?: "Unbekannt",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        if (!actor.role.isNullOrBlank()) {
+            Text(
+                text = actor.role,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
         }
     }
 }

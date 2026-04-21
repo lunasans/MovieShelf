@@ -10,33 +10,40 @@ import at.neuhaus.movieshelf.data.SessionManager
 import at.neuhaus.movieshelf.data.api.RetrofitClient
 import at.neuhaus.movieshelf.data.model.Actor
 import at.neuhaus.movieshelf.data.model.Movie
+import at.neuhaus.movieshelf.data.repository.MovieRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class MovieDetailViewModel(private val movieId: Int) : ViewModel() {
+class MovieDetailViewModel(
+    private var initialMovieId: Int,
+    private val repository: MovieRepository? = null
+) : ViewModel() {
     var movie by mutableStateOf<Movie?>(null)
     var isLoading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
 
     init {
-        loadMovie()
+        loadMovie(initialMovieId)
     }
 
-    fun loadMovie() {
+    fun loadMovie(movieId: Int) {
         viewModelScope.launch {
             isLoading = true
             error = null
             try {
                 if (SessionManager.isDemo) {
-                    delay(500)
+                    delay(300)
                     movie = getDemoMovies().find { it.id == movieId }
+                    if (movie == null) error = "Film nicht gefunden"
+                } else if (repository != null) {
+                    movie = repository.getMovie(movieId)
                     if (movie == null) error = "Film nicht gefunden"
                 } else {
                     val response = RetrofitClient.api.getMovie(movieId)
                     movie = response.data
                 }
             } catch (e: Exception) {
-                error = "Fehler beim Laden der Details: ${e.message}"
+                error = "Film konnte nicht geladen werden."
             } finally {
                 isLoading = false
             }
@@ -115,10 +122,13 @@ class MovieDetailViewModel(private val movieId: Int) : ViewModel() {
         }
     }
 
-    class Factory(private val movieId: Int) : ViewModelProvider.Factory {
+    class Factory(
+        private val movieId: Int,
+        private val repository: MovieRepository? = null
+    ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             @Suppress("UNCHECKED_CAST")
-            return MovieDetailViewModel(movieId) as T
+            return MovieDetailViewModel(movieId, repository) as T
         }
     }
 }

@@ -17,3 +17,7 @@ val OnPrimaryLight = Color(0xFFFFFFFF)
 val SecondaryLight = Color(0xFF9E9E9E)
 val BackgroundLight = Color(0xFFF5F5F5)
 val SurfaceLight = Color(0xFFFFFFFF)
+
+// Akzent-Rot für die Navigation (beide Themes)
+val NavAccentRed   = Color(0xFFCC1111) // Sattes Kino-Rot
+val NavAccentRedDark = Color(0xFF9B0000) // Tiefes Dunkelrot für Glow
