@@ -59,19 +59,21 @@ class TmdbController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'tmdb_id' => 'required|integer',
-            'type' => 'required|string|in:movie,tv',
-            'seasons' => 'nullable|array',
+            'tmdb_id'      => 'required|integer',
+            'type'         => 'required|string|in:movie,tv',
+            'seasons'      => 'nullable|array',
+            'in_collection' => 'nullable|boolean',
         ]);
 
-        $tmdbId = $request->get('tmdb_id');
-        $type = $request->get('type');
+        $tmdbId      = $request->get('tmdb_id');
+        $type        = $request->get('type');
+        $inCollection = $request->boolean('in_collection', true);
 
         try {
             if ($type === 'tv') {
                 $movie = $this->importService->importTv((int) $tmdbId, $request->get('seasons', []));
             } else {
-                $movie = $this->importService->importMovie((int) $tmdbId);
+                $movie = $this->importService->importMovie((int) $tmdbId, $inCollection);
             }
 
             return new MovieResource($movie);
