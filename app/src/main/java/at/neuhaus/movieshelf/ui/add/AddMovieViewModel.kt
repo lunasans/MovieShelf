@@ -53,7 +53,11 @@ class AddMovieViewModel : ViewModel() {
             isImporting = true
             error = null
             try {
-                RetrofitClient.api.importFromTmdb(TmdbImportRequest(tmdbId = tmdbId, type = "movie"))
+                RetrofitClient.api.importFromTmdb(TmdbImportRequest(
+                    tmdbId = tmdbId, 
+                    type = "movie",
+                    inCollection = importToCollection
+                ))
                 successMessage = "Film erfolgreich importiert!"
                 delay(1500)
                 onComplete()

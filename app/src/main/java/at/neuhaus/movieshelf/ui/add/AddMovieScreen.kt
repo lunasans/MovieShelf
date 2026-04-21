@@ -121,6 +121,34 @@ fun AddMovieScreen(
                             Icon(Icons.Default.CameraAlt, contentDescription = "Scan Titel")
                         }
                     }
+                    
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 0.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            "In Sammlung aufnehmen",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Switch(
+                            checked = viewModel.importToCollection,
+                            onCheckedChange = { viewModel.importToCollection = it },
+                            thumbContent = if (viewModel.importToCollection) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                                    )
+                                }
+                            } else null
+                        )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }

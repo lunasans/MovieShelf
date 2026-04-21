@@ -119,7 +119,8 @@ data class DecadeStats(
 
 data class TmdbImportRequest(
     @SerializedName("tmdb_id") val tmdbId: Int,
-    val type: String = "movie"
+    val type: String = "movie",
+    @SerializedName("in_collection") val inCollection: Boolean = true
 )
 
 data class LoginResponse(
