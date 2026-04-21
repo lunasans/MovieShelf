@@ -490,7 +490,7 @@ async function push(): Promise<{ pushed: number; pushErrors: number }> {
       } else if (!movie.remote_id) {
         let res
         if (movie.tmdb_id) {
-          res = await apiPost('/tmdb/import', { tmdb_id: movie.tmdb_id, type: movie.collection_type === 'Serie' ? 'tv' : 'movie' })
+          res = await apiPost('/tmdb/import', { tmdb_id: movie.tmdb_id, type: movie.collection_type === 'Serie' ? 'tv' : 'movie', in_collection: movie.in_collection ?? 1 })
         } else {
           res = await apiPost('/admin/movies', {
             title: movie.title, year: movie.year, genre: movie.genre, director: movie.director,

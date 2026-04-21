@@ -261,6 +261,7 @@ ipcMain.handle('update:install', async (_event, url: string, sha256?: string) =>
     }
 
     shell.openPath(destPath)
+    setTimeout(() => app.quit(), 1500)
     return { success: true }
   } catch (e: any) {
     if (existsSync(destPath)) unlinkSync(destPath)
