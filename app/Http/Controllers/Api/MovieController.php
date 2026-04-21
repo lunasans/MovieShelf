@@ -42,7 +42,12 @@ class MovieController extends Controller
 
         $query = Movie::where('is_deleted', false);
 
-        if ($tag) {
+        if ($tag === 'new') {
+            $query->where(function ($q) {
+                $q->where('tag', 'like', '%new%')
+                  ->orWhere('created_at', '>=', now()->subDays(30));
+            });
+        } elseif ($tag) {
             $query->where('tag', 'like', "%{$tag}%");
         }
 
