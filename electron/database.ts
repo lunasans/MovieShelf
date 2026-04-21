@@ -109,6 +109,18 @@ function runMigrations(): void {
     console.error('Migration failed:', e)
   }
 
+  // Final Cleanup: Hide movies that are only on lists but marked as "in collection"
+  // (Fix for unintended migration defaults)
+  try {
+    db.exec(`
+      UPDATE movies 
+      SET in_collection = 0 
+      WHERE in_collection = 1 
+      AND id IN (SELECT movie_id FROM list_movies)
+      AND remote_id IS NULL
+    `)
+  } catch (e) {}
+
   // Custom lists
   db.exec(`
     CREATE TABLE IF NOT EXISTS lists (
