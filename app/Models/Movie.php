@@ -63,7 +63,7 @@ class Movie extends Model
 
     public function boxsetChildren()
     {
-        return $this->hasMany(Movie::class, 'boxset_parent')->orderBy('year')->orderBy('title');
+        return $this->hasMany(Movie::class, 'boxset_parent')->where('in_collection', true)->orderBy('year')->orderBy('title');
     }
 
     public function actors()

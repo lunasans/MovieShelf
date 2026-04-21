@@ -124,10 +124,12 @@ class AdminMovieController extends Controller
         if ($since) {
             // Delta: alle seit `since` geänderten Einträge – auch gelöschte
             $sinceDate = \Carbon\Carbon::parse($since)->utc();
-            $query->where('updated_at', '>=', $sinceDate);
+            $query->where('updated_at', '>=', $sinceDate)
+                  ->where('in_collection', true);
         } else {
-            // Vollsync: nur nicht-gelöschte
-            $query->where('is_deleted', false);
+            // Vollsync: nur nicht-gelöschte und in der Sammlung vorhandene
+            $query->where('is_deleted', false)
+                  ->where('in_collection', true);
         }
 
         $movies = $query->get();

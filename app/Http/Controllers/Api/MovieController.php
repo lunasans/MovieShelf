@@ -40,7 +40,8 @@ class MovieController extends Controller
         $perPage = $request->get('per_page', \App\Models\Setting::get('items_per_page', 20));
         $tag = $request->get('tag');
 
-        $query = Movie::where('is_deleted', false);
+        $query = Movie::where('is_deleted', false)
+            ->where('in_collection', true);
 
         if ($tag === 'new') {
             $query->where(function ($q) {
@@ -110,7 +111,8 @@ class MovieController extends Controller
         }
 
         $perPage = \App\Models\Setting::get('items_per_page', 20);
-        $moviesQuery = Movie::where('is_deleted', false);
+        $moviesQuery = Movie::where('is_deleted', false)
+            ->where('in_collection', true);
 
         if ($queryStr) {
             $moviesQuery->where(function($q) use ($queryStr) {
