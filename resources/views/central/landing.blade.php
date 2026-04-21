@@ -333,7 +333,7 @@
                     </div>
                 </div>
             </div>
-            <div class="beta-actions" x-data="desktopDownload()" x-init="init()">
+            <div class="beta-actions" x-data="desktopDownload">
                 @if($latestDesktop)
                     <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
                         {{-- Primary download button (OS-specific) --}}
@@ -454,7 +454,8 @@
     // GLightbox logic handles dynamic slides via Alpine init
 
     @if($latestDesktop)
-    function desktopDownload() {
+    document.addEventListener('alpine:init', () => {
+    Alpine.data('desktopDownload', () => {
         const version = @json($latestDesktop->version);
 
         const platforms = [
@@ -516,7 +517,8 @@
                 }));
             }
         };
-    }
+    });
+    });
     @endif
 </script>
 @endpush

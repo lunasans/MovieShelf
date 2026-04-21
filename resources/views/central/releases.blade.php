@@ -31,7 +31,7 @@
             <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1.25rem;">
                 <div>
                     <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
-                        <span style="font-size:1.35rem; font-weight:900; color:#fff; font-family:var(--font-display, inherit);">
+                        <span style="font-size:1.35rem; font-weight:900; color:var(--text); font-family:var(--font-display, inherit);">
                             {{ $release->version }}
                         </span>
                         @if($loop->first)
