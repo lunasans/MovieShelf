@@ -22,9 +22,8 @@
 
         <!-- Play Overlay -->
         <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-500 bg-black/60 backdrop-blur-[4px]">
-            <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-[0_0_50px_rgba(59,130,246,0.6)] transform translate-y-8 group-hover/card:translate-y-0 transition-all duration-500 hover:scale-110 active:scale-90">
-                <i class="bi bi-play-fill text-4xl ml-1"></i>
-            </div>
+            <img src="{{ asset('img/play.png') }}" alt="Play"
+                 class="w-24 h-24 transform translate-y-8 group-hover/card:translate-y-0 transition-all duration-500 hover:scale-110 active:scale-90 drop-shadow-[0_0_30px_rgba(220,38,38,0.6)]">
         </div>
 
         <!-- Info Badge -->
