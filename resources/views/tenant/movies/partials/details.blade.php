@@ -103,9 +103,8 @@
                         <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
                         @if($movie->trailer_url)
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/poster:opacity-100 transition-opacity cursor-pointer" @click="showTrailer = true">
-                                <div class="w-16 h-16 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-2xl scale-75 group-hover/poster:scale-100 transition-all duration-500">
-                                    <i class="bi bi-play-fill text-3xl text-white ml-1"></i>
-                                </div>
+                                <img src="{{ asset('img/play.png') }}" alt="Play"
+                                     class="w-20 h-20 scale-75 group-hover/poster:scale-100 transition-all duration-500 drop-shadow-[0_0_20px_rgba(220,38,38,0.6)]">
                             </div>
                         @endif
                     @endif
@@ -355,9 +354,8 @@
                     @endif
                     <!-- Play Button Overlay -->
                     <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/player:bg-transparent transition-colors duration-500">
-                        <div class="w-16 h-16 bg-rose-600/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(225,29,72,0.4)] transform group-hover/player:scale-110 transition-transform duration-300">
-                            <i class="bi bi-play-fill text-3xl text-white ml-1"></i>
-                        </div>
+                        <img src="{{ asset('img/play.png') }}" alt="Play"
+                             class="w-24 h-24 transform group-hover/player:scale-110 transition-transform duration-300 drop-shadow-[0_0_30px_rgba(220,38,38,0.5)]">
                     </div>
                     <!-- Title Overlay -->
                     <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
