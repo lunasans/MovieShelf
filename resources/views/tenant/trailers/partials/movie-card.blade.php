@@ -21,9 +21,9 @@
         @endif
 
         <!-- Play Overlay -->
-        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-500 bg-black/60 backdrop-blur-[4px]">
+        <div class="absolute inset-0 flex items-center justify-center opacity-100 transition-all duration-500 bg-black/60 backdrop-blur-[4px]">
             <img src="{{ asset('img/play.png') }}" alt="Play"
-                 class="w-24 h-24 transform translate-y-8 group-hover/card:translate-y-0 transition-all duration-500 hover:scale-110 active:scale-90 drop-shadow-[0_0_30px_rgba(220,38,38,0.6)]">
+                 class="w-24 h-24 transition-all duration-500 hover:scale-110 active:scale-90 drop-shadow-[0_0_30px_rgba(220,38,38,0.6)]">
         </div>
 
         <!-- Info Badge -->
