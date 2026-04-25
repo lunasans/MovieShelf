@@ -42,10 +42,12 @@ class DesktopVersionController extends Controller
         }
 
         $request->validate([
-            'version'              => 'required|string|max:50',
-            'download_url'         => 'nullable|string|max:500',
+            'version'                => 'required|string|max:50',
+            'download_url'           => 'nullable|string|max:500',
             'download_url_linux_deb' => 'nullable|string|max:500',
-            'changelog'            => 'nullable|string',
+            'file_hash'              => 'nullable|string|max:128',
+            'file_hash_linux_deb'    => 'nullable|string|max:128',
+            'changelog'              => 'nullable|string',
         ]);
 
         $existing = DesktopRelease::where('version', $request->version)->first();
@@ -54,6 +56,8 @@ class DesktopVersionController extends Controller
             $existing->update([
                 'download_url'           => $request->download_url,
                 'download_url_linux_deb' => $request->download_url_linux_deb,
+                'file_hash'              => $request->file_hash,
+                'file_hash_linux_deb'    => $request->file_hash_linux_deb,
                 'changelog'              => $request->changelog,
             ]);
             return response()->json(['ok' => true, 'action' => 'updated']);
@@ -63,6 +67,8 @@ class DesktopVersionController extends Controller
             'version'                => $request->version,
             'download_url'           => $request->download_url,
             'download_url_linux_deb' => $request->download_url_linux_deb,
+            'file_hash'              => $request->file_hash,
+            'file_hash_linux_deb'    => $request->file_hash_linux_deb,
             'changelog'              => $request->changelog,
             'is_public'              => true,
         ]);
