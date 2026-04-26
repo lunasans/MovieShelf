@@ -18,6 +18,7 @@ class AddMovieViewModel : ViewModel() {
     var isImporting by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
     var successMessage by mutableStateOf<String?>(null)
+    var importToCollection by mutableStateOf(true)
 
     private var searchJob: Job? = null
 
