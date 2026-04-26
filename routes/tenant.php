@@ -165,6 +165,13 @@ Route::middleware([
             // XML Import
             Route::get('import', [\App\Http\Controllers\Admin\XmlImportController::class, 'index'])->name('import.index');
             Route::post('import', [\App\Http\Controllers\Admin\XmlImportController::class, 'import'])->name('import.post');
+            // Backup (.ms) — Export & Restore
+            Route::get('backup', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('backup.index');
+            Route::post('backup/create', [\App\Http\Controllers\Admin\BackupController::class, 'create'])->name('backup.create');
+            Route::post('backup/restore', [\App\Http\Controllers\Admin\BackupController::class, 'restore'])->name('backup.restore');
+            Route::post('backup/restore-local', [\App\Http\Controllers\Admin\BackupController::class, 'restoreLocal'])->name('backup.restore-local');
+            Route::delete('backup/{filename}', [\App\Http\Controllers\Admin\BackupController::class, 'destroy'])->name('backup.destroy');
+
             // Backup Import (Dedicated Page)
             Route::get('backup-import', [\App\Http\Controllers\Admin\BackupImportController::class, 'index'])->name('import.backup.index');
             Route::post('import/backup', [\App\Http\Controllers\Admin\BackupImportController::class, 'import'])->name('import.backup.upload');
