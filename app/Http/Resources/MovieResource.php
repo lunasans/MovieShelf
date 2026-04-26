@@ -33,6 +33,23 @@ class MovieResource extends JsonResource
                 return $this->watchedByUsers->contains(auth()->id());
             }),
             'actors' => ActorResource::collection($this->whenLoaded('actors')),
+            'seasons' => $this->when(
+                $this->relationLoaded('seasons'),
+                fn() => $this->seasons->sortBy('season_number')->map(fn($s) => [
+                    'id'            => $s->id,
+                    'season_number' => $s->season_number,
+                    'title'         => $s->title,
+                    'overview'      => $s->overview,
+                    'episodes'      => $s->relationLoaded('episodes')
+                        ? $s->episodes->sortBy('episode_number')->map(fn($e) => [
+                            'id'             => $e->id,
+                            'episode_number' => $e->episode_number,
+                            'title'          => $e->title,
+                            'overview'       => $e->overview,
+                        ])->values()
+                        : [],
+                ])->values()
+            ),
             'is_boxset' => $this->boxset_children_count > 0 || ($this->relationLoaded('boxsetChildren') && $this->boxsetChildren->count() > 0),
             'boxset_parent_id' => $this->boxset_parent,
             'boxset_children' => MovieResource::collection($this->whenLoaded('boxsetChildren')),

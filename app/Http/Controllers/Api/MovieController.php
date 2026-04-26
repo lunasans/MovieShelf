@@ -79,7 +79,7 @@ class MovieController extends Controller
     )]
     public function show(Movie $movie)
     {
-        $movie->load(['actors', 'boxsetChildren', 'watchedByUsers']);
+        $movie->load(['actors', 'seasons.episodes', 'boxsetChildren', 'watchedByUsers']);
         
         return new MovieResource($movie);
     }

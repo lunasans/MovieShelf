@@ -117,7 +117,7 @@ class AdminMovieController extends Controller
         $since = $request->query('since');
 
         $userId = $request->user()->id;
-        $query = Movie::with(['actors', 'watchedByUsers' => fn($q) => $q->where('users.id', $userId)])
+        $query = Movie::with(['actors', 'seasons.episodes', 'watchedByUsers' => fn($q) => $q->where('users.id', $userId)])
             ->withCount('boxsetChildren')
             ->orderBy('title');
 
