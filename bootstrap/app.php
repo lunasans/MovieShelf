@@ -36,6 +36,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontReport([
+            \Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException::class,
+            \Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedByPathException::class,
+        ]);
+
         $exceptions->render(function (\Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException $e, $request) {
             return redirect()->away(config('app.url'))->with('error', 'Dieses MovieShelf existiert leider nicht. Du kannst dir hier auf <a href="https://movieshelf.info" class="underline hover:text-rose-600 transition-colors">movieshelf.info</a> ganz einfach dein eigenes Filmregal anlegen!');
         });
