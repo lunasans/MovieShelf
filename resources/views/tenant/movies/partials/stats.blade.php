@@ -159,6 +159,41 @@
                     data-values='{!! json_encode($collections->pluck('count')) !!}'>
                 </canvas>
             </div>
+            {{-- Expandable film list per collection type --}}
+            @if($collections->isNotEmpty())
+                <div class="space-y-2" x-data="{ openType: null }">
+                    @foreach($collections as $collection)
+                        <div class="rounded-2xl bg-white/[0.02] border border-white/5 overflow-hidden">
+                            <button
+                                @click="openType = openType === @js($collection->collection_type) ? null : @js($collection->collection_type)"
+                                class="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-all text-left"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-bold text-white">{{ $collection->collection_type }}</span>
+                                    <span class="text-xs text-gray-500 font-bold">{{ number_format($collection->count) }} {{ __('Filme') }}</span>
+                                    <span class="text-xs text-gray-600 font-bold">{{ $collection->percentage }}%</span>
+                                </div>
+                                <i class="bi text-gray-400 text-sm transition-transform duration-200"
+                                   :class="openType === @js($collection->collection_type) ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                            </button>
+                            <div x-show="openType === @js($collection->collection_type)"
+                                 x-collapse
+                                 class="border-t border-white/5">
+                                <div class="max-h-64 overflow-y-auto p-3 space-y-1 no-scrollbar">
+                                    @foreach($collection->films as $film)
+                                        <div class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-white/[0.04] transition-all">
+                                            <span class="text-sm text-gray-300 truncate">{{ $film->title }}</span>
+                                            @if($film->year)
+                                                <span class="text-xs text-gray-500 font-bold ml-3 shrink-0">{{ $film->year }}</span>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
         {{-- Ratings Distribution --}}

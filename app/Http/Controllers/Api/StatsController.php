@@ -52,7 +52,18 @@ class StatsController extends Controller
                                 properties: [
                                     new OA\Property(property: 'collection_type', type: 'string'),
                                     new OA\Property(property: 'count', type: 'integer'),
-                                    new OA\Property(property: 'percentage', type: 'number', format: 'float')
+                                    new OA\Property(property: 'percentage', type: 'number', format: 'float'),
+                                    new OA\Property(
+                                        property: 'films',
+                                        type: 'array',
+                                        items: new OA\Items(
+                                            properties: [
+                                                new OA\Property(property: 'id', type: 'integer'),
+                                                new OA\Property(property: 'title', type: 'string'),
+                                                new OA\Property(property: 'year', type: 'integer', nullable: true)
+                                            ]
+                                        )
+                                    )
                                 ]
                             )
                         ),
@@ -116,14 +127,24 @@ class StatsController extends Controller
             )->first();
 
         // Collection Types
+        $collectionsWithFilms = Movie::where('is_deleted', false)->where('in_collection', true)->whereDoesntHave('boxsetChildren')
+            ->whereNotNull('collection_type')
+            ->select('id', 'title', 'year', 'collection_type')
+            ->orderBy('title')
+            ->get()
+            ->groupBy('collection_type');
+
         $collections = Movie::where('is_deleted', false)->where('in_collection', true)->whereDoesntHave('boxsetChildren')
             ->whereNotNull('collection_type')
             ->select('collection_type', DB::raw(self::COUNT_RAW))
             ->groupBy('collection_type')
             ->orderBy('count', 'desc')
             ->get()
-            ->map(function ($item) use ($totalFilms) {
+            ->map(function ($item) use ($totalFilms, $collectionsWithFilms) {
                 $item->percentage = $totalFilms > 0 ? round(($item->count * 100) / $totalFilms, 1) : 0;
+                $item->films = $collectionsWithFilms->get($item->collection_type, collect())
+                    ->map(fn ($film) => ['id' => $film->id, 'title' => $film->title, 'year' => $film->year])
+                    ->values();
                 return $item;
             });
 

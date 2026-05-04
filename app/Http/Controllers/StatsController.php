@@ -34,14 +34,22 @@ class StatsController extends Controller
             )->first();
 
         // Collection Types
+        $collectionsWithFilms = Movie::where('is_deleted', false)->where('in_collection', true)->whereDoesntHave('boxsetChildren')
+            ->whereNotNull('collection_type')
+            ->select('id', 'title', 'year', 'collection_type')
+            ->orderBy('title')
+            ->get()
+            ->groupBy('collection_type');
+
         $collections = Movie::where('is_deleted', false)->where('in_collection', true)->whereDoesntHave('boxsetChildren')
             ->whereNotNull('collection_type')
             ->select('collection_type', DB::raw(self::COUNT_RAW))
             ->groupBy('collection_type')
             ->orderBy('count', 'desc')
             ->get()
-            ->map(function ($item) use ($totalFilms) {
+            ->map(function ($item) use ($totalFilms, $collectionsWithFilms) {
                 $item->percentage = $totalFilms > 0 ? round(($item->count * 100) / $totalFilms, 1) : 0;
+                $item->films = $collectionsWithFilms->get($item->collection_type, collect());
 
                 return $item;
             });
