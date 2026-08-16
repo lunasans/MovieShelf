@@ -21,7 +21,8 @@ class SecurityHeadersTest extends TestCase
         $csp = $response->headers->get('Content-Security-Policy');
         $this->assertNotNull($csp, 'Content-Security-Policy header fehlt');
         $this->assertStringContainsString("default-src 'self'", $csp);
-        $this->assertStringContainsString('challenges.cloudflare.com', $csp);
         $this->assertStringContainsString('youtube-nocookie.com', $csp);
+        // Turnstile gehoert zur Cloud und ist hier bewusst nicht freigegeben.
+        $this->assertStringNotContainsString('challenges.cloudflare.com', $csp);
     }
 }

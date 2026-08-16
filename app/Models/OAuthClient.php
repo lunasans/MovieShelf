@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class OAuthClient extends Model
 {
-    protected $connection   = 'central';
     protected $table        = 'oauth_clients';
     protected $primaryKey   = 'client_id';
     protected $keyType      = 'string';

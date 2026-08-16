@@ -61,7 +61,10 @@ class TmdbImportService
                 if ($movie) {
                     $movie->update($data);
                 } else {
-                    $data['collection_type'] = 'Blu-ray';
+                    // Kein 'Blu-ray' mehr als collection_type: das Feld traegt seit
+                    // der Vereinheitlichung nur noch Film|Serie, das Medium steht
+                    // im tag-Feld. Sonst legt jeder Import wieder Werte an, die
+                    // normalize_collection_type gerade weggeraeumt hat.
                     $data['user_id'] = auth()->id();
                     $movie = Movie::create($data);
                 }

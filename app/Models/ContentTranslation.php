@@ -13,7 +13,6 @@ class ContentTranslation extends Model
      * gepinnt, damit die Uebersetzungen auch bei abweichendem DB_CONNECTION
      * in derselben Datenbank liegen wie EmailTemplate.
      */
-    protected $connection = 'central';
 
     protected $fillable = ['translatable_type', 'translatable_id', 'locale', 'field', 'value'];
 

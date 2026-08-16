@@ -170,8 +170,6 @@ class MovieController extends Controller
             // Str::random statt time(): zwei Uploads in derselben Sekunde ueberschrieben
             // einander sonst, und der zweite Film zeigte das Cover des ersten.
             $filename = 'covers/custom_'.Str::random(20).'.'.$file->guessExtension();
-            // UploadDisk statt fest 'public': bei UPLOAD_DISK=s3 loest Movie::resolveImageUrl
-            // Pfade mit '/' auf die S3-URL auf – lokal gespeicherte Bilder waeren dann tot.
             $file->storeAs('', $filename, 'public');
             $validated['cover_id'] = $filename;
         }

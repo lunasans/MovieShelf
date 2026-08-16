@@ -24,7 +24,7 @@ class TwoFactorControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('profile.edit'));
 
         $response->assertStatus(200);
-        $response->assertSee('Two-Factor Authentication');
+        $response->assertSee('Two-factor authentication');
     }
 
     public function test_user_can_enable_two_factor()

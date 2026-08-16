@@ -61,7 +61,7 @@ trait ManagesEmailTemplates
         // verschickt, zeigt Setting auf dessen Datenbank — dort gibt es den
         // Schluessel nicht, und die Aufloesung fiele still auf Englisch
         // zurueck, obwohl die Plattform auf Deutsch steht.
-        $default = (string) (\App\Models\Setting::on('central')
+        $default = (string) (\App\Models\Setting::query()
             ->where('key', 'default_tenant_language')
             ->value('value') ?? '');
 

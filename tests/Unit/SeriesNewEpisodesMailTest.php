@@ -13,26 +13,6 @@ class SeriesNewEpisodesMailTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // email_templates liegt auf der central-Connection, die RefreshDatabase
-        // nicht migriert – leere Tabelle reicht für den Fallback-Pfad.
-        $schema = \Illuminate\Support\Facades\Schema::connection('central');
-        if (! $schema->hasTable('email_templates')) {
-            $schema->create('email_templates', function ($table) {
-                $table->id();
-                $table->string('slug');
-                $table->string('name')->nullable();
-                $table->string('subject')->nullable();
-                $table->text('content')->nullable();
-                $table->text('variables_hint')->nullable();
-                $table->timestamps();
-            });
-        }
-    }
-
     /**
      * Ohne DB-Template greift die Markdown-Fallback-View; sie muss die
      * berechneten Template-Daten (seriesTitle etc.) übergeben bekommen.

@@ -21,7 +21,7 @@ class MovieControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->admin = User::factory()->create();
+        $this->admin = User::factory()->admin()->create();
     }
 
     public function test_admin_can_view_movies_index()
@@ -86,6 +86,11 @@ class MovieControllerTest extends TestCase
         Storage::disk('public')->assertExists('covers/tmdb_new_cover.jpg');
     }
 
+    /**
+     * Loeschen sperrt den Film, statt die Zeile zu entfernen: der Delta-Export
+     * muss die Loeschung noch an die Clients melden koennen. Endgueltig
+     * entfernt sie erst movies:purge nach Ablauf der Frist.
+     */
     public function test_admin_can_delete_movie()
     {
         $movie = Movie::factory()->create(['user_id' => $this->admin->id]);
@@ -93,8 +98,9 @@ class MovieControllerTest extends TestCase
         $response = $this->actingAs($this->admin)->delete(route('admin.movies.destroy', $movie));
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('movies', ['id' => $movie->id]);
-        
+        $this->assertDatabaseHas('movies', ['id' => $movie->id, 'is_deleted' => true]);
+        $this->assertNotNull($movie->fresh()->deleted_at);
+
         $this->assertDatabaseHas('activity_log', [
             'action' => 'MOVIE_DELETE',
             'user_id' => $this->admin->id,

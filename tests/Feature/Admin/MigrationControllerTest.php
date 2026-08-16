@@ -20,7 +20,7 @@ class MigrationControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->admin = User::factory()->create();
+        $this->admin = User::factory()->admin()->create();
         Setting::set('migration_enabled', '1');
         
         // Setup a fake connection for v1

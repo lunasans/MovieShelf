@@ -23,10 +23,15 @@ class ActorTest extends TestCase
         $this->assertEquals('https://example.com/image.jpg', $actor->profile_url);
     }
 
-    public function test_get_profile_url_attribute_returns_tmdb_url_with_leading_slash()
+    /**
+     * Rohe TMDb-Pfade werden bewusst NICHT gehotlinkt (kein Abfluss der
+     * Besucher-IPs an image.tmdb.org). Fehlt das Bild lokal, gibt es einen
+     * Platzhalter statt einer Fremd-URL.
+     */
+    public function test_get_profile_url_attribute_does_not_hotlink_tmdb()
     {
         $actor = new Actor(['profile_path' => '/some_image.jpg']);
-        $this->assertEquals('https://image.tmdb.org/t/p/w185/some_image.jpg', $actor->profile_url);
+        $this->assertNull($actor->profile_url);
     }
 
     public function test_get_profile_url_attribute_returns_storage_url_with_extension()
@@ -34,8 +39,9 @@ class ActorTest extends TestCase
         Storage::fake('public');
         Storage::disk('public')->put('custom/actor.jpg', 'content');
         
+        // Ausgeliefert wird ueber den /media-Proxy, nicht ueber /storage.
         $actor = new Actor(['profile_path' => 'custom/actor.jpg']);
-        $this->assertEquals(Storage::disk('public')->url('custom/actor.jpg'), $actor->profile_url);
+        $this->assertEquals('/media/custom/actor.jpg', $actor->profile_url);
     }
 
     public function test_get_profile_url_attribute_returns_storage_url_with_actors_prefix()
@@ -44,7 +50,7 @@ class ActorTest extends TestCase
         Storage::disk('public')->put('actors/actor_123', 'content');
         
         $actor = new Actor(['profile_path' => 'actor_123']);
-        $this->assertEquals(Storage::disk('public')->url('actors/actor_123'), $actor->profile_url);
+        $this->assertEquals('/media/actors/actor_123', $actor->profile_url);
     }
 
     public function test_get_profile_url_attribute_returns_null_if_storage_file_missing()
