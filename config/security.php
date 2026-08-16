@@ -5,16 +5,18 @@
 | Security-Response-Header
 |--------------------------------------------------------------------------
 | Wird von App\Http\Middleware\SecurityHeaders auf alle Web-Antworten
-| gesetzt (Central- und Tenant-Domains). Bereits gesetzte Header werden
-| nicht überschrieben. Ein Header mit Wert null/'' wird nicht gesendet.
+| gesetzt. Bereits gesetzte Header werden nicht überschrieben. Ein Header
+| mit Wert null/'' wird nicht gesendet.
 |
 | Die CSP muss alle extern eingebundenen Quellen abdecken:
-|  - challenges.cloudflare.com  → Turnstile (Landing-Page)
 |  - www.youtube-nocookie.com   → Trailer-Embeds
 |  - img-src https:             → Cover/Backdrops können absolute URLs sein
-|                                 (Legacy-Daten, S3), daher bewusst breit
+|                                 (Legacy-Daten), daher bewusst breit
 |  - 'unsafe-eval'              → von Alpine.js benötigt (Expression-Parser)
 |  - 'unsafe-inline'            → Inline-<script>/<style> in den Blade-Views
+|
+| Turnstile (challenges.cloudflare.com) gehört zur Cloud und ist hier
+| bewusst nicht freigegeben.
 */
 
 return [
@@ -23,13 +25,13 @@ return [
 
         'Content-Security-Policy' => env('SECURITY_CSP', implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
             "style-src 'self' 'unsafe-inline'",
             "font-src 'self' data:",
             "img-src 'self' data: blob: https:",
             "media-src 'self' blob:",
-            "connect-src 'self' https://challenges.cloudflare.com",
-            "frame-src 'self' https://www.youtube-nocookie.com https://challenges.cloudflare.com",
+            "connect-src 'self'",
+            "frame-src 'self' https://www.youtube-nocookie.com",
             "worker-src 'self' blob:",
             "object-src 'none'",
             "base-uri 'self'",
