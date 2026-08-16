@@ -24,9 +24,11 @@ class ComprehensiveRouteTest extends TestCase
         $this->actor = Actor::factory()->create();
     }
 
-    public function test_root_redirects_to_dashboard()
+    public function test_root_serves_the_dashboard()
     {
-        $this->get('/')->assertRedirect(route('dashboard'));
+        // '/' und '/dashboard' zeigen dieselbe Ansicht; es gibt keine
+        // vorgelagerte Landing Page, von der aus weitergeleitet wuerde.
+        $this->get('/')->assertStatus(200);
     }
 
     public function test_all_public_get_routes()
@@ -63,12 +65,11 @@ class ComprehensiveRouteTest extends TestCase
 
     public function test_all_admin_get_routes_authenticated()
     {
-        $this->actingAs($this->user);
+        $this->actingAs(User::factory()->admin()->create());
 
         $adminRoutes = [
             'admin.dashboard',
             'admin.movies.index',
-            'admin.movies.create',
             'admin.actors.index',
             'admin.actors.create',
             'admin.settings.index',
@@ -85,8 +86,12 @@ class ComprehensiveRouteTest extends TestCase
         ];
 
         foreach ($adminRoutes as $routeName) {
-            $this->get(route($routeName))->assertStatus(200);
+            $this->get(route($routeName))->assertStatus(200, "Route {$routeName} liefert nicht 200");
         }
+
+        // "Neuer Film" fuehrt bewusst in den TMDb-Import statt auf ein leeres
+        // Formular – ein Film ohne TMDb-Daten ist die Ausnahme, nicht die Regel.
+        $this->get(route('admin.movies.create'))->assertRedirect(route('admin.tmdb.index'));
     }
 
     public function test_profile_routes_authenticated()

@@ -41,4 +41,18 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Nutzer mit Zugriff auf den Adminbereich.
+     *
+     * Die Spalte steht per Migration auf false; nur der allererste Nutzer wird
+     * dort zum Admin gemacht. In Tests existiert dieser Nutzer nicht, weshalb
+     * jeder Test, der /admin aufruft, den Zustand ausdruecklich anfordern muss.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_admin' => true,
+        ]);
+    }
 }

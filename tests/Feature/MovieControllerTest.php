@@ -92,7 +92,7 @@ class MovieControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('movies.details', $movie1));
         
         $response->assertStatus(200);
-        $response->assertViewIs('movies.partials.details');
+        $response->assertViewIs('tenant.movies.partials.details');
         $response->assertSee('SciFi 1');
     }
 
@@ -109,10 +109,9 @@ class MovieControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('movies.random'));
         
         $response->assertStatus(200);
-        $response->assertJson([
-            'id' => 10,
-            'backdrop_url' => 'https://image.tmdb.org/t/p/w1280/backdrop.jpg'
-        ]);
+        // Rohe TMDb-Pfade werden nicht gehotlinkt; ohne lokales Bild bleibt die
+        // URL leer und das Frontend zeigt seinen Platzhalter.
+        $response->assertJson(['id' => 10, 'backdrop_url' => null]);
     }
 
     public function test_random_returns_404_if_no_movies()

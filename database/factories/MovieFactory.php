@@ -20,7 +20,10 @@ class MovieFactory extends Factory
         return [
             'title' => fake()->sentence(3),
             'year' => fake()->year(),
-            'collection_type' => fake()->randomElement(['Film', 'Serie']),
+            // Fest 'Film' statt zufaellig: die Scopes moviesOnly()/seriesOnly()
+            // trennen genau danach, ein Zufallswert machte jeden Test, der ueber
+            // sie laeuft, zur Muenze. Serien gibt es ueber den series()-State.
+            'collection_type' => 'Film',
             'genre' => implode(', ', fake()->words(3)),
             'runtime' => fake()->numberBetween(60, 240),
             'rating' => fake()->numberBetween(0, 100),
@@ -36,6 +39,15 @@ class MovieFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_deleted' => true,
+        ]);
+    }
+
+    /** Serie statt Film – greift fuer den seriesOnly()-Scope. */
+    public function series()
+    {
+        return $this->state(fn (array $attributes) => [
+            'collection_type' => 'Serie',
+            'tmdb_type' => 'tv',
         ]);
     }
 }

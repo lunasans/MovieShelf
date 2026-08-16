@@ -1,0 +1,62 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: PHP einrichten
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, sqlite3, pdo_sqlite, zip, gd, intl
+          coverage: none
+
+      - name: Composer-Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: PHP-Abhaengigkeiten
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # Die Tests rendern echte Blade-Views, und die Layouts binden die Assets
+      # ueber @vite ein. Ohne public/build/manifest.json wirft das beim Rendern –
+      # der Build ist hier also Teil der Testvorbereitung, kein Extra.
+      - name: Frontend bauen
+        run: |
+          npm ci
+          npm run build
+
+      - name: Umgebung vorbereiten
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # Die Testdatenbank ist SQLite im Arbeitsspeicher (siehe phpunit.xml);
+      # RefreshDatabase migriert sie je Test selbst.
+      - name: Tests
+        run: vendor/bin/phpunit --no-coverage

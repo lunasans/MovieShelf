@@ -25,11 +25,16 @@ class MovieTest extends TestCase
         $this->assertEquals('https://example.com/cover.jpg', $movie->cover_url);
     }
 
-    public function test_resolve_image_url_returns_tmdb_url_for_leading_slash()
+    /**
+     * Rohe TMDb-Pfade werden bewusst NICHT gehotlinkt (kein Abfluss der
+     * Besucher-IPs an image.tmdb.org). Fehlt das Bild lokal, gibt es einen
+     * Platzhalter statt einer Fremd-URL.
+     */
+    public function test_resolve_image_url_does_not_hotlink_tmdb()
     {
         $movie = new Movie();
         $movie->forceFill(['cover_id' => '/tmdb_image.jpg']);
-        $this->assertEquals('https://image.tmdb.org/t/p/w500/tmdb_image.jpg', $movie->cover_url);
+        $this->assertNull($movie->cover_url);
     }
 
     public function test_resolve_image_url_returns_storage_url_if_exists()
@@ -42,7 +47,8 @@ class MovieTest extends TestCase
             'cover_id' => 'custom_cover.jpg',
         ]);
         
-        $this->assertEquals(Storage::disk('public')->url('custom_cover.jpg'), $movie->cover_url);
+        // Ausgeliefert wird ueber den /media-Proxy, nicht ueber /storage.
+        $this->assertEquals('/media/custom_cover.jpg', $movie->cover_url);
     }
 
     public function test_resolve_image_url_returns_legacy_url_if_exists_in_fallback()
@@ -55,7 +61,7 @@ class MovieTest extends TestCase
             'cover_id' => '123',
         ]);
         
-        $this->assertEquals(Storage::disk('public')->url('covers/123f.jpg'), $movie->cover_url);
+        $this->assertEquals('/media/covers/123f.jpg', $movie->cover_url);
     }
 
     public function test_resolve_image_url_returns_null_if_storage_file_missing()

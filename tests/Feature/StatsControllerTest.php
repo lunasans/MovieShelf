@@ -69,6 +69,6 @@ class StatsControllerTest extends TestCase
         $response = $this->actingAs($user)->get(route('statistics'), ['HTTP_X-Requested-With' => 'XMLHttpRequest']);
         
         $response->assertStatus(200);
-        $response->assertViewIs('movies.partials.stats');
+        $response->assertViewIs('tenant.movies.partials.stats');
     }
 }

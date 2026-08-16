@@ -19,7 +19,7 @@ class XmlImportControllerTest extends TestCase
         parent::setUp();
         // Assuming your setup uses Spatie Permissions or a simple admin boolean. 
         // We will just act as standard user if auth is enough, or setup admin.
-        $this->admin = User::factory()->create(); 
+        $this->admin = User::factory()->admin()->create(); 
     }
 
     public function test_index_shows_xml_files()

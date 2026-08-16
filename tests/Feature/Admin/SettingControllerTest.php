@@ -18,7 +18,32 @@ class SettingControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->admin = User::factory()->create();
+        $this->admin = User::factory()->admin()->create();
+    }
+
+    /**
+     * Gueltige Grundwerte fuer das Einstellungsformular.
+     *
+     * Der Controller validiert alle Pflichtfelder gemeinsam; fehlt eines, wird
+     * gar nichts gespeichert und der Test prueft stillschweigend weiter den
+     * alten Wert. Neue Pflichtfelder gehoeren deshalb hierher – einmal.
+     */
+    private function validSettings(array $overrides = []): array
+    {
+        return array_merge([
+            'site_title' => 'Title',
+            'items_per_page' => 24,
+            'latest_films_count' => 10,
+            'default_view_mode' => 'grid',
+            'default_guest_layout' => 'classic',
+            'boxset_quick_view_style' => 'island',
+            'theme' => 'default',
+            'signature_film_count' => 5,
+            'signature_film_source' => 'newest',
+            'signature_cache_time' => 0,
+            'two_factor_trusted_days' => 30,
+            'mail_mailer' => 'log',
+        ], $overrides);
     }
 
     public function test_admin_can_view_settings_index()
@@ -32,20 +57,18 @@ class SettingControllerTest extends TestCase
 
     public function test_admin_can_update_settings()
     {
-        $settingsData = [
+        $settingsData = $this->validSettings([
             'site_title' => 'New Title',
             'items_per_page' => 25,
-            'latest_films_count' => 10,
             'default_view_mode' => 'list',
             'boxset_quick_view_style' => 'modal',
             'theme' => 'dark',
-            'signature_film_count' => 5,
             'signature_film_source' => 'random',
             'signature_cache_time' => 3600,
             'mail_mailer' => 'smtp',
             'impressum_enabled' => '1',
             'impressum_content' => '<p>Test Content</p>',
-        ];
+        ]);
 
         $response = $this->actingAs($this->admin)->post(route('admin.settings.update'), $settingsData);
 
@@ -60,20 +83,11 @@ class SettingControllerTest extends TestCase
 
     public function test_html_sanitization_in_settings()
     {
-        $settingsData = [
-            'site_title' => 'Title',
-            'items_per_page' => 24,
-            'latest_films_count' => 10,
-            'default_view_mode' => 'grid',
-            'boxset_quick_view_style' => 'island',
+        $settingsData = $this->validSettings([
             'theme' => 'light',
-            'signature_film_count' => 5,
-            'signature_film_source' => 'newest',
-            'signature_cache_time' => 0,
-            'mail_mailer' => 'log',
             'impressum_content' => '<p>Safe</p><script>alert("xss")</script>',
             'cookie_banner_text' => '<strong>Accept</strong><iframe src="malicious"></iframe>',
-        ];
+        ]);
 
         $this->actingAs($this->admin)->post(route('admin.settings.update'), $settingsData);
 
@@ -84,19 +98,9 @@ class SettingControllerTest extends TestCase
     public function test_checkbox_handling()
     {
         // Test disabling checkboxes
-        $settingsData = [
-            'site_title' => 'Title',
-            'items_per_page' => 24,
-            'latest_films_count' => 10,
-            'default_view_mode' => 'grid',
-            'boxset_quick_view_style' => 'island',
-            'theme' => 'blue',
-            'signature_film_count' => 5,
-            'signature_film_source' => 'newest',
-            'signature_cache_time' => 0,
-            'mail_mailer' => 'log',
-            // impressum_enabled not present in request
-        ];
+        // impressum_enabled bewusst NICHT im Request – abgehakte Kaestchen
+        // senden nichts und muessen dadurch auf '0' fallen.
+        $settingsData = $this->validSettings(['theme' => 'blue']);
 
         Setting::set('impressum_enabled', '1');
 
@@ -115,18 +119,10 @@ class SettingControllerTest extends TestCase
         Cache::shouldReceive('all')->andReturn([]);
         Cache::shouldReceive('get')->andReturn(null);
 
-        $settingsData = [
-            'site_title' => 'Title',
-            'items_per_page' => 24,
-            'latest_films_count' => 10,
-            'default_view_mode' => 'grid',
-            'boxset_quick_view_style' => 'island',
+        $settingsData = $this->validSettings([
             'theme' => 'blue',
-            'signature_film_count' => 10, // Changed
-            'signature_film_source' => 'newest',
-            'signature_cache_time' => 0,
-            'mail_mailer' => 'log',
-        ];
+            'signature_film_count' => 10, // geaendert -> Signatur-Cache muss fallen
+        ]);
 
         $this->actingAs($this->admin)->post(route('admin.settings.update'), $settingsData);
     }

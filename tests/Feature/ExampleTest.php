@@ -10,12 +10,13 @@ class ExampleTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * A basic test example.
+     * '/' ist das Regal selbst und oeffentlich einsehbar – in der Cloud lag
+     * dort die Landing Page, die auf das Dashboard weitergeleitet hat.
      */
     public function test_the_application_returns_a_successful_response(): void
     {
         $response = $this->get('/');
 
-        $response->assertStatus(302);
+        $response->assertStatus(200);
     }
 }

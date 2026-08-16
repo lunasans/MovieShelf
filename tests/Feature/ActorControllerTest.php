@@ -113,7 +113,7 @@ class ActorControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('actors.details', $actor));
         
         $response->assertStatus(200);
-        $response->assertViewIs('actors.partials.details');
+        $response->assertViewIs('tenant.actors.partials.details');
         $response->assertSee('Matt Damon');
         $response->assertSee('Cached bio');
     }
