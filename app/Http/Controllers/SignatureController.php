@@ -22,6 +22,7 @@ class SignatureController extends Controller
         $type = $request->query('type', 1);
         $type = max(1, min(3, (int) $type));
         $cacheTime = (int) Setting::get('signature_cache_time', '3600');
+
         $cacheKey = "signature_banner_type_{$type}";
 
         if ($request->has('clear_cache')) {
@@ -42,22 +43,35 @@ class SignatureController extends Controller
                 ->header('Content-Type', 'text/plain');
         }
 
-        // Banner-Dimensionen
-        $width = 800;
-        $height = 150;
+        // Banner-Dimensionen (konfigurierbar)
+        $width = max(400, min(1400, (int) Setting::get('signature_width', '800')));
+        $height = max(120, min(400, (int) Setting::get('signature_height', '150')));
 
         // Erstelle Bild
         $img = \imagecreatetruecolor($width, $height);
         \imagesavealpha($img, true);
 
+        // Theme + Akzentfarbe (konfigurierbar). Light = exakt wie bisher.
+        $theme = Setting::get('signature_theme', 'dark') === 'light' ? 'light' : 'dark';
+        [$ar, $ag, $ab] = $this->hexToRgb(Setting::get('signature_accent', '#667eea'));
+
+        if ($theme === 'light') {
+            $p = ['top' => [240,245,255,15], 'bottom' => [220,230,245,30], 'border' => [200,210,230,50],
+                  'text' => [45,55,72,0], 'muted' => [161,161,170,0], 'box' => [200,210,230,40]];
+        } else { // dark (Default, passend zum App-Look)
+            $p = ['top' => [38,39,52,6], 'bottom' => [16,16,24,16], 'border' => [255,255,255,92],
+                  'text' => [237,240,247,0], 'muted' => [170,175,190,0], 'box' => [255,255,255,100]];
+        }
+
         // Farben
         $transparent = \imagecolorallocatealpha($img, 0, 0, 0, 127);
-        $glass_bg_top = \imagecolorallocatealpha($img, 240, 245, 255, 15);
-        $glass_bg_bottom = \imagecolorallocatealpha($img, 220, 230, 245, 30);
-        $glass_border = \imagecolorallocatealpha($img, 200, 210, 230, 50);
-        $text_dark = \imagecolorallocate($img, 45, 55, 72);
-        $text_muted = \imagecolorallocate($img, 161, 161, 170);
-        $accent = \imagecolorallocate($img, 102, 126, 234);
+        $glass_bg_top = \imagecolorallocatealpha($img, ...$p['top']);
+        $glass_bg_bottom = \imagecolorallocatealpha($img, ...$p['bottom']);
+        $glass_border = \imagecolorallocatealpha($img, ...$p['border']);
+        $text_dark = \imagecolorallocatealpha($img, ...$p['text']);
+        $text_muted = \imagecolorallocatealpha($img, ...$p['muted']);
+        $box_color = \imagecolorallocatealpha($img, ...$p['box']);
+        $accent = \imagecolorallocatealpha($img, $ar, $ag, $ab, 0);
 
         // Hintergrund transparent
         \imagefill($img, 0, 0, $transparent);
@@ -67,6 +81,13 @@ class SignatureController extends Controller
         $filmSource = Setting::get('signature_film_source', 'newest');
         $showTitle = Setting::get('signature_show_title', '1') === '1';
         $showYear = Setting::get('signature_show_year', '1') === '1';
+        $showRating = Setting::get('signature_show_rating', '0') === '1';
+        $avgRating = null;
+        if ($showRating) {
+            $raw = (float) Movie::where('is_deleted', false)->whereNotNull('rating')->avg('rating');
+            // Skala automatisch erkennen: >10 => 0–100 (auf /10 normalisieren), sonst schon 0–10.
+            $avgRating = round($raw > 10 ? $raw / 10 : $raw, 1);
+        }
 
         // Filme laden
         $query = Movie::query()->where('is_deleted', false)->whereNull('boxset_parent');
@@ -96,11 +117,11 @@ class SignatureController extends Controller
         ]);
 
         if ($type === 1) {
-            $this->renderType1($img, $films, $totalFilms, $fontPath, $text_dark, $accent);
+            $this->renderType1($img, $films, $totalFilms, $fontPath, $text_dark, $accent, $box_color, $width, $avgRating);
         } elseif ($type === 2) {
-            $this->renderType2($img, $films, $totalFilms, $fontPath, $accent, $text_muted, $filmCount);
+            $this->renderType2($img, $films, $totalFilms, $fontPath, $accent, $text_muted, $filmCount, $width, $avgRating);
         } elseif ($type === 3) {
-            $this->renderType3($img, $films, $fontPath, $text_dark, $text_muted, $showTitle, $showYear);
+            $this->renderType3($img, $films, $fontPath, $text_dark, $text_muted, $showTitle, $showYear, $width);
         }
 
         // Buffer befüllen
@@ -146,15 +167,14 @@ class SignatureController extends Controller
         \imageline($img, $x + $w, $y + $radius, $x + $w, $y + $h - $radius, $border);
     }
 
-    private function renderType1($img, $films, $totalFilms, $fontPath, $text_dark, $accent)
+    private function renderType1($img, $films, $totalFilms, $fontPath, $text_dark, $accent, $box_color, $width = 800, $avgRating = null)
     {
         $statsBoxWidth = 115;
         $statsBoxHeight = 120;
         $statsBoxX = 20;
         $statsBoxY = 15;
-        $statsBoxBg = \imagecolorallocatealpha($img, 200, 210, 230, 40);
 
-        $this->imagefilledroundedrectangle($img, $statsBoxX, $statsBoxY, $statsBoxX + $statsBoxWidth, $statsBoxY + $statsBoxHeight, 10, $statsBoxBg);
+        $this->imagefilledroundedrectangle($img, $statsBoxX, $statsBoxY, $statsBoxX + $statsBoxWidth, $statsBoxY + $statsBoxHeight, 10, $box_color);
 
         $logo = $this->loadLogo(22);
         if ($logo) {
@@ -164,7 +184,10 @@ class SignatureController extends Controller
         }
 
         $this->drawText($img, 'Filme gesamt:', $fontPath, ['size' => 10, 'x' => $statsBoxX, 'y' => $statsBoxY + 54, 'color' => $text_dark, 'centerX' => true, 'boxW' => $statsBoxWidth]);
-        $this->drawText($img, (string) $totalFilms, $fontPath, ['size' => 22, 'x' => $statsBoxX, 'y' => $statsBoxY + 95, 'color' => $accent, 'centerX' => true, 'boxW' => $statsBoxWidth]);
+        $this->drawText($img, (string) $totalFilms, $fontPath, ['size' => 22, 'x' => $statsBoxX, 'y' => $statsBoxY + ($avgRating !== null ? 90 : 95), 'color' => $accent, 'centerX' => true, 'boxW' => $statsBoxWidth]);
+        if ($avgRating !== null) {
+            $this->drawText($img, 'Ø '.number_format($avgRating, 1), $fontPath, ['size' => 9, 'x' => $statsBoxX, 'y' => $statsBoxY + 114, 'color' => $text_dark, 'centerX' => true, 'boxW' => $statsBoxWidth]);
+        }
 
         $coverWidth = 57;
         $coverHeight = 83;
@@ -177,7 +200,7 @@ class SignatureController extends Controller
             $cover = $this->loadCover($film->cover_id, $coverWidth, $coverHeight);
             if ($cover) {
                 $x = $startX + ($count * ($coverWidth + $gap));
-                if ($x + $coverWidth > 800 - 15) {
+                if ($x + $coverWidth > $width - 15) {
                     \imagedestroy($cover);
                     break;
                 }
@@ -188,7 +211,7 @@ class SignatureController extends Controller
         }
     }
 
-    private function renderType2($img, $films, $totalFilms, $fontPath, $accent, $text_muted, $filmCount)
+    private function renderType2($img, $films, $totalFilms, $fontPath, $accent, $text_muted, $filmCount, $width = 800, $avgRating = null)
     {
         $logo = $this->loadLogo(26);
         $textY = 32;
@@ -199,6 +222,9 @@ class SignatureController extends Controller
             $logoW = \imagesx($logo);
             $this->drawText($img, "{$totalFilms} Filme", $fontPath, ['size' => 10, 'x' => $startX + $logoW + 25, 'y' => $textY, 'color' => $accent]);
             $this->drawText($img, "{$filmCount} Neueste:", $fontPath, ['size' => 9, 'x' => $startX + $logoW + 120, 'y' => $textY, 'color' => $text_muted]);
+            if ($avgRating !== null) {
+                $this->drawText($img, 'Ø '.number_format($avgRating, 1), $fontPath, ['size' => 9, 'x' => $startX + $logoW + 210, 'y' => $textY, 'color' => $accent]);
+            }
             \imagedestroy($logo);
         }
 
@@ -213,7 +239,7 @@ class SignatureController extends Controller
             $cover = $this->loadCover($film->cover_id, $coverWidth, $coverHeight);
             if ($cover) {
                 $x = $startX + ($count * ($coverWidth + $gap));
-                if ($x + $coverWidth > 800 - 25) {
+                if ($x + $coverWidth > $width - 25) {
                     \imagedestroy($cover);
                     break;
                 }
@@ -224,7 +250,7 @@ class SignatureController extends Controller
         }
     }
 
-    private function renderType3($img, $films, $fontPath, $text_dark, $text_muted, $showTitle, $showYear)
+    private function renderType3($img, $films, $fontPath, $text_dark, $text_muted, $showTitle, $showYear, $width = 800)
     {
         $coverWidth = 65;
         $coverHeight = 95;
@@ -237,7 +263,7 @@ class SignatureController extends Controller
             $cover = $this->loadCover($film->cover_id, $coverWidth, $coverHeight);
             if ($cover) {
                 $x = $startX + ($count * ($coverWidth + $gap));
-                if ($x + $coverWidth > 800 - 20) {
+                if ($x + $coverWidth > $width - 20) {
                     \imagedestroy($cover);
                     break;
                 }
@@ -258,17 +284,14 @@ class SignatureController extends Controller
 
     private function loadCover($coverId, $targetWidth, $targetHeight)
     {
-        $path = $this->getCoverPath($coverId);
-
-        if (! $path || ! file_exists($path) || ! ($info = \getimagesize($path))) {
+        $data = $this->getCoverData($coverId);
+        if (! $data) {
             return null;
         }
 
-        $src = match ($info[2]) {
-            \IMAGETYPE_JPEG => @\imagecreatefromjpeg($path),
-            \IMAGETYPE_PNG => @\imagecreatefrompng($path),
-            default => null,
-        };
+        // imagecreatefromstring erkennt JPEG/PNG/WebP selbst und funktioniert mit
+        // Bytes aus jeder Quelle (lokal ODER S3) – kein lokaler Dateipfad noetig.
+        $src = @\imagecreatefromstring($data);
 
         if ($src) {
             $dst = \imagecreatetruecolor($targetWidth, $targetHeight);
@@ -283,19 +306,52 @@ class SignatureController extends Controller
         return null;
     }
 
-    private function getCoverPath($coverId)
+    /**
+     * Liefert die Roh-Bytes eines Covers – egal ob auf der Upload-Disk (S3),
+     * der lokalen public- oder der central-Disk. Ersetzt die alte, rein lokale
+     * Pfad-Aufloesung, die mit S3-Covern nichts mehr fand.
+     */
+    private function getCoverData($coverId): ?string
     {
         if (empty($coverId)) {
             return null;
         }
 
-        $disk = \Illuminate\Support\Facades\Storage::disk('public');
-        if (str_contains($coverId, '.') && $disk->exists($coverId)) {
-            return $disk->path($coverId);
+        // Moderner Key (enthaelt '.') direkt, sonst der Legacy-Pfad.
+        $candidates = str_contains($coverId, '.')
+            ? [$coverId]
+            : ['covers/'.$coverId.'f.jpg'];
+
+        $disks = ['public'];
+
+        foreach ($candidates as $candidate) {
+            foreach ($disks as $diskName) {
+                try {
+                    $disk = \Illuminate\Support\Facades\Storage::disk($diskName);
+                    if ($disk->exists($candidate)) {
+                        return $disk->get($candidate);
+                    }
+                } catch (\Throwable $e) {
+                    // Disk nicht verfuegbar -> naechste versuchen
+                }
+            }
         }
 
-        $legacyPath = 'covers/'.$coverId.'f.jpg';
-        return $disk->exists($legacyPath) ? $disk->path($legacyPath) : null;
+        return null;
+    }
+
+    /** Wandelt einen Hex-Farbwert (#rrggbb oder #rgb) in [r,g,b]; Fallback = Standard-Akzent. */
+    private function hexToRgb(string $hex): array
+    {
+        $hex = ltrim(trim($hex), '#');
+        if (strlen($hex) === 3) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+        if (! preg_match('/^[0-9a-fA-F]{6}$/', $hex)) {
+            return [102, 126, 234];
+        }
+
+        return [hexdec(substr($hex, 0, 2)), hexdec(substr($hex, 2, 2)), hexdec(substr($hex, 4, 2))];
     }
 
     private function loadLogo($targetHeight)
@@ -345,6 +401,11 @@ class SignatureController extends Controller
 
     private function imagefilledroundedrectangle($img, $x1, $y1, $x2, $y2, $radius, $color)
     {
+        // Alpha-Blending aus: ueberlappende Rechtecke/Ellipsen ersetzen die Pixel
+        // (statt die Deckkraft zu addieren) -> keine dunklen Ecken-Artefakte bei
+        // halbtransparenter Box-Farbe. Danach wieder an fuer Text/Cover.
+        \imagealphablending($img, false);
+
         \imagefilledrectangle($img, $x1 + $radius, $y1, $x2 - $radius, $y2, $color);
         \imagefilledrectangle($img, $x1, $y1 + $radius, $x1 + $radius - 1, $y2 - $radius, $color);
         \imagefilledrectangle($img, $x2 - $radius + 1, $y1 + $radius, $x2, $y2 - $radius, $color);
@@ -352,5 +413,7 @@ class SignatureController extends Controller
         \imagefilledellipse($img, $x2 - $radius, $y1 + $radius, $radius * 2, $radius * 2, $color);
         \imagefilledellipse($img, $x1 + $radius, $y2 - $radius, $radius * 2, $radius * 2, $color);
         \imagefilledellipse($img, $x2 - $radius, $y2 - $radius, $radius * 2, $radius * 2, $color);
+
+        \imagealphablending($img, true);
     }
 }

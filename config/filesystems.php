@@ -16,6 +16,14 @@ return [
     'default' => env('FILESYSTEM_DISK', 'local'),
 
     /*
+    | Disk fuer Medien-Uploads (Cover/Backdrops/Actor-Bilder). Wird in den
+    | Models zur URL-Aufloesung genutzt. Bewusst als Config (nicht env() im
+    | Model), damit es auch mit `php artisan config:cache` funktioniert –
+    | env() liefert bei gecachter Config sonst null.
+    */
+    'upload_disk' => env('UPLOAD_DISK', 'public'),
+
+    /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
@@ -41,22 +49,42 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => '/storage',
+            'url' => '/media',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
         ],
 
+        'central' => [
+            'driver' => 'local',
+            'root' => base_path('storage/app/public'),
+            'url' => '/media',
+            'visibility' => 'public',
+        ],
+
         's3' => [
             'driver' => 's3',
-            'key' => env('AWS_ACCESS_KEY_ID'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
-            'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT'),
-            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'throw' => false,
+            'key' => env('S3_ACCESS_KEY_ID'),
+            'secret' => env('S3_SECRET_ACCESS_KEY'),
+            'region' => 'auto',
+            'bucket' => env('S3_BUCKET'),
+            'url' => env('S3_URL'),
+            'endpoint' => env('S3_ENDPOINT') ?? (env('S3_ACCOUNT_ID') ? "https://" . env('S3_ACCOUNT_ID') . ".r2.cloudflarestorage.com" : null),
+            'use_path_style_endpoint' => true,
+            'throw' => true,
+            'report' => false,
+        ],
+
+        'r2' => [
+            'driver' => 's3',
+            'key' => env('S3_ACCESS_KEY_ID'),
+            'secret' => env('S3_SECRET_ACCESS_KEY'),
+            'region' => 'auto',
+            'bucket' => env('S3_BUCKET'),
+            'url' => env('S3_URL'),
+            'endpoint' => env('S3_ENDPOINT') ?? (env('S3_ACCOUNT_ID') ? "https://" . env('S3_ACCOUNT_ID') . ".r2.cloudflarestorage.com" : null),
+            'use_path_style_endpoint' => true,
+            'throw' => true,
             'report' => false,
         ],
 

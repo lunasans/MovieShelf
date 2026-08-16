@@ -29,11 +29,6 @@
                 class="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 whitespace-nowrap shrink-0">
                 <i class="bi bi-envelope-fill"></i> E-Mail / Server
             </button>
-            <button @click="activeTab = 'backup'" 
-                :class="activeTab === 'backup' ? 'bg-rose-600 text-white shadow-xl shadow-rose-500/20' : 'text-white/30 hover:text-white hover:bg-white/5'" 
-                class="flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all duration-300 whitespace-nowrap shrink-0">
-                <i class="bi bi-cloud-download-fill"></i> Backup
-            </button>
         </div>
 
         <form action="{{ route('admin.settings.update') }}" method="POST">
@@ -61,6 +56,11 @@
                         <div>
                             <label for="items_per_page" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Filme pro Seite</label>
                             <input type="number" name="items_per_page" id="items_per_page" value="{{ old('items_per_page', $settings['items_per_page'] ?? '20') }}" required min="5" max="100" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        </div>
+                        <div>
+                            <label for="two_factor_trusted_days" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Vertrautes Gerät (Tage)</label>
+                            <input type="number" name="two_factor_trusted_days" id="two_factor_trusted_days" value="{{ old('two_factor_trusted_days', $settings['two_factor_trusted_days'] ?? '30') }}" required min="0" max="365" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                            <p class="text-[11px] text-white/30 mt-2 px-1 leading-relaxed">Bei aktiver 2FA und angehaktem „Angemeldet bleiben“ wird der Code auf diesem Gerät so lange nicht erneut abgefragt. 0 = immer abfragen.</p>
                         </div>
                         <div>
                             <label for="latest_films_count" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Anzahl neueste Filme</label>
@@ -101,13 +101,6 @@
 
                         <div class="md:col-span-2 space-y-6 pt-6 mt-6 border-t border-white/5">
                             <div class="flex items-center gap-4 bg-white/5 p-6 rounded-[1.5rem] border border-white/10 group hover:border-rose-500/30 transition-all cursor-pointer">
-                                <input type="checkbox" name="telemetry_enabled" id="telemetry_enabled" value="1" {{ (old('telemetry_enabled', $settings['telemetry_enabled'] ?? '1') == '1') ? 'checked' : '' }} class="w-6 h-6 rounded-lg border-white/10 bg-white/5 text-rose-600 focus:ring-rose-500/50 transition-all cursor-pointer">
-                                <label for="telemetry_enabled" class="flex-1 cursor-pointer">
-                                    <span class="block text-sm font-black text-white uppercase tracking-widest">Anonyme Statistiken senden</span>
-                                    <span class="text-[10px] text-white/30 font-medium italic mt-1 block tracking-wide">Hilf mit, das System zu verbessern. Rein technische, anonyme Daten.</span>
-                                </label>
-                            </div>
-                            <div class="flex items-center gap-4 bg-white/5 p-6 rounded-[1.5rem] border border-white/10 group hover:border-rose-500/30 transition-all cursor-pointer">
                                 <input type="checkbox" name="migration_enabled" id="migration_enabled" value="1" {{ (old('migration_enabled', $settings['migration_enabled'] ?? '1') == '1') ? 'checked' : '' }} class="w-6 h-6 rounded-lg border-white/10 bg-white/5 text-rose-600 focus:ring-rose-500/50 transition-all cursor-pointer">
                                 <label for="migration_enabled" class="flex-1 cursor-pointer">
                                     <span class="block text-sm font-black text-white uppercase tracking-widest">Datenmigration V1.5</span>
@@ -134,9 +127,38 @@
                     </div>
 
                     <div class="space-y-10">
+                        @unless($isDemoShelf ?? false)
                         <div>
                             <label for="tmdb_api_key" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">API Key (v3)</label>
                             <input type="password" name="tmdb_api_key" id="tmdb_api_key" value="{{ old('tmdb_api_key', $settings['tmdb_api_key'] ?? '') }}" placeholder="••••••••••••••••••••" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-mono focus:outline-none focus:border-rose-500/50 transition-all">
+                        </div>
+                        @else
+                        <div>
+                            <p class="text-[10px] text-white/30 px-1 font-medium"><i class="bi bi-eye-slash me-1"></i>Der TMDb API Key wird für dieses Demo-Regal zentral im Cadmin verwaltet.</p>
+                        </div>
+                        @endunless
+                        <div>
+                            <label for="tmdb_language" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Metadaten-Sprache</label>
+                            <select name="tmdb_language" id="tmdb_language" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                                @foreach (['de-DE' => 'Deutsch (de-DE)', 'en-US' => 'Englisch (en-US)'] as $code => $label)
+                                    <option value="{{ $code }}" @selected(old('tmdb_language', $settings['tmdb_language'] ?? 'de-DE') === $code)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <p class="text-[10px] text-white/30 mt-2 px-1 font-medium">Sprache für importierte Titel, Beschreibungen und Biografien. Fehlt eine Biografie in dieser Sprache, wird automatisch die englische übernommen.</p>
+                        </div>
+                        <div class="pt-8 border-t border-white/5 space-y-8">
+                            <div>
+                                <h3 class="text-xs font-black text-white/40 uppercase tracking-[0.2em] mb-2">Übersetzung (LibreTranslate)</h3>
+                                <p class="text-[10px] text-white/30 font-medium">Aktiviert den "Übersetzen"-Button im Star-Editor. URL einer LibreTranslate-Instanz eintragen (selbst gehostet oder öffentlich).</p>
+                            </div>
+                            <div>
+                                <label for="libretranslate_url" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">LibreTranslate URL</label>
+                                <input type="url" name="libretranslate_url" id="libretranslate_url" value="{{ old('libretranslate_url', $settings['libretranslate_url'] ?? '') }}" placeholder="https://translate.example.com" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-mono focus:outline-none focus:border-rose-500/50 transition-all">
+                            </div>
+                            <div>
+                                <label for="libretranslate_api_key" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">API Key (optional)</label>
+                                <input type="password" name="libretranslate_api_key" id="libretranslate_api_key" value="{{ old('libretranslate_api_key', $settings['libretranslate_api_key'] ?? '') }}" placeholder="Nur nötig, wenn die Instanz einen Key verlangt" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-mono focus:outline-none focus:border-rose-500/50 transition-all">
+                            </div>
                         </div>
                         <div class="p-8 bg-black/20 border border-white/5 rounded-[2rem] flex flex-col md:flex-row items-center gap-6">
                             <div class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center shrink-0">
@@ -259,7 +281,30 @@
                             <label for="signature_show_rating" class="text-sm font-black text-white uppercase tracking-widest cursor-pointer">Bewertung anzeigen</label>
                         </div>
                     </div>
-                    
+
+                    <!-- Erscheinungsbild -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12 border-t border-white/5 pt-8">
+                        <div>
+                            <label for="signature_theme" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Theme</label>
+                            <select name="signature_theme" id="signature_theme" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none cursor-pointer">
+                                <option value="dark" {{ ($settings['signature_theme'] ?? 'dark') == 'dark' ? 'selected' : '' }} class="bg-zinc-900">Dunkel</option>
+                                <option value="light" {{ ($settings['signature_theme'] ?? 'dark') == 'light' ? 'selected' : '' }} class="bg-zinc-900">Hell</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="signature_width" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Breite (px)</label>
+                            <input type="number" name="signature_width" id="signature_width" value="{{ old('signature_width', $settings['signature_width'] ?? '800') }}" min="400" max="1400" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        </div>
+                        <div>
+                            <label for="signature_height" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Höhe (px)</label>
+                            <input type="number" name="signature_height" id="signature_height" value="{{ old('signature_height', $settings['signature_height'] ?? '150') }}" min="120" max="400" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        </div>
+                        <div>
+                            <label for="signature_accent" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Akzentfarbe</label>
+                            <input type="color" name="signature_accent" id="signature_accent" value="{{ old('signature_accent', $settings['signature_accent'] ?? '#667eea') }}" class="w-full h-[58px] bg-white/5 border border-white/10 rounded-2xl px-3 cursor-pointer">
+                        </div>
+                    </div>
+
                     <!-- Preview Area -->
                     <div class="mt-12 space-y-8">
                         <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] flex items-center gap-2">
@@ -270,7 +315,7 @@
                             <div class="space-y-2">
                                 <p class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Typ 1 (Klassisch)</p>
                                 <div class="p-6 bg-black/20 rounded-[2rem] border border-white/5 overflow-hidden">
-                                    <img src="{{ route('signature') }}?type=1&t={{ time() }}" alt="Banner Type 1" class="max-w-full h-auto rounded-xl shadow-2xl border border-white/10">
+                                    <img src="{{ route('signature') }}?type=1&clear_cache=1&t={{ time() }}" alt="Banner Type 1" class="max-w-full h-auto rounded-xl shadow-2xl border border-white/10">
                                 </div>
                                 <div class="mt-3 space-y-3 px-1">
                                     <div>
@@ -289,7 +334,7 @@
                             <div class="space-y-2">
                                 <p class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Typ 2 (Kompakt)</p>
                                 <div class="p-6 bg-black/20 rounded-[2rem] border border-white/5 overflow-hidden">
-                                    <img src="{{ route('signature') }}?type=2&t={{ time() }}" alt="Banner Type 2" class="max-w-full h-auto rounded-xl shadow-2xl border border-white/10">
+                                    <img src="{{ route('signature') }}?type=2&clear_cache=1&t={{ time() }}" alt="Banner Type 2" class="max-w-full h-auto rounded-xl shadow-2xl border border-white/10">
                                 </div>
                                 <div class="mt-3 space-y-3 px-1">
                                     <div>
@@ -297,19 +342,29 @@
                                         <input type="text" readonly value="[url={{ url('/') }}][img]{{ route('signature') }}?type=2[/img][/url]"
                                                class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-rose-300 font-mono focus:outline-none cursor-pointer" onclick="this.select(); document.execCommand('copy');">
                                     </div>
+                                    <div>
+                                        <label class="text-[9px] text-white/20 uppercase tracking-widest font-black mb-1 block">Markdown</label>
+                                        <input type="text" readonly value="[![Signature]({{ route('signature') }}?type=2)]({{ url('/') }})"
+                                               class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-blue-300 font-mono focus:outline-none cursor-pointer" onclick="this.select(); document.execCommand('copy');">
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="space-y-2">
                                 <p class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">Typ 3 (Minimal)</p>
                                 <div class="p-6 bg-black/20 rounded-[2rem] border border-white/5 overflow-hidden">
-                                    <img src="{{ route('signature') }}?type=3&t={{ time() }}" alt="Banner Type 3" class="max-w-full h-auto rounded-xl shadow-2xl border border-white/10">
+                                    <img src="{{ route('signature') }}?type=3&clear_cache=1&t={{ time() }}" alt="Banner Type 3" class="max-w-full h-auto rounded-xl shadow-2xl border border-white/10">
                                 </div>
                                 <div class="mt-3 space-y-3 px-1">
                                     <div>
                                         <label class="text-[9px] text-white/20 uppercase tracking-widest font-black mb-1 block">BBCode für Foren</label>
                                         <input type="text" readonly value="[url={{ url('/') }}][img]{{ route('signature') }}?type=3[/img][/url]"
                                                class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-rose-300 font-mono focus:outline-none cursor-pointer" onclick="this.select(); document.execCommand('copy');">
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] text-white/20 uppercase tracking-widest font-black mb-1 block">Markdown</label>
+                                        <input type="text" readonly value="[![Signature]({{ route('signature') }}?type=3)]({{ url('/') }})"
+                                               class="w-full bg-black/40 border border-white/10 rounded-xl py-2 px-3 text-[10px] text-blue-300 font-mono focus:outline-none cursor-pointer" onclick="this.select(); document.execCommand('copy');">
                                     </div>
                                 </div>
                             </div>
@@ -416,56 +471,5 @@
             </div>
         </form>
 
-        <!-- Backup Settings (Moved outside form for better download handling) -->
-        <div x-show="activeTab === 'backup'" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-            <div class="glass p-8 md:p-12 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 to-transparent pointer-events-none"></div>
-                <div class="flex items-center gap-6 mb-12">
-                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl shadow-xl shadow-emerald-500/20 ring-2 ring-white/10">
-                        <i class="bi bi-cloud-download-fill"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-black text-white tracking-tight uppercase">Daten-Export & Backup</h2>
-                        <p class="text-sm text-white/40 font-medium tracking-wide">Sichere deine gesamte Sammlung inklusive aller Medien.</p>
-                    </div>
-                </div>
-
-                <div class="space-y-10">
-                    <div class="p-8 bg-black/20 border border-white/5 rounded-[2rem] flex flex-col md:flex-row items-center gap-8">
-                        <div class="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center shrink-0 border border-emerald-500/20">
-                            <i class="bi bi-archive text-emerald-400 text-3xl"></i>
-                        </div>
-                        <div class="flex-1 text-center md:text-left">
-                            <h3 class="text-lg font-black text-white uppercase tracking-widest mb-2">Vollständiges Backup (ZIP)</h3>
-                            <p class="text-xs text-white/50 leading-relaxed font-medium mb-6">
-                                Dieser Export erstellt ein ZIP-Archiv, das die gesamte SQLite-Datenbank sowie alle Cover, Backdrops und Schauspieler-Bilder enthält. Je nach Größe deiner Sammlung kann dieser Vorgang einige Zeit in Anspruch nehmen.
-                            </p>
-                            <a href="{{ route('admin.backup.export') }}" download class="inline-flex items-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20">
-                                <i class="bi bi-download"></i>
-                                Jetzt Exportieren
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 text-center">
-                            <div class="text-rose-500 text-2xl mb-2"><i class="bi bi-database"></i></div>
-                            <div class="text-[10px] font-black text-white/30 uppercase tracking-widest">Datenbank</div>
-                            <div class="text-white font-bold mt-1">SQLite</div>
-                        </div>
-                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 text-center">
-                            <div class="text-rose-500 text-2xl mb-2"><i class="bi bi-images"></i></div>
-                            <div class="text-[10px] font-black text-white/30 uppercase tracking-widest">Medien</div>
-                            <div class="text-white font-bold mt-1">Covers & Backdrops</div>
-                        </div>
-                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 text-center">
-                            <div class="text-rose-500 text-2xl mb-2"><i class="bi bi-people"></i></div>
-                            <div class="text-[10px] font-black text-white/30 uppercase tracking-widest">Akteure</div>
-                            <div class="text-white font-bold mt-1">Profile & Fotos</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </x-admin-layout>

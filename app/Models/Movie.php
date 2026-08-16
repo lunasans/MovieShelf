@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvesMediaUrls;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class Movie extends Model
 {
     use HasFactory;
+    use ResolvesMediaUrls;
 
     protected $fillable = [
         'id',
+        'collection_no',
         'title',
         'year',
         'rating',
@@ -27,21 +31,57 @@ class Movie extends Model
         'boxset_parent',
         'user_id',
         'is_deleted',
+        'deleted_at',
         'view_count',
+        'tag',
         'tmdb_id',
         'tmdb_type',
         'tmdb_json',
+        'in_collection',
+        'edition',
+        'region_code',
+        'disc_location',
+        'purchase_date',
+        'purchase_price',
+        'condition',
         'created_at',
         'updated_at',
     ];
 
+    protected $appends = [
+        'cover_url',
+        'backdrop_url',
+    ];
+
     protected $casts = [
         'is_deleted' => 'boolean',
+        'deleted_at' => 'datetime',
         'year' => 'integer',
         'runtime' => 'integer',
         'view_count' => 'integer',
         'tmdb_json' => 'array',
+        'in_collection' => 'boolean',
+        'purchase_date' => 'date',
+        'purchase_price' => 'decimal:2',
     ];
+
+    /**
+     * Nur Filme. Diskriminator ist collection_type ('Film' | 'Serie') —
+     * tmdb_type ist reine TMDb-Metainfo und fehlt z. B. bei Serien, die
+     * über den Desktop-Sync angelegt wurden.
+     */
+    public function scopeMoviesOnly($query)
+    {
+        return $query->where(function ($w) {
+            $w->where('collection_type', '!=', 'Serie')->orWhereNull('collection_type');
+        });
+    }
+
+    /** Nur Serien (collection_type = 'Serie'). */
+    public function scopeSeriesOnly($query)
+    {
+        return $query->where('collection_type', 'Serie');
+    }
 
     public function user()
     {
@@ -55,7 +95,11 @@ class Movie extends Model
 
     public function boxsetChildren()
     {
-        return $this->hasMany(Movie::class, 'boxset_parent')->orderBy('year')->orderBy('title');
+        return $this->hasMany(Movie::class, 'boxset_parent')
+            ->where('in_collection', true)
+            ->where('is_deleted', false)
+            ->orderBy('year')
+            ->orderBy('title');
     }
 
     public function actors()
@@ -72,6 +116,95 @@ class Movie extends Model
     public function watchedByUsers()
     {
         return $this->belongsToMany(User::class, 'movie_user_watched');
+    }
+
+    /**
+     * Die abgegebenen Sternbewertungen zu diesem Titel.
+     *
+     * Wird im Export auf den angemeldeten Nutzer gefiltert eager geladen —
+     * ohne diese Relation liesse sich seine eigene Bewertung nur mit einer
+     * Abfrage je Film holen.
+     */
+    public function userRatings()
+    {
+        return $this->hasMany(UserRating::class);
+    }
+
+    /**
+     * Gilt dieser Titel für den Benutzer als gesehen?
+     *
+     * Bei einem Boxset wird der Stand aus den enthaltenen Filmen abgeleitet:
+     * ein Boxset schaut niemand, man schaut die Filme darin. Ohne diese
+     * Ableitung steht eine Sammlung für immer als ungesehen da, auch wenn
+     * längst jeder Teil geschaut ist — die Hülle bekommt nie eine eigene
+     * Markierung, weil es an ihr nichts zu schauen gibt.
+     *
+     * Abgeleitet wird streng: erst wenn wirklich jeder Teil gesehen ist. Ein
+     * halb geschautes Boxset als "gesehen" auszuweisen wäre die unangenehmere
+     * Unwahrheit.
+     *
+     * Der eigene Pivot-Eintrag der Hülle bleibt dabei außen vor. Er stünde
+     * sonst als zweite Wahrheit neben dieser Ableitung, und man sähe der
+     * Anzeige nicht mehr an, welche gerade gilt.
+     */
+    public function isWatchedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        $children = $this->relationLoaded('boxsetChildren')
+            ? $this->boxsetChildren
+            : $this->boxsetChildren()->get();
+
+        if ($children->isEmpty()) {
+            return $this->watchedByUsers()->where('users.id', $user->id)->exists();
+        }
+
+        $gesehen = DB::table('movie_user_watched')
+            ->where('user_id', $user->id)
+            ->whereIn('movie_id', $children->pluck('id'))
+            ->count();
+
+        return $gesehen === $children->count();
+    }
+
+    /**
+     * "Gesehen" für einen Benutzer setzen und den Abgleich davon in Kenntnis
+     * setzen.
+     *
+     * Das `touch()` ist der eigentliche Punkt dieser Methode. Die Markierung
+     * lebt in `movie_user_watched`; ein reines `attach()`/`detach()` lässt
+     * `movies.updated_at` unberührt. Der Delta-Export filtert aber genau
+     * darauf — ein geänderter Gesehen-Stand fiel deshalb aus jedem
+     * Delta-Abgleich heraus und erreichte Desktop- und Android-App nie. Nur
+     * ein Voll-Abgleich brachte ihn mit.
+     *
+     * Bei einem Boxset wirkt das Setzen auf die enthaltenen Filme: sein Stand
+     * wird aus ihnen abgeleitet (siehe [isWatchedBy]), ihn selbst zu markieren
+     * bliebe wirkungslos.
+     *
+     * @return bool der Stand, der danach gilt.
+     */
+    public function setWatchedFor(User $user, bool $watched): bool
+    {
+        $children = $this->boxsetChildren()->get();
+        $targets = $children->isNotEmpty() ? $children : collect([$this]);
+
+        $watched
+            ? $user->watchedMovies()->syncWithoutDetaching($targets->pluck('id'))
+            : $user->watchedMovies()->detach($targets->pluck('id'));
+
+        // Ohne diesen Anstoß bliebe die Änderung für den Abgleich unsichtbar.
+        self::whereIn('id', $targets->pluck('id'))->update(['updated_at' => now()]);
+
+        return $watched;
+    }
+
+    public function lists()
+    {
+        return $this->morphToMany(MovieList::class, 'item', 'list_items', 'item_id', 'list_id')
+            ->withPivot('added_at');
     }
 
     public function getCoverUrlAttribute()
@@ -123,60 +256,65 @@ class Movie extends Model
 
         // Check for absolute URLs
         if (str_starts_with($id, 'http')) {
-            $url = $id;
-        } 
-        // Check for direct TMDb paths (start with /)
-        elseif (str_starts_with($id, '/')) {
-            $url = $this->resolveTmdbUrl($id, $type);
-        } 
-        // Modern approach: ID is a path containing a dot and a slash (e.g. covers/abc.jpg)
-        elseif (str_contains($id, '/') && str_contains($id, '.') && $disk->exists($id)) {
-            $url = $disk->url($id);
-        } 
-        // Legacy: Use the structured legacy path with fallback extensions
-        elseif (($legacyUrl = $this->resolveLegacyStorageUrl($id, $type)) !== null) {
-            $url = $legacyUrl;
-        }
-        // Fallback: Check if the ID itself exists as a file (any case)
-        elseif ($disk->exists($id)) {
-             $url = $disk->url($id);
+            return $id;
         }
 
-        return $url;
-    }
+        // 1. Check if the ID itself exists locally as a file.
+        // This handles cases like 'tmdb_xyz.jpg' or 'cover/tmdb_xyz.jpg' stored locally.
+        if ($disk->exists($id)) {
+            return '/media/' . $id;
+        }
 
-    protected function resolveTmdbUrl($id, $type)
-    {
-        $base = $type === 'cover' ? 'https://image.tmdb.org/t/p/w500' : 'https://image.tmdb.org/t/p/w1280';
+        // Rohe TMDb-Referenzen (tmdb_… oder /pfad) werden NICHT direkt von
+        // image.tmdb.org geladen (kein Hotlink). Ist das Bild nicht lokal
+        // vorhanden, gibt es einen Platzhalter (null).
+        if (str_starts_with($id, 'tmdb_') || str_starts_with($id, '/')) {
+            return null;
+        }
 
-        return $base.$id;
+        // 4. Modern approach: ID is a path (e.g. covers/abc.jpg)
+        if (str_contains($id, '/') && str_contains($id, '.')) {
+            if ($disk->exists($id)) {
+                return '/media/' . $id;
+            }
+        }
+
+        // 5. Legacy: Use the structured legacy path with fallback extensions
+        if (($legacyUrl = $this->resolveLegacyStorageUrl($id, $type)) !== null) {
+            return $legacyUrl;
+        }
+
+        return null;
     }
 
     protected function resolveLegacyStorageUrl($id, $type)
     {
-        $folder = $type === 'cover' ? 'covers' : 'backdrops';
-        $suffix = $type === 'cover' ? 'f' : '';
         $disk = Storage::disk('public');
 
-        // Try standard extension first
-        $path = "$folder/$id$suffix.jpg";
-        if ($disk->exists($path)) {
-            return $disk->url($path);
-        }
+        // Check both singular and plural versions for flexibility (e.g. cover vs covers)
+        $folders = ($type === 'cover') ? ['covers', 'cover'] : ['backdrops', 'backdrop'];
+        $suffix = ($type === 'cover') ? 'f' : '';
 
-        // Fallback extensions (case-sensitive systems or alternative formats)
-        $extensions = ['.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.webp'];
-        foreach ($extensions as $ext) {
-            $fallbackPath = "$folder/$id$suffix$ext";
-            if ($disk->exists($fallbackPath)) {
-                return $disk->url($fallbackPath);
+        foreach ($folders as $folder) {
+            // Try standard extension first
+            $path = "$folder/$id$suffix.jpg";
+
+            if ($disk->exists($path)) {
+                return '/media/' . $path;
             }
-        }
 
-        // Try without suffix as a last resort
-        if ($suffix !== '') {
-            if ($disk->exists("$folder/$id.jpg")) {
-                return $disk->url("$folder/$id.jpg");
+            // Fallback extensions
+            $extensions = ['.JPG', '.jpeg', '.JPEG', '.png', '.PNG', '.webp'];
+            foreach ($extensions as $ext) {
+                $fallbackPath = "$folder/$id$suffix$ext";
+                if ($disk->exists($fallbackPath)) {
+                    return '/media/' . $fallbackPath;
+                }
+            }
+
+            // Try without suffix as a last resort
+            if ($suffix !== '' && $disk->exists("$folder/$id.jpg")) {
+                return '/media/' . "$folder/$id.jpg";
             }
         }
 

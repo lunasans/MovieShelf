@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ActivityLog;
 use App\Models\Actor;
+use App\Models\ExternalMovie;
 use App\Models\Movie;
 use App\Models\Season;
 use App\Models\Episode;
@@ -23,10 +24,8 @@ class TmdbImportService
         $this->tmdb = $tmdb;
     }
 
-    /**
-     * Import a movie from TMDb.
-     */
-    public function importMovie(int $tmdbId)
+    /* Import a movie from TMDb. */
+    public function importMovie(int $tmdbId, bool $inCollection = true)
     {
         $details = $this->tmdb->getMovieDetails($tmdbId);
         if (isset($details['error'])) {
@@ -34,7 +33,7 @@ class TmdbImportService
         }
 
         try {
-            return DB::transaction(function () use ($details, $tmdbId) {
+            return DB::transaction(function () use ($details, $tmdbId, $inCollection) {
                 $movie = Movie::where('tmdb_id', $tmdbId)
                     ->where(function($q) {
                         $q->where('tmdb_type', 'movie')->orWhereNull('tmdb_type');
@@ -50,10 +49,13 @@ class TmdbImportService
                     'overview' => $details['overview'] ?? null,
                     'director' => $this->extractDirector($details),
                     'trailer_url' => $this->extractTrailer($details),
+                    // Kanonisches Schema: Film | Serie (das Medium steht im tag-Feld)
+                    'collection_type' => 'Film',
                     'rating_age' => $this->extractRating($details),
                     'tmdb_id' => $tmdbId,
                     'tmdb_type' => 'movie',
                     'tmdb_json' => $details,
+                    'in_collection' => $inCollection,
                 ];
 
                 if ($movie) {
@@ -78,7 +80,7 @@ class TmdbImportService
     /**
      * Import a TV show from TMDb.
      */
-    public function importTv(int $tmdbId, array $requestedSeasons = [])
+    public function importTv(int $tmdbId, array $requestedSeasons = [], bool $inCollection = true)
     {
         $details = $this->tmdb->getTvDetails($tmdbId);
         if (isset($details['error'])) {
@@ -86,7 +88,7 @@ class TmdbImportService
         }
 
         try {
-            return DB::transaction(function () use ($details, $tmdbId, $requestedSeasons) {
+            return DB::transaction(function () use ($details, $tmdbId, $requestedSeasons, $inCollection) {
                 $movie = Movie::where('tmdb_id', $tmdbId)->where('tmdb_type', 'tv')->first();
 
                 $data = [
@@ -102,6 +104,7 @@ class TmdbImportService
                     'tmdb_id' => $tmdbId,
                     'tmdb_type' => 'tv',
                     'tmdb_json' => $details,
+                    'in_collection' => $inCollection,
                 ];
 
                 if ($movie) {
@@ -122,6 +125,71 @@ class TmdbImportService
             Log::error('TmdbTvImport Error: '.$e->getMessage());
             throw $e;
         }
+    }
+
+    /**
+     * Staffeln für eine BESTEHENDE Serie nachladen. Importiert nur die
+     * angefragten Staffelnummern und überspringt bereits vorhandene —
+     * man besitzt ja nicht von jeder Serie alle Staffeln.
+     *
+     * @return int Anzahl neu importierter Staffeln
+     */
+    public function importSeasonsForExisting(Movie $movie, array $requestedSeasons): int
+    {
+        if (! $movie->tmdb_id) {
+            throw new TmdbImportException('Keine TMDb ID für diese Serie vorhanden.');
+        }
+
+        $details = $this->tmdb->getTvDetails($movie->tmdb_id);
+        if (isset($details['error'])) {
+            throw new TmdbImportException($details['error']);
+        }
+
+        $existing = $movie->seasons()->pluck('season_number')->all();
+        $toImport = array_values(array_diff(array_map('intval', $requestedSeasons), $existing));
+
+        if (empty($toImport)) {
+            return 0;
+        }
+
+        try {
+            return DB::transaction(function () use ($movie, $details, $toImport) {
+                $this->importSeasons($movie, $details, $toImport);
+                // Sync: Clients ziehen Staffeln nur mit dem Serien-Datensatz –
+                // ohne Touch sähe der Delta-Sync die Änderung nie.
+                $movie->touch();
+
+                return count($toImport);
+            });
+        } catch (\Exception $e) {
+            Log::error('TmdbSeasonBackfill Error: '.$e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Staffeln einer bestehenden Serie entfernen (Gegenstück zum Nachladen).
+     * Episoden hängen per FK-Cascade an der Staffel und werden mitgelöscht.
+     *
+     * @return int Anzahl entfernter Staffeln
+     */
+    public function removeSeasonsForExisting(Movie $movie, array $requestedSeasons): int
+    {
+        $numbers = array_map('intval', $requestedSeasons);
+
+        return DB::transaction(function () use ($movie, $numbers) {
+            $seasons = $movie->seasons()->whereIn('season_number', $numbers)->get();
+
+            foreach ($seasons as $season) {
+                $season->delete();
+            }
+
+            if ($seasons->isNotEmpty()) {
+                $movie->touch();
+            }
+
+            return $seasons->count();
+        });
     }
 
     /**
@@ -156,7 +224,44 @@ class TmdbImportService
     /**
      * Handle image downloading for movies/series.
      */
-    protected function handleImages(Movie $movie, array $details)
+    /**
+     * Externen Film (nicht in der Sammlung) aus TMDb anlegen – für Listen-Items.
+     * Lädt Cover/Backdrop auf den Master-Server (kein TMDb-Hotlink beim Client).
+     */
+    public function createExternalFromTmdb(int $tmdbId, string $type, ?int $userId): ExternalMovie
+    {
+        $isTv = $type === 'tv';
+        $details = $isTv ? $this->tmdb->getTvDetails($tmdbId) : $this->tmdb->getMovieDetails($tmdbId);
+        if (isset($details['error'])) {
+            throw new TmdbImportException($details['error']);
+        }
+
+        return DB::transaction(function () use ($details, $tmdbId, $type, $isTv, $userId) {
+            $external = ExternalMovie::create([
+                'user_id'         => $userId,
+                'title'           => $isTv ? ($details['name'] ?? '') : ($details['title'] ?? ''),
+                'year'            => $isTv
+                    ? (isset($details['first_air_date']) ? (int) substr($details['first_air_date'], 0, 4) : null)
+                    : (isset($details['release_date']) ? (int) substr($details['release_date'], 0, 4) : null),
+                'rating'          => $details['vote_average'] ?? null,
+                'genre'           => implode(', ', array_column($details['genres'] ?? [], 'name')),
+                'runtime'         => $isTv ? ($details['episode_run_time'][0] ?? null) : ($details['runtime'] ?? null),
+                'overview'        => $details['overview'] ?? null,
+                'director'        => $isTv ? $this->extractCreator($details) : $this->extractDirector($details),
+                'trailer_url'     => $this->extractTrailer($details),
+                'collection_type' => $isTv ? 'Serie' : 'Film',
+                'rating_age'      => $this->extractRating($details),
+                'tmdb_id'         => $tmdbId,
+                'tmdb_type'       => $type,
+            ]);
+
+            $this->handleImages($external, $details);
+
+            return $external;
+        });
+    }
+
+    protected function handleImages($movie, array $details)
     {
         if (! empty($details['poster_path'])) {
             try {
@@ -213,7 +318,8 @@ class TmdbImportService
 
     protected function findOrCreateActor(array $person): Actor
     {
-        $nameParts = explode(' ', $person['name'], 2);
+        $resolved = $this->resolveActorName($person);
+        $nameParts = explode(' ', $resolved['name'], 2);
         $firstName = $nameParts[0];
         $lastName = $nameParts[1] ?? '';
 
@@ -226,8 +332,21 @@ class TmdbImportService
         }
 
         if ($actor) {
+            $updates = [];
             if (! $actor->tmdb_id) {
-                $actor->update(['tmdb_id' => $person['id']]);
+                $updates['tmdb_id'] = $person['id'];
+            }
+            // Frühere Importe haben CJK-Namen gespeichert – auf den romanisierten Namen reparieren.
+            if (! self::hasLatinCharacters($actor->full_name) && self::hasLatinCharacters($resolved['name'])) {
+                $updates['first_name'] = $firstName;
+                $updates['last_name'] = $lastName;
+                $updates['original_name'] = $actor->original_name ?: trim($actor->full_name);
+            }
+            if (empty($actor->original_name) && $resolved['original_name']) {
+                $updates['original_name'] = $resolved['original_name'];
+            }
+            if ($updates) {
+                $actor->update($updates);
             }
 
             return $actor;
@@ -237,7 +356,38 @@ class TmdbImportService
             'tmdb_id' => $person['id'],
             'first_name' => $firstName,
             'last_name' => $lastName,
+            'original_name' => $resolved['original_name'],
         ]);
+    }
+
+    /**
+     * TMDb liefert ohne Übersetzung für die eingestellte Sprache den Namen in
+     * Originalschrift (z. B. Kanji/Hanzi). Dann den romanisierten Namen aus den
+     * englischen Personendaten nachladen und die Originalschrift separat behalten.
+     */
+    protected function resolveActorName(array $person): array
+    {
+        $name = trim($person['name'] ?? '');
+        $originalName = trim($person['original_name'] ?? '') ?: null;
+
+        if (! self::hasLatinCharacters($name) && ! empty($person['id'])) {
+            $originalName = $originalName ?: $name;
+            $english = $this->tmdb->getPersonDetails((int) $person['id'], 'en-US');
+            if (empty($english['error']) && self::hasLatinCharacters($english['name'] ?? '')) {
+                $name = trim($english['name']);
+            }
+        }
+
+        if ($originalName === $name) {
+            $originalName = null;
+        }
+
+        return ['name' => $name, 'original_name' => $originalName];
+    }
+
+    public static function hasLatinCharacters(string $value): bool
+    {
+        return (bool) preg_match('/\p{Latin}/u', $value);
     }
 
     protected function updateActorProfile(Actor $actor, array $person)
@@ -297,6 +447,8 @@ class TmdbImportService
                 'episode_number' => $tmdbEpisode['episode_number'],
                 'title' => $tmdbEpisode['name'],
                 'overview' => $tmdbEpisode['overview'] ?? null,
+                'runtime' => $tmdbEpisode['runtime'] ?? null,
+                'air_date' => ! empty($tmdbEpisode['air_date']) ? $tmdbEpisode['air_date'] : null,
             ]);
         }
     }

@@ -35,7 +35,7 @@ class FactoryTest extends TestCase
         $this->assertInstanceOf(Movie::class, $movie);
         $this->assertNotEmpty($movie->title);
         $this->assertNotNull($movie->year);
-        $this->assertContains($movie->collection_type, ['Blu-ray', 'DVD', '4K', 'Serie']);
+        $this->assertContains($movie->collection_type, ['Film', 'Serie']);
         $this->assertNotEmpty($movie->genre);
         $this->assertIsInt($movie->runtime);
         $this->assertIsInt($movie->rating);

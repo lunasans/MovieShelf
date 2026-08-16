@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use PragmaRX\Google2FALaravel\Facade as Google2FA;
 
@@ -71,9 +73,18 @@ class AuthController extends Controller
 
         // Check if 2FA is active for this user
         if ($user->two_factor_confirmed_at) {
+            $challengeToken = Str::random(40);
+            // Der Cache ist nicht tenant-getrennt (siehe config/tenancy.php), daher
+            // wird das Regal mitgespeichert und beim Einloesen geprueft – sonst liesse
+            // sich eine Challenge auf einem fremden Shelf mit gleicher User-ID einloesen.
+            Cache::put('2fa_challenge_'.$challengeToken, [
+                'user_id'   => $user->id,
+                'tenant_id' => tenant('id'),
+            ], now()->addMinutes(5));
+
             return response()->json([
                 'requires_2fa' => true,
-                'user_id' => $user->id,
+                '2fa_token' => $challengeToken,
                 'device_name' => $request->device_name,
             ]);
         }
@@ -88,7 +99,7 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'two_factor_enabled' => !! $user->two_factor_confirmed_at,
             ],
-            'version' => config('app.version'),
+            'version' => config('app.shelf_version'),
         ]);
     }
 
@@ -100,7 +111,7 @@ class AuthController extends Controller
             required: true,
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'user_id', type: 'integer', example: 1),
+                    new OA\Property(property: '2fa_token', type: 'string', example: 'abc123...'),
                     new OA\Property(property: 'device_name', type: 'string', example: 'mobile_app'),
                     new OA\Property(property: 'code', type: 'string', example: '123456')
                 ]
@@ -124,12 +135,20 @@ class AuthController extends Controller
     public function login2fa(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            '2fa_token' => 'required|string',
             'device_name' => 'required',
             'code' => 'required|string',
         ]);
 
-        $user = User::findOrFail($request->user_id);
+        $challenge = Cache::pull('2fa_challenge_'.$request->input('2fa_token'));
+
+        if (! is_array($challenge) || $challenge['tenant_id'] !== tenant('id')) {
+            throw ValidationException::withMessages([
+                '2fa_token' => ['Ungültige oder abgelaufene 2FA-Sitzung. Bitte erneut einloggen.'],
+            ]);
+        }
+
+        $user = User::findOrFail($challenge['user_id']);
 
         if (!$user->two_factor_confirmed_at) {
             return response()->json(['message' => '2FA is not enabled for this user.'], 422);
@@ -146,7 +165,7 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'two_factor_enabled' => true,
                 ],
-                'version' => config('app.version'),
+                'version' => config('app.shelf_version'),
             ]);
         }
 
@@ -167,7 +186,8 @@ class AuthController extends Controller
                     new OA\Property(property: 'name', type: 'string', example: 'Neuer Name'),
                     new OA\Property(property: 'email', type: 'string', example: 'neu@example.com'),
                     new OA\Property(property: 'password', type: 'string', example: 'neuespasswort123'),
-                    new OA\Property(property: 'password_confirmation', type: 'string', example: 'neuespasswort123')
+                    new OA\Property(property: 'password_confirmation', type: 'string', example: 'neuespasswort123'),
+                    new OA\Property(property: 'current_password', type: 'string', description: 'Pflicht, wenn Passwort oder E-Mail geaendert werden', example: 'altespasswort123')
                 ]
             )
         ),
@@ -193,12 +213,26 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'password' => 'sometimes|nullable|string|min:8|confirmed',
+            'current_password' => 'nullable|string',
         ]);
+
+        // Aendern sich Passwort oder E-Mail, muss das aktuelle Passwort bestaetigt
+        // werden – ein gestohlenes API-Token allein darf keine Kontouebernahme erlauben.
+        $wantsPasswordChange = $request->filled('password');
+        $wantsEmailChange    = $request->email !== $user->email;
+
+        if ($wantsPasswordChange || $wantsEmailChange) {
+            if (! Hash::check((string) $request->input('current_password'), $user->password)) {
+                throw ValidationException::withMessages([
+                    'current_password' => ['Das aktuelle Passwort ist erforderlich und muss korrekt sein.'],
+                ]);
+            }
+        }
 
         $user->name = $request->name;
         $user->email = $request->email;
 
-        if ($request->filled('password')) {
+        if ($wantsPasswordChange) {
             $user->password = Hash::make($request->password);
         }
 

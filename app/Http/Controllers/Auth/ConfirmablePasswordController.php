@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Auth\Concerns\ResolvesAuthView;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,12 +12,14 @@ use Illuminate\View\View;
 
 class ConfirmablePasswordController extends Controller
 {
+    use ResolvesAuthView;
+
     /**
      * Show the confirm password view.
      */
-    public function show(): View
+    public function show(Request $request): View
     {
-        return view('auth.confirm-password');
+        return view($this->authView($request, 'confirm-password'));
     }
 
     /**

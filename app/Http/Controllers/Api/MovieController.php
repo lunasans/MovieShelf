@@ -17,8 +17,9 @@ class MovieController extends Controller
         tags: ['Movies'],
         security: [['apiAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'per_page', in: 'query', description: 'Anzahl der Filme pro Seite', required: false, schema: new OA\Schema(type: 'integer', default: 20)), // Default 20 in docs as placeholder
-            new OA\Parameter(name: 'page', in: 'query', description: 'Seitenzahl', required: false, schema: new OA\Schema(type: 'integer', default: 1))
+            new OA\Parameter(name: 'per_page', in: 'query', description: 'Anzahl der Filme pro Seite', required: false, schema: new OA\Schema(type: 'integer', default: 20)),
+            new OA\Parameter(name: 'page', in: 'query', description: 'Seitenzahl', required: false, schema: new OA\Schema(type: 'integer', default: 1)),
+            new OA\Parameter(name: 'tag', in: 'query', description: 'Nach Tag filtern', required: false, schema: new OA\Schema(type: 'string'))
         ],
         responses: [
             new OA\Response(
@@ -32,14 +33,39 @@ class MovieController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Nicht autorisiert')
         ]
     )]
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', \App\Models\Setting::get('items_per_page', 20));
-        $movies = Movie::where('is_deleted', false)
-            ->with(['actors'])
+        $tag = $request->get('tag');
+
+        // "Neu" = die zuletzt hinzugefügten Filme. Anzahl über die Einstellung
+        // "latest_films_count" (Admin -> Anzahl neueste Filme), identisch zur
+        // Web-Startseite – kein festes Zeitfenster.
+        if ($tag === 'new') {
+            $latestCount = (int) \App\Models\Setting::get('latest_films_count', 15) ?: 15;
+
+            $movies = Movie::where('is_deleted', false)
+                ->where('in_collection', true)
+                ->whereNull('boxset_parent')
+                ->with(['actors'])
+                ->withCount('boxsetChildren')
+                ->orderBy('created_at', 'desc')
+                ->limit($latestCount)
+                ->get();
+
+            return MovieResource::collection($movies);
+        }
+
+        $query = Movie::where('is_deleted', false)
+            ->where('in_collection', true);
+
+        if ($tag) {
+            $query->where('tag', 'like', "%{$tag}%");
+        }
+
+        $movies = $query->with(['actors'])
             ->withCount('boxsetChildren')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
@@ -64,10 +90,14 @@ class MovieController extends Controller
             new OA\Response(response: 404, description: 'Film nicht gefunden')
         ]
     )]
-    public function show(Movie $movie)
+    public function show(Request $request, Movie $movie)
     {
-        $movie->load(['actors', 'boxsetChildren', 'watchedByUsers']);
-        
+        $movie->load(['actors', 'seasons.episodes', 'boxsetChildren', 'watchedByUsers']);
+
+        $movie->is_wishlisted = \App\Models\UserWishlist::where('user_id', $request->user()->id)
+            ->where('movie_id', $movie->id)
+            ->exists();
+
         return new MovieResource($movie);
     }
 
@@ -77,7 +107,8 @@ class MovieController extends Controller
         tags: ['Movies'],
         security: [['apiAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'q', in: 'query', description: 'Suchbegriff (Titel oder Regisseur)', required: true, schema: new OA\Schema(type: 'string'))
+            new OA\Parameter(name: 'q', in: 'query', description: 'Suchbegriff (Titel oder Regisseur)', required: true, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'tag', in: 'query', description: 'Zusätzlich nach Tag filtern', required: false, schema: new OA\Schema(type: 'string'))
         ],
         responses: [
             new OA\Response(
@@ -89,19 +120,30 @@ class MovieController extends Controller
     )]
     public function search(Request $request)
     {
-        $query = $request->get('q');
+        $queryStr = $request->get('q');
+        $tag = $request->get('tag');
         
-        if (empty($query)) {
+        if (empty($queryStr) && empty($tag)) {
             return response()->json(['data' => []]);
         }
 
         $perPage = \App\Models\Setting::get('items_per_page', 20);
-        $movies = Movie::where('is_deleted', false)
-            ->where(function($q) use ($query) {
-                $q->where('title', 'like', "%{$query}%")
-                  ->orWhere('director', 'like', "%{$query}%");
-            })
-            ->with(['actors'])
+        $moviesQuery = Movie::where('is_deleted', false)
+            ->where('in_collection', true);
+
+        if ($queryStr) {
+            $moviesQuery->where(function($q) use ($queryStr) {
+                $q->where('title', 'like', "%{$queryStr}%")
+                  ->orWhere('director', 'like', "%{$queryStr}%")
+                  ->orWhere('tag', 'like', "%{$queryStr}%");
+            });
+        }
+
+        if ($tag) {
+            $moviesQuery->where('tag', 'like', "%{$tag}%");
+        }
+
+        $movies = $moviesQuery->with(['actors'])
             ->withCount('boxsetChildren')
             ->paginate($perPage);
 
@@ -129,21 +171,46 @@ class MovieController extends Controller
             )
         ]
     )]
+    /**
+     * Bei einem Boxset wirkt das Umschalten auf die enthaltenen Filme: sein
+     * eigener Stand wird aus ihnen abgeleitet (Movie::isWatchedBy), ihn zu
+     * setzen bliebe wirkungslos. Zurueckgegeben wird der abgeleitete Stand,
+     * damit der Aufrufer sieht, was nun gilt.
+     */
     public function toggleWatched(Request $request, Movie $movie)
     {
         $user = $request->user();
-        
-        if ($user->watchedMovies()->where('movie_id', $movie->id)->exists()) {
-            $user->watchedMovies()->detach($movie->id);
-            $watched = false;
-        } else {
-            $user->watchedMovies()->attach($movie->id);
-            $watched = true;
-        }
+
+        $watched = $movie->setWatchedFor($user, ! $movie->isWatchedBy($user));
 
         return response()->json([
             'message' => $watched ? 'Movie marked as watched' : 'Movie marked as unwatched',
             'is_watched' => $watched
         ]);
+    }
+
+    public function toggleWishlist(Request $request, Movie $movie)
+    {
+        $userId = $request->user()->id;
+
+        $exists = \App\Models\UserWishlist::where('user_id', $userId)
+            ->where('movie_id', $movie->id)
+            ->exists();
+
+        if ($exists) {
+            \App\Models\UserWishlist::where('user_id', $userId)
+                ->where('movie_id', $movie->id)
+                ->delete();
+            $wishlisted = false;
+        } else {
+            \App\Models\UserWishlist::create([
+                'user_id'  => $userId,
+                'movie_id' => $movie->id,
+                'added_at' => now(),
+            ]);
+            $wishlisted = true;
+        }
+
+        return response()->json(['wishlisted' => $wishlisted]);
     }
 }

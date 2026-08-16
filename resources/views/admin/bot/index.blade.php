@@ -163,7 +163,7 @@
             </div>
             
             <!-- Terminal Body -->
-            <div id="terminalBody" class="h-full w-full overflow-y-auto custom-scrollbar p-8 font-mono text-[11px] md:text-xs text-white/60 leading-relaxed" style="overscroll-behavior: contain;">
+            <div id="terminalBody" class="flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar p-8 font-mono text-[11px] md:text-xs text-white/60 leading-relaxed" style="overscroll-behavior: contain;">
                 <div id="logsTableBody" class="space-y-1">
                 </div>
             </div>
@@ -198,6 +198,13 @@
             @endif
 
             const modal = document.getElementById('logsModal');
+            // Das <main> hat translate-x + .animate-page-entry (transform). Ein transformierter
+            // Vorfahr macht position:fixed relativ zu sich statt zum Viewport -> das Modal wuerde
+            // die Seite nicht abdecken und der Inhalt dahinter scheint durch. Deshalb das Modal
+            // an <body> haengen, wo kein transform-Vorfahr existiert.
+            if (modal && modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
             const modalContent = modal.querySelector('div[class*="transform"]');
             
             let terminalPoller = null;
@@ -250,7 +257,11 @@
                                     statusColor = 'text-rose-500/40 font-bold';
                                 }
 
-                                let actorName = log.actor ? log.actor.first_name + ' ' + (log.actor.last_name || '') : 'ID: ' + log.actor_id;
+                                // Bei geloeschten Schauspielern ist actor_id null -> keinen "ID: null"-Ballast
+                                // anzeigen (Name + ID stehen ohnehin in der message).
+                                let actorName = log.actor
+                                    ? log.actor.first_name + ' ' + (log.actor.last_name || '')
+                                    : (log.actor_id ? 'ID: ' + log.actor_id : '');
                                 let rawDate = log.created_at;
                                 if(rawDate && rawDate.length > 18) {
                                     rawDate = rawDate.substring(11, 19);

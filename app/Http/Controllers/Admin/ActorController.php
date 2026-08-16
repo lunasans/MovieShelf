@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Actor;
+use App\Services\TranslationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -51,6 +52,9 @@ class ActorController extends Controller
         ->limit(10)
         ->get();
 
+        // profile_url (server-seitig aufgelöst, S3/medien-fähig) für die Bild-Vorschau mitgeben
+        $actors->each->append('profile_url');
+
         return response()->json($actors);
     }
 
@@ -69,11 +73,13 @@ class ActorController extends Controller
     {
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'last_name' => 'nullable|string|max:255',
             'birthday' => 'nullable|date',
             'place_of_birth' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
         ]);
+        // Einwort-/CJK-Namen haben keinen Nachnamen; Spalte ist NOT NULL.
+        $validated['last_name'] = $validated['last_name'] ?? '';
 
         // Check for duplicates
         $exists = Actor::where('first_name', $validated['first_name'])
@@ -84,7 +90,7 @@ class ActorController extends Controller
             return back()->withInput()->withErrors(['first_name' => 'Ein Schauspieler mit diesem Namen existiert bereits.']);
         }
 
-        $validated['slug'] = Str::slug($validated['first_name'].' '.$validated['last_name']);
+        $validated['slug'] = Str::slug(trim($validated['first_name'].' '.$validated['last_name']));
         $actor = Actor::create($validated);
 
         return redirect()->route('admin.actors.index')->with('success', $this->formatSuccessMessage($actor, 'angelegt'));
@@ -105,11 +111,12 @@ class ActorController extends Controller
     {
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'last_name' => 'nullable|string|max:255',
             'birthday' => 'nullable|date',
             'place_of_birth' => 'nullable|string|max:255',
             'bio' => 'nullable|string',
         ]);
+        $validated['last_name'] = $validated['last_name'] ?? '';
 
         // Check for duplicates (excluding current actor)
         $exists = Actor::where('first_name', $validated['first_name'])
@@ -121,12 +128,33 @@ class ActorController extends Controller
             return back()->withInput()->withErrors(['first_name' => 'Ein anderer Schauspieler mit diesem Namen existiert bereits.']);
         }
 
-        if ($request->filled('first_name') && $request->filled('last_name')) {
-            $validated['slug'] = Str::slug($request->first_name.' '.$request->last_name);
+        $validated['slug'] = Str::slug(trim($validated['first_name'].' '.$validated['last_name']));
+
+        // Manuell geänderte Bio markieren, damit der ActorBot sie nicht überschreibt.
+        if (($validated['bio'] ?? '') !== ($actor->bio ?? '')) {
+            $validated['bio_locale'] = null;
         }
         $actor->update($validated);
 
         return redirect()->route('admin.actors.index')->with('success', $this->formatSuccessMessage($actor, 'aktualisiert'));
+    }
+
+    /**
+     * Translate a biography text via LibreTranslate (AJAX).
+     */
+    public function translateBio(Request $request, TranslationService $translator)
+    {
+        $validated = $request->validate([
+            'text' => 'required|string|max:20000',
+        ]);
+
+        $result = $translator->translate($validated['text']);
+
+        if (isset($result['error'])) {
+            return response()->json(['error' => $result['error']], 422);
+        }
+
+        return response()->json($result);
     }
 
     /**

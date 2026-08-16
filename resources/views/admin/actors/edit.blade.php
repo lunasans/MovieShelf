@@ -2,7 +2,7 @@
     @section('header_title', 'Star bearbeiten')
 
     @push('styles')
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link href="{{ asset('vendor/quill/quill.snow.css') }}" rel="stylesheet">
     <style>
         .ql-toolbar.ql-snow {
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -108,8 +108,8 @@
                             </div>
 
                             <div>
-                                <label for="last_name" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Nachname *</label>
-                                <input type="text" name="last_name" id="last_name" value="{{ old('last_name', $actor->last_name) }}" required
+                                <label for="last_name" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Nachname</label>
+                                <input type="text" name="last_name" id="last_name" value="{{ old('last_name', $actor->last_name) }}"
                                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold focus:outline-none focus:border-rose-500/50 focus:ring-4 focus:ring-rose-500/10 transition-all">
                                 @error('last_name') <p class="text-rose-400 text-[10px] mt-2 font-bold">{{ $message }}</p> @enderror
                             </div>
@@ -132,13 +132,37 @@
                     </div>
 
                     <!-- Biography Section -->
+                    @php
+                        $translateConfigured = \App\Services\TranslationService::isConfigured();
+                        $bioTargetLang = strtolower(substr(\App\Models\Setting::get('tmdb_language', 'de-DE') ?: 'de-DE', 0, 2));
+                    @endphp
                     <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden">
                         <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 to-transparent pointer-events-none"></div>
-                        <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-10 flex items-center gap-3">
-                            <i class="bi bi-text-left text-rose-500"></i>
-                            Biografie
-                        </h3>
-                        
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-10">
+                            <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] flex items-center gap-3">
+                                <i class="bi bi-text-left text-rose-500"></i>
+                                Biografie
+                            </h3>
+                            <div class="flex items-center gap-3">
+                                @if($translateConfigured)
+                                    <button type="button" @click="translateBio()" :disabled="translating"
+                                            class="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black text-white/50 hover:text-white hover:border-rose-500/40 uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-wait flex items-center gap-2">
+                                        <i class="bi" :class="translating ? 'bi-arrow-repeat animate-spin' : 'bi-translate'"></i>
+                                        Übersetzen ({{ strtoupper($bioTargetLang) }})
+                                    </button>
+                                @endif
+                                @if($actor->tmdb_id)
+                                    <button type="button" @click="submitToTmdb()"
+                                            class="px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black text-white/50 hover:text-white hover:border-emerald-500/40 uppercase tracking-widest transition-all flex items-center gap-2">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                        Bei TMDb einreichen
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                        <p x-show="translateStatus" x-cloak x-text="translateStatus"
+                           class="text-[10px] font-bold text-rose-300/70 uppercase tracking-widest mb-6 px-1"></p>
+
                         <div class="rounded-[2rem] overflow-hidden shadow-inner bg-black/20" x-init="initQuill()">
                             <div id="biography-editor"></div>
                             <input type="hidden" name="bio" x-model="formData.bio">
@@ -160,13 +184,59 @@
         </form>
     </div>
     @push('scripts')
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="{{ asset('vendor/quill/quill.min.js') }}"></script>
     <script>
         function actorForm() {
             return {
                 quill: null,
+                translating: false,
+                translateStatus: '',
                 formData: {
-                    bio: {!! json_encode(old('bio', $actor->bio)) !!}
+                    bio: {!! json_encode(old('bio', $actor->bio), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}
+                },
+
+                async translateBio() {
+                    if (!this.quill || this.translating) return;
+                    if (this.quill.getText().trim() === '') {
+                        this.translateStatus = 'Keine Bio zum Übersetzen vorhanden.';
+                        return;
+                    }
+                    this.translating = true;
+                    this.translateStatus = 'Übersetze…';
+                    try {
+                        const res = await fetch('{{ route('admin.actors.translate-bio') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ text: this.quill.root.innerHTML })
+                        });
+                        const data = await res.json();
+                        if (!res.ok || data.error) {
+                            this.translateStatus = data.error || 'Übersetzung fehlgeschlagen.';
+                        } else {
+                            this.quill.root.innerHTML = data.text;
+                            this.formData.bio = data.text;
+                            this.translateStatus = 'Übersetzt – bitte prüfen und speichern.';
+                        }
+                    } catch (e) {
+                        this.translateStatus = 'Übersetzung fehlgeschlagen.';
+                    }
+                    this.translating = false;
+                },
+
+                async submitToTmdb() {
+                    if (!this.quill) return;
+                    const text = this.quill.getText().trim();
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        this.translateStatus = 'Bio in die Zwischenablage kopiert – auf der TMDb-Seite einfügen und speichern.';
+                    } catch (e) {
+                        this.translateStatus = 'Kopieren fehlgeschlagen – bitte Text manuell kopieren.';
+                    }
+                    window.open('https://www.themoviedb.org/person/{{ $actor->tmdb_id }}/edit?active_nav_item=biography&language={{ $bioTargetLang ?? 'de' }}', '_blank');
                 },
                 initQuill() {
                     const setup = () => {

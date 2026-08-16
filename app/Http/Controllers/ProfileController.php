@@ -30,7 +30,7 @@ class ProfileController extends Controller
             $qrCodeSvg = $this->generateQrCodeSvg($user->email, $secret);
         }
 
-        return view('profile.edit', [
+        return view('tenant.profile.edit', [
             'user' => $user,
             'qrCodeSvg' => $qrCodeSvg,
             'secret' => $secret,
@@ -82,7 +82,11 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'language' => ['required', 'string', 'in:en,de'],
             'layout' => ['required', 'string', 'in:classic,streaming'],
+            'notify_new_episodes' => ['nullable', 'boolean'],
         ]);
+
+        // Checkbox: nicht mitgesendet = abgewählt
+        $validated['notify_new_episodes'] = $request->boolean('notify_new_episodes');
 
         $request->user()->update($validated);
 
@@ -116,10 +120,8 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        Auth::logout();
-
         $user->delete();
-
+        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

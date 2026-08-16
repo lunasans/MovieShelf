@@ -78,11 +78,23 @@ class ActorBotService
                 $foundName = $firstResult['name'];
 
                 // Safety Check: Name Similarity (Simple exact match or fuzzy)
-                $dbName = strtolower($actor->full_name);
-                $tmdbNameLower = strtolower($foundName);
-                
-                // If it's not a very close match, skip it for safety
-                if (!str_contains($tmdbNameLower, $dbName) && !str_contains($dbName, $tmdbNameLower)) {
+                // Auch gegen original_name prüfen, sonst scheitert der Vergleich
+                // Kanji (DB) gegen romanisierten Namen (TMDb) und umgekehrt.
+                $dbName = mb_strtolower(trim($actor->full_name));
+                $candidates = array_filter([
+                    mb_strtolower($foundName),
+                    mb_strtolower($firstResult['original_name'] ?? ''),
+                ]);
+
+                $isSimilar = false;
+                foreach ($candidates as $candidate) {
+                    if (str_contains($candidate, $dbName) || str_contains($dbName, $candidate)) {
+                        $isSimilar = true;
+                        break;
+                    }
+                }
+
+                if (!$isSimilar) {
                      BotLog::create([
                         'bot_run_id' => $botRun->id,
                         'actor_id' => $actor->id,
@@ -134,8 +146,9 @@ class ActorBotService
             }
         }
 
-        // Fetch specifics
-        $details = $this->tmdb->getPersonDetails($actor->tmdb_id);
+        // Fetch specifics (inkl. Übersetzungen: TMDb liefert im biography-Feld
+        // sonst stillschweigend Englisch, wenn die eingestellte Sprache fehlt)
+        $details = $this->tmdb->getPersonDetails($actor->tmdb_id, null, true);
 
         if (isset($details['error'])) {
             BotLog::create([
@@ -148,6 +161,33 @@ class ActorBotService
         }
 
         $updated = false;
+        $englishDetails = null;
+
+        // Namens-Reparatur: Name in Originalschrift (z. B. Kanji) durch den
+        // romanisierten Namen aus den englischen Personendaten ersetzen.
+        if (!TmdbImportService::hasLatinCharacters($actor->full_name)) {
+            $englishDetails = $this->tmdb->getPersonDetails($actor->tmdb_id, 'en-US');
+            $englishName = trim($englishDetails['name'] ?? '');
+
+            if (empty($englishDetails['error']) && TmdbImportService::hasLatinCharacters($englishName)) {
+                $originalName = trim($actor->full_name);
+                $nameParts = explode(' ', $englishName, 2);
+                $actor->first_name = $nameParts[0];
+                $actor->last_name = $nameParts[1] ?? '';
+                $actor->original_name = $actor->original_name ?: $originalName;
+                if (empty($actor->slug)) {
+                    $actor->slug = Str::slug($englishName);
+                }
+                $updated = true;
+
+                BotLog::create([
+                    'bot_run_id' => $botRun->id,
+                    'actor_id' => $actor->id,
+                    'status' => 'success',
+                    'message' => "Name romanisiert: '{$originalName}' → '{$englishName}'.",
+                ]);
+            }
+        }
 
         if (empty($actor->birthday) && !empty($details['birthday'])) {
             $actor->birthday = $details['birthday'];
@@ -161,8 +201,34 @@ class ActorBotService
             $actor->place_of_birth = $details['place_of_birth'];
             $updated = true;
         }
-        if (empty($actor->bio) && !empty($details['biography'])) {
-            $actor->bio = $details['biography'];
+        // Bio: bevorzugt in der eingestellten Sprache, sonst Fallback auf Englisch
+        // (bio_locale = 'en'). Taucht später eine Bio in der eingestellten Sprache
+        // auf, ersetzt sie die automatisch importierte englische. Manuell gepflegte
+        // Bios (bio_locale = null) bleiben unberührt. Wichtig: das biography-Feld
+        // selbst ist unzuverlässig, weil TMDb bei fehlender Übersetzung stillschweigend
+        // Englisch liefert – die echte Sprachfassung steht nur in den translations.
+        $primaryLocale = substr($this->tmdb->getLanguage(), 0, 2);
+        $primaryBio = $this->getTranslatedBio($details, $primaryLocale);
+        $englishBio = $primaryLocale === 'en'
+            ? $primaryBio
+            : ($this->getTranslatedBio($details, 'en') ?: trim($details['biography'] ?? ''));
+
+        if ($primaryBio !== '' && (empty($actor->bio) || ($actor->bio_locale === 'en' && $primaryLocale !== 'en'))) {
+            $actor->bio = $primaryBio;
+            $actor->bio_locale = $primaryLocale;
+            $updated = true;
+        } elseif ($primaryBio === '' && empty($actor->bio) && $englishBio !== '') {
+            $actor->bio = $englishBio;
+            $actor->bio_locale = 'en';
+            $updated = true;
+        } elseif (
+            $primaryBio === '' && $primaryLocale !== 'en'
+            && $actor->bio_locale === $primaryLocale && trim($actor->bio ?? '') === $englishBio
+        ) {
+            // Reparatur: ein früherer Lauf hat den englischen TMDb-Fallback
+            // fälschlich als Primärsprache markiert – neu einordnen, damit eine
+            // später erscheinende Übersetzung nachgezogen werden kann.
+            $actor->bio_locale = 'en';
             $updated = true;
         }
 
@@ -194,6 +260,20 @@ class ActorBotService
 
         // Always run cleanup/validation if we have a TMDB ID
         $this->validateAndPruneMovies($actor, $botRun);
+    }
+
+    /**
+     * Biografie einer bestimmten Sprache aus den TMDb-Übersetzungen holen.
+     */
+    protected function getTranslatedBio(array $details, string $locale): string
+    {
+        foreach ($details['translations']['translations'] ?? [] as $translation) {
+            if (($translation['iso_639_1'] ?? '') === $locale) {
+                return trim($translation['data']['biography'] ?? '');
+            }
+        }
+
+        return '';
     }
 
     /**

@@ -5,64 +5,163 @@ namespace App\Http\Middleware;
 use App\Models\Counter;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Zaehlt echte Seitenaufrufe - einen pro IP und Tag.
+ *
+ * Frueher wurde jeder GET gezaehlt, der nicht nach Asset aussah und dessen
+ * User-Agent keinen von zwoelf bekannten Bot-Namen enthielt. Scanner geben
+ * sich aber als Browser aus: An einem Tag entstanden so 3720 "Besucher" aus
+ * 6640 Aufrufen von /dashboard durch 1101 verschiedene IP-Adressen.
+ *
+ * Statt zu erraten, wer kein Besucher ist, wird jetzt geprueft, was einen
+ * Besucher ausmacht: eine vom Browser als Seitennavigation angeforderte
+ * HTML-Antwort. Das schliesst Hintergrundabfragen per fetch(), JSON-Antworten,
+ * Bilder, Weiterleitungen und Fehlerseiten von sich aus aus - ohne Pfadlisten,
+ * die bei jeder neuen Route nachgepflegt werden muessten.
+ */
 class VisitorCounterMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        // 1. Exclude common static asset paths and bot-like files
-        $path = $request->path();
-        if (preg_match('/\.(ico|png|jpg|jpeg|gif|svg|css|js|map|txt|xml|json)$/i', $path)) {
-            return $next($request);
+        $response = $next($request);
+
+        if ($this->shouldCount($request, $response)) {
+            $this->count($request);
         }
 
-        // 2. Only count GET requests and non-AJAX requests
-        if ($request->isMethod('GET') && ! $request->ajax() && ! $request->prefetch()) {
-            // 3. User-Agent Bot Filtering (Simple list of common bots)
-            $userAgent = $request->header('User-Agent', '');
-            $bots = [
-                'bot', 'crawler', 'spider', 'slurp', 'bingpreview', 'googlebot',
-                'baiduspider', 'yandex', 'duckduckbot', 'lighthouse', 'headless',
-            ];
+        return $response;
+    }
 
-            foreach ($bots as $bot) {
-                if (stripos($userAgent, $bot) !== false) {
-                    return $next($request);
-                }
-            }
-
-            // 4. Unique IP per Day check using Cache
-            $ip = $request->ip();
-            $today = now()->format('Y-m-d');
-            $cacheKey = "visit:{$today}:".hash('sha256', (string) $ip);
-
-            if (! \Illuminate\Support\Facades\Cache::has($cacheKey) && ! app()->bound('visitor_counted')) {
-                // Prevention of double-counting in the SAME request process
-                app()->instance('visitor_counted', true);
-                
-                // Increment total visits
-                $totalCounter = Counter::firstOrCreate(['page' => 'all']);
-                $totalCounter->increment('visits');
-                $totalCounter->last_visit = now();
-                $totalCounter->save();
-
-                // Increment daily visits
-                $dailyCounter = Counter::firstOrCreate(['page' => "daily:$today"]);
-                $dailyCounter->increment('visits');
-                $dailyCounter->last_visit = now();
-                $dailyCounter->save();
-
-                // Mark as visited for this IP today (expires at end of day)
-                \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->endOfDay());
-            }
+    /**
+     * Nur echte, im Browser aufgerufene Seiten zaehlen.
+     */
+    protected function shouldCount(Request $request, Response $response): bool
+    {
+        if (! $request->isMethod('GET')) {
+            return false;
         }
 
-        return $next($request);
+        // Nur ausgelieferte Seiten. Weiterleitungen (302 auf /login) und
+        // Fehlerseiten sind kein Seitenbesuch.
+        if ($response->getStatusCode() !== 200) {
+            return false;
+        }
+
+        // Bilder, Downloads und JSON tragen text/html nicht - damit fallen
+        // der Bild-Proxy, /oauth/userinfo und die Polling-Endpunkte des
+        // Admin-Panels weg, ohne sie einzeln aufzaehlen zu muessen.
+        $contentType = (string) $response->headers->get('Content-Type', '');
+        if (! str_contains(strtolower($contentType), 'text/html')) {
+            return false;
+        }
+
+        return $this->isBrowserNavigation($request);
+    }
+
+    /**
+     * Hat ein Browser diese Adresse als Seite aufgerufen?
+     *
+     * Sec-Fetch-Dest schickt jeder Browser seit 2020 unaufgefordert mit und
+     * setzt es bei einer Seitennavigation auf "document". Ein per fetch()
+     * nachgeladener Inhalt meldet "empty", ein Bild "image". Anders als
+     * X-Requested-With - das nur jQuery setzt, fetch() aber nicht - erkennt
+     * das auch modernes JavaScript zuverlaessig.
+     *
+     * Skripte und Scanner setzen den Header gar nicht. Sein Fehlen ist damit
+     * das belastbarste Signal, das ohne Pflegeaufwand zu haben ist: Ein
+     * gefaelschter User-Agent ist billig, eine vollstaendige Browser-
+     * Signatur nicht.
+     */
+    protected function isBrowserNavigation(Request $request): bool
+    {
+        $dest = strtolower((string) $request->header('Sec-Fetch-Dest', ''));
+
+        if ($dest !== '') {
+            return $dest === 'document';
+        }
+
+        // Ohne den Header bleibt nur der User-Agent. Betrifft sehr alte
+        // Browser - und praktisch jeden Scanner.
+        $userAgent = (string) $request->header('User-Agent', '');
+
+        if ($userAgent === '' || ! str_starts_with($userAgent, 'Mozilla/')) {
+            return false;
+        }
+
+        return ! preg_match(
+            '/bot|crawler|spider|slurp|scan|curl|wget|python|java|go-http|okhttp|headless|lighthouse|preview|monitor/i',
+            $userAgent
+        );
+    }
+
+    /**
+     * Einen Besuch verbuchen, sofern die IP heute noch nicht gezaehlt wurde.
+     */
+    protected function count(Request $request): void
+    {
+        $today = now()->toDateString();
+        $ipHash = hash('sha256', (string) $request->ip());
+
+        if (! $this->claimFirstVisitToday($today, $ipHash)) {
+            return;
+        }
+
+        foreach (['all', "daily:$today"] as $page) {
+            $counter = Counter::firstOrCreate(['page' => $page]);
+            $counter->increment('visits');
+            $counter->forceFill(['last_visit' => now()])->save();
+        }
+    }
+
+    /**
+     * Traegt die IP fuer heute ein und meldet, ob das der erste Besuch war.
+     *
+     * Der Unique-Index entscheidet, nicht eine vorherige Abfrage: Zwei
+     * gleichzeitige Anfragen derselben IP koennen so nicht beide als neuer
+     * Besucher durchgehen.
+     */
+    protected function claimFirstVisitToday(string $today, string $ipHash): bool
+    {
+        try {
+            $isFirstVisit = DB::table('visitor_hits')->insertOrIgnore([
+                'visit_date' => $today,
+                'ip_hash'    => $ipHash,
+                'created_at' => now(),
+            ]) === 1;
+
+            $this->pruneOldHits($today);
+
+            return $isFirstVisit;
+        } catch (\Throwable $e) {
+            // Lieber gar nicht zaehlen als jeden Aufruf zaehlen: Ohne die
+            // Tabelle waere die Eindeutigkeitspruefung wirkungslos, und
+            // genau dieser stille Ausfall hat die Zahlen ruiniert.
+            report($e);
+
+            return false;
+        }
+    }
+
+    /**
+     * Alte Eintraege entfernen - nur die des laufenden Tages werden gebraucht.
+     *
+     * Wie Laravels Session-Aufraeumen selten und beilaeufig statt per Cron:
+     * Die Tabelle waechst um hoechstens eine Zeile pro Besucher und Tag, ein
+     * eigener geplanter Befehl waere dafuer unverhaeltnismaessig. Die 30 Tage
+     * Vorlauf lassen Raum, den Verlauf bei Bedarf nachzurechnen.
+     */
+    protected function pruneOldHits(string $today): void
+    {
+        if (random_int(1, 500) !== 1) {
+            return;
+        }
+
+        DB::table('visitor_hits')
+            ->where('visit_date', '<', Carbon::parse($today)->subDays(30)->toDateString())
+            ->delete();
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Auth\Concerns\ResolvesAuthView;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -10,12 +11,14 @@ use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
 {
+    use ResolvesAuthView;
+
     /**
      * Display the password reset link request view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.forgot-password');
+        return view($this->authView($request, 'forgot-password'));
     }
 
     /**

@@ -85,6 +85,24 @@ return [
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
     /*
+    | Sprachen, die die Oberflaeche anbietet (Sprachumschalter, SetLocale).
+    | Fuer jede hier gelistete Sprache muss lang/<code>.json existieren.
+    */
+
+    'supported_locales' => [
+        'en' => 'English',
+        'de' => 'Deutsch',
+    ],
+
+    /*
+    | Sprache, in der redaktionelle Inhalte (FAQ, CMS-Seiten) in ihren
+    | eigenen Spalten liegen. Abweichende Sprachen stehen in
+    | content_translations; fehlt dort ein Eintrag, greift diese hier.
+    */
+
+    'base_content_locale' => env('APP_BASE_CONTENT_LOCALE', 'de'),
+
+    /*
     |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
@@ -125,6 +143,16 @@ return [
 
     'git_binary' => env('GIT_BINARY', 'git'),
     'composer_binary' => env('COMPOSER_BINARY', 'composer'),
-    'version' => env('APP_VERSION', '2.11.0'),
+    'shelf_version' => env('APP_SHELF_VERSION', '2.41.2'),
+
+    // Forum-SSO: OAuth2-Client-Daten des Support-Forums (leer = SSO deaktiviert)
+    'forum_sso_client_id'     => env('FORUM_SSO_CLIENT_ID', 'movieshelf-forum'),
+    'forum_sso_client_secret' => env('FORUM_SSO_CLIENT_SECRET', ''),
+    'forum_sso_redirect_uri'  => env('FORUM_SSO_REDIRECT_URI', ''),
+
+    // Forum-API: automatische Konto-Anlage bei der Shelf-Registrierung (leer = deaktiviert)
+    'forum_api_url'     => env('FORUM_API_URL', ''),
+    'forum_api_key'     => env('FORUM_API_KEY', ''),
+    'forum_api_user_id' => env('FORUM_API_USER_ID', '2'),
 
 ];

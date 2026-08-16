@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark" data-theme="{{ session('theme', 'default') }}"
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark" data-theme="{{ session('theme', \App\Models\Setting::get('theme', 'default')) }}"
     style="background-color: #020617;">
 
 <head>
@@ -14,27 +14,24 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MovieShelf">
     <link rel="apple-touch-icon" href="{{ asset('img/logo/logo_small.png') }}">
-    <title>{{ \App\Models\Setting::get('site_title', config('app.name', 'MovieShelf')) }}</title> <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-        rel="stylesheet"> <!-- NOSONAR --> <!-- Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-        integrity="sha256-9kPW/n5nn53j4WMRYAxe9c1rCY96Oogo/MKSVdKzPmI=" crossorigin="anonymous"> <!-- Scripts -->
+    <title>{{ \App\Models\Setting::get('site_title', config('app.name', 'MovieShelf')) }}</title>
+    {{-- Assets: Fonts, Icons selbst gehostet (kein CDN, DSGVO) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         [x-cloak] {
             display: none !important;
         }
 
+        /* Nur Opacity animieren – KEIN transform! Ein (auch per animation-forwards
+           bleibender) transform auf diesem Wrapper macht ihn zum Bezugsrahmen fuer
+           position:fixed und bricht damit ALLE Modale, die in den Seiten liegen. */
         @keyframes fadeInScale {
-            0% { opacity: 0; transform: scale(0.98) translateY(10px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
 
         .animate-page-entry {
-            animation: fadeInScale 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: fadeInScale 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
         .glass-sidebar {
@@ -92,6 +89,7 @@
 </head>
 
 <body class="font-sans antialiased text-white min-h-screen relative overflow-x-hidden selection:bg-rose-500/30" x-data="{ sidebarOpen: false }">
+
     <!-- Premium Cinematic background -->
     <div class="fixed inset-0 z-0 bg-[#020617] pointer-events-none overflow-hidden">
         <!-- Main Dark Gradient -->
@@ -124,7 +122,7 @@
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-            class="w-72 glass-sidebar flex flex-col shrink-0 h-screen transition-all duration-500 ease-in-out fixed left-0 top-0 z-50">
+            class="w-72 glass-sidebar flex flex-col shrink-0 transition-all duration-500 ease-in-out fixed left-0 z-50 top-0 h-screen">
             <div class="p-6 flex items-center justify-between"> 
                 <a href="{{ route('dashboard') }}" class="flex items-center group"> 
                     <x-application-logo class="h-10 w-auto drop-shadow-md group-hover:scale-105 transition-transform duration-500" />
@@ -161,15 +159,17 @@
                         href="{{ route('admin.import.index') }}"
                         class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.import.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
                         <i class="bi bi-file-earmark-code-fill"></i> <span class="font-bold text-sm">XML Import</span>
-                    </a> <!-- System -->
+                    </a>
+                    <a href="{{ route('admin.backup.index') }}"
+                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.backup.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
+                        <i class="bi bi-archive-fill"></i> <span class="font-bold text-sm">Backup</span>
+                    </a>
+                    <!-- System -->
                     <div class="pt-8 pb-3 px-6"> <span
                             class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">System</span> </div> <a
                         href="{{ route('admin.users.index') }}"
                         class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.users.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
-                        <i class="bi bi-person-badge-fill"></i> <span class="font-bold text-sm">Benutzer</span> </a> <a
-                        href="{{ route('admin.update.index') }}"
-                        class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.update.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
-                        <i class="bi bi-arrow-repeat"></i> <span class="font-bold text-sm">System Update</span> </a>
+                        <i class="bi bi-person-badge-fill"></i> <span class="font-bold text-sm">Benutzer</span>  </a>
                     <a href="{{ route('admin.bot.index') }}"
                         class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.bot.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
                         <i class="bi bi-robot"></i> <span class="font-bold text-sm">Actor Bot</span> </a>
@@ -178,9 +178,13 @@
                             class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.migration.index') ? 'sidebar-link-active' : 'text-gray-400' }}">
                             <i class="bi bi-database-fill-up"></i> <span class="font-bold text-sm">Daten Migration</span>
                         </a>
-                        @endif <a href="{{ route('admin.settings.index') }}"
+                        @endif
+                        @if(Route::has('admin.settings.index'))
+                        <a href="{{ route('admin.settings.index') }}"
                             class="flex items-center gap-3 px-6 py-3.5 rounded-xl transition-all sidebar-link {{ request()->routeIs('admin.settings.*') ? 'sidebar-link-active' : 'text-gray-400' }}">
-                            <i class="bi bi-sliders"></i> <span class="font-bold text-sm">Einstellungen</span> </a>
+                            <i class="bi bi-sliders"></i> <span class="font-bold text-sm">Einstellungen</span>
+                        </a>
+                        @endif
             </nav>
             <div class="p-4 border-t border-white/5 shrink-0">
                 <form method="POST" action="{{ route('logout') }}"> @csrf <button type="submit"
@@ -189,7 +193,10 @@
                 </form>
             </div>
         </aside> <!-- Main Content -->
-        <main :class="sidebarOpen ? 'translate-x-72 md:translate-x-0' : 'translate-x-0'"
+        {{-- Kein transform im Ruhezustand: nur beim mobilen Sidebar-Push wird translate
+             gesetzt. Ein Dauer-transform (auch translate-x-0) macht <main> zum Bezugsrahmen
+             fuer position:fixed und wuerde alle Modale in den Seiten falsch positionieren. --}}
+        <main :class="sidebarOpen ? 'translate-x-72 md:translate-x-0' : ''"
             class="flex-1 flex flex-col min-w-0 md:ml-72 transition-transform duration-500 ease-in-out">
             <header
                 class="h-20 header-glass flex items-center justify-between px-6 md:px-12 z-40 shrink-0 sticky top-0">
