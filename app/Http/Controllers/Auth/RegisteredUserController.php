@@ -19,7 +19,11 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        return view('auth.register');
+        // Oeffentliche Selbst-Registrierung ist in dieser SaaS nicht vorgesehen:
+        // Central-Admins kommen ueber CENTRAL_ADMIN_EMAILS, neue Filmregale ueber
+        // /claim, Tenant-User werden im Claim-/Activation-Flow bzw. vom Tenant-Admin
+        // angelegt. Die offene /register-Route legte sonst fremde Konten an.
+        abort(404);
     }
 
     /**
@@ -29,6 +33,8 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        abort(404); // Registrierung deaktiviert – siehe create().
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],

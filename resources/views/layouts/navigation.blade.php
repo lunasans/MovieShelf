@@ -1,11 +1,27 @@
+@php
+    $siteTitle = \App\Models\Setting::get('site_title', 'MovieShelf');
+    $homeLink = Route::has('dashboard') ? route('dashboard') : '/';
+
+    // Serien-Menüpunkt nur zeigen, wenn Serien in der Sammlung sind (5 Min. gecacht)
+    $hasSeries = false;
+    if (Route::has('dashboard')) {
+        $hasSeries = \Illuminate\Support\Facades\Cache::remember('nav_has_series', now()->addMinutes(5), function () {
+            return \App\Models\Movie::where('in_collection', true)->where('tmdb_type', 'tv')->exists();
+        });
+    }
+@endphp
 <nav x-data="{ 
     open: false, 
     scrolled: window.pageYOffset > 20,
     layoutMode: '{{ optional(auth()->user())->layout ?? \App\Models\Setting::get("default_guest_layout", "classic") }}',
-
+    activeMovieTitle: '',
+    activeMovieCover: '',
+    showMovieTitle: false,
 }" 
 x-init="window.addEventListener('scroll', () => { scrolled = window.pageYOffset > 20 })"
-@layout-change.window="if ($event.detail !== layoutMode) layoutMode = $event.detail"
+x-on:layout-change.window="if ($event.detail !== layoutMode) layoutMode = $event.detail"
+x-on:set-active-movie.window="activeMovieTitle = $event.detail.title; activeMovieCover = $event.detail.cover"
+x-on:toggle-movie-title.window="showMovieTitle = $event.detail.show"
 class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
 :class="{
     'fixed top-0 left-0 right-0': layoutMode === 'streaming',
@@ -16,41 +32,96 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
     <div class="grid grid-cols-2 lg:grid-cols-3 items-center gap-4 text-white">
         <!-- Logo Section (Left) -->
         <div class="flex-shrink-0 flex items-center">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-4 group">
-                <x-application-logo class="h-12 w-auto drop-shadow-md group-hover:scale-110 transition-transform duration-500" />
-                <div>
-                    <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-indigo-400 transition-colors hidden sm:block">
-                        {{ \App\Models\Setting::get('site_title', 'MovieShelf') }}
-                    </h2>
-                    <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-indigo-400 transition-colors sm:hidden">
-                        MS
-                    </h2>
-                    <p class="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em] mt-2 italic hidden sm:block">
-                        {{ __('Media Library') }}
-                    </p>
+            <div class="relative h-12 overflow-hidden flex items-center px-2">
+                <!-- Layer 1: Site Title -->
+                <div class="transform transition-all duration-500 flex items-center gap-4"
+                     :class="showMovieTitle ? '-translate-y-full opacity-0 scale-95' : 'translate-y-0 opacity-100 scale-100'">
+                    <a href="{{ $homeLink }}" class="group flex items-center gap-4">
+                        <x-application-logo class="h-10 w-auto group-hover:scale-110 transition-transform" />
+                        <div>
+                            <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-rose-400 transition-colors hidden sm:block">
+                                {{ $siteTitle }}
+                            </h2>
+                            <h2 class="text-xl font-black text-white uppercase tracking-tight leading-none group-hover:text-rose-400 transition-colors sm:hidden">
+                                MS
+                            </h2>
+                            <p class="text-[10px] text-gray-500 uppercase font-bold tracking-[0.2em] mt-1 italic hidden sm:block">
+                                {{ __('Media Library') }}
+                            </p>
+                        </div>
+                    </a>
                 </div>
-            </a>
+
+                <!-- Layer 2: Movie Title -->
+                <div class="absolute inset-0 flex items-center transform transition-all duration-700 delay-75"
+                     :class="showMovieTitle ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-full opacity-0 scale-90'"
+                     x-cloak>
+                    <div class="flex items-center gap-4">
+                        <div class="w-9 h-12 rounded-lg overflow-hidden border border-white/20 shadow-2xl flex-shrink-0 bg-white/5 backdrop-blur-md">
+                            <template x-if="activeMovieCover">
+                                <img :src="activeMovieCover" class="w-full h-full object-cover">
+                            </template>
+                            <template x-if="!activeMovieCover">
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <i class="bi bi-film text-white/20 text-xs"></i>
+                                </div>
+                            </template>
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-none truncate max-w-[250px] md:max-w-[600px] lg:max-w-[800px] italic bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 pr-6">
+                            <span x-text="activeMovieTitle"></span>
+                        </h2>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Center Navigation (Desktop) -->
         <div class="hidden lg:flex items-center justify-center gap-2">
+            @if(Route::has('dashboard'))
             <a href="{{ route('dashboard') }}"
-                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('dashboard') ? 'bg-white/10' : '' }}">
+                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('dashboard') && request('media') !== 'tv' ? 'bg-white/10' : '' }}">
                 <i class="bi bi-house-fill mr-2"></i> {{ __('Start') }}
             </a>
+            @endif
+
+            @if($hasSeries)
+            <a href="{{ route('dashboard', ['media' => 'tv']) }}"
+                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request('media') === 'tv' ? 'bg-white/10' : '' }}">
+                <i class="bi bi-tv mr-2"></i> {{ __('Series') }}
+            </a>
+            @endif
+
+            @if(Route::has('actors.index'))
             <a href="{{ route('actors.index') }}"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('actors.index') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-people-fill mr-2"></i> {{ __('Actors') }}
             </a>
+            @endif
+
+            @if(Route::has('movies.trailers'))
             <a href="{{ route('movies.trailers') }}"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('movies.trailers') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-play-circle mr-2"></i> {{ __('Trailers') }}
             </a>
+            @endif
+
+            @if(Route::has('dashboard'))
             <a href="{{ route('dashboard', ['stats' => 1]) }}"
                 @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('stats-open') } else { window.location.href = $el.href }"
                 class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('statistics') ? 'bg-white/10' : '' }}">
                 <i class="bi bi-bar-chart-fill mr-2"></i> {{ __('Statistics') }}
             </a>
+            @endif
+
+            @auth
+            @if(Route::has('lists.index'))
+            <a href="{{ route('lists.index') }}"
+                class="px-4 py-2 rounded-xl hover:bg-white/10 transition-colors flex items-center {{ request()->routeIs('lists.*') ? 'bg-white/10' : '' }}">
+                <i class="bi bi-collection-fill mr-2"></i> {{ __('Lists') }}
+            </a>
+            @endif
+            @endauth
+
         </div>
 
         <!-- Search & User Section (Right) -->
@@ -59,19 +130,21 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
             <div class="flex items-center gap-4">
 
                 <!-- Language Switcher -->
+                @if(Route::has('lang.switch'))
                 <div class="flex items-center gap-2 px-2 border-r border-white/10 mr-2">
                     <a href="{{ route('lang.switch', 'de') }}"
-                       class="text-[10px] font-black transition-all {{ app()->getLocale() == 'de' ? 'text-blue-400 scale-110' : 'text-gray-500 hover:text-white' }}"
+                       class="text-[10px] font-black transition-all {{ app()->getLocale() == 'de' ? 'text-rose-400 scale-110' : 'text-gray-500 hover:text-white' }}"
                        title="Deutsch">
                         DE
                     </a>
                     <span class="text-white/10 text-[10px]">|</span>
                     <a href="{{ route('lang.switch', 'en') }}"
-                       class="text-[10px] font-black transition-all {{ app()->getLocale() == 'en' ? 'text-blue-400 scale-110' : 'text-gray-500 hover:text-white' }}"
+                       class="text-[10px] font-black transition-all {{ app()->getLocale() == 'en' ? 'text-rose-400 scale-110' : 'text-gray-500 hover:text-white' }}"
                        title="English">
                         EN
                     </a>
                 </div>
+                @endif
 
                 <!-- Auth Section -->
                 @auth
@@ -82,8 +155,8 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                     <x-dropdown align="right" width="48" :content-classes="$isStreamingMode ? 'p-2 bg-gray-950/80 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl' : 'py-1 bg-white'">
                         <x-slot name="trigger">
                             <button class="flex items-center gap-3 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl transition-all active:scale-95 group">
-                                <div class="h-8 w-8 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <i class="bi bi-person-fill text-blue-400"></i>
+                                <div class="h-8 w-8 rounded-xl bg-rose-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i class="bi bi-person-fill text-rose-400"></i>
                                 </div>
                                 <span class="text-xs font-black uppercase tracking-widest hidden sm:inline">{{ Auth::user()->name }}</span>
                                 <i class="bi bi-chevron-down text-[10px] text-gray-500 group-hover:text-white transition-colors"></i>
@@ -92,15 +165,19 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
 
                         <x-slot name="content">
                             <div class="space-y-1">
+                                @if(Route::has('profile.edit'))
                                 <x-dropdown-link :href="route('profile.edit')" class="rounded-xl flex items-center gap-3">
                                     <i class="bi bi-person-badge text-sm opacity-50"></i> 
                                     <span>{{ __('Profile') }}</span>
                                 </x-dropdown-link>
+                                @endif
 
+                                @if(auth()->user()?->is_admin && Route::has('admin.dashboard'))
                                 <x-dropdown-link :href="route('admin.dashboard')" class="rounded-xl flex items-center gap-3">
-                                    <i class="bi bi-speedometer2 text-sm opacity-50"></i> 
+                                    <i class="bi bi-speedometer2 text-sm opacity-50"></i>
                                     <span>{{ __('Admin Panel') }}</span>
                                 </x-dropdown-link>
+                                @endif
 
                                 <div class="h-px bg-white/5 mx-2 my-1"></div>
 
@@ -116,7 +193,7 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
                         </x-slot>
                     </x-dropdown>
                 @else
-                    <a href="{{ route('login') }}" class="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all font-bold text-sm shadow-lg shadow-blue-900/40">
+                    <a href="{{ route('login') }}" class="flex items-center gap-2 px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl transition-all font-bold text-sm shadow-lg shadow-rose-900/40">
                         <i class="bi bi-box-arrow-in-right"></i>
                         {{ __('Log in') }}
                     </a>
@@ -138,32 +215,48 @@ class="z-50 px-8 py-6 transition-all duration-500 rounded-b-[2rem]"
          x-transition:enter-end="opacity-100 translate-y-0"
          class="lg:hidden mt-4 pt-4 border-t border-white/10 space-y-2">
         
-        <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="rounded-xl"> 
+        @if(Route::has('dashboard'))
+        <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard') && request('media') !== 'tv'" class="rounded-xl">
              {{ __('Start') }}
         </x-responsive-nav-link>
+        @endif
 
+        @if($hasSeries)
+        <a href="{{ route('dashboard', ['media' => 'tv']) }}" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request('media') === 'tv' ? 'bg-white/10' : '' }}">
+            <i class="bi bi-tv mr-2"></i> {{ __('Series') }}
+        </a>
+        @endif
+
+        @if(Route::has('actors.index'))
         <a href="{{ route('actors.index') }}" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('actors.index') ? 'bg-white/10' : '' }}">
             <i class="bi bi-people-fill mr-2"></i> {{ __('Actors') }}
         </a>
+        @endif
 
+        @if(Route::has('movies.trailers'))
         <a href="{{ route('movies.trailers') }}" class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('movies.trailers') ? 'bg-white/10' : '' }}">
             <i class="bi bi-play-circle mr-2"></i> {{ __('Trailers') }}
         </a>
+        @endif
 
+        @if(Route::has('dashboard'))
         <a href="{{ route('dashboard', ['stats' => 1]) }}"
             @click.prevent="if (window.location.pathname === '/' || window.location.pathname === '/dashboard') { $dispatch('stats-open'); open = false } else { window.location.href = $el.href }"
             class="block px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors {{ request()->routeIs('statistics') ? 'bg-white/10' : '' }}">
             <i class="bi bi-bar-chart-fill mr-2"></i> {{ __('Statistics') }}
         </a>
+        @endif
 
         <!-- Mobile Search -->
+        @if(Route::has('dashboard'))
         <div class="pt-2 px-2">
-            <form action="{{ route('dashboard') }}" method="GET" class="relative">
+            <form action="{{ $homeLink }}" method="GET" class="relative">
                 <input type="text" name="q" value="{{ request('q') }}"
                     placeholder="{{ __('Search...') }}"
-                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 pl-10 focus:ring-2 focus:ring-blue-500/50 text-sm transition-all text-white">
+                    class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 pl-10 focus:ring-2 focus:ring-rose-500/50 text-sm transition-all text-white">
                 <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
             </form>
         </div>
+        @endif
     </div>
 </nav>

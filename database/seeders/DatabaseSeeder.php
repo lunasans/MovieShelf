@@ -19,7 +19,11 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@movieshelf.com',
+            'is_admin' => true,
             'password' => \Illuminate\Support\Facades\Hash::make('movieshelf'),
         ]);
+
+        // OAuth-Clients für Desktop-/Android-App (PKCE)
+        $this->call(OAuthClientSeeder::class);
     }
 }

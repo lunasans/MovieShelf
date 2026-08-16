@@ -30,6 +30,9 @@ class SettingController extends Controller
             'boxset_quick_view_style' => 'required|string|in:island,modal',
             'theme' => 'required|string|max:50',
             'tmdb_api_key' => 'nullable|string|max:255',
+            'tmdb_language' => 'nullable|string|regex:/^[a-z]{2}-[A-Z]{2}$/',
+            'libretranslate_url' => 'nullable|url|max:255',
+            'libretranslate_api_key' => 'nullable|string|max:255',
             'impressum_name' => 'nullable|string|max:255',
             'impressum_email' => 'nullable|email|max:255',
             'impressum_content' => 'nullable|string',
@@ -43,14 +46,15 @@ class SettingController extends Controller
             'signature_show_title' => 'nullable|string',
             'signature_show_year' => 'nullable|string',
             'signature_show_rating' => 'nullable|string',
-            'mail_mailer' => 'required|string|in:smtp,log,sendmail',
-            'mail_host' => 'nullable|string|max:255',
-            'mail_port' => 'nullable|integer|min:1|max:65535',
-            'mail_username' => 'nullable|string|max:255',
-            'mail_password' => 'nullable|string|max:255',
-            'mail_encryption' => 'nullable|string|in:tls,ssl,none',
-            'mail_from_address' => 'nullable|email|max:255',
-            'mail_from_name' => 'nullable|string|max:255',
+            'signature_theme' => 'nullable|string|in:dark,light',
+            'signature_width' => 'nullable|integer|min:400|max:1400',
+            'signature_height' => 'nullable|integer|min:120|max:400',
+            'signature_accent' => 'nullable|string|regex:/^#?[0-9a-fA-F]{6}$/',
+
+            // Vertraute Geraete bei aktiver 2FA: 0 schaltet die Funktion ab,
+            // dann wird trotz "Angemeldet bleiben" jedes Mal der Code abgefragt.
+            'two_factor_trusted_days' => 'required|integer|min:0|max:365',
+
             'ignored_update_files' => 'nullable|string',
         ]);
 
@@ -76,7 +80,7 @@ class SettingController extends Controller
 
     protected function handleCheckboxes(Request $request, array &$validated)
     {
-        $checkboxes = ['impressum_enabled', 'cookie_banner_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating', 'migration_enabled', 'telemetry_enabled'];
+        $checkboxes = ['impressum_enabled', 'cookie_banner_enabled', 'signature_enabled', 'signature_show_title', 'signature_show_year', 'signature_show_rating', 'migration_enabled'];
         foreach ($checkboxes as $checkbox) {
             $validated[$checkbox] = $request->has($checkbox) ? '1' : '0';
         }
@@ -96,10 +100,12 @@ class SettingController extends Controller
     {
         return match (true) {
             str_starts_with($key, 'tmdb_') => 'tmdb',
+            str_starts_with($key, 'libretranslate_') => 'translation',
             $key === 'theme' || $key === 'default_guest_layout' => 'ui',
             str_starts_with($key, 'impressum_') => 'impressum',
             str_starts_with($key, 'signature_') => 'signature',
             str_starts_with($key, 'mail_') => 'mail',
+            str_starts_with($key, 'two_factor_') => 'security',
             $key === 'ignored_update_files' => 'general',
             default => 'general',
         };
@@ -109,9 +115,9 @@ class SettingController extends Controller
     {
         $hasSignatureChanges = collect(array_keys($validated))->contains(fn ($k) => str_starts_with($k, 'signature_'));
         if ($hasSignatureChanges) {
-            Cache::forget('signature_banner_type_1');
-            Cache::forget('signature_banner_type_2');
-            Cache::forget('signature_banner_type_3');
+            foreach ([1, 2, 3] as $type) {
+                Cache::forget("signature_banner_type_{$type}");
+            }
         }
     }
 

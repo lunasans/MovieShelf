@@ -2,7 +2,7 @@
     @section('header_title', 'Neuen Star hinzufügen')
 
     @push('styles')
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link href="{{ asset('vendor/quill/quill.snow.css') }}" rel="stylesheet">
     <style>
         .ql-toolbar.ql-snow {
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -104,8 +104,8 @@
                             </div>
 
                             <div>
-                                <label for="last_name" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Nachname *</label>
-                                <input type="text" name="last_name" id="last_name" value="{{ old('last_name') }}" required
+                                <label for="last_name" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Nachname</label>
+                                <input type="text" name="last_name" id="last_name" value="{{ old('last_name') }}"
                                        placeholder="z.B. Downey Jr."
                                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white font-bold focus:outline-none focus:border-rose-500/50 focus:ring-4 focus:ring-rose-500/10 transition-all">
                                 @error('last_name') <p class="text-rose-400 text-[10px] mt-2 font-bold">{{ $message }}</p> @enderror
@@ -159,13 +159,13 @@
         </form>
     </div>
     @push('scripts')
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="{{ asset('vendor/quill/quill.min.js') }}"></script>
     <script>
         function actorForm() {
             return {
                 quill: null,
                 formData: {
-                    bio: {!! json_encode(old('bio')) !!}
+                    bio: {!! json_encode(old('bio'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}
                 },
                 initQuill() {
                     const setup = () => {

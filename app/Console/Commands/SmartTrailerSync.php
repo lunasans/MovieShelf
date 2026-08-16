@@ -16,7 +16,9 @@ class SmartTrailerSync extends Command
      *
      * @var string
      */
-    protected $signature = 'movies:smart-trailer {--force : Update even if trailer_url is not empty} {--movie= : Nur einen bestimmten Film synchronisieren (ID)}';
+    protected $signature = 'movies:smart-trailer
+        {--force : Update even if trailer_url is not empty}
+        {--movie= : Nur einen bestimmten Film synchronisieren (ID)}';
 
     /**
      * The console command description.
@@ -28,8 +30,26 @@ class SmartTrailerSync extends Command
     /**
      * Execute the console command.
      */
-    public function handle(TmdbService $tmdb, YouTubeSearchService $youtube): int
+    public function handle(): int
     {
+        try {
+            $this->sync();
+        } catch (\Throwable $e) {
+            Log::error('movies:smart-trailer fehlgeschlagen: '.$e->getMessage());
+            $this->error('Fehler: '.$e->getMessage());
+
+            return Command::FAILURE;
+        }
+
+        return Command::SUCCESS;
+    }
+
+    /** Trailer-Sync über die gesamte Sammlung. */
+    protected function sync(): void
+    {
+        $tmdb = new TmdbService();
+        $youtube = app(YouTubeSearchService::class);
+
         $query = Movie::whereNotNull('tmdb_id');
 
         if ($this->option('movie')) {
@@ -61,7 +81,8 @@ class SmartTrailerSync extends Command
             Setting::set('smart_trailer_last_run', now()->toDateTimeString());
             Setting::set('smart_trailer_last_status', 'success');
             Setting::set('smart_trailer_last_results', json_encode(['updated' => 0, 'total' => 0]));
-            return Command::SUCCESS;
+
+            return;
         }
 
         $this->info("Starte Trailer-Sync für {$total} Filme...");
@@ -166,8 +187,6 @@ class SmartTrailerSync extends Command
         $bar->finish();
         $this->newLine();
         $this->info("Fertig! {$updatedCount} von {$total} Filmen wurden aktualisiert.");
-
-        return Command::SUCCESS;
     }
 
     /**

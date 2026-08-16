@@ -34,10 +34,10 @@ class ActorController extends Controller
         $letter = strtoupper($request->get('letter'));
 
         if ($request->ajax()) {
-            return view('actors.partials.actor-list', compact('groupedActors'))->render();
+            return view('tenant.actors.partials.actor-list', compact('groupedActors'))->render();
         }
 
-        return view('actors.index', compact(
+        return view('tenant.actors.index', compact(
             'actors',
             'groupedActors',
             'availableLetters',
@@ -74,12 +74,14 @@ class ActorController extends Controller
             })
             ->when($letter && preg_match('/^[A-Z#]$/', $letter), function ($q) use ($letter) {
                 if ($letter === '#') {
-                    $q->whereRaw('last_name REGEXP "^[^A-Za-z]"');
+                    $q->whereRaw("last_name NOT GLOB '[A-Za-z]*' AND last_name != ''");
                 } else {
                     $q->where('last_name', 'like', $letter.'%');
                 }
             })
-            ->withCount('movies')
+            // Geloeschte Filme zaehlen nicht mit — sonst weist die Liste
+            // Schauspieler aus, deren Filme allesamt geloescht sind.
+            ->withCount(['movies' => fn ($q) => $q->where('movies.is_deleted', false)])
             ->orderBy('last_name')
             ->orderBy('first_name');
     }
@@ -100,14 +102,14 @@ class ActorController extends Controller
     {
         $data = $this->getActorData($actor);
 
-        return view('actors.show', $data);
+        return view('tenant.actors.show', $data);
     }
 
     public function details(Actor $actor)
     {
         $data = $this->getActorData($actor);
 
-        return view('actors.partials.details', $data);
+        return view('tenant.actors.partials.details', $data);
     }
 
     protected function getActorData(Actor $actor)
@@ -118,7 +120,11 @@ class ActorController extends Controller
         // Fetch or update details from TMDb if bio or imdb_id is empty and tmdb_id exists
         $this->syncActorWithTmdb($actor);
 
+        // Der Filter gehoert hierher und nicht in die Relation: der
+        // ActorBotService verwaltet ueber $actor->movies() die Pivot-
+        // Beziehungen und muss dafuer auch geloeschte Filme sehen.
         $movies = $actor->movies()
+            ->where('movies.is_deleted', false)
             ->orderBy('year', 'desc')
             ->get();
 

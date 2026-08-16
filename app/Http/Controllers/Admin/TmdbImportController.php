@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Actor;
 use App\Models\Movie;
+use App\Models\MovieList;
 use App\Services\TmdbService;
 use App\Services\TmdbImportService;
 use Illuminate\Http\Request;
@@ -28,7 +29,9 @@ class TmdbImportController extends Controller
 
     public function index()
     {
-        return view('admin.tmdb.index');
+        $lists = MovieList::where('user_id', auth()->id())->orderBy('name')->get();
+
+        return view('admin.tmdb.index', compact('lists'));
     }
 
     public function search(Request $request)
@@ -86,6 +89,55 @@ class TmdbImportController extends Controller
             return redirect()->route('admin.movies.index')->with('success', $msg);
         } catch (\Exception $e) {
             return back()->with('error', 'Fehler beim Import: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Staffeln für eine bestehende Serie nachladen (nur ausgewählte,
+     * vorhandene werden im Service übersprungen).
+     */
+    public function importSeasonsForMovie(Request $request, Movie $movie)
+    {
+        $request->validate([
+            'seasons' => 'required|array|min:1',
+            'seasons.*' => 'integer|min:1',
+        ]);
+
+        if ($movie->collection_type !== 'Serie' || ! $movie->tmdb_id) {
+            return response()->json(['error' => 'Dieser Eintrag ist keine mit TMDb verknüpfte Serie.'], 422);
+        }
+
+        try {
+            $imported = $this->importService->importSeasonsForExisting($movie, $request->get('seasons'));
+            $this->logActivity($movie, 'SEASON_IMPORT', ['seasons' => $request->get('seasons'), 'imported' => $imported]);
+
+            return response()->json(['success' => true, 'imported' => $imported]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Staffeln einer bestehenden Serie entfernen (Gegenstück zum Nachladen).
+     */
+    public function removeSeasonsForMovie(Request $request, Movie $movie)
+    {
+        $request->validate([
+            'seasons' => 'required|array|min:1',
+            'seasons.*' => 'integer|min:1',
+        ]);
+
+        if ($movie->collection_type !== 'Serie') {
+            return response()->json(['error' => 'Dieser Eintrag ist keine Serie.'], 422);
+        }
+
+        try {
+            $removed = $this->importService->removeSeasonsForExisting($movie, $request->get('seasons'));
+            $this->logActivity($movie, 'SEASON_REMOVE', ['seasons' => $request->get('seasons'), 'removed' => $removed]);
+
+            return response()->json(['success' => true, 'removed' => $removed]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

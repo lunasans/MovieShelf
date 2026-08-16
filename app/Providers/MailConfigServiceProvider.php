@@ -22,15 +22,33 @@ class MailConfigServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Only attempt to load settings if the table exists
-        if (!Schema::hasTable('settings')) {
+        $this->loadMailSettings();
+    }
+
+    /**
+     * Load mail settings from the current database and re-initialize the Mail Manager.
+     */
+    protected function loadMailSettings(): void
+    {
+        try {
+            // Check if tables exist
+            if (!Schema::hasTable('settings')) {
+                return;
+            }
+
+            $mailSettings = Setting::where('key', 'like', 'mail_%')->pluck('value', 'key');
+
+            if ($mailSettings->isNotEmpty()) {
+                $this->applyMailSettings($mailSettings);
+
+                // IMPORTANT: In Laravel 11/12, the MailManager and individual mailers must be purged
+                // to reflect the configuration changes immediately in the current request.
+                \Illuminate\Support\Facades\Mail::purge(\Illuminate\Support\Facades\Config::get('mail.default'));
+                app()->forgetInstance('mail.manager');
+            }
+        } catch (\Throwable $e) {
+            // Silently fail if database is not ready
             return;
-        }
-
-        $mailSettings = Setting::where('group', 'mail')->pluck('value', 'key');
-
-        if ($mailSettings->isNotEmpty()) {
-            $this->applyMailSettings($mailSettings);
         }
     }
 
@@ -41,6 +59,10 @@ class MailConfigServiceProvider extends ServiceProvider
     {
         if (isset($settings['mail_mailer'])) {
             Config::set('mail.default', $settings['mail_mailer']);
+        } elseif (isset($settings['mail_host']) && !empty($settings['mail_host'])) {
+            // Force SMTP if a host is provided but no specific mailer type is set 
+            // (e.g. from the central SAAS settings)
+            Config::set('mail.default', 'smtp');
         }
 
         $this->setSmtpConfig($settings);

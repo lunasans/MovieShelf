@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MovieController extends Controller
 {
@@ -20,8 +21,25 @@ class MovieController extends Controller
     public function index(Request $request)
     {
         $query = Movie::query();
+
+        // Gesperrte Filme sind fuer den Betrieb geloescht und tauchen deshalb
+        // weder in der Liste noch in der Suche auf. Sie muessen aber
+        // erreichbar bleiben, sonst liesse sich die Bulk-Aktion
+        // "wiederherstellen" nicht mehr ausloesen — dafuer der Filter unten.
+        if ($request->filter === 'locked') {
+            $query->where('is_deleted', true);
+        } else {
+            $query->where('is_deleted', false);
+        }
+
         if ($request->has('q')) {
-            $query->where('title', 'like', '%'.$request->q.'%');
+            $q = $request->q;
+            $query->where(function($w) use ($q) {
+                $w->where('title', 'like', '%'.$q.'%')
+                  ->orWhere('genre', 'like', '%'.$q.'%')
+                  ->orWhere('actors_names', 'like', '%'.$q.'%')
+                  ->orWhere('director', 'like', '%'.$q.'%');
+            });
         }
 
         if ($request->filter === 'missing_tmdb') {
@@ -49,7 +67,8 @@ class MovieController extends Controller
      */
     public function create()
     {
-        return response('');
+        // Filme werden ueber den TMDb-Import angelegt (kein manuelles Formular).
+        return redirect()->route('admin.tmdb.index');
     }
 
     /**
@@ -77,6 +96,7 @@ class MovieController extends Controller
             'title' => 'required|string|max:255',
             'year' => 'required|integer',
             'collection_type' => 'required|string',
+            'tag' => 'nullable|string|max:50',
             'genre' => 'nullable|string',
             'runtime' => 'nullable|integer',
             'rating' => 'nullable|numeric|min:0|max:100',
@@ -85,6 +105,12 @@ class MovieController extends Controller
             'trailer_url' => 'nullable|url',
             'overview' => 'nullable|string',
             'tmdb_id' => 'nullable|integer',
+            'edition' => 'nullable|string|max:120',
+            'region_code' => 'nullable|string|max:20',
+            'disc_location' => 'nullable|string|max:120',
+            'purchase_date' => 'nullable|date',
+            'purchase_price' => 'nullable|numeric|min:0|max:999999',
+            'condition' => 'nullable|in:new,like_new,good,acceptable,damaged',
             'cover_id' => 'nullable|string',
             'backdrop_id' => 'nullable|string',
             'cover_upload' => 'nullable|image|max:4096',
@@ -141,15 +167,19 @@ class MovieController extends Controller
     {
         if ($request->hasFile('cover_upload')) {
             $file = $request->file('cover_upload');
-            $filename = 'covers/custom_'.time().'.'.$file->getClientOriginalExtension();
-            Storage::disk('public')->put($filename, file_get_contents($file->getRealPath()));
+            // Str::random statt time(): zwei Uploads in derselben Sekunde ueberschrieben
+            // einander sonst, und der zweite Film zeigte das Cover des ersten.
+            $filename = 'covers/custom_'.Str::random(20).'.'.$file->guessExtension();
+            // UploadDisk statt fest 'public': bei UPLOAD_DISK=s3 loest Movie::resolveImageUrl
+            // Pfade mit '/' auf die S3-URL auf – lokal gespeicherte Bilder waeren dann tot.
+            $file->storeAs('', $filename, 'public');
             $validated['cover_id'] = $filename;
         }
 
         if ($request->hasFile('backdrop_upload')) {
             $file = $request->file('backdrop_upload');
-            $filename = 'backdrops/custom_'.time().'.'.$file->getClientOriginalExtension();
-            Storage::disk('public')->put($filename, file_get_contents($file->getRealPath()));
+            $filename = 'backdrops/custom_'.Str::random(20).'.'.$file->guessExtension();
+            $file->storeAs('', $filename, 'public');
             $validated['backdrop_id'] = $filename;
         }
     }
@@ -157,7 +187,7 @@ class MovieController extends Controller
     protected function downloadTmdbImage(string $path, string $size, string $folder): ?string
     {
         try {
-            $response = Http::withOptions(['verify' => false])->get("https://image.tmdb.org/t/p/{$size}".$path);
+            $response = Http::get("https://image.tmdb.org/t/p/{$size}".$path);
             if ($response->successful()) {
                 $prefix = $folder === 'backdrops' ? 'tmdb_backdrop_' : 'tmdb_';
                 $filename = $prefix.ltrim($path, '/');
@@ -234,7 +264,7 @@ class MovieController extends Controller
         }
 
         try {
-            $response = Http::withOptions(['verify' => false])->get('https://image.tmdb.org/t/p/w185'.$profilePath);
+            $response = Http::get('https://image.tmdb.org/t/p/w185'.$profilePath);
             if ($response->successful()) {
                 $filename = 'actors/tmdb_'.ltrim($profilePath, '/');
                 Storage::disk('public')->put($filename, $response->body());
@@ -264,10 +294,95 @@ class MovieController extends Controller
      */
     public function destroy(Movie $movie)
     {
-        $movie->delete();
+        // is_deleted-Flag statt Hard-Delete (wie Bulk-Aktion & API-Endpunkt) - sonst
+        // verschwindet die Zeile spurlos aus der DB und Sync-Clients (Desktop-App)
+        // erfahren nie von der Löschung, da der Delta-Export sie nicht mehr finden kann.
+        $movie->update(['is_deleted' => true, 'deleted_at' => now()]);
         $this->logMovieActivity($movie, 'MOVIE_DELETE');
 
         return redirect()->route('admin.movies.index')->with('success', 'Film gelöscht.');
+    }
+
+    // ─── CSV Export ────────────────────────────────────────────────────────────
+
+    public function export()
+    {
+        $movies = Movie::where('is_deleted', false)
+            ->orderBy('title')
+            ->get(['title', 'year', 'genre', 'collection_type', 'runtime', 'rating', 'director', 'overview', 'tmdb_id', 'trailer_url', 'created_at']);
+
+        $filename = 'filmsammlung_' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($movies) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM for Excel
+            fputcsv($handle, ['Titel', 'Jahr', 'Genre', 'Typ', 'Laufzeit (min)', 'Bewertung', 'Regisseur', 'Beschreibung', 'TMDb ID', 'Trailer URL', 'Hinzugefügt am'], ';');
+            foreach ($movies as $movie) {
+                fputcsv($handle, [
+                    $movie->title,
+                    $movie->year,
+                    $movie->genre,
+                    $movie->collection_type,
+                    $movie->runtime,
+                    $movie->rating,
+                    $movie->director,
+                    $movie->overview,
+                    $movie->tmdb_id,
+                    $movie->trailer_url,
+                    $movie->created_at?->format('d.m.Y'),
+                ], ';');
+            }
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    // ─── Duplicate Detection ───────────────────────────────────────────────────
+
+    public function duplicates()
+    {
+        $duplicateGroups = Movie::where('is_deleted', false)
+            ->selectRaw('title, year, COUNT(*) as count')
+            ->groupBy('title', 'year')
+            ->having('count', '>', 1)
+            ->orderByDesc('count')
+            ->get()
+            ->map(function ($group) {
+                $group->movies = Movie::where('title', $group->title)
+                    ->where('year', $group->year)
+                    ->where('is_deleted', false)
+                    ->get();
+                return $group;
+            });
+
+        return view('admin.movies.duplicates', compact('duplicateGroups'));
+    }
+
+    // ─── Batch Action ──────────────────────────────────────────────────────────
+
+    public function batchAction(Request $request)
+    {
+        $request->validate([
+            'action' => 'required|in:delete,restore,genre',
+            'ids'    => 'required|array|min:1',
+            'ids.*'  => 'integer|exists:movies,id',
+            'genre'  => 'required_if:action,genre|nullable|string|max:255',
+        ]);
+
+        $count = count($request->ids);
+
+        switch ($request->action) {
+            case 'delete':
+                Movie::whereIn('id', $request->ids)->update(['is_deleted' => true, 'deleted_at' => now()]);
+                return back()->with('success', "{$count} Filme wurden deaktiviert.");
+            case 'restore':
+                Movie::whereIn('id', $request->ids)->update(['is_deleted' => false, 'deleted_at' => null]);
+                return back()->with('success', "{$count} Filme wurden wiederhergestellt.");
+            case 'genre':
+                Movie::whereIn('id', $request->ids)->update(['genre' => $request->genre]);
+                return back()->with('success', "Genre für {$count} Filme auf \"{$request->genre}\" gesetzt.");
+        }
+
+        return back()->with('error', 'Ungültige Aktion.');
     }
 
     /**

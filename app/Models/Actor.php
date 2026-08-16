@@ -14,6 +14,7 @@ class Actor extends Model
         'imdb_id',
         'first_name',
         'last_name',
+        'original_name',
         'slug',
         'profile_path',
         'birth_year',
@@ -22,6 +23,7 @@ class Actor extends Model
         'place_of_birth',
         'homepage',
         'bio',
+        'bio_locale',
         'view_count',
     ];
 
@@ -43,13 +45,19 @@ class Actor extends Model
         if (str_starts_with($this->profile_path, 'http')) {
             $url = $this->profile_path;
         } elseif (str_starts_with($this->profile_path, '/')) {
-            $url = 'https://image.tmdb.org/t/p/w185'.$this->profile_path;
-        } elseif (str_contains($this->profile_path, '/') && str_contains($this->profile_path, '.') && $disk->exists($this->profile_path)) {
-            $url = $disk->url($this->profile_path);
-        } elseif ($disk->exists('actors/'.$this->profile_path)) {
-            $url = $disk->url('actors/'.$this->profile_path);
-        } elseif ($disk->exists($this->profile_path)) { // Direct check if the path itself is valid
-            $url = $disk->url($this->profile_path);
+            // Roher TMDb-Pfad wird NICHT gehotlinkt -> Platzhalter (null).
+            $url = null;
+        } elseif (str_contains($this->profile_path, '/') && str_contains($this->profile_path, '.')) {
+            if ($disk->exists($this->profile_path)) {
+                $url = '/media/'.$this->profile_path;
+            }
+        } else {
+            // Check structured paths
+            if ($disk->exists('actors/'.$this->profile_path)) {
+                $url = '/media/actors/'.$this->profile_path;
+            } elseif ($disk->exists($this->profile_path)) {
+                $url = '/media/'.$this->profile_path;
+            }
         }
 
         return $url;

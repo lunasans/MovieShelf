@@ -28,7 +28,9 @@ class InfoController extends Controller
     {
         return response()->json([
             'app_name' => config('app.name'),
-            'version' => config('app.version'),
+            'version' => config('app.shelf_version'),
+            'saas_version' => config('app.saas_version'),
+            'shelf_version' => config('app.shelf_version'),
         ]);
     }
 }

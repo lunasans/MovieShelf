@@ -1,0 +1,89 @@
+<div class="group cursor-pointer flex items-center gap-6 p-4 rounded-3xl glass border border-white/5 hover:border-rose-500/30 hover:bg-white/5 transition-all duration-300"
+    x-data="{ isWatched: {{ $movie->isWatchedBy(Auth::user()) ? 'true' : 'false' }} }"
+    @movie-watched-updated.window="if($event.detail.movieId === {{ $movie->id }}) isWatched = $event.detail.watched"
+    @click="fetchDetails({{ $movie->id }}, '{{ $movie->backdrop_url }}')">
+    <!-- Thumbnail -->
+    <div class="relative w-20 aspect-[2/3] rounded-xl overflow-hidden border border-white/10 shrink-0">
+        @if($movie->cover_url)
+            <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
+        @else
+            <div class="w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center p-2 text-center">
+                <i class="bi bi-film text-lg text-white/15 mb-1"></i>
+                <span class="text-[8px] font-black text-white/40 uppercase tracking-tight leading-snug line-clamp-3">{{ $movie->title }}</span>
+            </div>
+        @endif
+        <!-- Watched Badge -->
+        <div class="absolute top-2 left-2" x-show="isWatched" x-cloak>
+            <div class="w-6 h-6 bg-rose-500/90 backdrop-blur-md rounded-full border border-white/20 shadow-md flex items-center justify-center">
+                <i class="bi bi-eye-fill text-white text-[10px] leading-none m-0 p-0"></i>
+            </div>
+        </div>
+        <!-- Media Tag Banderole (Top Right Corner) -->
+        @if($movie->tag)
+        @php
+            $tagMap = [
+                'DVD'       => ['label' => 'DVD',     'bg' => 'bg-orange-800/80'],
+                'BluRay'    => ['label' => 'Blu-ray', 'bg' => 'bg-rose-800/80'],
+                '4K'        => ['label' => '4K',      'bg' => 'bg-cyan-800/80'],
+                'Streaming' => ['label' => 'Stream',  'bg' => 'bg-emerald-800/80'],
+                'Digital'   => ['label' => 'Digital', 'bg' => 'bg-violet-800/80'],
+                'VHS'       => ['label' => 'VHS',     'bg' => 'bg-stone-600/80'],
+                'Leihe'     => ['label' => 'Leihe',   'bg' => 'bg-amber-800/80'],
+            ];
+            $tag = $tagMap[$movie->tag] ?? ['label' => $movie->tag, 'bg' => 'bg-black/50'];
+        @endphp
+        <div class="absolute top-[12px] -right-[28px] z-20 w-[100px] py-[3px] {{ $tag['bg'] }} rotate-45 text-center shadow-md pointer-events-none">
+            <span class="text-[7px] font-black text-white uppercase tracking-wider drop-shadow-sm">{{ $tag['label'] }}</span>
+        </div>
+        @endif
+    </div>
+
+    <!-- Info Column -->
+    <div class="flex-grow min-w-0">
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <h3 class="text-base font-bold text-white group-hover:text-rose-400 transition-colors truncate uppercase tracking-tight">
+                    {{ $movie->title }}
+                </h3>
+                <div class="flex items-center gap-3 mt-1 underline-offset-4">
+                    <span class="text-xs text-gray-400 font-bold italic">{{ $movie->year }}</span>
+                    <span class="w-1 h-1 bg-rose-500 rounded-full opacity-40"></span>
+                    <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">{{ $movie->genre }}</span>
+                    @if($movie->collection_type)
+                        <span class="w-1 h-1 bg-rose-500 rounded-full opacity-40"></span>
+                        <span class="text-[10px] text-rose-400 font-black uppercase tracking-widest">{{ $movie->collection_type }}</span>
+                    @endif
+                    @if($movie->boxset_children_count > 0)
+                        <span class="w-1 h-1 bg-indigo-500 rounded-full opacity-40"></span>
+                        <button @click.stop="$dispatch('open-boxset', { id: {{ $movie->id }}, title: '{{ addslashes($movie->title) }}' })"
+                                class="text-[10px] text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-300 transition-colors flex items-center gap-1">
+                            <i class="bi bi-collection-play-fill"></i>
+                            <span>{{ __('BoxSet (:count)', ['count' => $movie->boxset_children_count]) }}</span>
+                        </button>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Rating -->
+            <div class="flex flex-col items-end shrink-0">
+                <div class="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-xl border border-white/10">
+                    <i class="bi bi-star-fill text-xs text-yellow-400"></i>
+                    <span class="text-sm font-black text-white">{{ number_format($movie->rating ?? 0, 1) }}</span>
+                </div>
+            </div>
+        </div>
+
+        @if($movie->overview)
+            <p class="mt-3 text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                {!! \App\Services\ShortcodeService::parse($movie->overview) !!}
+            </p>
+        @endif
+    </div>
+
+    <!-- Action Arrow -->
+    <div class="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pr-2">
+        <div class="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 border border-rose-500/20">
+            <i class="bi bi-chevron-right text-lg"></i>
+        </div>
+    </div>
+</div>

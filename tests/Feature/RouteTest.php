@@ -41,10 +41,14 @@ class RouteTest extends TestCase
         $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
     }
 
-    public function test_admin_dashboard_is_accessible_to_authenticated_users()
+    public function test_admin_dashboard_requires_admin_flag()
     {
+        // Ohne is_admin greift EnsureUserIsAdmin und liefert 403.
         $user = User::factory()->create();
-        $this->actingAs($user)->get(route('admin.dashboard'))->assertStatus(200);
+        $this->actingAs($user)->get(route('admin.dashboard'))->assertStatus(403);
+
+        $admin = User::factory()->create(['is_admin' => true]);
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertStatus(200);
     }
 
     public function test_language_switch_route()

@@ -20,19 +20,32 @@ class ShortcodeService
             return '';
         }
 
+        // Escape the full text first so stored HTML can never execute (XSS);
+        // only the actor links generated below are emitted as HTML.
+        $text = e($text);
+
+        // Alt-Importe (z. B. DVD Profiler) enthalten echtes Format-HTML in der
+        // Beschreibung. Eine kleine Whitelist wird nach dem Escapen wiederhergestellt –
+        // nur der blanke Tag-Name, Attribute werden verworfen (XSS-sicher).
+        $text = preg_replace(
+            '/&lt;(\/?)(p|br|em|strong|i|b|u)(?:(?!&gt;).)*?&gt;/i',
+            '<$1$2>',
+            $text
+        );
+
         // Pattern for {!Actor}Name} or [Actor:Name] - Case-insensitive and robust
         $pattern = '/\{!Actor\}(.*?)[\}\]]/i';
 
         return preg_replace_callback($pattern, function ($matches) {
-            $rawName = $matches[1];
-            $cleanName = trim(strip_tags($rawName)); // Remove tags for DB lookup
-            
+            $rawName = $matches[1]; // already HTML-escaped
+            $cleanName = trim(strip_tags(htmlspecialchars_decode($rawName, ENT_QUOTES))); // Decode + remove tags for DB lookup
+
             if (empty($cleanName)) {
                 return $rawName;
             }
 
-            // Cache lookup for 24 hours
-            $cacheKey = 'actor_link_'.md5($cleanName);
+            // Cache lookup for 24 hours (v2 key: cached value is pre-escaped)
+            $cacheKey = 'actor_link_v2_'.md5($cleanName);
             
             return Cache::remember($cacheKey, now()->addHours(24), function () use ($cleanName, $rawName) {
                 // Split name by space to handle first/last name search more robustly
@@ -61,7 +74,7 @@ class ShortcodeService
 
                 if ($actor) {
                     $url = route('actors.show', $actor);
-                    return '<a href="'.$url.'" class="text-blue-400 hover:text-blue-300 transition-colors font-medium border-b border-blue-400/30 hover:border-blue-300">'.$rawName.'</a>';
+                    return '<a href="'.e($url).'" class="text-blue-400 hover:text-blue-300 transition-colors font-medium border-b border-blue-400/30 hover:border-blue-300">'.$rawName.'</a>';
                 }
 
                 return $rawName; // Fallback

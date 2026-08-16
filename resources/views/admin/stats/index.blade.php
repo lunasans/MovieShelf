@@ -101,7 +101,7 @@
     </div>
 
     @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.js" crossorigin="anonymous"></script>
+    {{-- Chart.js wird global über resources/js/app.js bereitgestellt (kein CDN) --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('visitorChart').getContext('2d');
@@ -113,10 +113,10 @@
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: {!! json_encode($labels) !!},
+                    labels: {!! json_encode($labels, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
                     datasets: [{
                         label: 'Besucher',
-                        data: {!! json_encode($data) !!},
+                        data: {!! json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
                         borderColor: '#e11d48',
                         borderWidth: 5,
                         backgroundColor: gradient,

@@ -22,7 +22,14 @@ class TmdbService
 
     public function __construct()
     {
-        $this->apiKey = Setting::get('tmdb_api_key', '');
+        $this->apiKey = (string) Setting::get('tmdb_api_key', '');
+
+        $this->language = Setting::get('tmdb_language', 'de-DE') ?: 'de-DE';
+    }
+
+    public function getLanguage(): string
+    {
+        return $this->language;
     }
 
     /**
@@ -36,7 +43,7 @@ class TmdbService
 
         try {
             $params['api_key'] = $this->apiKey;
-            $params['language'] = $this->language;
+            $params['language'] = $params['language'] ?? $this->language;
 
             $response = Http::withOptions([
                 'curl' => [CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4]
@@ -83,9 +90,14 @@ class TmdbService
     /**
      * Get detailed person information
      */
-    public function getPersonDetails(int $personId): array
+    public function getPersonDetails(int $personId, ?string $language = null, bool $withTranslations = false): array
     {
-        return $this->executeRequest("/person/{$personId}", [], 'TMDb Person Details Error');
+        $params = $language ? ['language' => $language] : [];
+        if ($withTranslations) {
+            $params['append_to_response'] = 'translations';
+        }
+
+        return $this->executeRequest("/person/{$personId}", $params, 'TMDb Person Details Error');
     }
 
     /**

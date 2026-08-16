@@ -4,6 +4,7 @@ namespace Tests\Feature\Services;
 
 use App\Models\Actor;
 use App\Models\Movie;
+use App\Models\Season;
 use App\Models\User;
 use App\Services\TmdbImportService;
 use App\Services\TmdbService;
@@ -84,6 +85,7 @@ class TmdbImportServiceTest extends TestCase
         $this->assertEquals('Test Movie', $movie->title);
         $this->assertEquals(2024, $movie->year);
         $this->assertEquals(12, $movie->rating_age);
+        $this->assertEquals('Film', $movie->collection_type);
         $this->assertEquals('Director Name', $movie->director);
         $this->assertEquals('Action, Sci-Fi', $movie->genre);
         $this->assertEquals($this->user->id, $movie->user_id);
@@ -134,6 +136,88 @@ class TmdbImportServiceTest extends TestCase
         
         $this->assertCount(1, $movie->seasons);
         $this->assertCount(1, $movie->seasons->first()->episodes);
+    }
+
+    public function test_import_seasons_for_existing_skips_owned_seasons()
+    {
+        $movie = Movie::factory()->create([
+            'collection_type' => 'Serie',
+            'tmdb_id' => 999,
+            'tmdb_type' => 'tv',
+        ]);
+        Season::create(['movie_id' => $movie->id, 'season_number' => 1, 'title' => 'Staffel 1']);
+
+        $this->tmdbMock->shouldReceive('getTvDetails')->with(999)->once()->andReturn([
+            'name' => 'Testserie',
+            'seasons' => [
+                ['season_number' => 1, 'name' => 'Staffel 1'],
+                ['season_number' => 2, 'name' => 'Staffel 2'],
+            ],
+        ]);
+        // Nur Staffel 2 wird geholt — Staffel 1 ist vorhanden und wird übersprungen
+        $this->tmdbMock->shouldReceive('getSeasonDetails')->with(999, 2)->once()
+            ->andReturn(['episodes' => [['episode_number' => 1, 'name' => 'Ep 1']]]);
+
+        $imported = $this->service->importSeasonsForExisting($movie, [1, 2]);
+
+        $this->assertEquals(1, $imported);
+        $this->assertEquals([1, 2], $movie->seasons()->orderBy('season_number')->pluck('season_number')->all());
+        $this->assertEquals(1, $movie->seasons()->where('season_number', 2)->first()->episodes()->count());
+    }
+
+    public function test_import_seasons_for_existing_returns_zero_when_nothing_new()
+    {
+        $movie = Movie::factory()->create([
+            'collection_type' => 'Serie',
+            'tmdb_id' => 999,
+            'tmdb_type' => 'tv',
+        ]);
+        Season::create(['movie_id' => $movie->id, 'season_number' => 1, 'title' => 'Staffel 1']);
+
+        $this->tmdbMock->shouldReceive('getTvDetails')->with(999)->once()->andReturn([
+            'name' => 'Testserie',
+            'seasons' => [['season_number' => 1, 'name' => 'Staffel 1']],
+        ]);
+        $this->tmdbMock->shouldNotReceive('getSeasonDetails');
+
+        $this->assertEquals(0, $this->service->importSeasonsForExisting($movie, [1]));
+        $this->assertEquals(1, $movie->seasons()->count());
+    }
+
+    public function test_remove_seasons_for_existing_deletes_seasons_and_episodes()
+    {
+        $movie = Movie::factory()->create([
+            'collection_type' => 'Serie',
+            'tmdb_id' => 999,
+            'tmdb_type' => 'tv',
+        ]);
+        $s1 = Season::create(['movie_id' => $movie->id, 'season_number' => 1, 'title' => 'Staffel 1']);
+        $s2 = Season::create(['movie_id' => $movie->id, 'season_number' => 2, 'title' => 'Staffel 2']);
+        $s2->episodes()->create(['episode_number' => 1, 'title' => 'Ep 1']);
+
+        $before = $movie->updated_at;
+
+        $removed = $this->service->removeSeasonsForExisting($movie, [2, 5]);
+
+        $this->assertEquals(1, $removed);
+        $this->assertEquals([1], $movie->seasons()->pluck('season_number')->all());
+        // Episoden hängen per FK-Cascade an der Staffel
+        $this->assertDatabaseMissing('episodes', ['season_id' => $s2->id]);
+        // Sync: Serien-Datensatz muss angefasst werden, damit Clients die Änderung ziehen
+        $this->assertTrue($movie->fresh()->updated_at->greaterThanOrEqualTo($before));
+    }
+
+    public function test_remove_seasons_for_existing_returns_zero_when_nothing_matches()
+    {
+        $movie = Movie::factory()->create([
+            'collection_type' => 'Serie',
+            'tmdb_id' => 999,
+            'tmdb_type' => 'tv',
+        ]);
+        Season::create(['movie_id' => $movie->id, 'season_number' => 1, 'title' => 'Staffel 1']);
+
+        $this->assertEquals(0, $this->service->removeSeasonsForExisting($movie, [3]));
+        $this->assertEquals(1, $movie->seasons()->count());
     }
 
     public function test_bulk_update_success()

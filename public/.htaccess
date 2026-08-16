@@ -3,6 +3,15 @@
         Options -MultiViews -Indexes
     </IfModule>
 
+    # Increase upload limits for Desktop App releases
+    <IfModule mod_php.c>
+        php_value upload_max_filesize 250M
+        php_value post_max_size 260M
+        php_value memory_limit 256M
+        php_value max_execution_time 300
+        php_value max_input_time 300
+    </IfModule>
+
     RewriteEngine On
 
     # Handle Authorization Header

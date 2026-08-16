@@ -40,6 +40,28 @@ class StatsControllerTest extends TestCase
         $response->assertSee('Sci-Fi');
     }
 
+    public function test_series_counted_by_collection_type_without_tmdb_type()
+    {
+        $user = User::factory()->create();
+
+        // Serie aus dem Desktop-Sync: collection_type gesetzt, tmdb_type fehlt
+        Movie::forceCreate([
+            'id' => 1,
+            'title' => 'Desktop-Serie',
+            'year' => 2020,
+            'collection_type' => 'Serie',
+            'tmdb_type' => null,
+            'user_id' => $user->id,
+            'is_deleted' => false,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('statistics'));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('totalSeries', 1);
+        $response->assertViewHas('totalFilms', 0);
+    }
+
     public function test_index_displays_statistics_via_ajax()
     {
         $user = User::factory()->create();

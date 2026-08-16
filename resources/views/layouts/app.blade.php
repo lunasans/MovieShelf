@@ -1,6 +1,6 @@
 @php
     $isAuthPage = request()->routeIs('login', 'two-factor.login');
-    $isStreaming = $isAuthPage || ((request()->routeIs('dashboard', 'movies.show', 'actors.show', 'movies.trailers', 'profile.edit')) && (optional(auth()->user())->layout ?? \App\Models\Setting::get('default_guest_layout', 'classic')) === 'streaming');
+    $isStreaming = $isAuthPage || ((request()->routeIs('dashboard', 'movies.show', 'actors.show', 'actors.index', 'movies.trailers', 'profile.edit', 'statistics', 'impressum', 'lists.*')) && (optional(auth()->user())->layout ?? \App\Models\Setting::get('default_guest_layout', 'classic')) === 'streaming');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" 
@@ -17,14 +17,7 @@
 
         <title>{{ \App\Models\Setting::get('site_title', config('app.name', 'MovieShelf')) }}</title>
 
-        <!-- Fonts: Outfit (Display) and Plus Jakarta Sans (Body) -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-        <!-- Scripts -->
+        <!-- Assets: Fonts, Icons, Chart.js selbst gehostet (kein CDN, DSGVO) -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <style>
@@ -71,14 +64,60 @@
             <div class="absolute inset-0 bg-gradient-to-t from-[#0c0c0e] via-transparent to-[#0c0c0e]/50"></div>
         </div>
 
+        {{-- Impersonation Banner --}}
+        @if(session('impersonated_by'))
+        <div class="fixed top-0 inset-x-0 z-[9999] flex items-center justify-between gap-4 px-6 py-2.5 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest shadow-lg">
+            <div class="flex items-center gap-2">
+                <i class="bi bi-person-badge-fill"></i>
+                Support-Modus · Eingeloggt als Tenant-Admin · Cadmin: {{ session('impersonated_by') }}
+            </div>
+            <a href="{{ route('impersonate.exit') }}"
+               class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 transition-colors">
+                <i class="bi bi-box-arrow-right"></i> Beenden
+            </a>
+        </div>
+        <div class="h-10"></div>
+        @endif
+
+        {{-- Global Announcement Banner --}}
+        @if(!empty($globalAnnouncement['active']))
+        @php
+            $annType = $globalAnnouncement['type'] ?? 'info';
+            $annColors = match($annType) {
+                'warning'  => 'bg-amber-500 text-black',
+                'critical' => 'bg-rose-600 text-white',
+                default    => 'bg-indigo-500 text-white',
+            };
+            $annIcon = match($annType) {
+                'warning'  => 'bi-exclamation-triangle-fill',
+                'critical' => 'bi-exclamation-octagon-fill',
+                default    => 'bi-info-circle-fill',
+            };
+            $annKey = 'ann_' . md5($globalAnnouncement['text'] ?? '');
+        @endphp
+        <div x-data="{ show: localStorage.getItem('{{ $annKey }}') !== '1' }"
+             x-show="show"
+             x-transition
+             class="{{ $annColors }} relative z-50 flex items-center justify-between gap-4 px-6 py-2.5 text-xs font-bold shadow-lg">
+            <div class="flex items-center gap-2">
+                <i class="bi {{ $annIcon }}"></i>
+                <span>{{ $globalAnnouncement['text'] }}</span>
+            </div>
+            <button @click="show = false; localStorage.setItem('{{ $annKey }}', '1')"
+                    class="opacity-60 hover:opacity-100 transition-opacity">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        @endif
+
         <div class="{{ $isStreaming ? 'relative z-10' : 'px-4 pb-12 sm:px-6 lg:px-8 relative z-10' }}">
             @include('layouts.navigation')
 
             <!-- Page Content -->
             @php
-                $hasHero = request()->routeIs('dashboard', 'movies.show', 'actors.show', 'movies.trailers');
+                $hasHero = request()->routeIs('dashboard', 'movies.show', 'actors.show');
                 $mainClasses = $isStreaming 
-                    ? ($hasHero ? 'mt-0' : 'pt-28') 
+                    ? ($hasHero ? 'mt-0' : 'pt-32') 
                     : 'mt-8';
             @endphp
             <main class="{{ $mainClasses }}">
@@ -92,10 +131,58 @@
             <x-theme-switcher />
         @endif
 
+        {{-- Akzent-Helfer (folgen der Theme-Farbe --accent-primary), u.a. für den Serien-Fortschritt --}}
+        <style>
+            .accent-fill { background-color: var(--accent-primary) !important; }
+            .accent-text { color: var(--accent-primary) !important; }
+            .accent-border { border-color: var(--accent-primary) !important; }
+            .accent-soft-bg { background-color: color-mix(in srgb, var(--accent-primary) 18%, transparent) !important; }
+            .accent-soft-border { border-color: color-mix(in srgb, var(--accent-primary) 45%, transparent) !important; }
+        </style>
+
+        {{-- Episoden-Tracking (Serien): global registriert, damit auch AJAX-eingefügte Detailansichten funktionieren --}}
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('episodeTracker', (watched, order, nextId, canTrack) => ({
+                    activeSeason: null,
+                    watched: watched || [],
+                    order: order || [],
+                    nextId: nextId,
+                    canTrack: canTrack,
+                    isWatched(id) { return this.watched.includes(id); },
+                    isNext(id) { return id === this.nextId; },
+                    seasonWatched(ids) { return ids.filter(i => this.watched.includes(i)).length; },
+                    recomputeNext() { this.nextId = this.order.find(i => !this.watched.includes(i)) ?? null; },
+                    async toggleEp(id) {
+                        if (!this.canTrack) { window.location.href = '{{ route('login') }}'; return; }
+                        try {
+                            const r = await fetch(`/episodes/${id}/watched`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } });
+                            const d = await r.json();
+                            if (d.watched) { if (!this.watched.includes(id)) this.watched.push(id); }
+                            else { this.watched = this.watched.filter(i => i !== id); }
+                            this.recomputeNext();
+                        } catch (e) { console.error('toggle episode failed', e); }
+                    },
+                    async toggleSeason(sid, ids) {
+                        if (!this.canTrack) { window.location.href = '{{ route('login') }}'; return; }
+                        const allWatched = ids.every(i => this.watched.includes(i));
+                        try {
+                            const r = await fetch(`/seasons/${sid}/watched`, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ watched: !allWatched }) });
+                            const d = await r.json();
+                            if (d.watched) { ids.forEach(i => { if (!this.watched.includes(i)) this.watched.push(i); }); }
+                            else { this.watched = this.watched.filter(i => !ids.includes(i)); }
+                            this.recomputeNext();
+                        } catch (e) { console.error('toggle season failed', e); }
+                    }
+                }));
+            });
+        </script>
+
         @stack('scripts')
 
         @if(\App\Models\Setting::get('cookie_banner_enabled', '1') == '1')
-            @include('partials.cookie-banner')
+            @include('tenant.partials.cookie-banner')
         @endif
+        @stack('modals')
     </body>
 </html>

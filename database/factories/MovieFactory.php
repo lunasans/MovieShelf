@@ -20,7 +20,7 @@ class MovieFactory extends Factory
         return [
             'title' => fake()->sentence(3),
             'year' => fake()->year(),
-            'collection_type' => fake()->randomElement(['Blu-ray', 'DVD', '4K', 'Serie']),
+            'collection_type' => fake()->randomElement(['Film', 'Serie']),
             'genre' => implode(', ', fake()->words(3)),
             'runtime' => fake()->numberBetween(60, 240),
             'rating' => fake()->numberBetween(0, 100),

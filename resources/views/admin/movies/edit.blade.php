@@ -2,7 +2,7 @@
     @section('header_title', 'Film bearbeiten')
     
     @push('styles')
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link href="{{ asset('vendor/quill/quill.snow.css') }}" rel="stylesheet">
     <style>
         .ql-toolbar.ql-snow {
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -98,12 +98,26 @@
                     </div>
 
                     <div>
-                        <label for="collection_type" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Archiv-Status *</label>
+                        <label for="collection_type" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Typ *</label>
                         <select name="collection_type" id="collection_type" x-model="formData.collection_type" required
                                 class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none cursor-pointer font-bold">
-                            <option value="Owned">Besitzt (Physisch)</option>
-                            <option value="Serie">Serie (Episodisch)</option>
-                            <option value="Stream">Streaming / Digital</option>
+                            <option value="Film">Film</option>
+                            <option value="Serie">Serie</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="tag" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Medium / Format</label>
+                        <select name="tag" id="tag" x-model="formData.tag"
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none cursor-pointer font-bold">
+                            <option value="">— Kein Tag —</option>
+                            <option value="DVD">DVD</option>
+                            <option value="BluRay">Blu-ray</option>
+                            <option value="4K">4K UHD</option>
+                            <option value="Streaming">Streaming</option>
+                            <option value="Digital">Digital</option>
+                            <option value="VHS">VHS</option>
+                            <option value="Leihe">Leihe</option>
                         </select>
                     </div>
 
@@ -140,6 +154,65 @@
                         <label for="created_at" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Hinzugefügt am:</label>
                         <input type="datetime-local" name="created_at" id="created_at" x-model="formData.created_at"
                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all font-bold">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physische Sammlung -->
+            <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-rose-600/5 to-transparent pointer-events-none"></div>
+                <h3 class="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-10 flex items-center gap-3">
+                    <i class="bi bi-collection-fill text-rose-500"></i>
+                    Physische Sammlung
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <label for="edition" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Edition / Auflage</label>
+                        <input type="text" name="edition" id="edition" x-model="formData.edition" placeholder="z.B. Steelbook, Director's Cut"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        @error('edition') <p class="text-rose-400 text-[10px] mt-2 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="region_code" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Regionalcode</label>
+                        <input type="text" name="region_code" id="region_code" x-model="formData.region_code" placeholder="z.B. 2, B, Free"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        @error('region_code') <p class="text-rose-400 text-[10px] mt-2 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="disc_location" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Standort im Regal</label>
+                        <input type="text" name="disc_location" id="disc_location" x-model="formData.disc_location" placeholder="z.B. Regal 3, Fach B"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        @error('disc_location') <p class="text-rose-400 text-[10px] mt-2 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="condition" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Zustand</label>
+                        <select name="condition" id="condition" x-model="formData.condition"
+                                class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all appearance-none cursor-pointer">
+                            <option value="">— Nicht angegeben —</option>
+                            <option value="new">Neu</option>
+                            <option value="like_new">Wie neu</option>
+                            <option value="good">Gut</option>
+                            <option value="acceptable">Akzeptabel</option>
+                            <option value="damaged">Beschädigt</option>
+                        </select>
+                        @error('condition') <p class="text-rose-400 text-[10px] mt-2 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="purchase_date" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Kaufdatum</label>
+                        <input type="date" name="purchase_date" id="purchase_date" x-model="formData.purchase_date"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        @error('purchase_date') <p class="text-rose-400 text-[10px] mt-2 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="purchase_price" class="block text-[10px] font-black text-white/30 uppercase tracking-[0.2em] mb-3 px-1">Kaufpreis (€)</label>
+                        <input type="number" step="0.01" min="0" name="purchase_price" id="purchase_price" x-model="formData.purchase_price" placeholder="0,00"
+                               class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-rose-500/50 transition-all">
+                        @error('purchase_price') <p class="text-rose-400 text-[10px] mt-2 font-bold">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>
@@ -244,7 +317,7 @@
                             <template x-for="actor in searchResults" :key="actor.id">
                                 <div @click="addActor(actor)" class="p-3 hover:bg-white/5 cursor-pointer flex items-center gap-3 border-b border-white/5 last:border-0 group">
                                     <div class="w-8 h-10 rounded-md bg-white/5 overflow-hidden flex-shrink-0">
-                                        <img :src="actor.profile_path ? (actor.profile_path.startsWith('http') ? actor.profile_path : '/storage/'+actor.profile_path) : 'https://ui-avatars.com/api/?name='+actor.first_name+'+'+actor.last_name+'&background=random'" 
+                                        <img :src="actor.profile_url || initialsAvatar(actor.first_name, actor.last_name)"
                                              class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex-1">
@@ -265,7 +338,7 @@
                             <input type="hidden" :name="'actors['+index+'][id]'" :value="actor.id">
                             
                             <div class="w-12 h-16 rounded-xl bg-white/5 overflow-hidden flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
-                                <img :src="actor.profile_path ? (actor.profile_path.startsWith('http') ? actor.profile_path : '/storage/'+actor.profile_path) : 'https://ui-avatars.com/api/?name='+actor.first_name+'+'+actor.last_name+'&background=random'" 
+                                <img :src="actor.profile_url || initialsAvatar(actor.first_name, actor.last_name)"
                                      class="w-full h-full object-cover">
                             </div>
                             
@@ -316,6 +389,102 @@
                 </button>
             </div>
         </form>
+
+        @if($movie->collection_type === 'Serie' && $movie->tmdb_id)
+        <!-- Staffeln nachladen -->
+        <div class="glass p-10 rounded-[3rem] border-white/5 shadow-2xl relative overflow-hidden mb-12"
+             x-data="seasonBackfill(@js($movie->seasons()->orderBy('season_number')->pluck('season_number')))">
+            <div class="flex items-center justify-between gap-6">
+                <div>
+                    <h2 class="text-xl font-black text-white flex items-center gap-3">
+                        <i class="bi bi-collection-play text-rose-500"></i>
+                        Staffeln
+                    </h2>
+                    <p class="text-white/30 text-[10px] font-black uppercase tracking-[0.2em] mt-2"
+                       x-text="existing.length + ' Staffel(n) in der Sammlung'"></p>
+                </div>
+                <button type="button" @click="open()"
+                        class="px-6 py-3.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2">
+                    <i class="bi bi-pencil-square"></i>
+                    Staffeln verwalten
+                </button>
+            </div>
+            <template x-if="error">
+                <div class="mt-6 p-5 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-[1.5rem] text-sm font-bold" x-text="error"></div>
+            </template>
+
+            <!-- Staffel-Auswahl Modal -->
+            <div x-show="showModal"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-md"
+                 style="display: none;"
+                 x-cloak>
+                <div class="glass w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-3xl border border-white/10 max-h-[85vh] flex flex-col" @click.away="showModal = false">
+                    <div class="p-10 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+                        <div>
+                            <h2 class="text-3xl font-black text-white tracking-tight">Staffeln verwalten</h2>
+                            <p class="text-rose-500/60 text-[10px] uppercase font-black tracking-[0.3em] mt-2">{{ $movie->title }}</p>
+                            <p class="text-white/30 text-xs mt-3">Fehlende Staffeln anhaken zum Nachladen, vorhandene abwählen zum Entfernen.</p>
+                        </div>
+                        <button @click="showModal = false" class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 hover:text-white hover:bg-white/10 transition-all">
+                            <i class="bi bi-x-lg text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="overflow-y-auto p-10 flex-1 custom-scrollbar">
+                        <div x-show="loading" class="flex justify-center py-16">
+                            <div class="animate-spin h-8 w-8 border-2 border-rose-500 border-t-transparent rounded-full"></div>
+                        </div>
+                        <div x-show="!loading" class="grid grid-cols-1 gap-5">
+                            <template x-for="season in seasons" :key="season.season_number">
+                                <label class="group flex items-center gap-6 p-5 rounded-[1.5rem] border bg-white/[0.02] transition-all hover:bg-white/[0.06] cursor-pointer"
+                                       :class="isRemoving(season.season_number) ? 'border-rose-500/40' : 'border-white/5 hover:border-rose-500/30'">
+                                    <input type="checkbox" :value="season.season_number" x-model="selected"
+                                           class="w-6 h-6 rounded-lg bg-white/5 border-white/10 text-rose-600 focus:ring-rose-500/50">
+                                    <div class="w-14 h-20 bg-gray-800 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 shadow-lg">
+                                        <template x-if="season.poster_path">
+                                            <img :src="'https://image.tmdb.org/t/p/w92' + season.poster_path" class="w-full h-full object-cover">
+                                        </template>
+                                        <template x-if="!season.poster_path">
+                                            <div class="w-full h-full flex items-center justify-center">
+                                                <i class="bi bi-image text-white/5"></i>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-white font-black text-lg" x-text="season.name"></div>
+                                        <div class="text-white/30 text-[10px] font-black uppercase tracking-widest" x-text="season.episode_count + ' Episoden'"></div>
+                                    </div>
+                                    <span x-show="isRemoving(season.season_number)"
+                                          class="px-4 py-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                        Wird entfernt
+                                    </span>
+                                    <span x-show="isExisting(season.season_number) && !isRemoving(season.season_number)"
+                                          class="px-4 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                        Vorhanden
+                                    </span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="p-10 bg-white/[0.03] border-t border-white/10">
+                        <p x-show="toRemove().length > 0" class="mb-5 text-rose-400/80 text-xs font-bold">
+                            Achtung: Entfernen löscht auch alle Episoden (inkl. Gesehen-Status) der abgewählten Staffel(n).
+                        </p>
+                        <div class="flex gap-6">
+                            <button @click="showModal = false" class="flex-1 py-5 bg-white/5 text-white/30 font-black rounded-2xl hover:bg-white/10 hover:text-white transition-all uppercase tracking-widest text-[10px]">Abbrechen</button>
+                            <button @click="applyChanges()" :disabled="!hasChanges() || importing"
+                                    class="flex-[2] py-5 bg-rose-600 hover:bg-rose-500 disabled:opacity-30 disabled:cursor-not-allowed text-white font-black rounded-2xl transition-all shadow-2xl shadow-rose-600/20 uppercase tracking-widest text-[10px]">
+                                <span x-show="importing" class="inline-block animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mr-2"></span>
+                                <span x-text="importing ? 'Wird übernommen...' : buttonLabel()"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <!-- TMDb Search Modal -->
         <div x-show="showModal"
@@ -378,34 +547,143 @@
     </div>
 
     @push('scripts')
-    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="{{ asset('vendor/quill/quill.min.js') }}"></script>
     <script>
+        // Staffeln einer bestehenden Serie verwalten: fehlende anhaken zum
+        // Nachladen, vorhandene abwählen zum Entfernen (wie beim TMDb-Serien-Import).
+        function seasonBackfill(existing) {
+            return {
+                existing: (existing || []).map(Number),
+                showModal: false,
+                loading: false,
+                importing: false,
+                seasons: [],
+                selected: [],
+                error: null,
+
+                isExisting(n) { return this.existing.includes(Number(n)) },
+                isRemoving(n) { return this.isExisting(n) && !this.selected.map(Number).includes(Number(n)) },
+                toAdd() { return this.selected.map(Number).filter(n => !this.isExisting(n)) },
+                toRemove() { return this.existing.filter(n => !this.selected.map(Number).includes(n)) },
+                hasChanges() { return this.toAdd().length > 0 || this.toRemove().length > 0 },
+                buttonLabel() {
+                    const parts = []
+                    if (this.toAdd().length) parts.push(this.toAdd().length + ' nachladen')
+                    if (this.toRemove().length) parts.push(this.toRemove().length + ' entfernen')
+                    return parts.length ? parts.join(', ') : 'Keine Änderungen'
+                },
+
+                open() {
+                    this.showModal = true
+                    this.error = null
+                    // Vorhandene Staffeln vorbelegen: Abwählen = Entfernen
+                    this.selected = [...this.existing]
+                    if (this.seasons.length) return
+                    this.loading = true
+                    fetch(`{{ route('admin.tmdb.details') }}?tmdb_id={{ $movie->tmdb_id }}&type=tv`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.error) {
+                                this.error = data.error
+                            } else {
+                                this.seasons = (data.seasons || []).filter(s => s.season_number > 0)
+                            }
+                            this.loading = false
+                        })
+                        .catch(() => {
+                            this.error = 'Staffeln konnten nicht geladen werden.'
+                            this.loading = false
+                        })
+                },
+
+                async post(url, seasons) {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ seasons })
+                    })
+                    return res.json()
+                },
+
+                async applyChanges() {
+                    if (!this.hasChanges() || this.importing) return
+                    this.importing = true
+                    this.error = null
+                    try {
+                        if (this.toAdd().length) {
+                            const data = await this.post('{{ route('admin.tmdb.import-seasons', $movie) }}', this.toAdd())
+                            if (!data.success) throw new Error(data.error || 'Import fehlgeschlagen.')
+                        }
+                        if (this.toRemove().length) {
+                            const data = await this.post('{{ route('admin.tmdb.remove-seasons', $movie) }}', this.toRemove())
+                            if (!data.success) throw new Error(data.error || 'Entfernen fehlgeschlagen.')
+                        }
+                        window.location.reload()
+                    } catch (e) {
+                        this.error = e.message || 'Netzwerkfehler.'
+                        this.importing = false
+                    }
+                }
+            }
+        }
+
+        // Lokaler Initialen-Avatar als Inline-SVG (Data-URI) – ersetzt den externen
+        // Dienst ui-avatars.com: kein externer Request, kein Namensabfluss (DSGVO).
+        function initialsAvatar(first, last) {
+            first = (first || '').trim();
+            last = (last || '').trim();
+            const initials = ((first.charAt(0) || '') + (last.charAt(0) || '')).toUpperCase() || '?';
+            // Deterministische Hintergrundfarbe aus dem Namen.
+            const str = first + last;
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            const hue = Math.abs(hash) % 360;
+            const svg =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="128" viewBox="0 0 96 128">' +
+                '<rect width="96" height="128" fill="hsl(' + hue + ',42%,34%)"/>' +
+                '<text x="50%" y="50%" dy=".08em" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" ' +
+                'font-size="46" font-weight="700" text-anchor="middle" dominant-baseline="middle">' + initials + '</text>' +
+                '</svg>';
+            return 'data:image/svg+xml,' + encodeURIComponent(svg);
+        }
+
         function tmdbSearch() {
             return {
                 showModal: false,
                 quill: null,
-                searchQuery: {!! json_encode($movie->title) !!},
+                searchQuery: {!! json_encode($movie->title, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
                 results: [],
                 loading: false,
                 formData: {
-                    title: {!! json_encode(old('title', $movie->title)) !!},
-                    year: {!! json_encode(old('year', $movie->year)) !!},
-                    collection_type: {!! json_encode(old('collection_type', $movie->collection_type)) !!},
-                    genre: {!! json_encode(old('genre', $movie->genre)) !!},
-                    runtime: {!! json_encode(old('runtime', $movie->runtime)) !!},
-                    rating: {!! json_encode(old('rating', $movie->rating ? round($movie->rating, 1) : null)) !!},
-                    rating_age: {!! json_encode(old('rating_age', $movie->rating_age)) !!},
-                    trailer_url: {!! json_encode(old('trailer_url', $movie->trailer_url)) !!},
-                    overview: {!! json_encode(old('overview', $movie->overview)) !!},
-                    tmdb_id: {!! json_encode(old('tmdb_id', $movie->tmdb_id)) !!},
-                    cover_id: {!! json_encode(old('cover_id', $movie->cover_id)) !!},
-                    backdrop_id: {!! json_encode(old('backdrop_id', $movie->backdrop_id)) !!},
-                    created_at: {!! json_encode(old('created_at', $movie->created_at ? $movie->created_at->format('Y-m-d\TH:i') : null)) !!}
+                    title: {!! json_encode(old('title', $movie->title), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    year: {!! json_encode(old('year', $movie->year), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    collection_type: {!! json_encode(old('collection_type', $movie->collection_type), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    tag: {!! json_encode(old('tag', $movie->tag), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    genre: {!! json_encode(old('genre', $movie->genre), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    runtime: {!! json_encode(old('runtime', $movie->runtime), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    rating: {!! json_encode(old('rating', $movie->rating ? round($movie->rating, 1) : null), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    rating_age: {!! json_encode(old('rating_age', $movie->rating_age), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    trailer_url: {!! json_encode(old('trailer_url', $movie->trailer_url), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    overview: {!! json_encode(old('overview', $movie->overview), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    tmdb_id: {!! json_encode(old('tmdb_id', $movie->tmdb_id), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    cover_id: {!! json_encode(old('cover_id', $movie->cover_id), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    backdrop_id: {!! json_encode(old('backdrop_id', $movie->backdrop_id), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    edition: {!! json_encode(old('edition', $movie->edition), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    region_code: {!! json_encode(old('region_code', $movie->region_code), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    disc_location: {!! json_encode(old('disc_location', $movie->disc_location), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    purchase_date: {!! json_encode(old('purchase_date', optional($movie->purchase_date)->format('Y-m-d')), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    purchase_price: {!! json_encode(old('purchase_price', $movie->purchase_price), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    condition: {!! json_encode(old('condition', $movie->condition), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                    created_at: {!! json_encode(old('created_at', $movie->created_at ? $movie->created_at->format('Y-m-d\TH:i') : null), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}
                 },
                 coverPreview: null,
                 backdropPreview: null,
-                initialCoverUrl: {!! json_encode($movie->cover_url) !!},
-                initialBackdropUrl: {!! json_encode($movie->backdrop_url) !!},
+                initialCoverUrl: {!! json_encode($movie->cover_url, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+                initialBackdropUrl: {!! json_encode($movie->backdrop_url, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
 
                 getImageUrl(id, type) {
                     if (!id) return null;
@@ -414,7 +692,8 @@
                         const base = type === 'cover' ? 'https://image.tmdb.org/t/p/w500' : 'https://image.tmdb.org/t/p/w1280';
                         return base + id;
                     }
-                    if (id.includes('/')) return `/storage/${id}`;
+                    // Gespeicherter Pfad (z.B. covers/xxx.jpg): serverseitig aufgelöste URL nutzen
+                    // (berücksichtigt S3/medien.movieshelf.info bzw. den /media-Proxy korrekt).
                     return type === 'cover' ? this.initialCoverUrl : this.initialBackdropUrl;
                 },
 
@@ -578,13 +857,14 @@
                         'first_name' => $actor->first_name,
                         'last_name' => $actor->last_name,
                         'profile_path' => $actor->profile_path,
+                        'profile_url' => $actor->profile_url,
                         'pivot' => [
                             'role' => $actor->pivot->role,
                             'is_main_role' => (bool)$actor->pivot->is_main_role,
                             'sort_order' => $actor->pivot->sort_order
                         ]
                     ];
-                })) !!},
+                }), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
 
                 searchActors() {
                     if (this.searchQuery.length < 2) {

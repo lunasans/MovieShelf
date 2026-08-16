@@ -16,10 +16,22 @@ class Episode extends Model
         'episode_number',
         'title',
         'overview',
+        'runtime',
+        'air_date',
+    ];
+
+    protected $casts = [
+        'air_date' => 'date',
+        'runtime' => 'integer',
     ];
 
     public function season()
     {
         return $this->belongsTo(Season::class);
+    }
+
+    public function watchedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'episode_user_watched')->withPivot('watched_at');
     }
 }

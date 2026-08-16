@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Auth\Concerns\ResolvesAuthView;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class EmailVerificationPromptController extends Controller
 {
+    use ResolvesAuthView;
+
     /**
      * Display the email verification prompt.
      */
@@ -16,6 +19,6 @@ class EmailVerificationPromptController extends Controller
     {
         return $request->user()->hasVerifiedEmail()
                     ? redirect()->intended(route('dashboard', absolute: false))
-                    : view('auth.verify-email');
+                    : view($this->authView($request, 'verify-email'));
     }
 }

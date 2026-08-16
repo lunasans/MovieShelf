@@ -48,6 +48,9 @@
             <template x-if="error">
                 <div class="mt-8 p-6 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-[1.5rem] text-center font-bold animate-in fade-in slide-in-from-top-4" x-text="error"></div>
             </template>
+            <template x-if="success">
+                <div class="mt-8 p-6 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-[1.5rem] text-center font-bold animate-in fade-in slide-in-from-top-4" x-text="success"></div>
+            </template>
         </div>
 
         <!-- Results Grid -->
@@ -72,14 +75,34 @@
                         <!-- Hover Overlay -->
                         <div class="absolute inset-0 bg-gradient-to-t from-rose-900/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end p-8">
                             <template x-if="type === 'movie'">
-                                <form :action="'{{ route('admin.tmdb.import') }}'" method="POST" class="w-full">
-                                    @csrf
-                                    <input type="hidden" name="tmdb_id" :value="item.id">
-                                    <input type="hidden" name="media_type" :value="type">
-                                    <button type="submit" class="w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all transform group-hover:translate-y-0 translate-y-6 duration-500 uppercase tracking-widest text-[10px] shadow-2xl">
-                                        <i class="bi bi-download mr-2 text-base"></i> Importieren
-                                    </button>
-                                </form>
+                                <div class="w-full flex flex-col gap-2">
+                                    <form :action="'{{ route('admin.tmdb.import') }}'" method="POST" class="w-full">
+                                        @csrf
+                                        <input type="hidden" name="tmdb_id" :value="item.id">
+                                        <input type="hidden" name="media_type" :value="type">
+                                        <button type="submit" class="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all uppercase tracking-widest text-[10px] shadow-2xl">
+                                            <i class="bi bi-download mr-2"></i> Importieren
+                                        </button>
+                                    </form>
+                                    @if($lists->isNotEmpty())
+                                        <div x-data="{ open: false }" class="relative">
+                                            <button @click.stop="open = !open" class="w-full py-3 bg-white/20 hover:bg-white/30 text-white font-black rounded-2xl text-[10px] uppercase tracking-widest transition-all">
+                                                <i class="bi bi-collection-fill mr-1"></i> Zur Liste
+                                            </button>
+                                            <div x-show="open" x-cloak @click.away="open = false"
+                                                class="absolute bottom-full mb-2 left-0 right-0 bg-gray-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+                                                @foreach($lists as $list)
+                                                    <button
+                                                        @click.stop="addToList(item.id, {{ $list->id }}); open = false"
+                                                        class="w-full text-left px-4 py-2.5 text-xs font-bold text-white hover:bg-white/10 transition-colors flex items-center gap-2">
+                                                        <i class="bi bi-collection-fill text-rose-500 text-[10px]"></i>
+                                                        {{ $list->name }}
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
                             </template>
                             <template x-if="type === 'tv'">
                                 <button @click="openSeasonModal(item)" class="w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all transform group-hover:translate-y-0 translate-y-6 duration-500 uppercase tracking-widest text-[10px] shadow-2xl">
@@ -146,7 +169,7 @@
                         <span class="text-white/20 text-[10px] font-black uppercase tracking-widest" x-text="(activeSeries?.seasons?.length || 0) + ' Staffeln verfügbar'"></span>
                         <div class="flex gap-6">
                             <button @click="selectAll()" class="text-rose-400 hover:text-rose-300 text-[10px] font-black uppercase tracking-widest transition-colors">Alle wählen</button>
-                            <button @click="selectedSeasons = []" class="text-white/20 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors">Abbrechen</button>
+                            <button @click="selectedSeasons = []" class="text-white/20 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors">Auswahl leeren</button>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 gap-5">
@@ -196,13 +219,13 @@
                     <span class="text-base font-black text-rose-500 tracking-widest" x-text="updateTotal > 0 ? Math.round((updateCount / updateTotal) * 100) : 0 + '%'"></span>
                 </div>
                 <div class="w-full h-5 bg-white/5 rounded-full overflow-hidden mb-12 border border-white/5 p-1 shadow-inner">
-                    <div class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-rose-400 rounded-full shadow-[0_0_15px_rgba(225,29,72,0.5)] transition-all duration-700" :style=\"'width: ' + (updateTotal > 0 ? (updateCount / updateTotal * 100) : 0) + '%'\"></div>
+                    <div class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-rose-400 rounded-full shadow-[0_0_15px_rgba(225,29,72,0.5)] transition-all duration-700" :style="'width: ' + (updateTotal > 0 ? (updateCount / updateTotal * 100) : 0) + '%'"></div>
                 </div>
 
                 <div class="space-y-6">
                      <div x-show="updating" x-cloak class="text-rose-400/60 text-[10px] font-black uppercase tracking-widest truncate" x-text="currentUpdateTitle"></div>
-                     <button x-show=\"!updating\" x-cloak @click=\"showMassUpdateModal = false; window.location.reload()\" class=\"w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all shadow-xl uppercase tracking-widest text-[10px]\">Dashboard aktualisieren</button>
-                    <button x-show=\"updating\" x-cloak @click=\"cancelUpdate()\" class=\"text-white/10 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest transition-colors\">Vorgang abbrechen</button>
+                     <button x-show="!updating" x-cloak @click="showMassUpdateModal = false; window.location.reload()" class="w-full py-5 bg-white text-black font-black rounded-2xl hover:bg-rose-600 hover:text-white transition-all shadow-xl uppercase tracking-widest text-[10px]">Dashboard aktualisieren</button>
+                    <button x-show="updating" x-cloak @click="cancelUpdate()" class="text-white/10 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest transition-colors">Vorgang abbrechen</button>
                 </div>
             </div>
         </div>
@@ -217,6 +240,7 @@
                 results: [],
                 loading: false,
                 error: null,
+                success: null,
                 showSeasonModal: false,
                 activeSeries: null,
                 selectedSeasons: [],
@@ -265,7 +289,9 @@
                         .then(res => res.json())
                         .then(data => {
                             this.activeSeries = data;
-                            this.selectedSeasons = data.seasons?.filter(s => s.season_number > 0).map(s => s.season_number) || [];
+                            // Keine Vorauswahl: sonst importiert ein einzelner Klick
+                            // versehentlich alle bereits vorausgewaehlten Staffeln mit.
+                            this.selectedSeasons = [];
                             this.showSeasonModal = true;
                             this.loading = false;
                         })
@@ -426,6 +452,36 @@
                     this.shouldCancel = true;
                     this.updating = false;
                     this.showMassUpdateModal = false;
+                },
+
+                async addToList(tmdbId, listId) {
+                    this.loading = true;
+                    this.error = null;
+                    this.success = null;
+                    try {
+                        const res = await fetch(`/lists/${listId}/import-tmdb`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ tmdb_id: tmdbId })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.error = null;
+                            this.success = 'Film zur Liste hinzugefügt.';
+                            setTimeout(() => { this.success = null; }, 3000);
+                        } else {
+                            this.error = data.message || 'Fehler beim Hinzufügen zur Liste.';
+                        }
+                    } catch (err) {
+                        this.error = 'Netzwerkfehler.';
+                    } finally {
+                        this.loading = false;
+                    }
                 }
             };
         }

@@ -283,7 +283,7 @@ class XmlImportController extends Controller
 
     public function destroy($filename)
     {
-        $path = 'admin/xml/'.$filename;
+        $path = 'admin/xml/'.basename($filename);
         if (Storage::disk('local')->exists($path)) {
             Storage::disk('local')->delete($path);
 

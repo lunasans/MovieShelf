@@ -1,2 +1,7 @@
 User-agent: *
-Disallow:
+Disallow: /admin
+Disallow: /cadmin
+Disallow: /login
+Disallow: /oauth/
+
+Sitemap: https://movieshelf.info/sitemap.xml

@@ -26,10 +26,11 @@ Thumbs.db
 docker-compose-sonarqube.yml
 test_output.txt
 
-# Private Telemetry (Master only)
+# Private Telemetry / Master-Instanz (nicht Teil der Standalone-Auslieferung)
 /app/Http/Controllers/Api/TelemetryStoreController.php
 /app/Http/Controllers/Admin/InstallationStatsController.php
 /resources/views/admin/installations/
+
 /landing-page
 pub/
 .bin/
@@ -37,3 +38,16 @@ pub/
 
 .agents/rules/zugangdaten.md
 .agents/rules/update-version.md
+resources/views/# List Network Requests.txt
+scripts/cleanup_db.php
+scripts/check_logs.php
+.gitignore
+scripts/inspect_db_pdo.php
+scripts/direct_sql_fix.php
+scripts/final_central_fix.php
+scripts/inspect_db.php
+scripts/tmp_repair.php
+.claude/settings.local.json
+.github/workflows/flatpak-test.yml.tmp
+# Lokales Test-Tenant-Verzeichnis (DB, Cache, Backups, Uploads) komplett ignorieren
+/storage/tenanttest/

@@ -28,7 +28,7 @@ class UserController extends Controller
             $request->validate([
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-                'password' => ['required', 'confirmed', 'min:4'],
+                'password' => ['required', 'confirmed', Rules\Password::defaults()],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -54,7 +54,7 @@ class UserController extends Controller
             $request->validate([
                 'name' => ['required', 'string', 'max:255'],
                 'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email,'.$user->id],
-                'password' => ['nullable', 'confirmed', 'min:4'],
+                'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput()->with('editing_user_id', $user->id);

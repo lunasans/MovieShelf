@@ -1,9 +1,53 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 [x-cloak] {
     display: none !important;
+}
+
+/* Frei platzierbare Dashboard-Kacheln (GridStack). Der Inhalt fuellt die Kachel
+   und scrollt bei Bedarf innerhalb, statt aus dem Raster zu laufen. */
+.grid-stack-item-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.grid-stack-item-content .dashboard-widget {
+    min-height: 100%;
+}
+
+/* Im Anpassen-Modus zeigt der Cursor, dass die Kachel greifbar ist. */
+.grid-stack:not(.grid-stack-static) .grid-stack-item-content {
+    cursor: move;
+}
+
+/* Anfasser zum Groesse-Aendern: das graue Standard-Icon von GridStack ist auf
+   dem dunklen Hintergrund praktisch unsichtbar. Stattdessen eine deutliche
+   Ecke in der Markenfarbe, die innerhalb der abgerundeten Kachel sitzt. */
+.grid-stack:not(.grid-stack-static) .grid-stack-item > .ui-resizable-handle {
+    background-image: none;
+    transform: none;
+    opacity: 0.9;
+}
+
+.grid-stack:not(.grid-stack-static) .grid-stack-item > .ui-resizable-se {
+    width: 26px;
+    height: 26px;
+    right: calc(var(--gs-item-margin-right) + 10px);
+    bottom: calc(var(--gs-item-margin-bottom) + 10px);
+    border-right: 3px solid var(--color-rose-500, oklch(0.645 0.246 16.439));
+    border-bottom: 3px solid var(--color-rose-500, oklch(0.645 0.246 16.439));
+    border-bottom-right-radius: 10px;
+}
+
+.grid-stack:not(.grid-stack-static) .grid-stack-item > .ui-resizable-se:hover {
+    opacity: 1;
+}
+
+/* Firefox Scroll-Anchoring deaktivieren: die selbstgehosteten Fonts (Font-Swap)
+   und Sub-Pixel-Reflows loesen sonst eine harmlose, aber nervige Konsolen-Warnung
+   aus ("fixierte Bildlauf-Position wurde deaktiviert"). */
+html, body {
+    overflow-anchor: none;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -11,9 +55,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 :root {
-    /* Base Variables (Default Theme) */
-    --accent-primary: #667eea;
-    --accent-secondary: #764ba2;
+    /* Base Variables (Default Theme)
+       Rose ist die Markenfarbe der App – dieselben Werte wie in landing.css
+       und den Auth-Seiten. Frueher stand hier #667eea (helles Blauviolett),
+       was nirgends zum Rest der Oberflaeche passte. */
+    --accent-primary: #e11d48;
+    --accent-secondary: #be123c;
     --gradient-primary: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
     --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
     --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
@@ -41,34 +88,42 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
 }
 
-/* Themes */
+/* Themes
+   Die Akzentwerte sind auf flaechentaugliche Toene gesetzt: Sie faerben jetzt
+   die gesamte Oberflaeche (siehe Palette weiter unten), nicht mehr nur die
+   .accent-*-Helfer. Die frueheren Neonwerte (#00ff41, #f093fb, #ff6600,
+   #00d4ff) waren als kleiner Fortschrittsbalken gedacht und als Flaechenfarbe
+   unbrauchbar. */
 [data-theme="dark"] {
-    --accent-primary: #bb86fc;
-    --accent-secondary: #3700b3;
+    /* Bleibt bewusst Rose: layouts/app erzwingt data-theme="dark" fuer das
+       Streaming-Layout – ein eigener Akzent wuerde dort die komplette
+       Oberflaeche aller Streaming-Nutzer umfaerben. */
+    --accent-primary: #e11d48;
+    --accent-secondary: #be123c;
     --gradient-bg: linear-gradient(135deg, #09090b 0%, #111114 100%);
 }
 
 [data-theme="blue"] {
-    --accent-primary: #00d4ff;
-    --accent-secondary: #0080ff;
+    --accent-primary: #0284c7;
+    --accent-secondary: #0369a1;
     --gradient-bg: linear-gradient(135deg, #001f3f 0%, #001020 100%);
 }
 
 [data-theme="green"] {
-    --accent-primary: #00ff41;
-    --accent-secondary: #00aa2b;
+    --accent-primary: #16a34a;
+    --accent-secondary: #15803d;
     --gradient-bg: linear-gradient(135deg, #001a00 0%, #000d00 100%);
 }
 
 [data-theme="red"] {
-    --accent-primary: #ff4757;
-    --accent-secondary: #c0392b;
+    --accent-primary: #dc2626;
+    --accent-secondary: #b91c1c;
     --gradient-bg: linear-gradient(135deg, #1a0000 0%, #0d0000 100%);
 }
 
 [data-theme="purple"] {
-    --accent-primary: #9b59b6;
-    --accent-secondary: #8e44ad;
+    --accent-primary: #9333ea;
+    --accent-secondary: #7e22ce;
     --gradient-bg: linear-gradient(135deg, #1a001a 0%, #0d000d 100%);
 }
 
@@ -79,15 +134,44 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 [data-theme="halloween"] {
-    --accent-primary: #ff6600;
-    --accent-secondary: #8b00ff;
+    --accent-primary: #ea580c;
+    --accent-secondary: #c2410c;
     --gradient-bg: linear-gradient(135deg, #0f001a 0%, #000000 100%);
 }
 
 [data-theme="summer"] {
-    --accent-primary: #f093fb;
-    --accent-secondary: #f5576c;
+    --accent-primary: #db2777;
+    --accent-secondary: #be185d;
     --gradient-bg: linear-gradient(135deg, #fff1eb 0%, #ace0f9 100%);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Markenpalette folgt dem Theme
+
+   Die Oberflaeche ist durchgaengig ueber rose-* aufgebaut (rund 630 Stellen).
+   Tailwind 4 kompiliert diese Utilities zu var(--color-rose-NNN), deshalb
+   genuegt es, die Palette hier umzudefinieren – die Views bleiben unangetastet
+   und folgen automatisch der Akzentfarbe des gewaehlten Themes.
+
+   default und dark sind ausgenommen: Beide sind ohnehin auf die Markenfarbe
+   gesetzt, und mit Tailwinds originaler rose-Skala bleibt der Normalfall
+   pixelgenau so, wie er heute aussieht.
+
+   Die Abstufungen entstehen aus der Akzentfarbe; der Ankerpunkt ist 600,
+   weil dort die Markenfarbe selbst sitzt.
+   ───────────────────────────────────────────────────────────────────────── */
+[data-theme]:not([data-theme="default"]):not([data-theme="dark"]) {
+    --color-rose-50:  color-mix(in oklab, var(--accent-primary)  8%, white);
+    --color-rose-100: color-mix(in oklab, var(--accent-primary) 15%, white);
+    --color-rose-200: color-mix(in oklab, var(--accent-primary) 30%, white);
+    --color-rose-300: color-mix(in oklab, var(--accent-primary) 50%, white);
+    --color-rose-400: color-mix(in oklab, var(--accent-primary) 72%, white);
+    --color-rose-500: color-mix(in oklab, var(--accent-primary) 88%, white);
+    --color-rose-600: var(--accent-primary);
+    --color-rose-700: color-mix(in oklab, var(--accent-primary) 85%, black);
+    --color-rose-800: color-mix(in oklab, var(--accent-primary) 70%, black);
+    --color-rose-900: color-mix(in oklab, var(--accent-primary) 58%, black);
+    --color-rose-950: color-mix(in oklab, var(--accent-primary) 35%, black);
 }
 
 /* Glassmorphism Classes */
@@ -110,7 +194,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Layout Classes */
 .layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 2rem;
     align-items: start;
 }
@@ -122,15 +206,28 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .layout-stats-active {
-    grid-template-columns: 0.7fr 1.3fr;
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
 }
 
 @media (min-width: 1536px) {
 
     /* 2xl */
     .layout-stats-active {
-        grid-template-columns: 0.6fr 1.4fr;
+        grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
     }
+}
+
+.filter-bar-field {
+    flex: 1 1 0%;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.filter-bar-field input,
+.filter-bar-field select {
+    width: 100%;
 }
 
 .film-list-area {
@@ -144,6 +241,8 @@ h1, h2, h3, h4, h5, h6 {
 .detail-panel {
     position: sticky;
     top: 7.5rem;
+    max-height: calc(100vh - 8.5rem);
+    overflow-y: auto;
     background: var(--glass-bg-strong);
     backdrop-filter: blur(25px);
     border: 1px solid var(--glass-border);

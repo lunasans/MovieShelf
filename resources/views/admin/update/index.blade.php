@@ -34,7 +34,7 @@
                     <div class="space-y-1">
                         <div class="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">Build-Version</div>
                         <div class="text-2xl font-black text-white tracking-tight">
-                            v{{ config('app.version') }} 
+                            v{{ config('app.shelf_version') }} 
                             <span class="text-rose-500/40 text-xs ml-2 font-mono">({{ $currentBranch }} @ {{ $currentCommit }})</span>
                         </div>
                     </div>

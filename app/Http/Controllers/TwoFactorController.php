@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use App\Support\TrustedDevice;
 use BaconQrCode\Writer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -77,6 +78,10 @@ class TwoFactorController extends Controller
                 'two_factor_recovery_codes' => null,
             ]);
 
+            // Vertraute Geraete sind ueber das Secret gebunden und damit ohnehin
+            // entwertet – das Cookie hier trotzdem aktiv wegraeumen.
+            TrustedDevice::forget();
+
             return back()->with('status', 'two-factor-disabled');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('2FA Disable Failed: ' . $e->getMessage());
@@ -86,7 +91,8 @@ class TwoFactorController extends Controller
 
     public function challenge()
     {
-        return view('auth.two-factor-challenge');
+        // Nur auf Regalen erreichbar (Route liegt in routes/tenant.php).
+        return view('tenant.auth.two-factor-challenge');
     }
 
     public function verify(Request $request)
@@ -115,11 +121,13 @@ class TwoFactorController extends Controller
                     ])->save();
 
                     $request->session()->put('two_factor_verified', true);
+                    $this->rememberDeviceIfRequested($request, $user);
+
                     return redirect()->intended(route('dashboard'));
                 }
             }
 
-            return back()->withErrors(['recovery_code' => __('Der Backup-Code ist ungültig.')]);
+            return back()->withErrors(['recovery_code' => __('The backup code is invalid.')]);
         }
 
         // OTP verification
@@ -129,10 +137,24 @@ class TwoFactorController extends Controller
 
         if (Google2FA::verifyKey($user->two_factor_secret, $request->code)) {
             $request->session()->put('two_factor_verified', true);
+            $this->rememberDeviceIfRequested($request, $user);
+
             return redirect()->intended(route('dashboard'));
         }
 
-        return back()->withErrors(['code' => __('Der eingegebene Code ist ungültig.')]);
+        return back()->withErrors(['code' => __('The code you entered is invalid.')]);
+    }
+
+    /**
+     * Nach bestandener 2FA das Geraet als vertraut markieren – aber nur, wenn
+     * beim Login "Angemeldet bleiben" angehakt war. Sonst bliebe die Checkbox
+     * fuer 2FA-Konten wirkungslos (siehe App\Support\TrustedDevice).
+     */
+    private function rememberDeviceIfRequested(Request $request, $user): void
+    {
+        if (TrustedDevice::userWantsToBeRemembered($request)) {
+            TrustedDevice::remember($user);
+        }
     }
 
     public function regenerateCodes()
@@ -140,7 +162,7 @@ class TwoFactorController extends Controller
         $user = Auth::user();
 
         if (! $user->hasTwoFactorEnabled()) {
-            return back()->withErrors(['2fa' => __('2FA ist nicht aktiviert.')]);
+            return back()->withErrors(['2fa' => __('2FA is not enabled.')]);
         }
 
         $recoveryCodes = $this->generateRecoveryCodes();

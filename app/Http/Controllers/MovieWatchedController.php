@@ -9,6 +9,10 @@ class MovieWatchedController extends Controller
 {
     /**
      * Toggle the watched status of a movie for the authenticated user.
+     *
+     * Bei einem Boxset gehört die Markierung an die enthaltenen Filme: sein
+     * eigener Stand wird aus ihnen abgeleitet (Movie::isWatchedBy), ihn zu
+     * setzen bliebe deshalb wirkungslos.
      */
     public function toggle(Movie $movie)
     {
@@ -18,15 +22,7 @@ class MovieWatchedController extends Controller
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }
 
-        $isWatched = $user->watchedMovies()->where('movie_id', $movie->id)->exists();
-
-        if ($isWatched) {
-            $user->watchedMovies()->detach($movie->id);
-            $watched = false;
-        } else {
-            $user->watchedMovies()->attach($movie->id);
-            $watched = true;
-        }
+        $watched = $movie->setWatchedFor($user, ! $movie->isWatchedBy($user));
 
         return response()->json([
             'watched' => $watched,
