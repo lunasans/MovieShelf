@@ -203,7 +203,7 @@
                                         @if($movie->cover_url)
                                             <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
                                         @else
-                                            {{-- Ohne Platzhalter waere ein Film ohne Cover hier unsichtbar --}}
+                                            {{-- Ohne Cover blieb die Kachel leer: der Titel stand nur im alt-Attribut des Bildes --}}
                                             <div class="w-full h-full flex items-center justify-center">
                                                 <i class="bi bi-film text-3xl text-white/10"></i>
                                             </div>
