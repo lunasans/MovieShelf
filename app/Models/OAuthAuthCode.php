@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class OAuthAuthCode extends Model
 {
-    protected $connection   = 'central';
     protected $table        = 'oauth_auth_codes';
     protected $primaryKey   = 'code';
     protected $keyType      = 'string';

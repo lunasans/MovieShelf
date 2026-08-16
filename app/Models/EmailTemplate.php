@@ -13,7 +13,6 @@ class EmailTemplate extends Model
     /** Betreff und Inhalt sind mehrsprachig pflegbar (content_translations). */
     protected array $translatable = ['subject', 'content'];
 
-    protected $connection = 'central';
 
     protected $fillable = [
         'slug',

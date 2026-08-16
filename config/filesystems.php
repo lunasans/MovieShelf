@@ -55,39 +55,6 @@ return [
             'report' => false,
         ],
 
-        'central' => [
-            'driver' => 'local',
-            'root' => base_path('storage/app/public'),
-            'url' => '/media',
-            'visibility' => 'public',
-        ],
-
-        's3' => [
-            'driver' => 's3',
-            'key' => env('S3_ACCESS_KEY_ID'),
-            'secret' => env('S3_SECRET_ACCESS_KEY'),
-            'region' => 'auto',
-            'bucket' => env('S3_BUCKET'),
-            'url' => env('S3_URL'),
-            'endpoint' => env('S3_ENDPOINT') ?? (env('S3_ACCOUNT_ID') ? "https://" . env('S3_ACCOUNT_ID') . ".r2.cloudflarestorage.com" : null),
-            'use_path_style_endpoint' => true,
-            'throw' => true,
-            'report' => false,
-        ],
-
-        'r2' => [
-            'driver' => 's3',
-            'key' => env('S3_ACCESS_KEY_ID'),
-            'secret' => env('S3_SECRET_ACCESS_KEY'),
-            'region' => 'auto',
-            'bucket' => env('S3_BUCKET'),
-            'url' => env('S3_URL'),
-            'endpoint' => env('S3_ENDPOINT') ?? (env('S3_ACCOUNT_ID') ? "https://" . env('S3_ACCOUNT_ID') . ".r2.cloudflarestorage.com" : null),
-            'use_path_style_endpoint' => true,
-            'throw' => true,
-            'report' => false,
-        ],
-
     ],
 
     /*

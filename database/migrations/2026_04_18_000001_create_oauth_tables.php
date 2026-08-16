@@ -6,11 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    protected $connection = 'central';
 
     public function up(): void
     {
-        Schema::connection('central')->create('oauth_clients', function (Blueprint $table) {
+        Schema::create('oauth_clients', function (Blueprint $table) {
             $table->string('client_id', 80)->primary();
             $table->string('client_secret', 80)->nullable();
             $table->string('name', 255)->notNull();
@@ -20,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::connection('central')->create('oauth_auth_codes', function (Blueprint $table) {
+        Schema::create('oauth_auth_codes', function (Blueprint $table) {
             $table->string('code', 80)->primary();
             $table->unsignedBigInteger('user_id');
             $table->string('client_id', 80);
@@ -37,7 +36,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::connection('central')->dropIfExists('oauth_auth_codes');
-        Schema::connection('central')->dropIfExists('oauth_clients');
+        Schema::dropIfExists('oauth_auth_codes');
+        Schema::dropIfExists('oauth_clients');
     }
 };
