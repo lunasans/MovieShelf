@@ -120,8 +120,14 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        $user->delete();
+        // Erst abmelden, dann loeschen. Umgekehrt legt Laravel das Konto wieder
+        // an: Auth::logout() erneuert den Remember-Token und speichert den
+        // Nutzer dafuer. Nach dem delete() steht dessen `exists` auf false, aus
+        // dem UPDATE wird also ein INSERT – das Konto war anschliessend wieder
+        // da, nur mit frischem Token.
         Auth::logout();
+        $user->delete();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

@@ -202,8 +202,15 @@
                                     <div class="aspect-[2/3] rounded-3xl overflow-hidden glass border border-white/10 group-hover:scale-105 transition-all">
                                         @if($movie->cover_url)
                                             <img src="{{ $movie->cover_url }}" alt="{{ $movie->title }}" class="w-full h-full object-cover">
+                                        @else
+                                            {{-- Ohne Platzhalter waere ein Film ohne Cover hier unsichtbar --}}
+                                            <div class="w-full h-full flex items-center justify-center">
+                                                <i class="bi bi-film text-3xl text-white/10"></i>
+                                            </div>
                                         @endif
                                     </div>
+                                    <h4 class="mt-3 text-white text-sm font-black uppercase tracking-tight italic truncate group-hover:text-rose-400 transition-colors">{{ $movie->title }}</h4>
+                                    <p class="text-[9px] font-black text-white/20 uppercase tracking-widest mt-1">{{ $movie->year }}</p>
                                 </a>
                              @endforeach
                         </div>
