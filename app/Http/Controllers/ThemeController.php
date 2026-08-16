@@ -22,8 +22,10 @@ class ThemeController extends Controller
         // Save to session for immediate UI feedback
         Session::put('theme', $theme);
 
-        // If user is admin (or we want to save it globally), update setting
-        if (auth()->check()) {
+        // Das Theme-Setting gilt fuer die gesamte Instanz (auch fuer Gaeste).
+        // Es darf daher nur von Admins geschrieben werden – sonst koennte jeder
+        // angemeldete Nutzer das Erscheinungsbild fuer alle umstellen.
+        if (auth()->check() && auth()->user()->is_admin) {
             Setting::set('theme', $theme, 'ui');
         }
 

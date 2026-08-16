@@ -108,8 +108,13 @@ class ListController extends Controller
         $movieIds    = collect($items)->where('type', 'movie')->pluck('id')->all();
         $externalIds = collect($items)->where('type', 'external')->pluck('id')->all();
 
-        $validMovieIds    = Movie::whereIn('id', $movieIds)->pluck('id')->all();
-        $validExternalIds = ExternalMovie::whereIn('id', $externalIds)->pluck('id')->all();
+        $validMovieIds = Movie::whereIn('id', $movieIds)->pluck('id')->all();
+        // Externe Filme gehoeren einzelnen Nutzern: ohne diese Einschraenkung
+        // liessen sich fremde Eintraege in die eigene Liste holen (und unten
+        // sogar loeschen).
+        $validExternalIds = ExternalMovie::whereIn('id', $externalIds)
+            ->where('user_id', $list->user_id)
+            ->pluck('id')->all();
 
         $beforeExternal = $list->externalMovies()->pluck('external_movies.id')->all();
 
@@ -124,7 +129,7 @@ class ListController extends Controller
             $remaining = DB::table('list_items')
                 ->where('item_type', 'external')->where('item_id', $exId)->count();
             if ($remaining === 0) {
-                ExternalMovie::where('id', $exId)->delete();
+                ExternalMovie::where('id', $exId)->where('user_id', $list->user_id)->delete();
             }
         }
     }

@@ -95,8 +95,10 @@ class ListController extends Controller
             'item_id'   => 'required|integer',
         ]);
 
+        $itemId = $this->resolveItemId($request->item_type, (int) $request->item_id);
+
         $relation = $request->item_type === 'movie' ? $list->movies() : $list->externalMovies();
-        $relation->syncWithoutDetaching([$request->item_id => ['added_at' => now()]]);
+        $relation->syncWithoutDetaching([$itemId => ['added_at' => now()]]);
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true]);
@@ -114,15 +116,17 @@ class ListController extends Controller
             'item_id'   => 'required|integer',
         ]);
 
+        $itemId = $this->resolveItemId($request->item_type, (int) $request->item_id);
+
         if ($request->item_type === 'movie') {
-            $list->movies()->detach($request->item_id);
+            $list->movies()->detach($itemId);
         } else {
-            $list->externalMovies()->detach($request->item_id);
+            $list->externalMovies()->detach($itemId);
             // Externen Film löschen, wenn er in keiner Liste mehr ist.
             $remaining = DB::table('list_items')
-                ->where('item_type', 'external')->where('item_id', $request->item_id)->count();
+                ->where('item_type', 'external')->where('item_id', $itemId)->count();
             if ($remaining === 0) {
-                ExternalMovie::where('id', $request->item_id)->delete();
+                ExternalMovie::where('id', $itemId)->where('user_id', auth()->id())->delete();
             }
         }
 
@@ -174,6 +178,26 @@ class ListController extends Controller
     private function authorizeList(MovieList $list): void
     {
         abort_unless($list->user_id === auth()->id(), 403);
+    }
+
+    /**
+     * Stellt sicher, dass das Item wirklich verlinkt werden darf.
+     *
+     * Ohne diese Pruefung liesse sich eine beliebige ID an die eigene Liste
+     * haengen: externe Filme gehoeren einzelnen Nutzern und waeren so aus
+     * fremden Sammlungen auslesbar (und ueber removeItem loeschbar).
+     */
+    private function resolveItemId(string $type, int $itemId): int
+    {
+        if ($type === 'external') {
+            return ExternalMovie::where('id', $itemId)
+                ->where('user_id', auth()->id())
+                ->firstOrFail()
+                ->id;
+        }
+
+        // Sammlungsfilme sind instanzweit sichtbar; gesperrte bleiben aussen vor.
+        return Movie::where('id', $itemId)->where('is_deleted', false)->firstOrFail()->id;
     }
 
     private function cleanupExternalOnly(MovieList $list): void
