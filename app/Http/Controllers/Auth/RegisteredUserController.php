@@ -12,6 +12,19 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
+/**
+ * Selbst-Registrierung – nur fuer den allerersten Account.
+ *
+ * Die Cloud kennt /register gar nicht: dort entstehen Regale ueber /claim und
+ * weitere Nutzer legt der Regal-Admin an. Standalone gibt es weder das eine
+ * noch einen Installer – ohne diesen Weg kaeme man nach einer frischen
+ * Installation an keinen einzigen Account.
+ *
+ * Offen bleibt die Route deshalb nur, solange die Instanz leer ist. Der erste
+ * Account wird Admin, danach schliesst sich die Registrierung von selbst und
+ * weitere Nutzer kommen ueber /admin/users dazu. So ist ein oeffentlich
+ * erreichbares Regal nicht dauerhaft fuer Fremde offen.
+ */
 class RegisteredUserController extends Controller
 {
     /**
@@ -19,11 +32,9 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        // Oeffentliche Selbst-Registrierung ist in dieser SaaS nicht vorgesehen:
-        // Central-Admins kommen ueber CENTRAL_ADMIN_EMAILS, neue Filmregale ueber
-        // /claim, Tenant-User werden im Claim-/Activation-Flow bzw. vom Tenant-Admin
-        // angelegt. Die offene /register-Route legte sonst fremde Konten an.
-        abort(404);
+        abort_if(self::isClosed(), 404);
+
+        return view('auth.register');
     }
 
     /**
@@ -33,7 +44,9 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        abort(404); // Registrierung deaktiviert – siehe create().
+        // Erneut pruefen statt auf das Formular zu vertrauen: zwischen Aufruf
+        // und Absenden kann der erste Account bereits entstanden sein.
+        abort_if(self::isClosed(), 404);
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -45,6 +58,9 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            // Der erste Account muss administrieren koennen – sonst gaebe es
+            // niemanden, der weitere Nutzer oder die Einstellungen anlegt.
+            'is_admin' => true,
         ]);
 
         event(new Registered($user));
@@ -52,5 +68,13 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));
+    }
+
+    /**
+     * Ist die Registrierung geschlossen? Sobald ein Nutzer existiert: ja.
+     */
+    public static function isClosed(): bool
+    {
+        return User::exists();
     }
 }
