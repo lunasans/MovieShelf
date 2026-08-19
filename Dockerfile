@@ -54,9 +54,12 @@ RUN npm run build
 FROM php:${PHP_VERSION}-fpm-alpine AS runtime
 
 ARG APP_VERSION=dev
-ENV APP_VERSION=${APP_VERSION}     TZ=UTC     # supervisor liest diese beiden als autostart-Wert. Auf "false" setzen,
-    # wenn Queue oder Scheduler in einem eigenen Container laufen sollen.
-    RUN_QUEUE_WORKER=true     RUN_SCHEDULER=true
+# RUN_QUEUE_WORKER und RUN_SCHEDULER liest supervisor als autostart-Wert.
+# Auf "false" setzen, wenn Queue oder Scheduler in eigenen Containern laufen.
+ENV APP_VERSION=${APP_VERSION} \
+    TZ=UTC \
+    RUN_QUEUE_WORKER=true \
+    RUN_SCHEDULER=true
 
 # Laufzeit-Pakete. nginx und supervisor bedienen den Container,
 # der Rest sind Bibliotheken fuer die PHP-Extensions.
