@@ -1,0 +1,58 @@
+# MovieShelf - Standard-Setup fuer Selfhosting.
+# Ein Container, SQLite, zwei Volumes. Reicht fuer den Normalfall.
+#
+#   docker compose up -d
+#   -> http://localhost:8080
+#
+# Fuer grosse Sammlungen oder mehrere Nutzer gibt es die MariaDB-Variante:
+#   docker compose -f docker-compose.yml -f docker-compose.mariadb.yml up -d
+
+services:
+  app:
+    image: ghcr.io/lunasans/movieshelf:latest
+    # Zum lokalen Bauen die naechste Zeile einkommentieren:
+    # build: .
+    container_name: movieshelf
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      APP_NAME: MovieShelf
+      APP_ENV: production
+      APP_DEBUG: "false"
+      # WICHTIG: auf die oeffentliche Adresse setzen, sonst zeigen Links und
+      # Mails auf localhost.
+      APP_URL: http://localhost:8080
+      APP_LOCALE: de
+      TZ: Europe/Berlin
+
+      DB_CONNECTION: sqlite
+
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: warning
+
+      # Hinter einem Reverse-Proxy (Traefik, nginx, Caddy) die IP/CIDR des
+      # Proxys eintragen. Niemals '*': damit waeren X-Forwarded-For und alle
+      # IP-Rate-Limits faelschbar.
+      # TRUSTED_PROXIES: 172.16.0.0/12
+
+      # Mailversand fuer Registrierung und Serien-Benachrichtigungen.
+      # MAIL_MAILER: smtp
+      # MAIL_HOST: smtp.example.com
+      # MAIL_PORT: "587"
+      # MAIL_USERNAME: ""
+      # MAIL_PASSWORD: ""
+      # MAIL_FROM_ADDRESS: movieshelf@example.com
+    volumes:
+      # Cover, Uploads, Backups, Logs und der generierte APP_KEY.
+      - movieshelf-storage:/var/www/html/storage
+      # Die SQLite-Datenbank.
+      - movieshelf-database:/var/www/html/database
+
+volumes:
+  movieshelf-storage:
+  movieshelf-database:

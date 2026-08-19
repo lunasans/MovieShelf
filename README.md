@@ -87,7 +87,97 @@ movieshelf/
 └── README.md               # Diese Datei
 ```
 
-## 🚀 Installation
+## 🐳 Installation mit Docker
+
+Der schnellste Weg zu einer eigenen Instanz. Ein Container, SQLite, keine
+weiteren Dienste - Queue-Worker und Scheduler laufen mit im Container.
+
+```bash
+curl -O https://raw.githubusercontent.com/lunasans/MovieShelf/main/docker-compose.yml
+docker compose up -d
+```
+
+Danach läuft MovieShelf auf <http://localhost:8080>. Der erste registrierte
+Account wird zum Administrator.
+
+### Konfiguration
+
+Alle Einstellungen kommen als Umgebungsvariablen aus der `docker-compose.yml` -
+im Container gibt es keine `.env`-Datei. Die wichtigsten:
+
+| Variable | Default | Bedeutung |
+|---|---|---|
+| `APP_URL` | `http://localhost:8080` | Öffentliche Adresse. **Muss** gesetzt werden, sonst zeigen Links und Mails auf localhost. |
+| `APP_KEY` | wird generiert | Beim ersten Start erzeugt und in `storage/app/app_key` abgelegt. Nur setzen, wenn du ihn selbst verwalten willst. |
+| `TZ` | `UTC` | Zeitzone für Scheduler und Anzeige. |
+| `DB_CONNECTION` | `sqlite` | `mysql` für die MariaDB-Variante. |
+| `TRUSTED_PROXIES` | leer | IP/CIDR des Reverse-Proxys. Niemals `*` - damit wären `X-Forwarded-For` und alle IP-Rate-Limits fälschbar. |
+| `RUN_QUEUE_WORKER` | `true` | Queue-Worker im Container starten. |
+| `RUN_SCHEDULER` | `true` | Laravel-Scheduler im Container starten (ersetzt den System-Cron). |
+| `RUN_MIGRATIONS` | `true` | Migrationen beim Start ausführen. |
+
+### Daten und Backup
+
+Zwei Volumes halten alles Persistente:
+
+- `movieshelf-storage` → `/var/www/html/storage` - Cover, Uploads, Backups, Logs, `APP_KEY`
+- `movieshelf-database` → `/var/www/html/database` - die SQLite-Datenbank
+
+Beide sichern, dann ist die Installation vollständig gesichert.
+
+### Updates
+
+Für Docker-Installationen ersetzt das Image das [`update.sh`](update.sh)
+komplett - Migrationen laufen beim Start automatisch:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+### Hinter einem Reverse-Proxy
+
+Der Container spricht nur HTTP auf Port 8080; TLS und Security-Header gehören
+in den Proxy davor. `APP_URL` auf die öffentliche HTTPS-Adresse setzen und
+`TRUSTED_PROXIES` auf das Netz des Proxys.
+
+### MariaDB statt SQLite
+
+Sinnvoll ab mehreren tausend Titeln oder mehreren parallelen Nutzern, weil
+SQLite jeden Schreibzugriff serialisiert:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.mariadb.yml up -d
+```
+
+Vorher die Passwörter in `docker-compose.mariadb.yml` ändern. Ein Wechsel
+migriert **keine** Daten - vorher im Admin-Panel exportieren und danach wieder
+importieren.
+
+### Verfügbare Images
+
+Bei jedem Release wird dasselbe Image nach beiden Registries gepusht -
+`linux/amd64` und `linux/arm64` (NAS, Raspberry Pi, Apple Silicon):
+
+```
+ghcr.io/lunasans/movieshelf:latest
+tessaa/movieshelf:latest            # Docker Hub
+```
+
+Die `docker-compose.yml` nutzt GHCR. Für Docker Hub einfach die `image:`-Zeile
+auf `tessaa/movieshelf:latest` ändern.
+
+### Selbst bauen
+
+```bash
+git clone https://github.com/lunasans/MovieShelf.git
+cd MovieShelf
+docker build -t movieshelf .
+```
+
+---
+
+## 🚀 Installation (ohne Docker)
 
 ### 1. Repository klonen & Abhängigkeiten installieren
 ```bash
