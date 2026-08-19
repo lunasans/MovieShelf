@@ -66,6 +66,8 @@ jobs:
             name=${{ env.DOCKERHUB_IMAGE }},enable=${{ steps.dockerhub.outcome == 'success' }}
           tags: |
             type=ref,event=branch
+            # Nur damit der Rauchtest unten einen Namen hat - wird nie gepusht.
+            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
@@ -102,6 +104,11 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          if [ -z "$IMAGE" ]; then
+            echo "Kein Image-Tag ermittelt - Rauchtest nicht moeglich"
+            exit 1
+          fi
+          echo "Teste $IMAGE"
           docker run -d --name smoke -p 8080:8080 \
             -e APP_KEY=base64:$(openssl rand -base64 32) \
             -e APP_ENV=production -e APP_DEBUG=false \
