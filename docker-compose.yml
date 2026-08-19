@@ -9,8 +9,10 @@
 
 services:
   app:
-    image: ghcr.io/lunasans/movieshelf:latest
-    # Zum lokalen Bauen die naechste Zeile einkommentieren:
+    image: tessaa/movieshelf:latest
+    # Alternativ ueber die GitHub-Registry:
+    # image: ghcr.io/lunasans/movieshelf:latest
+    # Zum lokalen Bauen stattdessen:
     # build: .
     container_name: movieshelf
     restart: unless-stopped
