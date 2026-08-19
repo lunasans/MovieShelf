@@ -25,6 +25,11 @@ jobs:
       contents: read
       packages: write
 
+    env:
+      # Der secrets-Kontext ist in if-Bedingungen nicht verfuegbar, deshalb
+      # hier einmal auf eine Env-Variable abbilden.
+      HAS_DOCKERHUB: ${{ secrets.DOCKERHUB_TOKEN != '' }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -46,7 +51,7 @@ jobs:
       # gepusht statt den Build scheitern zu lassen (z.B. in Forks).
       - name: Docker-Hub-Login
         id: dockerhub
-        if: github.event_name != 'pull_request' && secrets.DOCKERHUB_TOKEN != ''
+        if: github.event_name != 'pull_request' && env.HAS_DOCKERHUB == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
