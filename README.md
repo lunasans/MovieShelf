@@ -161,11 +161,11 @@ Bei jedem Release wird dasselbe Image nach beiden Registries gepusht -
 
 ```
 ghcr.io/lunasans/movieshelf:latest
-lunasans/movieshelf:latest          # Docker Hub
+tessaa/movieshelf:latest            # Docker Hub
 ```
 
 Die `docker-compose.yml` nutzt GHCR. Für Docker Hub einfach die `image:`-Zeile
-auf `lunasans/movieshelf:latest` ändern.
+auf `tessaa/movieshelf:latest` ändern.
 
 ### Selbst bauen
 

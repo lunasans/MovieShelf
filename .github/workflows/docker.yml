@@ -16,7 +16,7 @@ on:
 
 env:
   GHCR_IMAGE: ghcr.io/${{ github.repository }}
-  DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'lunasans/movieshelf' }}
+  DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'tessaa/movieshelf' }}
 
 jobs:
   build:
