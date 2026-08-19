@@ -33,7 +33,10 @@ RUN --mount=type=cache,target=/tmp/composer-cache \
 
 # Jetzt der Rest des Codes, danach der Autoloader (braucht die Klassen).
 COPY . .
-RUN composer dump-autoload --no-dev --optimize --classmap-authoritative
+# --no-scripts: package:discover wuerde Laravel booten, und config/database.php
+# braucht dafuer die pdo_mysql-Konstanten. Dieser Stage legt aber nur Dateien
+# zusammen und hat die Extension nicht - die Erkennung passiert im Entrypoint.
+RUN composer dump-autoload --no-dev --optimize --classmap-authoritative --no-scripts
 
 # --------------------------------------------------------------- Stage 2 ---
 # Frontend-Assets. Node landet nicht im Runtime-Image.

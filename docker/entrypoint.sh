@@ -91,6 +91,12 @@ else
     log "RUN_MIGRATIONS=false - ueberspringe Migrationen"
 fi
 
+# ------------------------------------------------------ Paket-Erkennung ---
+# Im Build uebersprungen (dort fehlt pdo_mysql fuer config/database.php),
+# deshalb hier nachholen - sonst fehlen die Service-Provider der Pakete.
+log "Ermittle Paket-Provider"
+as_www "php artisan package:discover --no-interaction" >/dev/null
+
 # --------------------------------------------------------------- Caches ---
 # Erst hier cachen, nicht im Build: die Config haengt an den Laufzeit-Env-Werten.
 log "Baue Config-, Route- und View-Cache"
