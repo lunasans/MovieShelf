@@ -3,7 +3,8 @@ name: Docker Image
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    # Das Repo taggt Releases als shelf-vX.Y.Z, nicht als vX.Y.Z.
+    tags: ['shelf-v*']
   # Woechentlich neu bauen, damit Alpine-Sicherheitspatches auch ohne
   # Code-Aenderung in :latest landen.
   schedule:
@@ -74,8 +75,9 @@ jobs:
             type=ref,event=branch
             # Nur damit der Rauchtest unten einen Namen hat - wird nie gepusht.
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            # semver greift hier nicht, weil der Tag das Praefix shelf-v traegt.
+            type=match,pattern=shelf-v(\d+\.\d+\.\d+),group=1
+            type=match,pattern=shelf-v(\d+\.\d+),group=1
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Bauen und pushen
@@ -116,9 +118,11 @@ jobs:
           category: trivy
 
       # Die Beschreibung auf Docker Hub kommt aus der README, damit die
-      # Repo-Seite dort nicht leer bleibt.
+      # Repo-Seite dort nicht leer bleibt. Laeuft bei jedem Push nach main,
+      # nicht nur bei Releases - sonst bleibt die Seite bis zum naechsten Tag
+      # unveraendert, obwohl die README laengst weiter ist.
       - name: Docker-Hub-Beschreibung aktualisieren
-        if: steps.dockerhub.outcome == 'success' && startsWith(github.ref, 'refs/tags/')
+        if: steps.dockerhub.outcome == 'success'
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
