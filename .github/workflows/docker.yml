@@ -5,8 +5,9 @@ on:
     branches: [main]
     # Das Repo taggt Releases als shelf-vX.Y.Z, nicht als vX.Y.Z.
     tags: ['shelf-v*']
-  # Woechentlich neu bauen, damit Alpine-Sicherheitspatches auch ohne
-  # Code-Aenderung in :latest landen.
+  # Woechentlich neu bauen und scannen. Veroeffentlicht wird dabei nichts -
+  # der Lauf meldet neue Schwachstellen ins Security-Tab, behoben werden sie
+  # mit dem naechsten Release.
   schedule:
     - cron: '17 4 * * 1'
   workflow_dispatch:
@@ -72,13 +73,15 @@ jobs:
             ${{ env.GHCR_IMAGE }}
             name=${{ env.DOCKERHUB_IMAGE }},enable=${{ steps.dockerhub.outcome == 'success' }}
           tags: |
+            # Nur zur lokalen Benennung fuer Rauchtest und Scan - auf main
+            # wird nichts gepusht.
             type=ref,event=branch
             # Nur damit der Rauchtest unten einen Namen hat - wird nie gepusht.
             type=ref,event=pr
             # semver greift hier nicht, weil der Tag das Praefix shelf-v traegt.
             type=match,pattern=shelf-v(\d+\.\d+\.\d+),group=1
             type=match,pattern=shelf-v(\d+\.\d+),group=1
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
 
       - name: Bauen und pushen
         uses: docker/build-push-action@v6
@@ -86,13 +89,15 @@ jobs:
           context: .
           # QEMU-Emulation macht arm64 langsam, daher nur fuer echte Releases.
           platforms: ${{ startsWith(github.ref, 'refs/tags/') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
-          push: ${{ github.event_name != 'pull_request' }}
+          # Veroeffentlicht wird ausschliesslich aus einem Tag heraus. Push
+          # nach main und der woechentliche Lauf bauen und pruefen nur.
+          push: ${{ startsWith(github.ref, 'refs/tags/') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             APP_VERSION=${{ github.ref_name }}
-          # Ohne pull wuerde der woechentliche Rebuild das alte Basis-Image
-          # aus dem Cache nehmen und die Patches nie sehen.
+          # Ohne pull naehme der woechentliche Lauf das alte Basis-Image aus
+          # dem Cache und saehe neue Sicherheitspatches nie.
           pull: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -136,8 +141,10 @@ jobs:
           readme-filepath: ./README.md
 
       # Rauchtest: Container hochfahren und den Health-Endpoint abfragen.
+      # Laeuft ueberall dort, wo das Image lokal vorliegt - also bei allem
+      # ausser Tag-Builds, die multi-arch bauen und sich nicht laden lassen.
       - name: Container testen
-        if: github.event_name == 'pull_request'
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         run: |
           IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
           if [ -z "$IMAGE" ]; then
