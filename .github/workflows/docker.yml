@@ -121,9 +121,13 @@ jobs:
       # Repo-Seite dort nicht leer bleibt. Laeuft bei jedem Push nach main,
       # nicht nur bei Releases - sonst bleibt die Seite bis zum naechsten Tag
       # unveraendert, obwohl die README laengst weiter ist.
+      # Rein kosmetisch - darf eine erfolgreiche Veroeffentlichung nicht
+      # scheitern lassen. Das Docker-Hub-Token braucht fuer die Beschreibung
+      # mehr Rechte als fuers Pushen; fehlen sie, antwortet die API mit 403.
       - name: Docker-Hub-Beschreibung aktualisieren
         if: steps.dockerhub.outcome == 'success'
-        uses: peter-evans/dockerhub-description@v4
+        continue-on-error: true
+        uses: peter-evans/dockerhub-description@v5
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
