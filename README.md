@@ -160,12 +160,12 @@ Bei jedem Release wird dasselbe Image nach beiden Registries gepusht -
 `linux/amd64` und `linux/arm64` (NAS, Raspberry Pi, Apple Silicon):
 
 ```
-ghcr.io/lunasans/movieshelf:latest
 tessaa/movieshelf:latest            # Docker Hub
+ghcr.io/lunasans/movieshelf:latest  # GitHub Container Registry
 ```
 
-Die `docker-compose.yml` nutzt GHCR. Für Docker Hub einfach die `image:`-Zeile
-auf `tessaa/movieshelf:latest` ändern.
+Beide sind dasselbe Image mit demselben Digest. Die `docker-compose.yml` nutzt
+Docker Hub; die GHCR-Zeile steht dort auskommentiert daneben.
 
 ### Selbst bauen
 
