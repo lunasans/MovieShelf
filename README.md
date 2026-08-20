@@ -1,173 +1,311 @@
-![Logo](https://neuhaus.ovh/img/logo/logo.png)
-# MovieShelf - Dein digitales Filmregal
+![MovieShelf](https://neuhaus.ovh/img/logo/logo.png)
 
+# MovieShelf
 
-Ein modernes, webbasiertes Tool zur Verwaltung Ihrer privaten Filmsammlung mit eleganter Benutzeroberfläche und umfangreichen Funktionen.
+Self-hosted web application for cataloguing, browsing and presenting a personal
+DVD and Blu-ray collection. Import from TMDb or DVD Profiler, keep track of what
+you have watched, and share a polished view of your shelf.
 
-## Banner
-[![Signature](https://neuhaus.ovh/signature?type=1)](https://neuhaus.ovh)
+Runs as a single container. No external services required.
 
-[![Signature](https://neuhaus.ovh/signature?type=2)](https://neuhaus.ovh)
+---
 
-[![Signature](https://neuhaus.ovh/signature?type=3)](https://neuhaus.ovh)
+## Quick start
 
-## 🎬 Übersicht
+Create a `docker-compose.yml`:
 
-MovieShelf ist eine vollständige Webanwendung zur Verwaltung, Durchsuchung und Präsentation Ihrer DVD/Blu-ray-Sammlung. Das System bietet eine intuitive Benutzeroberfläche mit Glass-Morphism-Design und umfangreiche Funktionen für Film-Enthusiasten.
+```yaml
+services:
+  app:
+    image: tessaa/movieshelf:latest
+    container_name: movieshelf
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Set this to the address you will actually reach the app on.
+      # Links and outgoing mail are built from it.
+      APP_URL: http://localhost:8080
+      APP_NAME: MovieShelf
+      APP_LOCALE: en
+      TZ: Europe/Berlin
+    volumes:
+      - movieshelf-storage:/var/www/html/storage
+      - movieshelf-database:/var/www/html/database
 
-## ✨ Hauptfunktionen
-
-### 📥 Import & Datenmanagement
-- **XML-Import** aus collection.xml (kompatibel mit DVD Profiler)
-- **TMDb-Import** - Filme und Serien direkt über TMDb API importieren
-- **Automatischer Datenbankabgleich** mit Update- und Einfügefunktionen
-- **BoxSet-Erkennung** mit gruppierten, aufklappbaren Unterfilmen
-
-### 🎭 Film-Details & Präsentation
-- **Umfassende Film-Informationen** mit Schauspielern, Cover und Übersicht
-- **Trailer-Integration** für erweiterte Filminformationen
-- **Responsive Design** für alle Bildschirmgrößen
-- **Listen- und Kachelansicht** mit nahtlosem Umschalten
-
-### 🎭 Schauspieler-Profile
-- **Detaillierte Schauspieler-Profile** mit Biografien und Fotos
-- **Filmografie-Übersicht** für jeden Schauspieler
-- **Verknüpfung Film ↔ Schauspieler** mit Rolleninformationen
-- **Inline-Editing** für schnelle Aktualisierungen
-
-###  Benutzer-Features
-- **Persönliche Bewertungen** für Filme
-- **"Gesehen"-Status** zum Tracking
-- **Wunschliste** für zukünftige Filme
-- **Aktivitäts-Log** zur Nachverfolgung
-
-### 📊 Erweiterte Features
-- **Statistikseite** mit interaktiven Diagrammen (Chart.js)
-- **Admin-Panel** mit umfangreichen Verwaltungsfunktionen
-- **Besucherzähler** für Nutzungsstatistiken
-- **Foren-Signaturbanner** - Dynamische Banner mit neuesten Filmen
-- **2FA-Authentifizierung** für erhöhte Sicherheit
-- **DSGVO-konformes Design** mit Impressum und Datenschutz
-
-## 🛠️ Technische Details
-
-### Systemanforderungen
-- PHP 8.2+
-- Composer
-- Node.js & NPM
-- MySQL/MariaDB oder SQLite
-- Webserver (Apache/Nginx)
-
-### Verwendete Technologien
-- **Backend**: Laravel Framework (PHP)
-- **Frontend**: Blade Templates, Tailwind CSS (via Vite), JavaScript
-- **UI-Bibliotheken**: 
-  - Bootstrap Icons
-  - Fancybox für Lightbox-Funktionen
-  - Chart.js für Statistiken
-- **Datenbank**: MySQL/MariaDB oder SQLite
-- **APIs**: TMDb API für Film-Metadaten
-
-## 📁 Projektstruktur
-
-```text
-movieshelf/
-├── app/                    # Laravel Core (Controller, Models, etc.)
-├── bootstrap/              # System-Initialisierung
-├── config/                 # Konfigurationsdateien
-├── database/               # Migrationen und Seeder
-├── public/                 # Öffentliches Verzeichnis (Assets, index.php)
-├── resources/              # Ansichten (Blade) und unkompilierte Assets
-│   ├── css/               # Tailwind CSS
-│   ├── js/                # JavaScript
-│   └── views/             # Blade Templates
-├── routes/                 # Web- und API-Routen
-├── storage/                # Logs, Caches, hochgeladene Dateien
-├── tests/                  # Automatisierte Tests
-└── README.md               # Diese Datei
+volumes:
+  movieshelf-storage:
+  movieshelf-database:
 ```
 
-## 🐳 Installation mit Docker
-
-Der schnellste Weg zu einer eigenen Instanz. Ein Container, SQLite, keine
-weiteren Dienste - Queue-Worker und Scheduler laufen mit im Container.
+Then start it:
 
 ```bash
-curl -O https://raw.githubusercontent.com/lunasans/MovieShelf/main/docker-compose.yml
 docker compose up -d
 ```
 
-Danach läuft MovieShelf auf <http://localhost:8080>. Der erste registrierte
-Account wird zum Administrator.
+MovieShelf is now available at <http://localhost:8080>. The first account you
+register becomes the administrator.
 
-### Konfiguration
+Nothing else needs preparing. On first start the container generates its
+application key, creates the SQLite database, applies the migrations and starts
+the web server, the queue worker and the scheduler.
 
-Alle Einstellungen kommen als Umgebungsvariablen aus der `docker-compose.yml` -
-im Container gibt es keine `.env`-Datei. Die wichtigsten:
+---
 
-| Variable | Default | Bedeutung |
-|---|---|---|
-| `APP_URL` | `http://localhost:8080` | Öffentliche Adresse. **Muss** gesetzt werden, sonst zeigen Links und Mails auf localhost. |
-| `APP_KEY` | wird generiert | Beim ersten Start erzeugt und in `storage/app/app_key` abgelegt. Nur setzen, wenn du ihn selbst verwalten willst. |
-| `TZ` | `UTC` | Zeitzone für Scheduler und Anzeige. |
-| `DB_CONNECTION` | `sqlite` | `mysql` für die MariaDB-Variante. |
-| `TRUSTED_PROXIES` | leer | IP/CIDR des Reverse-Proxys. Niemals `*` - damit wären `X-Forwarded-For` und alle IP-Rate-Limits fälschbar. |
-| `RUN_QUEUE_WORKER` | `true` | Queue-Worker im Container starten. |
-| `RUN_SCHEDULER` | `true` | Laravel-Scheduler im Container starten (ersetzt den System-Cron). |
-| `RUN_MIGRATIONS` | `true` | Migrationen beim Start ausführen. |
+## What runs inside the container
 
-### Daten und Backup
+One image carries the whole application, supervised by `supervisord`:
 
-Zwei Volumes halten alles Persistente:
+| Process | Role |
+| --- | --- |
+| nginx | Serves the application on port 8080 |
+| php-fpm | Runs the PHP application |
+| Queue worker | Mail, TMDb imports, trailer lookups |
+| Scheduler | Replaces the system cron for recurring jobs |
 
-- `movieshelf-storage` → `/var/www/html/storage` - Cover, Uploads, Backups, Logs, `APP_KEY`
-- `movieshelf-database` → `/var/www/html/database` - die SQLite-Datenbank
+The queue worker and the scheduler can be switched off if you would rather run
+them as separate containers. See `RUN_QUEUE_WORKER` and `RUN_SCHEDULER` below.
 
-Beide sichern, dann ist die Installation vollständig gesichert.
+---
 
-### Updates
+## Configuration
 
-Für Docker-Installationen ersetzt das Image das [`update.sh`](update.sh)
-komplett - Migrationen laufen beim Start automatisch:
+The container takes its settings from environment variables. It does not use an
+`.env` file.
+
+### Common
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `APP_URL` | `http://localhost` | Public address of the instance. Set this, or links and mail will point at localhost. |
+| `APP_NAME` | `MovieShelf` | Shown in the interface and in outgoing mail. |
+| `APP_LOCALE` | `de` | Interface language. English and German are available. |
+| `TZ` | `UTC` | Time zone for the scheduler and for displayed timestamps. |
+| `APP_KEY` | generated | Created on first start and kept in the storage volume. Set it only if you want to manage it yourself. |
+
+### Database
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DB_CONNECTION` | `sqlite` | Either `sqlite` or `mysql`. |
+| `DB_HOST`, `DB_PORT` | | Required for `mysql`. |
+| `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | | Required for `mysql`. |
+
+### Behaviour
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `RUN_MIGRATIONS` | `true` | Apply pending migrations on start. |
+| `RUN_QUEUE_WORKER` | `true` | Run the queue worker inside the container. |
+| `RUN_SCHEDULER` | `true` | Run the scheduler inside the container. |
+| `TRUSTED_PROXIES` | empty | IP or CIDR of your reverse proxy. Never set this to `*`, which would make `X-Forwarded-For` and every IP-based rate limit forgeable. |
+| `LOG_LEVEL` | `debug` | Use `warning` in production. |
+
+### Mail
+
+Required for registration mail and for notifications about new episodes of
+followed series.
+
+```yaml
+      MAIL_MAILER: smtp
+      MAIL_HOST: smtp.example.com
+      MAIL_PORT: "587"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_FROM_ADDRESS: movieshelf@example.com
+```
+
+---
+
+## Data and backups
+
+Two volumes hold everything that has to survive a restart:
+
+| Volume | Path | Contents |
+| --- | --- | --- |
+| `movieshelf-storage` | `/var/www/html/storage` | Cover art, uploads, backups, logs, the generated application key |
+| `movieshelf-database` | `/var/www/html/database` | The SQLite database |
+
+Backing up both is a complete backup of the instance. With MariaDB, back up its
+volume instead of `movieshelf-database`.
+
+---
+
+## Updating
+
+Pull the new image and restart. Migrations are applied automatically on start.
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
-### Hinter einem Reverse-Proxy
+---
 
-Der Container spricht nur HTTP auf Port 8080; TLS und Security-Header gehören
-in den Proxy davor. `APP_URL` auf die öffentliche HTTPS-Adresse setzen und
-`TRUSTED_PROXIES` auf das Netz des Proxys.
+## Behind a reverse proxy
 
-### MariaDB statt SQLite
+The container speaks plain HTTP on port 8080. TLS termination and security
+headers belong to the proxy in front of it, such as Traefik, nginx or Caddy.
 
-Sinnvoll ab mehreren tausend Titeln oder mehreren parallelen Nutzern, weil
-SQLite jeden Schreibzugriff serialisiert:
+Set `APP_URL` to the public HTTPS address, and `TRUSTED_PROXIES` to the network
+your proxy runs in:
+
+```yaml
+      APP_URL: https://movies.example.com
+      TRUSTED_PROXIES: 172.16.0.0/12
+```
+
+---
+
+## MariaDB instead of SQLite
+
+SQLite is the default and is enough for a personal collection. MariaDB becomes
+worthwhile once you have several thousand titles, or several people using the
+instance at the same time, because SQLite serialises every write.
+
+Add a second file, `docker-compose.mariadb.yml`:
+
+```yaml
+services:
+  app:
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: movieshelf
+      DB_USERNAME: movieshelf
+      DB_PASSWORD: change-me
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11
+    container_name: movieshelf-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: movieshelf
+      MARIADB_USER: movieshelf
+      MARIADB_PASSWORD: change-me
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - movieshelf-mariadb:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  movieshelf-mariadb:
+```
+
+Change both passwords before the first start, then:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.mariadb.yml up -d
 ```
 
-Vorher die Passwörter in `docker-compose.mariadb.yml` ändern. Ein Wechsel
-migriert **keine** Daten - vorher im Admin-Panel exportieren und danach wieder
-importieren.
+Switching between SQLite and MariaDB does not migrate any data. Export from the
+admin panel first, then import again after the switch.
 
-### Verfügbare Images
+---
 
-Bei jedem Release wird dasselbe Image nach beiden Registries gepusht -
-`linux/amd64` und `linux/arm64` (NAS, Raspberry Pi, Apple Silicon):
+## Images and tags
+
+Both registries receive the same image with the same digest.
 
 ```
-tessaa/movieshelf:latest            # Docker Hub
-ghcr.io/lunasans/movieshelf:latest  # GitHub Container Registry
+tessaa/movieshelf:latest
+ghcr.io/lunasans/movieshelf:latest
 ```
 
-Beide sind dasselbe Image mit demselben Digest. Die `docker-compose.yml` nutzt
-Docker Hub; die GHCR-Zeile steht dort auskommentiert daneben.
+| Tag | Meaning |
+| --- | --- |
+| `latest` | Current state of the main branch |
+| `2.41.2` | One specific release |
+| `2.41` | Latest patch of that minor release |
 
-### Selbst bauen
+Release images are built for `linux/amd64` and `linux/arm64`, which covers NAS
+devices, the Raspberry Pi and Apple Silicon. The image is rebuilt weekly so that
+operating system security updates reach `latest` without a code change.
+
+---
+
+## Features
+
+**Importing**
+
+- TMDb import for films and series, including cast and artwork
+- XML import from DVD Profiler collections
+- Box set detection with grouped, expandable entries
+- Duplicate detection by TMDb ID, and by name for people
+
+**Browsing and presentation**
+
+- Grid and list views with cover art
+- Full text search across all metadata, with filters for genre, year and rating
+- Detail pages with cast, artwork and trailers
+- Actor profiles with biography and filmography
+- Responsive layout with a dark mode
+
+**Personal**
+
+- Ratings, a watched marker and a wishlist
+- Activity log
+- Statistics with interactive charts
+
+**Administration**
+
+- Two factor authentication with backup codes
+- User and metadata management, including repair of missing covers and TMDb IDs
+- A background service that completes actor profiles from TMDb
+- Full export of database, cover art, backdrops and actor images as a ZIP archive
+
+---
+
+## Security and privacy
+
+- All data stays on your server. Nothing leaves it except requests to TMDb when
+  you import.
+- Two factor authentication with backup codes.
+- Sessions validated against IP subnet and user agent.
+- Content Security Policy, CSRF protection, prepared statements, bcrypt hashing.
+- Privacy policy and imprint pages included for GDPR compliance.
+
+Security issues can be reported as described in [SECURITY.md](SECURITY.md).
+
+---
+
+## Installing without Docker
+
+Requires PHP 8.2 or newer, Composer, Node.js with npm, a web server, and either
+SQLite or MySQL/MariaDB.
+
+```bash
+git clone https://github.com/lunasans/MovieShelf.git
+cd MovieShelf
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm run build
+php artisan serve
+```
+
+Configure the database connection in `.env` before migrating. The scheduler
+needs a cron entry running `php artisan schedule:run` every minute, and the
+queue needs `php artisan queue:work` kept alive by systemd or a similar
+supervisor.
+
+`update.sh` walks through updating such an installation step by step.
+
+---
+
+## Building the image yourself
 
 ```bash
 git clone https://github.com/lunasans/MovieShelf.git
@@ -177,120 +315,34 @@ docker build -t movieshelf .
 
 ---
 
-## 🚀 Installation (ohne Docker)
+## Technology
 
-### 1. Repository klonen & Abhängigkeiten installieren
-```bash
-git clone https://github.com/lunasans/MovieShelf.git  
-cd MovieShelf
-composer install
-npm install
-```
+Laravel on PHP, Blade templates with Tailwind CSS built by Vite, Alpine.js for
+interactivity, Chart.js for statistics, GLightbox for image viewing, and
+GridStack for the arrangeable dashboard. Metadata comes from the TMDb API.
 
-### 2. Konfiguration & Datenbank
-- Kopieren Sie die `.env.example` zu `.env`:
-  ```bash
-  cp .env.example .env
-  ```
-- Generieren Sie den Application-Key:
-  ```bash
-  php artisan key:generate
-  ```
-- Konfigurieren Sie in der `.env` Datei Ihre Datenbankverbindung (z.B. SQLite oder MySQL).
-- Führen Sie die Datenbank-Migrationen aus:
-  ```bash
-  php artisan migrate
-  ```
+---
 
-### 3. Assets kompilieren
-```bash
-npm run build
-```
+## Changes
 
-### 4. Server starten
-Wenn Sie keinen lokalen Webserver (wie Apache/Nginx oder Laravel Valet) nutzen, können Sie den eingebauten Server verwenden:
-```bash
-php artisan serve
-```
-
-### 5. XML-Import (Optional)
-- Exportieren Sie Ihre Sammlung aus DVD Profiler als `collection.xml`
-- Nutzen Sie die Import-Funktion im Admin-Panel zur Migration der Sammlung.
-
-## 🎨 Features im Detail
-
-### Glass-Morphism Design
-Das moderne Interface nutzt Glasmorphismus-Effekte für eine elegante und zeitgemäße Benutzeroberfläche mit:
-- Transparente Hintergründe mit Blur-Effekten
-- Smooth Animationen und Hover-Effekte
-- Responsive Grid-Layout
-- Dunkler Modus verfügbar
-
-### Erweiterte Suchfunktionen
-- Volltext-Suche durch alle Film-Metadaten
-- Filter nach Genre, Jahr, Bewertung
-- Sortierung nach verschiedenen Kriterien
-- Schnelle Navigation durch große Sammlungen
-
-### Admin-Funktionen
-- **Benutzer-Authentifizierung** mit 2FA-Unterstützung
-- **Schauspieler-Verwaltung** mit Profil-Editor
-- **Film-Verwaltung** mit TMDb-Import
-- **Batch-Import** von XML-Dateien
-- **Film-Metadaten Verwaltung** (z.B. fehlende Cover & TMDb-IDs)
-- **Actor Bot** (Automatischer Background-Service zur Vervollständigung von Schauspieler-Profilen via TMDb)
-- **Statistik-Dashboard**
-- **GitHub-basierte System-Updates**
-
-## 📊 Screenshots
-
-Die Anwendung bietet eine moderne, benutzerfreundliche Oberfläche:
-- **Hauptansicht**: Übersichtliche Film-Grid mit Cover-Bildern
-- **Detail-Panel**: Ausführliche Informationen zu jedem Film
-- **Statistiken**: Interaktive Diagramme Ihrer Sammlung
-- **Admin-Panel**: Verwaltungstools für Power-User
-
-## 🔒 Datenschutz & Sicherheit
-
-- **DSGVO-konform**: Vollständige Datenschutzerklärung und Impressum
-- **Keine externe Datenübertragung**: Alle Daten bleiben auf Ihrem Server
-- **2FA-Authentifizierung**: Zwei-Faktor-Authentifizierung mit Backup-Codes
-- **Sichere Sessions**: IP-Subnet-Validierung und User-Agent-Checks
-- **Content Security Policy**: Schutz vor XSS-Angriffen
-- **CSRF-Protection**: Schutz vor Cross-Site-Request-Forgery
-- **Prepared Statements**: SQL-Injection-Schutz
-- **Password Hashing**: Bcrypt-Verschlüsselung
-
-## 📋 Änderungen
-
-Alle Versionen und ihre Änderungen stehen bei den
-[Releases](https://github.com/lunasans/MovieShelf/releases) und in den
+Every version and its changes are listed under
+[Releases](https://github.com/lunasans/MovieShelf/releases) and
 [Tags](https://github.com/lunasans/MovieShelf/tags).
 
-## 🤝 Mitwirken
+## Contributing
 
-Beiträge sind willkommen! Bitte:
-1. Forken Sie das Repository
-2. Erstellen Sie einen Feature-Branch
-3. Committen Sie Ihre Änderungen
-4. Erstellen Sie einen Pull Request
+Contributions are welcome. Fork the repository, create a feature branch, commit
+your changes and open a pull request.
 
-## 📝 Lizenz
+## License
 
-Dieses Projekt ist für den privaten Gebrauch konzipiert. Weitere Details finden Sie in der LICENSE-Datei.
+Intended for private use. See the LICENSE file for details.
 
-## 👤 Autor
+## Author
 
-**René Neuhaus**  
-GitHub: [@lunasans](https://github.com/lunasans)
+René Neuhaus, [@lunasans](https://github.com/lunasans)
 
-## 🐛 Support & Feedback
+## Support
 
-Bei Fragen, Problemen oder Verbesserungsvorschlägen:
-- Erstellen Sie ein [GitHub Issue](https://github.com/lunasans/MovieShelf/issues)
-- Nutzen Sie die Diskussionsfunktion im Repository
-
-
-**Status**: Aktiv entwickelt
-
-*Verwalten Sie Ihre Filmsammlung mit Stil und Effizienz!* 🎬✨
+Open a [GitHub issue](https://github.com/lunasans/MovieShelf/issues) or use the
+discussions in the repository.
