@@ -231,8 +231,14 @@ that was tagged deliberately rather than at whatever landed on the main branch
 last.
 
 Every image is built for `linux/amd64` and `linux/arm64`, which covers NAS
-devices, the Raspberry Pi and Apple Silicon. The image is rebuilt and scanned
-for vulnerabilities weekly; anything found is fixed in the next release.
+devices, the Raspberry Pi and Apple Silicon.
+
+`latest` is rebuilt and scanned weekly, so operating system security updates
+reach you without waiting for the next version. The application code is
+unchanged in such a rebuild; only the packages underneath it move.
+
+Version tags are never rewritten. If you pin `2.42.0`, you keep exactly the
+image that release produced.
 
 ---
 
