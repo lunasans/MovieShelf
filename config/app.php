@@ -143,7 +143,7 @@ return [
 
     'git_binary' => env('GIT_BINARY', 'git'),
     'composer_binary' => env('COMPOSER_BINARY', 'composer'),
-    'shelf_version' => env('APP_SHELF_VERSION', '2.41.2'),
+    'shelf_version' => env('APP_SHELF_VERSION', '2.42.0'),
 
     // Forum-SSO: OAuth2-Client-Daten des Support-Forums (leer = SSO deaktiviert)
     'forum_sso_client_id'     => env('FORUM_SSO_CLIENT_ID', 'movieshelf-forum'),
