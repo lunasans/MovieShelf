@@ -121,7 +121,7 @@
 
             <div class="flex flex-col items-center md:items-start gap-2 order-1 md:order-2">
                 <p class="text-[9px] md:text-[10px] font-black text-white/20 uppercase tracking-[0.4em] leading-relaxed italic text-center md:text-left">
-                    &copy; {{ date('Y') }} René Neuhaus.<span class="hidden lg:inline ml-2">Alle Rechte vorbehalten.</span>
+                    &copy; {{ date('Y') }} MovieShelf.<span class="hidden lg:inline ml-2">Alle Rechte vorbehalten.</span>
                 </p>
                 <p class="text-[8px] font-bold text-white/10 uppercase tracking-[0.3em] flex items-center gap-2">
                     Hand-crafted with <i class="bi bi-heart-fill text-rose-600 animate-pulse"></i> and Laravel.
