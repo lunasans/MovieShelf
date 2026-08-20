@@ -233,9 +233,12 @@ last.
 Every image is built for `linux/amd64` and `linux/arm64`, which covers NAS
 devices, the Raspberry Pi and Apple Silicon.
 
-The current release is rebuilt and scanned weekly, so operating system security
-updates reach you without waiting for the next version. Application code only
-ever changes with a release.
+`latest` is rebuilt and scanned weekly, so operating system security updates
+reach you without waiting for the next version. The application code is
+unchanged in such a rebuild; only the packages underneath it move.
+
+Version tags are never rewritten. If you pin `2.42.0`, you keep exactly the
+image that release produced.
 
 ---
 

@@ -96,17 +96,18 @@ jobs:
             name=${{ env.DOCKERHUB_IMAGE }},enable=${{ steps.dockerhub.outcome == 'success' }}
           tags: |
             # Nur zur lokalen Benennung fuer Rauchtest und Scan - auf main
-            # wird nichts gepusht.
-            type=ref,event=branch
+            # wird nichts gepusht. Beim Wochenlauf abgeschaltet, sonst
+            # entstuende dort ein :main-Tag, der auch gepusht wuerde.
+            type=ref,event=branch,enable=${{ github.event_name != 'schedule' }}
             # Nur damit der Rauchtest unten einen Namen hat - wird nie gepusht.
             type=ref,event=pr
             # semver greift hier nicht, weil der Tag das Praefix shelf-v traegt.
             type=match,pattern=shelf-v(\d+\.\d+\.\d+),group=1
             type=match,pattern=shelf-v(\d+\.\d+),group=1
-            # Der Wochenlauf traegt dieselben Tags wie das Release, das er
-            # neu baut - er ersetzt es durch denselben Stand mit Patches.
-            type=raw,value=${{ steps.release.outputs.version }},enable=${{ github.event_name == 'schedule' }}
-            type=raw,value=${{ steps.release.outputs.minor }},enable=${{ github.event_name == 'schedule' }}
+            # Der Wochenlauf schreibt ausschliesslich latest neu. Die
+            # Versions-Tags bleiben unveraendert: wer 2.42.0 festschreibt,
+            # will einen definierten Stand und soll ihn nicht still
+            # ausgetauscht bekommen.
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'schedule' }}
 
       - name: Bauen und pushen
@@ -139,7 +140,7 @@ jobs:
         with:
           # Beim Wochenlauf wird multi-arch gebaut und direkt gepusht, das
           # Image liegt dann nicht lokal vor - Trivy zieht es aus Docker Hub.
-          image-ref: ${{ github.event_name == 'schedule' && format('{0}:{1}', env.DOCKERHUB_IMAGE, steps.release.outputs.version) || fromJSON(steps.meta.outputs.json).tags[0] }}
+          image-ref: ${{ github.event_name == 'schedule' && format('{0}:latest', env.DOCKERHUB_IMAGE) || fromJSON(steps.meta.outputs.json).tags[0] }}
           format: sarif
           output: trivy.sarif
           ignore-unfixed: true
