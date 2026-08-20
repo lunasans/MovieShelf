@@ -222,13 +222,17 @@ ghcr.io/lunasans/movieshelf:latest
 
 | Tag | Meaning |
 | --- | --- |
-| `latest` | Current state of the main branch |
-| `2.41.2` | One specific release |
-| `2.41` | Latest patch of that minor release |
+| `latest` | The most recent release |
+| `2.42.0` | One specific release |
+| `2.42` | Latest patch of that minor release |
 
-Release images are built for `linux/amd64` and `linux/arm64`, which covers NAS
-devices, the Raspberry Pi and Apple Silicon. The image is rebuilt weekly so that
-operating system security updates reach `latest` without a code change.
+Images are published from releases only, so `latest` always points at a version
+that was tagged deliberately rather than at whatever landed on the main branch
+last.
+
+Every image is built for `linux/amd64` and `linux/arm64`, which covers NAS
+devices, the Raspberry Pi and Apple Silicon. The image is rebuilt and scanned
+for vulnerabilities weekly; anything found is fixed in the next release.
 
 ---
 
