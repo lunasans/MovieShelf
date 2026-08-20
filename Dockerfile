@@ -66,7 +66,13 @@ ENV APP_VERSION=${APP_VERSION} \
 
 # Laufzeit-Pakete. nginx und supervisor bedienen den Container,
 # der Rest sind Bibliotheken fuer die PHP-Extensions.
-RUN apk add --no-cache \
+#
+# apk upgrade zuerst: das Basis-Image wird nur zu seinen eigenen Releases neu
+# gebaut, Alpine veroeffentlicht Sicherheitspatches aber laufend. Ohne das
+# schleppt jedes Image die Luecken seines Basis-Stands mit - u.a. nghttp2 aus
+# curl und py3-setuptools, das supervisor als Python-Programm mitbringt.
+RUN apk upgrade --no-cache \
+    && apk add --no-cache \
         nginx \
         supervisor \
         tzdata \

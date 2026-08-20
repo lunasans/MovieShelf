@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
     tags: ['v*']
+  # Woechentlich neu bauen, damit Alpine-Sicherheitspatches auch ohne
+  # Code-Aenderung in :latest landen.
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
   pull_request:
     paths:
       - 'Dockerfile'
@@ -24,6 +29,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
 
     env:
       # Der secrets-Kontext ist in if-Bedingungen nicht verfuegbar, deshalb
@@ -83,9 +89,31 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             APP_VERSION=${{ github.ref_name }}
+          # Ohne pull wuerde der woechentliche Rebuild das alte Basis-Image
+          # aus dem Cache nehmen und die Patches nie sehen.
+          pull: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          load: ${{ github.event_name == 'pull_request' }}
+          load: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+      # Ergebnisse landen im Security-Tab statt den Build rot zu faerben -
+      # ein Teil der Alpine-CVEs hat schlicht noch keinen Patch.
+      - name: Auf Schwachstellen pruefen
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          format: sarif
+          output: trivy.sarif
+          ignore-unfixed: true
+          severity: MEDIUM,HIGH,CRITICAL
+
+      - name: Ergebnisse hochladen
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy.sarif
+          category: trivy
 
       # Die Beschreibung auf Docker Hub kommt aus der README, damit die
       # Repo-Seite dort nicht leer bleibt.
