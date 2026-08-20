@@ -1,5 +1,3 @@
-![MovieShelf](https://neuhaus.ovh/img/logo/logo.png)
-
 # MovieShelf
 
 Self-hosted web application for cataloguing, browsing and presenting a personal
@@ -340,7 +338,7 @@ Intended for private use. See the LICENSE file for details.
 
 ## Author
 
-René Neuhaus, [@lunasans](https://github.com/lunasans)
+[@lunasans](https://github.com/lunasans)
 
 ## Support
 
