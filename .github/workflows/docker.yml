@@ -40,6 +40,28 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Der Wochenlauf braucht die Tags, um das letzte Release zu finden.
+          fetch-depth: 0
+
+      # Der woechentliche Lauf baut nicht main, sondern das zuletzt
+      # veroeffentlichte Release neu. So bekommt latest frische
+      # Systempakete, bleibt aber eine bewusst getaggte Version.
+      - name: Letztes Release ermitteln
+        id: release
+        if: github.event_name == 'schedule'
+        run: |
+          TAG=$(git tag -l 'shelf-v*' --sort=-v:refname | head -n1)
+          if [ -z "$TAG" ]; then
+            echo "Kein shelf-v*-Tag vorhanden - nichts aufzufrischen"
+            exit 1
+          fi
+          VERSION=${TAG#shelf-v}
+          echo "Frische $TAG auf ($VERSION)"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "minor=${VERSION%.*}" >> "$GITHUB_OUTPUT"
+          git checkout --detach "$TAG"
 
       # arm64 ist Pflicht: ein grosser Teil der Selfhoster laeuft auf NAS,
       # Raspberry Pi oder Apple Silicon.
@@ -81,17 +103,23 @@ jobs:
             # semver greift hier nicht, weil der Tag das Praefix shelf-v traegt.
             type=match,pattern=shelf-v(\d+\.\d+\.\d+),group=1
             type=match,pattern=shelf-v(\d+\.\d+),group=1
-            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+            # Der Wochenlauf traegt dieselben Tags wie das Release, das er
+            # neu baut - er ersetzt es durch denselben Stand mit Patches.
+            type=raw,value=${{ steps.release.outputs.version }},enable=${{ github.event_name == 'schedule' }}
+            type=raw,value=${{ steps.release.outputs.minor }},enable=${{ github.event_name == 'schedule' }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'schedule' }}
 
       - name: Bauen und pushen
         uses: docker/build-push-action@v6
         with:
           context: .
-          # QEMU-Emulation macht arm64 langsam, daher nur fuer echte Releases.
-          platforms: ${{ startsWith(github.ref, 'refs/tags/') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
-          # Veroeffentlicht wird ausschliesslich aus einem Tag heraus. Push
-          # nach main und der woechentliche Lauf bauen und pruefen nur.
-          push: ${{ startsWith(github.ref, 'refs/tags/') }}
+          # QEMU-Emulation macht arm64 langsam, daher nur dort, wo
+          # veroeffentlicht wird.
+          platforms: ${{ (startsWith(github.ref, 'refs/tags/') || github.event_name == 'schedule') && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          # Veroeffentlicht wird aus einem Tag heraus und beim Wochenlauf,
+          # der dasselbe Release mit frischen Systempaketen ersetzt. Push
+          # nach main und Pull Requests bauen und pruefen nur.
+          push: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'schedule' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
@@ -101,7 +129,7 @@ jobs:
           pull: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          load: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          load: ${{ !startsWith(github.ref, 'refs/tags/') && github.event_name != 'schedule' }}
 
       # Ergebnisse landen im Security-Tab statt den Build rot zu faerben -
       # ein Teil der Alpine-CVEs hat schlicht noch keinen Patch.
@@ -109,7 +137,9 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          # Beim Wochenlauf wird multi-arch gebaut und direkt gepusht, das
+          # Image liegt dann nicht lokal vor - Trivy zieht es aus Docker Hub.
+          image-ref: ${{ github.event_name == 'schedule' && format('{0}:{1}', env.DOCKERHUB_IMAGE, steps.release.outputs.version) || fromJSON(steps.meta.outputs.json).tags[0] }}
           format: sarif
           output: trivy.sarif
           ignore-unfixed: true
@@ -141,10 +171,10 @@ jobs:
           readme-filepath: ./README.md
 
       # Rauchtest: Container hochfahren und den Health-Endpoint abfragen.
-      # Laeuft ueberall dort, wo das Image lokal vorliegt - also bei allem
-      # ausser Tag-Builds, die multi-arch bauen und sich nicht laden lassen.
+      # Braucht ein lokal geladenes Image, entfaellt also dort, wo multi-arch
+      # gebaut wird - bei Tags und beim Wochenlauf.
       - name: Container testen
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        if: ${{ !startsWith(github.ref, 'refs/tags/') && github.event_name != 'schedule' }}
         run: |
           IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
           if [ -z "$IMAGE" ]; then

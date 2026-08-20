@@ -231,8 +231,11 @@ that was tagged deliberately rather than at whatever landed on the main branch
 last.
 
 Every image is built for `linux/amd64` and `linux/arm64`, which covers NAS
-devices, the Raspberry Pi and Apple Silicon. The image is rebuilt and scanned
-for vulnerabilities weekly; anything found is fixed in the next release.
+devices, the Raspberry Pi and Apple Silicon.
+
+The current release is rebuilt and scanned weekly, so operating system security
+updates reach you without waiting for the next version. Application code only
+ever changes with a release.
 
 ---
 
