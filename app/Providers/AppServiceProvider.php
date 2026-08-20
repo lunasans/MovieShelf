@@ -35,7 +35,13 @@ class AppServiceProvider extends ServiceProvider
             'mail_template' => \App\Models\EmailTemplate::class,
         ]);
 
-        if (config('app.env') === 'production') {
+        // Nicht an APP_ENV koppeln: eine Produktivinstanz, die per HTTP
+        // erreichbar ist (Docker, LAN, Reverse-Proxy ohne TLS), bekaeme sonst
+        // https-URLs fuer CSS, JS und Bilder - das HTML laedt, jedes Asset
+        // scheitert am TLS-Handshake. Massgeblich ist die konfigurierte
+        // Adresse. Hinter einem TLS-Proxy leitet Laravel das Schema ohnehin
+        // aus X-Forwarded-Proto ab, siehe TRUSTED_PROXIES.
+        if (str_starts_with((string) config('app.url'), 'https://')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
